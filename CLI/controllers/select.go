@@ -1,27 +1,24 @@
 package controllers
 
 import (
-	"cli/models"
 	"fmt"
 	"strings"
 )
 
 func (controller Controller) Select(path string) ([]string, error) {
-	var selection []string
-	var err error
-
-	if strings.Contains(path, "*") || models.PathHasLayer(path) {
-		_, selection, err = controller.GetObjectsWildcard(path)
-	} else if path != "" {
-		selection = []string{path}
-		err = controller.CD(path)
-	}
-
+	paths, err := controller.UnfoldPath(path)
 	if err != nil {
 		return nil, err
 	}
 
-	return controller.SetClipBoard(selection)
+	if len(paths) == 1 && paths[0] == path {
+		err = controller.CD(paths[0])
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return controller.SetClipBoard(paths)
 }
 
 func (controller Controller) SetClipBoard(x []string) ([]string, error) {

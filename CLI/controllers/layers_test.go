@@ -638,6 +638,75 @@ func TestRemoveLayerRemovesAllObjectsOfTheLayer(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestDrawLayerDrawsAllObjectsOfTheLayer(t *testing.T) {
+	controller, mockAPI, mockOgree3D := layersSetup(t)
+
+	mockGetObjectHierarchy(mockAPI, roomWithChildren)
+	mockGetObjects(mockAPI, "category=rack&id=BASIC.A.R1.*&namespace=physical.hierarchy", []any{rack1, rack2})
+	mockGetObject(mockAPI, rack1)
+	mockGetObject(mockAPI, rack2)
+
+	controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
+
+	mockOgree3D.On(
+		"Inform", "Draw",
+		0, map[string]any{"data": removeChildren(rack1), "type": "create"},
+	).Return(nil)
+	mockOgree3D.On(
+		"Inform", "Draw",
+		0, map[string]any{"data": removeChildren(rack2), "type": "create"},
+	).Return(nil)
+
+	err := controller.Draw("/Physical/BASIC/A/R1/#racks", 0, true)
+	assert.Nil(t, err)
+}
+
+func TestDrawLayerWithDepthDrawsAllObjectsOfTheLayerAndChildren(t *testing.T) {
+	controller, mockAPI, mockOgree3D := layersSetup(t)
+
+	mockGetObjectHierarchy(mockAPI, roomWithChildren)
+	mockGetObjects(mockAPI, "category=rack&id=BASIC.A.R1.*&namespace=physical.hierarchy", []any{rack1, rack2})
+	mockGetObjectHierarchy(mockAPI, rack1)
+	mockGetObjectHierarchy(mockAPI, rack2)
+
+	controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
+
+	mockOgree3D.On(
+		"Inform", "Draw",
+		0, map[string]any{"data": keepOnlyDirectChildren(rack1), "type": "create"},
+	).Return(nil)
+	mockOgree3D.On(
+		"Inform", "Draw",
+		0, map[string]any{"data": keepOnlyDirectChildren(rack2), "type": "create"},
+	).Return(nil)
+
+	err := controller.Draw("/Physical/BASIC/A/R1/#racks", 1, true)
+	assert.Nil(t, err)
+}
+
+func TestUndrawLayerUndrawAllObjectsOfTheLayer(t *testing.T) {
+	controller, mockAPI, mockOgree3D := layersSetup(t)
+
+	mockGetObjectHierarchy(mockAPI, roomWithChildren)
+	mockGetObjects(mockAPI, "category=rack&id=BASIC.A.R1.*&namespace=physical.hierarchy", []any{rack1, rack2})
+	mockGetObject(mockAPI, rack1)
+	mockGetObject(mockAPI, rack2)
+
+	controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
+
+	mockOgree3D.On(
+		"Inform", "Undraw",
+		0, map[string]any{"data": "BASIC.A.R1.A01", "type": "delete"},
+	).Return(nil)
+	mockOgree3D.On(
+		"Inform", "Undraw",
+		0, map[string]any{"data": "BASIC.A.R1.B01", "type": "delete"},
+	).Return(nil)
+
+	err := controller.Undraw("/Physical/BASIC/A/R1/#racks")
+	assert.Nil(t, err)
+}
+
 func TestTranslateApplicabilityReturnsErrorIfPathIsNotHierarchical(t *testing.T) {
 	_, err := controllers.TranslateApplicability("/")
 	assert.ErrorContains(t, err, "applicability must be an hierarchical path, found: /")

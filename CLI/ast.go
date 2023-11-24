@@ -684,7 +684,7 @@ func (n *updateObjNode) execute() (interface{}, error) {
 		}
 		values = append(values, val)
 	}
-	paths, err := cmd.UnfoldPath(path)
+	paths, err := cmd.C.UnfoldPath(path)
 	if err != nil {
 		return nil, err
 	}
@@ -780,17 +780,8 @@ func (n *drawNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	paths, err := cmd.UnfoldPath(path)
-	if err != nil {
-		return nil, err
-	}
-	for _, subpath := range paths {
-		err = cmd.Draw(subpath, n.depth, n.force)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return nil, nil
+
+	return nil, cmd.C.Draw(path, n.depth, n.force)
 }
 
 type undrawNode struct {
@@ -799,23 +790,15 @@ type undrawNode struct {
 
 func (n *undrawNode) execute() (interface{}, error) {
 	if n.path == nil {
-		return nil, cmd.Undraw("")
+		return nil, cmd.C.Undraw("")
 	}
+
 	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
 	}
-	paths, err := cmd.UnfoldPath(path)
-	if err != nil {
-		return nil, err
-	}
-	for _, subpath := range paths {
-		err = cmd.Undraw(subpath)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return nil, nil
+
+	return nil, cmd.C.Undraw(path)
 }
 
 type lsogNode struct{}
