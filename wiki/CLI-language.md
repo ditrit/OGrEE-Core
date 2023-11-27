@@ -436,8 +436,10 @@ The applicability is the path in which the layer should be added when doing ls. 
 Filters are automatically created as empty. To add filters, edit the layer using the object modification syntax (see [Modify object's attribute](#modify-objects-attribute)). Example:
 
 ```
-[layer_slug]:category=device
+[layer_path]:category=device
 ```
+
+Where [layer_path] is `/Logical/Layers/[slug]` (or only `[slug]` if the current path is /Logical/Layers).
 
 For the layer to filter the children whose category is device. When adding filters on different attributes, all must be fulfilled for a child to be part of the layer.
 
@@ -446,7 +448,7 @@ Layers are not applied until their filters are defined.
 A filter can also be removed, using the syntax:
 
 ```
-[layer_slug]:filters-=[filter_name]
+[layer_path]:filters-=[filter_name]
 ```
 
 After the layer is created, it can be seen in /Logical/Layers. The command `get /Logical/Layers/[slug]` can be used to get the layer information.
