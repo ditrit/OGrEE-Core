@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/url"
 	u "p3/utils"
@@ -104,17 +103,17 @@ func createUniqueIndex(db *mongo.Database, entity int, on bson.M) error {
 
 func GetDatabase(client *mongo.Client, name string) (*mongo.Database, error) {
 	if name == "admin" || name == "config" || name == "local" {
-		return nil, errors.New("database not accessible")
+		return nil, fmt.Errorf("database %s not accessible", name)
 	}
 
 	// Check if API is authenticated
 	if exists := databaseExists(client, name); !exists {
-		return nil, errors.New("database not found, check that you are authorized")
+		return nil, fmt.Errorf("database %s not found, check that you are authorized", name)
 	}
 
 	db := client.Database(name)
 	if db == nil {
-		return nil, errors.New("error while getting database")
+		return nil, fmt.Errorf("error while getting database %s", name)
 	}
 
 	return db, nil
