@@ -52,6 +52,12 @@ func (layer UserDefinedLayer) Matches(path string) bool {
 		"/",
 	)
 
+	// special case different to the library used,
+	// path/to does not match path/to/**
+	if strings.HasSuffix(applicability, "/**") && strings.TrimSuffix(applicability, "/**") == path {
+		return false
+	}
+
 	match, err := doublestar.Match(applicability, path)
 
 	return err == nil && match
