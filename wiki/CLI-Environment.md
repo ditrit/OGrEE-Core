@@ -1,4 +1,4 @@
-# CLI Launch Arguments
+# CLI Launch Argumenteeeeees
 These arguments override the respective values found in the config.toml file.
 
 * --conf_path (or -c) : Specify the location of the config.toml file
