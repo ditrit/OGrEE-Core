@@ -2,7 +2,7 @@ package main
 
 import (
 	"bytes"
-	"cli/config"
+	"cli/com"
 	cmd "cli/controllers"
 	"cli/utils"
 	"encoding/json"
@@ -13,34 +13,40 @@ import (
 	"strings"
 )
 
-func InitVars(variables []config.Vardef) (err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			err = fmt.Errorf("cannot parse config variables")
-		}
-	}()
-	cmd.State.DynamicSymbolTable = make(map[string]interface{})
-	cmd.State.FuncTable = make(map[string]interface{})
+func InitVars(variables []*com.Vardef) error {
+	if cmd.State.DynamicSymbolTable == nil {
+		cmd.State.DynamicSymbolTable = make(map[string]interface{})
+	}
+	if cmd.State.FuncTable == nil {
+		cmd.State.FuncTable = make(map[string]interface{})
+	}
 	for _, v := range variables {
-		var varNode node
-		switch val := v.Value.(type) {
-		case string:
-			p := newParser("\"" + val + "\"")
-			varNode = p.parseExpr("")
-		case int64:
-			varNode = &valueNode{int(val)}
+		switch {
+		case v.Value.GetStringValue() != "":
+			p := newParser("\"" + v.Value.GetStringValue() + "\"")
+			varNode := p.parseExpr("")
+			n := &assignNode{
+				variable: v.Name,
+				val:      varNode,
+			}
+			if _, err := n.execute(); err != nil {
+				return err
+			}
+		case v.Value.GetInt64Value() != 0:
+			varNode := &valueNode{int(v.Value.GetInt64Value())}
+			n := &assignNode{
+				variable: v.Name,
+				val:      varNode,
+			}
+			if _, err := n.execute(); err != nil {
+				return err
+			}
+		// Add cases for other types as needed
 		default:
-			varNode = &valueNode{val}
-		}
-		n := &assignNode{
-			variable: v.Name,
-			val:      varNode,
-		}
-		if _, err = n.execute(); err != nil {
-			return err
+			return fmt.Errorf("unsupported value type")
 		}
 	}
-	return err
+	return nil
 }
 
 type node interface {

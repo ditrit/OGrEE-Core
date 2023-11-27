@@ -13,9 +13,9 @@ BUILD_COMMAND=go build -ldflags=\"-X  cli/controllers.BuildHash=$(GITHASH) \
 	-X cli/controllers.BuildTime=$(DATE) \
 	-X cli/controllers.GitCommitDate=$(GITHASHDATE)\"
 
-LINUX_COMMAND=$(BUILD_COMMAND) -o cli
-MAC_COMMAND=GOOS=darwin $(BUILD_COMMAND) -o cli.mac
-WIN_COMMAND=GOOS=windows $(BUILD_COMMAND) -o cli.exe
+LINUX_COMMAND=$(BUILD_COMMAND) -o ogree-cli-service
+MAC_COMMAND=GOOS=darwin $(BUILD_COMMAND) -o ogree-cli-service.mac
+WIN_COMMAND=GOOS=windows $(BUILD_COMMAND) -o ogree-cli-service.exe
 CROSS_COMMAND=$(LINUX_COMMAND) ; $(MAC_COMMAND) ; $(WIN_COMMAND)
 DOCKER_PREFIX=docker run --rm -v $(shell pwd):/workdir -w /workdir golang:1.19.6 bash -c
 
@@ -30,7 +30,7 @@ win: protobuf
 
 protobuf: 
 	poetry run python -W ignore:pkg_resources -m grpc_tools.protoc --proto_path=. ./com.proto --python_out=. --grpc_python_out=.
-	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative ./com.proto
+	protoc --go_out=./com --go_opt=paths=source_relative --go-grpc_out=./com --go-grpc_opt=paths=source_relative ./com.proto
 
 docker:
 	$(DOCKER_PREFIX) "$(LINUX_COMMAND)"

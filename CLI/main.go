@@ -2,7 +2,7 @@ package main
 
 import (
 	"bytes"
-	"cli/config"
+	"cli/com"
 	cmd "cli/controllers"
 	l "cli/logger"
 	"cli/models"
@@ -34,10 +34,10 @@ func main() {
 		fmt.Println(err.Error())
 	}
 	Output = &bytes.Buffer{}
-	server := cliServer{}
+	server := &cliServer{}
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
-	RegisterCLIServer(grpcServer, &server)
+	com.RegisterCLIServer(grpcServer, server)
 	grpcServer.Serve(lis)
 }
 
@@ -48,68 +48,71 @@ func SetPrompt(user string) string {
 	return cmd.State.Prompt
 }
 
-func initCli() {
-	conf, err := config.ReadConfig()
-	if err != nil {
-		Println(err.Error())
-	}
+func initCLI(conf *com.Config) error {
 	l.InitLogs()
 	cmd.InitConfigFilePath(conf.ConfigPath)
 	cmd.InitHistoryFilePath(conf.HistPath)
 	cmd.InitDebugLevel(conf.Verbose)
 	cmd.InitTimeout(conf.UnityTimeout)
 	cmd.InitURLs(conf.APIURL, conf.UnityURL)
-
-	if !cmd.PingAPI() {
-		Println("Cannot reach API at", cmd.State.APIURL)
-	}
-	var apiKey string
-	user, apiKey, err := cmd.Login(conf.User, conf.Password)
+	err := InitVars(conf.Variables)
 	if err != nil {
-		Println(err.Error())
+		return fmt.Errorf("Error while initializing variables : %s", err.Error())
+	}
+	return nil
+}
+
+func connectCLI(conf *com.Config, username string, password string) error {
+	var apiKey string
+	user, apiKey, err := cmd.Login(username, password)
+	if err != nil {
+		return err
 	} else {
 		Printf("Successfully connected to %s\n", cmd.State.APIURL)
 	}
 	cmd.State.User = *user
 	cmd.InitKey(apiKey)
-	err = cmd.InitState(conf)
-	if err != nil {
-		Println(err.Error())
-	}
-	err = InitVars(conf.Variables)
-	if err != nil {
-		Println("Error while initializing variables :", err.Error())
-	}
-	//Execute Script if provided as arg and exit
-	if conf.Script != "" {
-		if strings.Contains(conf.Script, ".ocli") {
-			LoadFile(conf.Script)
-			os.Exit(0)
-		}
-	}
+	return cmd.InitState(conf)
 }
 
 type cliServer struct {
-	cliInitialized bool
+	com.UnimplementedCLIServer
+	conf *com.Config
 }
 
-func (s *cliServer) Init(ctx context.Context, e *empty.Empty) (*ProcessResponse, error) {
+func (s *cliServer) Init(ctx context.Context, conf *com.Config) (*com.InitResponse, error) {
 	Output.Reset()
-	if !s.cliInitialized {
-		initCli()
+	err := initCLI(conf)
+	if err != nil {
+		return nil, err
 	}
-	userShort := strings.Split(cmd.State.User.Email, "@")[0]
-	response := &ProcessResponse{
+	if !cmd.PingAPI() {
+		return nil, fmt.Errorf("cannot reach API at %s", cmd.State.APIURL)
+	}
+	response := &com.InitResponse{
 		Message: Output.String(),
-		Prompt:  SetPrompt(userShort),
 	}
-	s.cliInitialized = true
+	s.conf = conf
 	return response, nil
 }
 
-func (s *cliServer) ProcessLine(ctx context.Context, r *Request) (*ProcessResponse, error) {
+func (s *cliServer) ConnectAPI(ctx context.Context, r *com.ConnectAPIRequest) (*com.ProcessResponse, error) {
 	Output.Reset()
-	root, parseErr := Parse(r.Line)
+	err := connectCLI(s.conf, r.Username, r.Password)
+	if err != nil {
+		return nil, err
+	}
+	userShort := strings.Split(cmd.State.User.Email, "@")[0]
+	response := &com.ProcessResponse{
+		Message: Output.String(),
+		Prompt:  SetPrompt(userShort),
+	}
+	return response, nil
+}
+
+func (s *cliServer) ProcessCommand(ctx context.Context, r *com.ProcessCommandRequest) (*com.ProcessResponse, error) {
+	Output.Reset()
+	root, parseErr := Parse(r.Command)
 	if parseErr != nil {
 		Println(parseErr.Error())
 	}
@@ -120,11 +123,20 @@ func (s *cliServer) ProcessLine(ctx context.Context, r *Request) (*ProcessRespon
 		}
 	}
 	userShort := strings.Split(cmd.State.User.Email, "@")[0]
-	response := &ProcessResponse{
+	response := &com.ProcessResponse{
 		Message: Output.String(),
 		Prompt:  SetPrompt(userShort),
 	}
 	return response, nil
+}
+
+func (s *cliServer) ProcessFile(r *com.ProcessFileRequest, stream com.CLI_ProcessFileServer) error {
+	Output.Reset()
+	if strings.Contains(r.FilePath, ".ocli") {
+		LoadFile(r.FilePath)
+		os.Exit(0)
+	}
+	return nil
 }
 
 func manageError(err error, addErrorPrefix bool) {
@@ -152,23 +164,23 @@ func printError(err error, addErrorPrefix bool) {
 	}
 }
 
-func (s *cliServer) Completion(ctx context.Context, r *Request) (*CompletionResponse, error) {
-	completionResponse := &CompletionResponse{
-		Completions: Complete(r.Line),
+func (s *cliServer) Completion(ctx context.Context, r *com.CompletionRequest) (*com.CompletionResponse, error) {
+	completionResponse := &com.CompletionResponse{
+		Completions: Complete(r.Command),
 	}
 	return completionResponse, nil
 }
-func (s *cliServer) UnityStream(e *empty.Empty, stream CLI_UnityStreamServer) error {
+func (s *cliServer) UnityStream(e *empty.Empty, stream com.CLI_UnityStreamServer) error {
 	err := cmd.Connect3D(cmd.State.Ogree3DURL)
 	if err == nil {
-		unityMsg := UnityMessage{
+		unityMsg := com.UnityMessage{
 			NewConnection: true,
 			Message:       "",
 		}
 		stream.Send(&unityMsg)
 	}
 	for message := range models.Ogree3D.MessageChan() {
-		unityMsg := UnityMessage{
+		unityMsg := com.UnityMessage{
 			NewConnection: false,
 			Message:       message,
 		}
@@ -178,6 +190,4 @@ func (s *cliServer) UnityStream(e *empty.Empty, stream CLI_UnityStreamServer) er
 		manageError(err, false)
 	}
 	return nil
-}
-func (s *cliServer) mustEmbedUnimplementedCLIServer() {
 }

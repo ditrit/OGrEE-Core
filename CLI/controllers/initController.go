@@ -3,7 +3,7 @@ package controllers
 //This file contains code associated with initialising the Shell
 
 import (
-	"cli/config"
+	"cli/com"
 	l "cli/logger"
 	"cli/models"
 	"cli/utils"
@@ -47,11 +47,14 @@ func PingAPI() bool {
 }
 
 // Intialise the ShellState
-func InitState(conf *config.Config) error {
+func InitState(conf *com.Config) error {
 	State.Hierarchy = BuildBaseTree()
-	State.CurrPath = "/Physical"
-	State.PrevPath = "/Physical"
-
+	if State.CurrPath == "" {
+		State.CurrPath = "/Physical"
+	}
+	if State.PrevPath == "" {
+		State.PrevPath = "/Physical"
+	}
 	//Set the filter attributes setting
 	State.FilterDisplay = false
 
@@ -66,7 +69,7 @@ func InitState(conf *config.Config) error {
 	}
 
 	//Set Draw Threshold
-	SetDrawThreshold(conf.DrawLimit)
+	SetDrawThreshold(int(conf.DrawLimit))
 
 	resp, err := RequestAPI("GET", "/api/version", nil, http.StatusOK)
 	if err != nil {
@@ -241,22 +244,6 @@ func SetDrawableTemplate(entity string, DrawableJson map[string]string) map[stri
 }
 
 func Login(user string, password string) (*User, string, error) {
-	var err error
-	// if user == "" {
-	// 	user, err = readline.Line("User: ")
-	// 	if err != nil {
-	// 		return nil, "", fmt.Errorf("readline error : %s", err.Error())
-	// 	}
-	// }
-	// if password == "" {
-	// 	passwordBytes, err := readline.Password("Password: ")
-	// 	if err != nil {
-	// 		return nil, "", err
-	// 	}
-	// 	password = string(passwordBytes)
-	// }
-	user = "admin"
-	password = "admin"
 	data := map[string]any{"email": user, "password": password}
 	resp, err := RequestAPI("POST", "/api/login", data, http.StatusOK)
 	if err != nil {

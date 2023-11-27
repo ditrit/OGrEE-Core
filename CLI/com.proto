@@ -1,25 +1,30 @@
-
 syntax = "proto3";
 import "google/protobuf/empty.proto";
 
 package CLI;
 
-option go_package = "./main";
+option go_package = "./com";
 
 service CLI {
-    rpc Init(google.protobuf.Empty) returns (ProcessResponse){};
-    rpc ProcessLine(Request) returns (ProcessResponse){};
-    rpc Completion(Request) returns (CompletionResponse){};
-    rpc UnityStream(google.protobuf.Empty) returns (stream UnityMessage){};
+    rpc Init(Config) returns (InitResponse) {};
+    rpc ConnectAPI(ConnectAPIRequest) returns (ProcessResponse) {};
+    rpc ProcessCommand(ProcessCommandRequest) returns (ProcessResponse) {};
+    rpc ProcessFile(ProcessFileRequest) returns (stream ProcessResponse) {};
+    rpc Completion(CompletionRequest) returns (CompletionResponse) {};
+    rpc UnityStream(google.protobuf.Empty) returns (stream UnityMessage) {};
 }
 
-message UnityMessage {
-    bool newConnection = 1;
-    string message = 2;
+message InitResponse {
+    string message = 1;
 }
 
-message Request {
-    string line = 1;
+message ConnectAPIRequest {
+    string username = 1;
+    string password = 2;
+}
+
+message ProcessCommandRequest {
+    string command = 1;
 }
 
 message ProcessResponse {
@@ -27,6 +32,48 @@ message ProcessResponse {
     string prompt = 2;
 }
 
+message ProcessFileRequest {
+    string filePath = 1;
+}
+
+message CompletionRequest {
+    string command = 1;
+}
+
 message CompletionResponse {
     repeated string completions = 1;
+}
+
+message Config {
+    string Verbose = 1;
+    string APIURL = 2;
+    string UnityURL = 3;
+    string UnityTimeout = 4;
+    string ConfigPath = 5;
+    string HistPath = 6;
+    string Script = 7;
+    repeated string Drawable = 8;
+    map<string, string> DrawableJson = 9;
+    int32 DrawLimit = 10;
+    repeated string Updates = 11;
+    string User = 12;
+    string Password = 13;
+    repeated Vardef Variables = 14;
+}
+
+message Vardef {
+    string name = 1;
+    Value value = 2;
+}
+
+message Value {
+    oneof value {
+        string string_value = 1;
+        int64 int64_value = 2;
+    }
+}
+
+message UnityMessage {
+    bool newConnection = 1;
+    string message = 2;
 }
