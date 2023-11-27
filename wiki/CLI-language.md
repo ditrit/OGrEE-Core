@@ -44,6 +44,8 @@
   - [Create a Corridor](#create-a-corridor)
   - [Create a Tag](#create-a-tag)
   - [Create a Layer](#create-a-layer)
+    - [Applicability Patterns](#applicability-patterns)
+      - [Character Classes](#character-classes)
 - [Set commands](#set-commands)
   - [Set colors for zones of all rooms in a datacenter](#set-colors-for-zones-of-all-rooms-in-a-datacenter)
   - [Set reserved and technical zones of a room](#set-reserved-and-technical-zones-of-a-room)
@@ -429,9 +431,7 @@ Layers are identified by a slug. In addition, they have an applicability and the
 +layer:[slug]@[applicability]
 ```
 
-The applicability is the path in which the layer should be added when doing ls.
-
-`*` and `**` can be used in the definition of the applicability so that the layer will be added in multiple paths. `*` represents any child, e.g. an applicability of /Physical/BASIC/* implies that the layer will be added to all the children of /Physical/BASIC.  `**` represents any child recursively, e.g. an applicability of /Physical/BASIC/** implies that the layer will be added to all children of /Physical/BASIC, to the children of the children and so on.
+The applicability is the path in which the layer should be added when doing ls. Patterns can be used in the applicability (see [Applicability Patterns](#applicability-patterns)).
 
 Filters are automatically created as empty. To add filters, edit the layer using the object modification syntax (see [Modify object's attribute](#modify-objects-attribute)). Example:
 
@@ -450,6 +450,36 @@ A filter can also be removed, using the syntax:
 ```
 
 After the layer is created, it can be seen in /Logical/Layers. The command `get /Logical/Layers/[slug]` can be used to get the layer information.
+
+### Applicability Patterns
+
+The following special terms are supported in the patterns:
+
+Special Terms | Meaning
+------------- | -------
+`*`           | matches any sequence of non-path-separators
+`/**/`        | matches zero or more directories
+`?`           | matches any single non-path-separator character
+`[class]`     | matches any single non-path-separator character against a class of characters (see [Character classes](#character-classes))
+`{alt1,...}`  | matches a sequence of characters if one of the comma-separated alternatives matches
+
+Any character with a special meaning can be escaped with a backslash (`\`).
+
+A doublestar (`**`) should appear surrounded by path separators such as `/**/`.
+A mid-pattern doublestar (`**`) behaves like bash's globstar option: a pattern
+such as `path/to/**.txt` would return the same results as `path/to/*.txt`. The
+pattern you're looking for is `path/to/**/*.txt`.
+
+#### Character Classes
+
+Character classes support the following:
+
+Class      | Meaning
+---------- | -------
+`[abc]`    | matches any single character within the set
+`[a-z]`    | matches any single character in the range
+`[^class]` | matches any single character which does *not* match the class
+`[!class]` | same as `^`: negates the class
 
 # Set commands
 ## Set colors for zones of all rooms in a datacenter

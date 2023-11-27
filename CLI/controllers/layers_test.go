@@ -898,6 +898,12 @@ func TestTranslateApplicabilityUnderscorePathReturnsCurrPathPlusUnderscore(t *te
 	assert.Equal(t, "_", applicability)
 }
 
+func TestTranslateApplicabilityReturnsErrorIfPatternIsNotValid(t *testing.T) {
+	_, err := controllers.TranslateApplicability("/Physical/[")
+	assert.NotNil(t, err)
+	assert.ErrorContains(t, err, "applicability pattern is not valid")
+}
+
 func TestLsNowShowLayerIfNotMatch(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 

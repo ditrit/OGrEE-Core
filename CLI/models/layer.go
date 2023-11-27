@@ -1,9 +1,9 @@
 package models
 
 import (
-	"regexp"
 	"strings"
 
+	"github.com/bmatcuk/doublestar/v4"
 	"github.com/elliotchance/pie/v2"
 	"github.com/gertd/go-pluralize"
 )
@@ -37,10 +37,9 @@ func (layer AutomaticLayer) ApplyFilters(filters map[string]string) {
 }
 
 type UserDefinedLayer struct {
-	Slug               string
-	Applicability      string
-	Filters            map[string]string
-	applicabilityRegex *regexp.Regexp
+	Slug          string
+	Applicability string
+	Filters       map[string]string
 }
 
 func (layer UserDefinedLayer) Name() string {
@@ -48,38 +47,14 @@ func (layer UserDefinedLayer) Name() string {
 }
 
 func (layer UserDefinedLayer) Matches(path string) bool {
-	if layer.applicabilityRegex == nil {
-		var err error
-		layer.applicabilityRegex, err = applicabilityToRegex(layer.Applicability)
-		if err != nil {
-			return false
-		}
-	}
-
-	return layer.applicabilityRegex.Match([]byte(path))
-}
-
-func applicabilityToRegex(applicability string) (*regexp.Regexp, error) {
-	finalApplicabilityList := []string{}
-
-	applicability = strings.TrimSuffix(
-		PhysicalIDToPath(applicability),
+	applicability := strings.TrimSuffix(
+		PhysicalIDToPath(layer.Applicability),
 		"/",
 	)
 
-	for _, word := range strings.Split(applicability, "/") {
-		if word == "**" {
-			finalApplicabilityList = append(finalApplicabilityList, `(?:[^\/]+\/?)*`)
-			continue
-		}
+	match, err := doublestar.Match(applicability, path)
 
-		finalApplicabilityList = append(
-			finalApplicabilityList,
-			strings.ReplaceAll(word, "*", `[^\/]+`),
-		)
-	}
-
-	return regexp.Compile(strings.Join(finalApplicabilityList, "\\/") + "\\/?$")
+	return err == nil && match
 }
 
 func (layer UserDefinedLayer) ApplyFilters(filters map[string]string) {

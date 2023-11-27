@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/bmatcuk/doublestar/v4"
 	"github.com/elliotchance/pie/v2"
 )
 
@@ -179,6 +180,10 @@ func TranslateApplicability(applicability string) (string, error) {
 
 	if !models.IsPhysical(applicability) {
 		return "", fmt.Errorf("applicability must be an hierarchical path, found: %s", applicability)
+	}
+
+	if !doublestar.ValidatePattern(applicability) {
+		return "", fmt.Errorf("applicability pattern is not valid")
 	}
 
 	return models.PhysicalPathToObjectID(applicability), nil

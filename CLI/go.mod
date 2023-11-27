@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/BurntSushi/toml v1.3.2
+	github.com/bmatcuk/doublestar/v4 v4.6.1
 	github.com/chzyer/test v1.0.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/elliotchance/pie/v2 v2.8.0
