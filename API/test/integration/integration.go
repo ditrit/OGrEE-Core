@@ -11,13 +11,14 @@ const TestDBName = "ogreeAutoTest"
 const testDBUser = TestDBName + "Admin"
 
 func init() {
+	log.Println("------------------ejecutando integration init-----------------------")
 	recreateTestDB()
 
 	log.Println("database recreated: ", TestDBName)
 
 	err := repository.ConnectToDB("", testDBPort, testDBUser, "123", TestDBName, TestDBName)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalln("Error connecting to", TestDBName, ":", err.Error())
 	}
 }
 
