@@ -11,7 +11,6 @@ const TestDBName = "ogreeAutoTest"
 const testDBUser = TestDBName + "Admin"
 
 func init() {
-	log.Println("------------------ejecutando integration init-----------------------")
 	recreateTestDB()
 
 	log.Println("database recreated: ", TestDBName)
