@@ -337,41 +337,6 @@ func (n *deleteSelectionNode) execute() (interface{}, error) {
 	return nil, nil
 }
 
-type deletePillarOrSeparatorNode struct {
-	path      node
-	attribute string
-	name      node
-}
-
-func (n *deletePillarOrSeparatorNode) execute() (interface{}, error) {
-	path, err := nodeToString(n.path, "path")
-	if err != nil {
-		return nil, err
-	}
-	name, err := nodeToString(n.name, "name")
-	if err != nil {
-		return nil, err
-	}
-	obj, err := cmd.C.GetObject(path)
-	if err != nil {
-		return nil, err
-	}
-	attributes := obj["attributes"].(map[string]any)
-	stringMap, _ := attributes[n.attribute+"s"].(string)
-	var ok bool
-	switch n.attribute {
-	case "pillar":
-		stringMap, ok = removeFromStringMap[Pillar](stringMap, name)
-	case "separator":
-		stringMap, ok = removeFromStringMap[Separator](stringMap, name)
-	}
-	if !ok {
-		return nil, fmt.Errorf("%s %s does not exist", n.attribute, name)
-	}
-	attributes[n.attribute+"s"] = stringMap
-	return cmd.C.UpdateObj(path, map[string]any{"attributes": attributes})
-}
-
 type isEntityDrawableNode struct {
 	path node
 }
@@ -617,6 +582,31 @@ func addRoomPillar(path string, values []any) (map[string]any, error) {
 	return obj, nil
 }
 
+// attribute must be "separator" or "pillar"
+func deleteRoomPillarOrSeparator(path, attribute, name string) (map[string]any, error) {
+	obj, err := cmd.C.GetObject(path)
+	if err != nil {
+		return nil, err
+	}
+	attributes := obj["attributes"].(map[string]any)
+	stringMap, _ := attributes[attribute+"s"].(string)
+	var ok bool
+	switch attribute {
+	case "pillar":
+		stringMap, ok = removeFromStringMap[Pillar](stringMap, name)
+	case "separator":
+		stringMap, ok = removeFromStringMap[Separator](stringMap, name)
+	default:
+		return nil, errors.New("\"separator\" or \"pillar\" expected")
+	}
+
+	if !ok {
+		return nil, fmt.Errorf("%s %s does not exist", attribute, name)
+	}
+	attributes[attribute+"s"] = stringMap
+	return cmd.C.UpdateObj(path, map[string]any{"attributes": attributes})
+}
+
 func parseDescriptionIdx(desc string) (int, error) {
 	numStr := desc[len("description"):]
 	num, e := strconv.Atoi(numStr)
@@ -711,14 +701,21 @@ func (n *updateObjNode) execute() (interface{}, error) {
 				_, err = setLabel(path, values, n.hasSharpe)
 			case "labelFont":
 				_, err = setLabelFont(path, values)
-			case "separator":
+			case "separators+":
 				_, err = addRoomSeparator(path, values)
-			case "pillar":
+			case "pillars+":
 				_, err = addRoomPillar(path, values)
+			case "separators-":
+				_, err = deleteRoomPillarOrSeparator(path, "separator", values[0].(string))
+			case "pillars-":
+				_, err = deleteRoomPillarOrSeparator(path, "pillar", values[0].(string))
 			case "domain", "tags+", "tags-":
 				_, err = cmd.C.UpdateObj(path, map[string]any{n.attr: values[0]})
-			case "tags":
-				err = errors.New("Object's tags can not be updated directly, please use tags+= and tags-=")
+			case "tags", "separators", "pillars":
+				err = fmt.Errorf(
+					"object's %[1]s can not be updated directly, please use %[1]s+= and %[1]s-=",
+					n.attr,
+				)
 			default:
 				if strings.HasPrefix(n.attr, "description") {
 					_, err = updateDescription(path, n.attr, values)

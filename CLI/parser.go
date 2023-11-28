@@ -714,17 +714,8 @@ func (p *parser) parseDelete() node {
 		p.error("path expected")
 	}
 	path := p.parsePath("")
-	if p.commandEnd() {
-		return &deleteObjNode{path}
-	}
-	p.expect(":")
-	attr := p.parseSimpleWord("attribute")
-	if attr != "separator" && attr != "pillar" {
-		p.error("\"separator\" or \"pillar\" expected")
-	}
-	p.expect("=")
-	sepName := p.parseString("separator name")
-	return &deletePillarOrSeparatorNode{path, attr, sepName}
+
+	return &deleteObjNode{path}
 }
 
 func (p *parser) parseEqual() node {
