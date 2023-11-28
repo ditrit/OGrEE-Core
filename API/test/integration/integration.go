@@ -4,7 +4,6 @@ import (
 	"log"
 	"p3/repository"
 	"p3/utils"
-	"strings"
 )
 
 const testDBPort = "27018"
@@ -30,24 +29,18 @@ func recreateTestDB() {
 
 	db := client.Database(TestDBName)
 
-	ctx, _ := utils.Connect()
+	ctx, cancel := utils.Connect()
+	defer cancel()
 
 	err = db.Drop(ctx)
-	for err != nil {
-		log.Println("Error while doing drop:", err.Error())
-		err = db.Drop(ctx)
+	if err != nil {
+		log.Fatalln("Error while doing drop:", err.Error())
 	}
 
 	db = client.Database(TestDBName)
 
 	err = repository.SetupDB(db)
-	for err != nil {
-		if strings.Contains(err.Error(), "database is in the process of being dropped") {
-			// An error can occur if the database was not dropped yet (not synchronic)
-			log.Println("Error while doing setup:", err.Error())
-			err = repository.SetupDB(db)
-		} else {
-			log.Fatalln("Error while doing setup:", err.Error())
-		}
+	if err != nil {
+		log.Fatalln("Error while doing setup:", err.Error())
 	}
 }

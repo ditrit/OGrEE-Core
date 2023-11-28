@@ -9,7 +9,6 @@ import (
 	"p3/models"
 	"p3/router"
 	_ "p3/test/integration"
-	"strings"
 
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -32,14 +31,8 @@ func createAdminAccount() {
 	admin.Roles = map[string]models.Role{"*": "manager"}
 
 	newAcc, err := admin.Create(map[string]models.Role{"*": "manager"})
-	for err != nil {
-		if strings.Contains(err.Error(), "database is in the process of being dropped") {
-			// An error can occur if the database was not dropped yet (not synchronic)
-			log.Println("Error while creating admin account:", err.Error())
-			newAcc, err = admin.Create(map[string]models.Role{"*": "manager"})
-		} else {
-			log.Fatalln("Error while creating admin account:", err.Error())
-		}
+	if err != nil {
+		log.Fatalln("Error while creating admin account:", err.Error())
 	}
 
 	if newAcc != nil {
