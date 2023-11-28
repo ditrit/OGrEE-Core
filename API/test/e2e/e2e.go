@@ -38,7 +38,7 @@ func createAdminAccount() {
 			log.Println("Error while creating admin account:", err.Error())
 			newAcc, err = admin.Create(map[string]models.Role{"*": "manager"})
 		} else {
-			log.Fatalln(err.Error())
+			log.Fatalln("Error while creating admin account:", err.Error())
 		}
 	}
 

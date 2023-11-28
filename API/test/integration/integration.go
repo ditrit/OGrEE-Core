@@ -47,7 +47,7 @@ func recreateTestDB() {
 			log.Println("Error while doing setup:", err.Error())
 			err = repository.SetupDB(db)
 		} else {
-			log.Fatalln(err.Error())
+			log.Fatalln("Error while doing setup:", err.Error())
 		}
 	}
 }
