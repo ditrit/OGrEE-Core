@@ -32,7 +32,7 @@ func createAdminAccount() {
 
 	newAcc, err := admin.Create(map[string]models.Role{"*": "manager"})
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatalln("Error while creating admin account:", err.Error())
 	}
 
 	if newAcc != nil {

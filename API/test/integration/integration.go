@@ -13,7 +13,7 @@ const testDBUser = TestDBName + "Admin"
 func init() {
 	recreateTestDB()
 
-	log.Println("database recreated")
+	log.Println("database recreated: ", TestDBName)
 
 	err := repository.ConnectToDB("", testDBPort, testDBUser, "123", TestDBName, TestDBName)
 	if err != nil {
