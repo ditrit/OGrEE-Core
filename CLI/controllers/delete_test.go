@@ -9,7 +9,7 @@ import (
 )
 
 func TestDeleteTagSendsDeleteTo3DWithSlug(t *testing.T) {
-	controller, mockAPI, mockOgree3D := newControllerWithMocks(t)
+	controller, mockAPI, mockOgree3D, _ := newControllerWithMocks(t)
 
 	slug := "slug"
 	path := models.TagsPath + slug

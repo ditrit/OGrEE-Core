@@ -17,6 +17,7 @@ const (
 	STRAY_DEV
 	DOMAIN
 	TAG
+	LAYER
 )
 
 func EntityToString(entity int) string {
@@ -53,6 +54,8 @@ func EntityToString(entity int) string {
 		return "corridor"
 	case TAG:
 		return "tag"
+	case LAYER:
+		return "layer"
 	default:
 		return "INVALID"
 	}
@@ -92,6 +95,8 @@ func EntityStrToInt(entity string) int {
 		return CORRIDOR
 	case "tag":
 		return TAG
+	case "layer":
+		return LAYER
 	default:
 		return -1
 	}
@@ -128,4 +133,8 @@ func GetParentOfEntity(ent int) int {
 	default:
 		return -3
 	}
+}
+
+func EntityCreationMustBeInformed(entity int) bool {
+	return entity != TAG && entity != LAYER
 }

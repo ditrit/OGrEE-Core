@@ -6,7 +6,8 @@ import (
 )
 
 type pathNode struct {
-	path node
+	path            node
+	acceptSelection bool
 }
 
 func (n pathNode) execute() (interface{}, error) {
@@ -14,7 +15,8 @@ func (n pathNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return c.TranslatePath(p), nil
+
+	return c.TranslatePath(p, n.acceptSelection), nil
 }
 
 type formatStringNode struct {

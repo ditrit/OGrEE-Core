@@ -19,14 +19,14 @@ func (controller Controller) DeleteObj(path string) ([]string, error) {
 		return nil, err
 	}
 	for _, obj := range objs {
-		if models.IsHierarchical(path) && IsInObjForUnity(obj["category"].(string)) {
+		if models.IsPhysical(path) && IsInObjForUnity(obj["category"].(string)) {
 			controller.Ogree3D.InformOptional("DeleteObj", -1, map[string]any{"type": "delete", "data": obj["id"].(string)})
 		} else if models.IsTag(path) && IsEntityTypeForOGrEE3D(models.TAG) {
 			controller.Ogree3D.InformOptional("DeleteObj", -1, map[string]any{"type": "delete-tag", "data": obj["slug"].(string)})
 		}
 	}
 	if path == State.CurrPath {
-		controller.CD(TranslatePath(".."))
+		controller.CD(TranslatePath("..", false))
 	}
 	return paths, nil
 }

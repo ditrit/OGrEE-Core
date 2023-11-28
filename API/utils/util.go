@@ -43,6 +43,7 @@ const (
 	OBJTMPL
 	BLDGTMPL
 	TAG
+	LAYER
 )
 
 type Namespace string
@@ -58,6 +59,7 @@ const (
 	LBldgTemplate  Namespace = "logical.bldgtemplate"
 	LRoomTemplate  Namespace = "logical.roomtemplate"
 	LTags          Namespace = "logical.tag"
+	LLayers        Namespace = "logical.layer"
 )
 
 const HN_DELIMETER = "."           // hierarchyName path delimiter
@@ -219,7 +221,7 @@ var Entities = []int{
 	DOMAIN,
 	STRAYOBJ, SITE,
 	BLDG, ROOM, RACK, DEVICE, AC, CABINET, CORRIDOR, PWRPNL, GROUP,
-	ROOMTMPL, OBJTMPL, BLDGTMPL, TAG,
+	ROOMTMPL, OBJTMPL, BLDGTMPL, TAG, LAYER,
 }
 
 var EntitiesWithTags = []int{
@@ -235,7 +237,7 @@ func IsEntityHierarchical(entity int) bool {
 }
 
 func IsEntityNonHierarchical(entity int) bool {
-	return entity == BLDGTMPL || entity == ROOMTMPL || entity == OBJTMPL || entity == TAG
+	return entity >= ROOMTMPL
 }
 
 func EntityToString(entity int) string {
@@ -272,6 +274,8 @@ func EntityToString(entity int) string {
 		return "corridor"
 	case TAG:
 		return "tag"
+	case LAYER:
+		return "layer"
 	default:
 		return "INVALID"
 	}
@@ -311,6 +315,8 @@ func EntityStrToInt(entity string) int {
 		return CORRIDOR
 	case "tag":
 		return TAG
+	case "layer":
+		return LAYER
 	default:
 		return -1
 	}
@@ -327,7 +333,7 @@ func GetEntitiesByNamespace(namespace Namespace, hierarchyName string) []string 
 	case Organisational:
 		entNames = append(entNames, EntityToString(DOMAIN))
 	case Logical:
-		for entity := GROUP; entity <= TAG; entity++ {
+		for entity := GROUP; entity <= LAYER; entity++ {
 			entNames = append(entNames, EntityToString(entity))
 		}
 	case LObjTemplate:
@@ -338,6 +344,8 @@ func GetEntitiesByNamespace(namespace Namespace, hierarchyName string) []string 
 		entNames = append(entNames, EntityToString(ROOMTMPL))
 	case LTags:
 		entNames = append(entNames, EntityToString(TAG))
+	case LLayers:
+		entNames = append(entNames, EntityToString(LAYER))
 	case PStray:
 		entNames = append(entNames, EntityToString(STRAYOBJ))
 	case Physical, PHierarchy, Any:
@@ -368,7 +376,7 @@ func GetEntitiesByNamespace(namespace Namespace, hierarchyName string) []string 
 			case 0:
 				resp = append(resp, SITE)
 				if namespace == Any {
-					resp = append(resp, OBJTMPL, ROOMTMPL, BLDGTMPL, TAG)
+					resp = append(resp, OBJTMPL, ROOMTMPL, BLDGTMPL, TAG, LAYER)
 				}
 				if namespace == Any || namespace == Physical {
 					resp = append(resp, STRAYOBJ)
@@ -399,7 +407,7 @@ func GetParentOfEntityByInt(entity int) int {
 		return DOMAIN
 	case AC, PWRPNL, CABINET, CORRIDOR:
 		return ROOM
-	case ROOMTMPL, OBJTMPL, BLDGTMPL, TAG, GROUP, STRAYOBJ:
+	case ROOMTMPL, OBJTMPL, BLDGTMPL, TAG, GROUP, STRAYOBJ, LAYER:
 		return -1
 	default:
 		return entity - 1
