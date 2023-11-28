@@ -104,3 +104,65 @@ func DeleteObject(ctx context.Context, entity string, filter bson.M) *u.Error {
 
 	return nil
 }
+
+// PropagateParentIdChange: search for given parent children and
+// update their hierarchyName with new parent name
+func PropagateParentIdChange(ctx context.Context, oldParentId, newId string, entityInt int) error {
+	// Find all objects containing parent name
+	req := bson.M{"id": primitive.Regex{Pattern: oldParentId + u.HN_DELIMETER, Options: ""}}
+	// For each object found, replace old name by new
+	update := bson.D{{
+		Key: "$set", Value: bson.M{
+			"id": bson.M{
+				"$replaceOne": bson.M{
+					"input":       "$id",
+					"find":        oldParentId,
+					"replacement": newId}}}}}
+	if entityInt == u.DOMAIN {
+		_, err := GetDB().Collection(u.EntityToString(u.DOMAIN)).UpdateMany(ctx,
+			req, mongo.Pipeline{update})
+		if err != nil {
+			println(err.Error())
+			return err
+		}
+	} else if entityInt == u.DEVICE {
+		_, err := GetDB().Collection(u.EntityToString(u.DEVICE)).UpdateMany(ctx,
+			req, mongo.Pipeline{update})
+		if err != nil {
+			println(err.Error())
+			return err
+		}
+	} else {
+		for i := entityInt + 1; i <= u.GROUP; i++ {
+			_, err := GetDB().Collection(u.EntityToString(i)).UpdateMany(ctx,
+				req, mongo.Pipeline{update})
+			if err != nil {
+				println(err.Error())
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// PropagateDomainChange: search for all objects with reference to the modified domain
+func PropagateDomainChange(ctx context.Context, oldDomainId, newDomainId string) error {
+	// Find all objects containing this domain
+	req := bson.M{"domain": primitive.Regex{Pattern: "^" + oldDomainId + "(\\" + u.HN_DELIMETER + "|$)", Options: ""}}
+	// For each object found, replace old domain by new
+	update := bson.D{{
+		Key: "$set", Value: bson.M{
+			"domain": bson.M{
+				"$replaceOne": bson.M{
+					"input":       "$domain",
+					"find":        oldDomainId,
+					"replacement": newDomainId}}}}}
+	for i := u.STRAYOBJ; i <= u.GROUP; i++ {
+		_, err := GetDB().Collection(u.EntityToString(i)).UpdateMany(ctx,
+			req, mongo.Pipeline{update})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}

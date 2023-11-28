@@ -6,17 +6,15 @@ import (
 	"cli/models"
 	"cli/readline"
 	"cli/utils"
+	"cli/views"
 	"encoding/json"
 	"fmt"
-	"log"
 	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
-	pathutil "path"
 	"runtime"
-	"sort"
 	"strconv"
 	"strings"
 
@@ -28,38 +26,27 @@ func PWD() string {
 	return State.CurrPath
 }
 
-func UnfoldPath(path string) ([]string, error) {
-	if strings.Contains(path, "*") {
-		_, subpaths, err := C.GetObjectsWildcard(path)
+func (controller Controller) UnfoldPath(path string) ([]string, error) {
+	if strings.Contains(path, "*") || models.PathHasLayer(path) {
+		_, subpaths, err := controller.GetObjectsWildcard(path)
 		return subpaths, err
 	}
+
 	if path == "_" {
 		return State.ClipBoard, nil
 	}
+
 	return []string{path}, nil
 }
 
-func PostObj(ent int, entity string, data map[string]any) error {
-	resp, err := API.Request("POST", "/api/"+entity+"s", data, http.StatusCreated)
-	if err != nil {
-		return err
-	}
-
-	if ent != TAG && IsInObjForUnity(entity) {
-		entInt := EntityStrToInt(entity)
-		Ogree3D.InformOptional("PostObj", entInt, map[string]any{"type": "create", "data": resp.Body["data"]})
-	}
-
-	return nil
-}
-
-func ObjectUrl(path string, depth int) (string, error) {
-	prefix, id, err := models.SplitPath(path)
+func (controller Controller) ObjectUrl(pathStr string, depth int) (string, error) {
+	path, err := controller.SplitPath(pathStr)
 	if err != nil {
 		return "", err
 	}
+
 	var baseUrl string
-	switch prefix {
+	switch path.Prefix {
 	case models.StayPath:
 		baseUrl = "/api/stray-objects"
 	case models.PhysicalPath:
@@ -74,12 +61,14 @@ func ObjectUrl(path string, depth int) (string, error) {
 		baseUrl = "/api/groups"
 	case models.TagsPath:
 		baseUrl = "/api/tags"
+	case models.LayersPath:
+		baseUrl = LayersURL
 	case models.DomainsPath:
 		baseUrl = "/api/domains"
 	default:
 		return "", fmt.Errorf("invalid object path")
 	}
-	baseUrl += "/" + id
+	baseUrl += "/" + path.ObjectID
 	params := url.Values{}
 	if depth > 0 {
 		baseUrl += "/all"
@@ -90,47 +79,61 @@ func ObjectUrl(path string, depth int) (string, error) {
 	return parsedUrl.String(), nil
 }
 
-func ObjectUrlGeneric(path string, depth int, filters map[string]string) (string, error) {
+func (controller Controller) ObjectUrlGeneric(pathStr string, depth int, filters map[string]string) (string, error) {
 	params := url.Values{}
-	prefix, id, err := models.SplitPath(path)
+	path, err := controller.SplitPath(pathStr)
 	if err != nil {
 		return "", err
 	}
-	switch prefix {
+
+	if filters == nil {
+		filters = map[string]string{}
+	}
+
+	if path.Layer != nil {
+		path.Layer.ApplyFilters(filters)
+	}
+
+	switch path.Prefix {
 	case models.StayPath:
 		params.Add("namespace", "physical.stray")
-		params.Add("id", id)
+		params.Add("id", path.ObjectID)
 	case models.PhysicalPath:
 		params.Add("namespace", "physical.hierarchy")
-		params.Add("id", id)
+		params.Add("id", path.ObjectID)
 	case models.ObjectTemplatesPath:
 		params.Add("namespace", "logical.objtemplate")
-		params.Add("slug", id)
+		params.Add("slug", path.ObjectID)
 	case models.RoomTemplatesPath:
 		params.Add("namespace", "logical.roomtemplate")
-		params.Add("slug", id)
+		params.Add("slug", path.ObjectID)
 	case models.BuildingTemplatesPath:
 		params.Add("namespace", "logical.bldgtemplate")
-		params.Add("slug", id)
+		params.Add("slug", path.ObjectID)
 	case models.TagsPath:
 		params.Add("namespace", "logical.tag")
-		params.Add("slug", id)
+		params.Add("slug", path.ObjectID)
+	case models.LayersPath:
+		params.Add("namespace", "logical.layer")
+		params.Add("slug", path.ObjectID)
 	case models.GroupsPath:
 		params.Add("namespace", "logical")
 		params.Add("category", "group")
-		params.Add("id", id)
+		params.Add("id", path.ObjectID)
 	case models.DomainsPath:
 		params.Add("namespace", "organisational")
-		params.Add("id", id)
+		params.Add("id", path.ObjectID)
 	default:
 		return "", fmt.Errorf("invalid object path")
 	}
 	if depth > 0 {
 		params.Add("limit", strconv.Itoa(depth))
 	}
+
 	for key, value := range filters {
-		params.Add(key, value)
+		params.Set(key, value)
 	}
+
 	url, _ := url.Parse("/api/objects")
 	url.RawQuery = params.Encode()
 	return strings.ReplaceAll(url.String(), "%2A", "*"), nil
@@ -138,102 +141,6 @@ func ObjectUrlGeneric(path string, depth int, filters map[string]string) (string
 
 func PollObject(path string) (map[string]any, error) {
 	return C.PollObjectWithChildren(path, 0)
-}
-
-func lsObjectsWithoutFilters(path string) ([]map[string]any, error) {
-	n, err := Tree(path, 1)
-	if err != nil {
-		return nil, err
-	}
-	objects := []map[string]any{}
-	for _, child := range n.Children {
-		if child.Obj != nil {
-			if strings.HasPrefix(path, "/Logical/Groups") {
-				child.Obj["name"] = strings.ReplaceAll(child.Obj["id"].(string), ".", "/")
-			}
-			objects = append(objects, child.Obj)
-		} else {
-			objects = append(objects, map[string]any{"name": child.Name})
-		}
-	}
-	return objects, nil
-}
-
-func lsObjectsWithFilters(path string, filters map[string]string) ([]map[string]any, error) {
-	url, err := ObjectUrlGeneric(path+"/*", 0, filters)
-	if err != nil {
-		return nil, fmt.Errorf("cannot use filters at this location")
-	}
-	resp, err := API.Request("GET", url, nil, http.StatusOK)
-	if err != nil {
-		return nil, err
-	}
-	objectsAny := resp.Body["data"].([]any)
-	objects := []map[string]any{}
-	for _, objAny := range objectsAny {
-		obj, ok := objAny.(map[string]any)
-		if !ok {
-			return nil, fmt.Errorf("invalid response from API on GET %s", url)
-		}
-		objects = append(objects, obj)
-	}
-	return objects, nil
-}
-
-func filterObjectsWithoutAttr(objects []map[string]any, attr string) []map[string]any {
-	remainingObjects := []map[string]any{}
-	for _, obj := range objects {
-		_, hasAttr := utils.ObjectAttr(obj, attr)
-		if hasAttr {
-			remainingObjects = append(remainingObjects, obj)
-		}
-	}
-	return remainingObjects
-}
-
-func objectsAreSortable(objects []map[string]any, attr string) bool {
-	for i := 1; i < len(objects); i++ {
-		val0, _ := utils.ObjectAttr(objects[0], attr)
-		vali, _ := utils.ObjectAttr(objects[i], attr)
-		_, comparable := utils.CompareVals(val0, vali)
-		if !comparable {
-			return false
-		}
-	}
-	return true
-}
-
-func Ls(path string, filters map[string]string, sortAttr string) ([]map[string]any, error) {
-	var objects []map[string]any
-	var err error
-	if len(filters) == 0 {
-		objects, err = lsObjectsWithoutFilters(path)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		objects, err = lsObjectsWithFilters(path, filters)
-		if err != nil {
-			return nil, err
-		}
-	}
-	if sortAttr != "" {
-		objects = filterObjectsWithoutAttr(objects, sortAttr)
-		if !objectsAreSortable(objects, sortAttr) {
-			return nil, fmt.Errorf("objects cannot be sorted according to this attribute")
-		}
-	}
-	less := func(i, j int) bool {
-		if sortAttr != "" {
-			vali, _ := utils.ObjectAttr(objects[i], sortAttr)
-			valj, _ := utils.ObjectAttr(objects[j], sortAttr)
-			res, _ := utils.CompareVals(vali, valj)
-			return res
-		}
-		return utils.NameOrSlug(objects[i]) < utils.NameOrSlug(objects[j])
-	}
-	sort.Slice(objects, less)
-	return objects, nil
 }
 
 func GetSlot(rack map[string]any, location string) (map[string]any, error) {
@@ -275,7 +182,7 @@ func UnsetAttribute(path string, attr string) error {
 		return fmt.Errorf("object has no attributes")
 	}
 	delete(attributes, attr)
-	url, err := ObjectUrl(path, 0)
+	url, err := C.ObjectUrl(path, 0)
 	if err != nil {
 		return err
 	}
@@ -352,7 +259,7 @@ func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
 	}
 
 	entity := obj["category"].(string)
-	URL, err := ObjectUrl(Path, 0)
+	URL, err := C.ObjectUrl(Path, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -366,8 +273,8 @@ func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
 		"type": "modify", "data": resp.Body["data"]}
 
 	//Update and inform unity
-	if models.IsHierarchical(Path) && IsInObjForUnity(entity) {
-		entInt := EntityStrToInt(entity)
+	if models.IsPhysical(Path) && IsInObjForUnity(entity) {
+		entInt := models.EntityStrToInt(entity)
 		Ogree3D.InformOptional("UpdateObj", entInt, message)
 	}
 
@@ -430,7 +337,7 @@ func LSEnterprise() error {
 	if err != nil {
 		return err
 	}
-	DisplayObject(resp.Body)
+	views.DisplayJson(resp.Body)
 	return nil
 }
 
@@ -446,7 +353,7 @@ func Env(userVars, userFuncs map[string]interface{}) {
 	fmt.Println()
 	fmt.Println("Objects Unity shall draw:")
 	for _, k := range State.DrawableObjs {
-		fmt.Println(EntityToString(k))
+		fmt.Println(models.EntityToString(k))
 	}
 
 	fmt.Println()
@@ -482,7 +389,7 @@ func GetByAttr(path string, u interface{}) error {
 			if attr, ok := devices[i]["attributes"].(map[string]interface{}); ok {
 				uStr := strconv.Itoa(u.(int))
 				if attr["height"] == uStr {
-					DisplayObject(devices[i])
+					views.DisplayJson(devices[i])
 					return nil //What if the user placed multiple devices at same height?
 				}
 			}
@@ -494,7 +401,7 @@ func GetByAttr(path string, u interface{}) error {
 		for i := range devices {
 			if attr, ok := devices[i]["attributes"].(map[string]interface{}); ok {
 				if attr["slot"] == u.(string) {
-					DisplayObject(devices[i])
+					views.DisplayJson(devices[i])
 					return nil //What if the user placed multiple devices at same slot?
 				}
 			}
@@ -506,19 +413,6 @@ func GetByAttr(path string, u interface{}) error {
 	return nil
 }
 
-func CD(path string) error {
-	if State.DebugLvl >= 3 {
-		println("THE PATH: ", path)
-	}
-	_, err := Tree(path, 0)
-	if err != nil {
-		return err
-	}
-	State.PrevPath = State.CurrPath
-	State.CurrPath = path
-	return nil
-}
-
 func Help(entry string) {
 	var path string
 	entry = strings.TrimSpace(entry)
@@ -527,7 +421,7 @@ func Help(entry string) {
 		"lsog", "grep", "for", "while", "if", "env",
 		"cmds", "var", "unset", "selection", commands.Connect3D, "camera", "ui", "hc", "drawable",
 		"link", "unlink", "draw", "getu", "getslot", "undraw",
-		"lsenterprise":
+		"lsenterprise", commands.Cp:
 		path = "./other/man/" + entry + ".md"
 
 	case ">":
@@ -552,7 +446,7 @@ func Help(entry string) {
 		path = "./other/man/var.md"
 
 	case "lsobj", "lsten", "lssite", "lsbldg", "lsroom", "lsrack",
-		"lsdev", "lsac", "lscorridor", "lspanel", "lssensor", "lscabinet":
+		"lsdev", "lsac", "lscorridor", "lspanel", "lscabinet":
 		path = "./other/man/lsobj.md"
 
 	default:
@@ -567,407 +461,11 @@ func Help(entry string) {
 
 }
 
-func DisplayObject(obj map[string]interface{}) {
-	enc := json.NewEncoder(os.Stdout)
-	enc.SetIndent("", "    ")
-
-	if err := enc.Encode(obj); err != nil {
-		log.Fatal(err)
-	}
-}
-
 // Function is an abstraction of a normal exit
 func Exit() {
 	//writeHistoryOnExit(&State.sessionBuffer)
 	//runtime.Goexit()
 	os.Exit(0)
-}
-
-func CreateObject(path string, ent int, data map[string]interface{}) error {
-	var attr map[string]interface{}
-	var parent map[string]interface{}
-
-	ogPath := path
-	path = pathutil.Dir(path)
-	name := pathutil.Base(ogPath)
-	if name == "." || name == "" {
-		l.GetWarningLogger().Println("Invalid path name provided for OCLI object creation")
-		return fmt.Errorf("Invalid path name provided for OCLI object creation")
-	}
-
-	data["name"] = name
-	data["category"] = EntityToString(ent)
-	data["description"] = []interface{}{}
-
-	//Retrieve Parent
-	if ent != SITE && ent != STRAY_DEV && ent != STRAYSENSOR {
-		var err error
-		parent, err = PollObject(path)
-		if err != nil {
-			return err
-		}
-		if parent == nil && (ent != DOMAIN || path != "/Organisation/Domain") {
-			return fmt.Errorf("parent not found")
-		}
-	}
-
-	if ent != DOMAIN {
-		if parent != nil {
-			data["domain"] = parent["domain"]
-		} else {
-			data["domain"] = State.Customer
-		}
-	}
-
-	var err error
-	switch ent {
-	case DOMAIN:
-		if parent != nil {
-			data["parentId"] = parent["id"]
-		} else {
-			data["parentId"] = ""
-		}
-
-	case SITE:
-		//Default values
-		//data["parentId"] = parent["id"]
-		data["attributes"] = map[string]interface{}{}
-
-	case BLDG:
-		attr = data["attributes"].(map[string]interface{})
-
-		//Check for template
-		if _, ok := attr["template"]; ok {
-			err := GetOCLIAtrributesTemplateHelper(attr, data, BLDG)
-			if err != nil {
-				return err
-			}
-		} else {
-			//Serialise size and posXY manually instead
-			if _, ok := attr["size"].(string); ok {
-				attr["size"] = serialiseAttr(attr, "size")
-			} else {
-				attr["size"] = serialiseAttr2(attr, "size")
-			}
-
-			//Since template was not provided, set it empty
-			attr["template"] = ""
-		}
-
-		if attr["size"] == "" {
-			if State.DebugLvl > 0 {
-				l.GetErrorLogger().Println(
-					"User gave invalid size value for creating building")
-				return fmt.Errorf("Invalid size attribute provided." +
-					" \nIt must be an array/list/vector with 3 elements." +
-					" Please refer to the wiki or manual reference" +
-					" for more details on how to create objects " +
-					"using this syntax")
-			}
-			return nil
-		}
-
-		if _, ok := attr["posXY"].(string); ok {
-			attr["posXY"] = serialiseAttr(attr, "posXY")
-		} else {
-			attr["posXY"] = serialiseAttr2(attr, "posXY")
-		}
-
-		if attr["posXY"] == "" {
-			if State.DebugLvl > 0 {
-				l.GetErrorLogger().Println(
-					"User gave invalid posXY value for creating building")
-				return fmt.Errorf("Invalid posXY attribute provided." +
-					" \nIt must be an array/list/vector with 2 elements." +
-					" Please refer to the wiki or manual reference" +
-					" for more details on how to create objects " +
-					"using this syntax")
-			}
-			return nil
-		}
-
-		//Check rotation
-		if _, ok := attr["rotation"].(float64); ok {
-			attr["rotation"] =
-				strconv.FormatFloat(attr["rotation"].(float64), 'f', -1, 64)
-		}
-
-		attr["posXYUnit"] = "m"
-		attr["sizeUnit"] = "m"
-		attr["heightUnit"] = "m"
-		//attr["height"] = 0 //Should be set from parser by default
-		data["parentId"] = parent["id"]
-
-	case ROOM:
-		attr = data["attributes"].(map[string]interface{})
-
-		baseAttrs := map[string]interface{}{
-			"floorUnit": "t",
-			"posXYUnit": "m", "sizeUnit": "m",
-			"heightUnit": "m"}
-
-		MergeMaps(attr, baseAttrs, false)
-
-		//If user provided templates, get the JSON
-		//and parse into templates
-		//NOTE this function also assigns value for "size" attribute
-		err := GetOCLIAtrributesTemplateHelper(attr, data, ent)
-		if err != nil {
-			return err
-		}
-
-		if _, ok := attr["posXY"].(string); ok {
-			attr["posXY"] = serialiseAttr(attr, "posXY")
-		} else {
-			attr["posXY"] = serialiseAttr2(attr, "posXY")
-		}
-
-		if attr["posXY"] == "" {
-			if State.DebugLvl > 0 {
-				l.GetErrorLogger().Println(
-					"User gave invalid posXY value for creating room")
-				return fmt.Errorf("Invalid posXY attribute provided." +
-					" \nIt must be an array/list/vector with 2 elements." +
-					" Please refer to the wiki or manual reference" +
-					" for more details on how to create objects " +
-					"using this syntax")
-			}
-			return nil
-		}
-
-		//Check rotation
-		if _, ok := attr["rotation"].(float64); ok {
-			attr["rotation"] =
-				strconv.FormatFloat(attr["rotation"].(float64), 'f', -1, 64)
-		}
-
-		if attr["size"] == "" {
-			if State.DebugLvl > 0 {
-				l.GetErrorLogger().Println(
-					"User gave invalid size value for creating room")
-				return fmt.Errorf("Invalid size attribute provided." +
-					" \nIt must be an array/list/vector with 3 elements." +
-					" Please refer to the wiki or manual reference" +
-					" for more details on how to create objects " +
-					"using this syntax")
-			}
-			return nil
-		}
-
-		data["parentId"] = parent["id"]
-		data["attributes"] = attr
-		if State.DebugLvl >= 3 {
-			println("DEBUG VIEW THE JSON")
-			Disp(data)
-		}
-
-	case RACK, CORRIDOR:
-		attr = data["attributes"].(map[string]interface{})
-		//Save rotation because it gets overwritten by
-		//GetOCLIAtrributesTemplateHelper()
-		rotation := attr["rotation"].([]float64)
-
-		baseAttrs := map[string]interface{}{
-			"sizeUnit":   "cm",
-			"heightUnit": "U",
-		}
-		if ent == CORRIDOR {
-			baseAttrs["heightUnit"] = "cm"
-		}
-
-		MergeMaps(attr, baseAttrs, false)
-
-		//If user provided templates, get the JSON
-		//and parse into templates
-		err := GetOCLIAtrributesTemplateHelper(attr, data, ent)
-		if err != nil {
-			return err
-		}
-
-		if attr["size"] == "" {
-			if State.DebugLvl > 0 {
-				l.GetErrorLogger().Println(
-					"User gave invalid size value for creating rack")
-				return fmt.Errorf("Invalid size attribute/template provided." +
-					" \nThe size must be an array/list/vector with " +
-					"3 elements." + "\n\nIf you have provided a" +
-					" template, please check that you are referring to " +
-					"an existing template" +
-					"\n\nFor more information " +
-					"please refer to the wiki or manual reference" +
-					" for more details on how to create objects " +
-					"using this syntax")
-			}
-			return nil
-		}
-
-		//Serialise posXY if given
-		if _, ok := attr["posXYZ"].(string); ok {
-			attr["posXYZ"] = serialiseAttr(attr, "posXYZ")
-		} else {
-			attr["posXYZ"] = serialiseAttr2(attr, "posXYZ")
-		}
-
-		//Restore the rotation overwritten
-		//by the helper func
-		attr["rotation"] = fmt.Sprintf("{\"x\":%v, \"y\":%v, \"z\":%v}", rotation[0], rotation[1], rotation[2])
-
-		if attr["posXYZ"] == "" {
-			if State.DebugLvl > 0 {
-				l.GetErrorLogger().Println(
-					"User gave invalid posXYZ value for creating rack")
-				return fmt.Errorf("Invalid posXYZ attribute provided." +
-					" \nIt must be an array/list/vector with 2 or 3 elements." +
-					" Please refer to the wiki or manual reference" +
-					" for more details on how to create objects " +
-					"using this syntax")
-			}
-			return nil
-		}
-
-		data["parentId"] = parent["id"]
-		data["attributes"] = attr
-
-	case DEVICE:
-		attr = data["attributes"].(map[string]interface{})
-
-		//Special routine to perform on device
-		//based on if the parent has a "slot" attribute
-
-		//First check if attr has only posU & sizeU
-		//reject if true while also converting sizeU to string if numeric
-		//if len(attr) == 2 {
-		if sizeU, ok := attr["sizeU"]; ok {
-			sizeUValid := checkNumeric(attr["sizeU"])
-
-			if _, ok := attr["template"]; !ok && sizeUValid == false {
-				l.GetWarningLogger().Println("Invalid template / sizeU parameter provided for device ")
-				return fmt.Errorf("Please provide a valid device template or sizeU")
-			}
-
-			//Convert block
-			//And Set height
-			if _, ok := sizeU.(int); ok {
-				attr["sizeU"] = strconv.Itoa(sizeU.(int))
-				attr["height"] = strconv.FormatFloat(
-					(float64(sizeU.(int)) * 44.5), 'G', -1, 64)
-			} else if _, ok := sizeU.(float64); ok {
-				attr["sizeU"] = strconv.FormatFloat(sizeU.(float64), 'G', -1, 64)
-				attr["height"] = strconv.FormatFloat(sizeU.(float64)*44.5, 'G', -1, 64)
-			}
-			//End of convert block
-			if _, ok := attr["slot"]; ok {
-				l.GetWarningLogger().Println("Invalid device syntax encountered")
-				return fmt.Errorf("Invalid device syntax: If you have provided a template, it was not found")
-			}
-		}
-		//}
-
-		var slot map[string]any
-		//Process the posU/slot attribute
-		if x, ok := attr["posU/slot"]; ok {
-			delete(attr, "posU/slot")
-			if _, err := strconv.Atoi(x.(string)); err == nil {
-				attr["posU"] = x
-				attr["slot"] = ""
-			} else {
-				attr["slot"] = x
-			}
-			slot, err = GetSlot(parent, x.(string))
-			if err != nil {
-				return err
-			}
-		}
-
-		//If user provided templates, get the JSON
-		//and parse into templates
-		if _, ok := attr["template"]; ok {
-			err := GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
-			if err != nil {
-				return err
-			}
-		} else {
-			attr["template"] = ""
-			if slot != nil {
-				size := slot["elemSize"].([]any)
-				attr["size"] = fmt.Sprintf(
-					"{\"x\":%f, \"y\":%f}", size[0].(float64)/10., size[1].(float64)/10.)
-			} else {
-				if parAttr, ok := parent["attributes"].(map[string]interface{}); ok {
-					if rackSize, ok := parAttr["size"]; ok {
-						attr["size"] = rackSize
-					}
-				}
-			}
-		}
-		//End of device special routine
-
-		baseAttrs := map[string]interface{}{
-			"orientation": "front",
-			"sizeUnit":    "mm",
-			"heightUnit":  "mm",
-		}
-
-		MergeMaps(attr, baseAttrs, false)
-
-		data["parentId"] = parent["id"]
-		data["attributes"] = attr
-
-	case GROUP:
-		//name, category, domain, pid
-		data["parentId"] = parent["id"]
-		attr := data["attributes"].(map[string]interface{})
-
-		groups := strings.Join(attr["content"].([]string), ",")
-		attr["content"] = groups
-
-	case STRAYSENSOR:
-		attr = data["attributes"].(map[string]interface{})
-		if _, ok := attr["template"]; ok {
-			//GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
-			tmpl, err := fetchTemplate(attr["template"].(string), STRAYSENSOR)
-			if err != nil {
-				return err
-			}
-			MergeMaps(attr, tmpl, true)
-		} else {
-			attr["template"] = ""
-		}
-
-	case STRAY_DEV:
-		attr = data["attributes"].(map[string]interface{})
-		if _, ok := attr["template"]; ok {
-			err := GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
-			if err != nil {
-				return err
-			}
-		} else {
-			attr["template"] = ""
-		}
-
-	default:
-		//Execution should not reach here!
-		return fmt.Errorf("Invalid Object Specified!")
-	}
-
-	//Stringify the attributes if not already
-	if _, ok := data["attributes"]; ok {
-		if attributes, ok := data["attributes"].(map[string]interface{}); ok {
-			for i := range attributes {
-				attributes[i] = Stringify(attributes[i])
-			}
-		}
-	}
-
-	//Because we already stored the string conversion in category
-	//we can do the conversion for templates here
-	data["category"] = strings.Replace(data["category"].(string), "_", "-", 1)
-
-	err = PostObj(ent, data["category"].(string), data)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 // If user provided templates, get the JSON
@@ -977,12 +475,12 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 	//data from templates
 	attrSerialiser := func(someVal interface{}, idx string, ent int) string {
 		if x, ok := someVal.(int); ok {
-			if ent == DEVICE || ent == ROOM || ent == BLDG {
+			if ent == models.DEVICE || ent == models.ROOM || ent == models.BLDG {
 				return strconv.Itoa(x)
 			}
 			return strconv.Itoa(x / 10)
 		} else if x, ok := someVal.(float64); ok {
-			if ent == DEVICE || ent == ROOM || ent == BLDG {
+			if ent == models.DEVICE || ent == models.ROOM || ent == models.BLDG {
 				return strconv.FormatFloat(x, 'G', -1, 64)
 			}
 			return strconv.FormatFloat(x/10.0, 'G', -1, 64)
@@ -999,12 +497,12 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 		if qS, ok := q.(string); ok {
 			//Determine the type of template
 			tInt := 0
-			if ent == ROOM {
-				tInt = ROOMTMPL
-			} else if ent == BLDG {
-				tInt = BLDGTMPL
+			if ent == models.ROOM {
+				tInt = models.ROOMTMPL
+			} else if ent == models.BLDG {
+				tInt = models.BLDGTMPL
 			} else {
-				tInt = OBJTMPL
+				tInt = models.OBJTMPL
 			} //End of determine block
 			tmpl, err := fetchTemplate(qS, tInt)
 			if err != nil {
@@ -1023,7 +521,7 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 				attr["size"] = "{\"x\":" + xS + ", \"y\":" + yS + "}"
 				attr["height"] = zS
 
-				if ent == DEVICE {
+				if ent == models.DEVICE {
 					attr["sizeUnit"] = "mm"
 					attr["heightUnit"] = "mm"
 					if tmpx, ok := tmpl["attributes"]; ok {
@@ -1051,7 +549,7 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 						}
 					}
 
-				} else if ent == ROOM {
+				} else if ent == models.ROOM {
 					attr["sizeUnit"] = "m"
 					attr["heightUnit"] = "m"
 
@@ -1136,7 +634,7 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 						}
 					}
 
-				} else if ent == BLDG {
+				} else if ent == models.BLDG {
 					attr["sizeUnit"] = "m"
 					attr["heightUnit"] = "m"
 
@@ -1158,7 +656,7 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 
 				//fbxModel section
 				if check := CopyAttr(attr, tmpl, "fbxModel"); !check {
-					if ent != BLDG {
+					if ent != models.BLDG {
 						attr["fbxModel"] = ""
 					}
 
@@ -1193,7 +691,7 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 		}
 
 	} else {
-		if ent != CORRIDOR {
+		if ent != models.CORRIDOR {
 			attr["template"] = ""
 		}
 		//Serialise size and posXY if given
@@ -1286,8 +784,8 @@ func FocusUI(path string) error {
 		if err != nil {
 			return err
 		}
-		category := EntityStrToInt(obj["category"].(string))
-		if models.IsNonHierarchical(path) || category == SITE || category == BLDG || category == ROOM {
+		category := models.EntityStrToInt(obj["category"].(string))
+		if !models.IsPhysical(path) || category == models.SITE || category == models.BLDG || category == models.ROOM {
 			msg := "You cannot focus on this object. Note you cannot" +
 				" focus on Sites, Buildings and Rooms. " +
 				"For more information please refer to the help doc  (man >)"
@@ -1305,7 +803,7 @@ func FocusUI(path string) error {
 	}
 
 	if path != "" {
-		return CD(path)
+		return C.CD(path)
 	} else {
 		fmt.Println("Focus is now empty")
 	}
@@ -1314,18 +812,18 @@ func FocusUI(path string) error {
 }
 
 func LinkObject(source string, destination string, posUOrSlot string) error {
-	sourceUrl, err := ObjectUrl(source, 0)
+	sourceUrl, err := C.ObjectUrl(source, 0)
 	if err != nil {
 		return err
 	}
-	_, destId, err := models.SplitPath(destination)
+	destPath, err := C.SplitPath(destination)
 	if err != nil {
 		return err
 	}
 	if !strings.HasPrefix(sourceUrl, "/api/stray-objects/") {
 		return fmt.Errorf("only stray objects can be linked")
 	}
-	payload := map[string]any{"parentId": destId}
+	payload := map[string]any{"parentId": destPath.ObjectID}
 	if posUOrSlot != "" {
 		payload["slot"] = posUOrSlot
 	}
@@ -1337,93 +835,12 @@ func LinkObject(source string, destination string, posUOrSlot string) error {
 }
 
 func UnlinkObject(path string) error {
-	sourceUrl, err := ObjectUrl(path, 0)
+	sourceUrl, err := C.ObjectUrl(path, 0)
 	if err != nil {
 		return err
 	}
 	_, err = API.Request("PATCH", sourceUrl+"/unlink", nil, http.StatusOK)
 	return err
-}
-
-func objectCounter(parent map[string]interface{}) int {
-	count := 0
-	if parent != nil {
-		count += 1
-		if _, ok := parent["children"]; ok {
-			if arr, ok := parent["children"].([]interface{}); ok {
-				for _, childInf := range arr {
-					if child, ok := childInf.(map[string]interface{}); ok {
-						count += objectCounter(child)
-					}
-				}
-			}
-			if arr, ok := parent["children"].([]map[string]interface{}); ok {
-				for _, child := range arr {
-					count += objectCounter(child)
-				}
-			}
-		}
-	}
-	return count
-}
-
-// Unity UI will draw already existing objects
-// by retrieving the hierarchy. 'force' bool is useful
-// for scripting where the user can 'force' input if
-// the num objects to draw surpasses threshold
-func Draw(path string, depth int, force bool) error {
-	obj, err := C.GetObjectWithChildren(path, depth)
-	if err != nil {
-		return err
-	}
-
-	count := objectCounter(obj)
-	okToGo := true
-	if count > State.DrawThreshold && !force {
-		msg := "You are about to send " + strconv.Itoa(count) +
-			" objects to the Unity 3D client. " +
-			"Do you want to continue ? (y/n)\n"
-		(*State.Terminal).Write([]byte(msg))
-		(*State.Terminal).SetPrompt(">")
-		ans, _ := (*State.Terminal).Readline()
-		if ans != "y" && ans != "Y" {
-			okToGo = false
-		}
-	} else if force {
-		okToGo = true
-	} else if !force && count > State.DrawThreshold {
-		okToGo = false
-	}
-	if okToGo {
-		data := map[string]interface{}{"type": "create", "data": obj}
-		//0 to include the JSON filtration
-		unityErr := Ogree3D.Inform("Draw", 0, data)
-		if unityErr != nil {
-			return unityErr
-		}
-	}
-	return nil
-}
-
-func Undraw(x string) error {
-	var id string
-	if x == "" {
-		id = ""
-	} else {
-		obj, err := C.GetObject(x)
-		if err != nil {
-			return err
-		}
-		var ok bool
-		id, ok = obj["id"].(string)
-		if !ok {
-			return fmt.Errorf("this object has no id")
-		}
-	}
-
-	data := map[string]interface{}{"type": "delete", "data": id}
-
-	return Ogree3D.Inform("Undraw", 0, data)
 }
 
 func IsEntityDrawable(path string) (bool, error) {
@@ -1506,47 +923,6 @@ func LoadTemplate(data map[string]interface{}, filePath string) error {
 		return err
 	}
 	return nil
-}
-
-func CreateTag(slug, color string) error {
-	return PostObj(TAG, EntityToString(TAG), map[string]any{
-		"slug":        slug,
-		"description": slug, // the description is initially set with the value of the slug
-		"color":       color,
-	})
-}
-
-func SetClipBoard(x []string) ([]string, error) {
-	State.ClipBoard = x
-	var data map[string]interface{}
-
-	if len(x) == 0 { //This means deselect
-		data = map[string]interface{}{"type": "select", "data": "[]"}
-		err := Ogree3D.InformOptional("SetClipBoard", -1, data)
-		if err != nil {
-			return nil, fmt.Errorf("cannot reset clipboard : %s", err.Error())
-		}
-	} else {
-		//Verify paths
-		arr := []string{}
-		for _, val := range x {
-			obj, err := C.GetObject(val)
-			if err != nil {
-				return nil, err
-			}
-			id, ok := obj["id"].(string)
-			if ok {
-				arr = append(arr, id)
-			}
-		}
-		serialArr := "[\"" + strings.Join(arr, "\",\"") + "\"]"
-		data = map[string]interface{}{"type": "select", "data": serialArr}
-		err := Ogree3D.InformOptional("SetClipBoard", -1, data)
-		if err != nil {
-			return nil, fmt.Errorf("cannot set clipboard : %s", err.Error())
-		}
-	}
-	return State.ClipBoard, nil
 }
 
 func SetEnv(arg string, val interface{}) {
@@ -1671,9 +1047,9 @@ func InteractObject(path string, keyword string, val interface{}, fromAttr bool)
 // to keep code organised
 func fetchTemplate(name string, objType int) (map[string]interface{}, error) {
 	var url string
-	if objType == ROOMTMPL {
+	if objType == models.ROOMTMPL {
 		url = "/api/room_templates/"
-	} else if objType == BLDGTMPL {
+	} else if objType == models.BLDGTMPL {
 		url = "/api/bldg_templates/"
 	} else {
 		url = "/api/obj_templates/"
@@ -1786,4 +1162,29 @@ func ChangePassword() error {
 	}
 	println(response.message)
 	return nil
+}
+
+func (controller Controller) SplitPath(pathStr string) (models.Path, error) {
+	for _, prefix := range models.PathPrefixes {
+		if strings.HasPrefix(pathStr, string(prefix)) {
+			id := pathStr[len(prefix):]
+			id = strings.ReplaceAll(id, "/", ".")
+
+			var layer models.Layer
+			var err error
+
+			id, layer, err = controller.GetLayer(id)
+			if err != nil {
+				return models.Path{}, err
+			}
+
+			return models.Path{
+				Prefix:   prefix,
+				ObjectID: id,
+				Layer:    layer,
+			}, nil
+		}
+	}
+
+	return models.Path{}, fmt.Errorf("invalid object path")
 }

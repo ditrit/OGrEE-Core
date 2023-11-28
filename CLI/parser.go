@@ -3,14 +3,19 @@ package main
 import (
 	"cli/commands"
 	c "cli/controllers"
+	"cli/models"
 	"fmt"
 	"strings"
+
+	"github.com/elliotchance/pie/v2"
 )
 
 type parseCommandFunc func() node
 
-var lsCommands = []string{"ls", "lssite", "lsbuilding", "lsroom", "lsrack", "lsdev", "lsac",
-	"lspanel", "lscabinet", "lscorridor", "lssensor"}
+var lsCommands = []string{
+	"ls", "lssite", "lsbuilding", "lsroom",
+	"lsrack", "lsdev", "lsac",
+	"lspanel", "lscabinet", "lscorridor"}
 
 var manCommands = []string{
 	"get", "getu", "getslot",
@@ -19,32 +24,12 @@ var manCommands = []string{
 	commands.Connect3D, "ui", "camera",
 	"link", "unlink",
 	"lssite", "lsbldg", "lsroom", "lsrack", "lsdev", "lsac",
-	"lspanel", "lscabinet", "lscorridor", "lssensor", "lsenterprise",
+	"lspanel", "lscabinet", "lscorridor", "lsenterprise",
 	"drawable", "draw", "undraw",
 	"tree", "lsog", "env", "cd", "pwd", "clear", "grep", "ls", "exit", "len", "man", "hc",
 	"print", "printf", "unset", "selection",
 	"for", "while", "if",
-}
-
-func sliceContains(slice []string, s string) bool {
-	if slice == nil {
-		return false
-	}
-	for _, str := range slice {
-		if str == s {
-			return true
-		}
-	}
-	return false
-}
-
-func indexOf(arr []string, val string) int {
-	for pos, v := range arr {
-		if v == val {
-			return pos
-		}
-	}
-	return -1
+	commands.Cp,
 }
 
 type traceItem struct {
@@ -210,7 +195,7 @@ func (p *parser) parseKeyWord(candidates []string) string {
 			break
 		}
 	}
-	if sliceContains(candidates, p.item(false)) {
+	if pie.Contains(candidates, p.item(false)) {
 		return p.item(false)
 	}
 	p.reset()
@@ -330,7 +315,14 @@ loop:
 	return &formatStringNode{&valueNode{s}, subExpr}
 }
 
-func (p *parser) parsePath(name string) node {
+func (p *parser) parsePathOrSelection(name string) node {
+	pathNode := p.parsePath(name)
+	pathNode.acceptSelection = true
+
+	return pathNode
+}
+
+func (p *parser) parsePath(name string) *pathNode {
 	if name != "" {
 		name = name + " path"
 	} else {
@@ -340,7 +332,7 @@ func (p *parser) parsePath(name string) node {
 	p.skipWhiteSpaces()
 	path := p.parseText(p.parsePathToken, true)
 	p.skipWhiteSpaces()
-	return &pathNode{path}
+	return &pathNode{path: path}
 }
 
 func (p *parser) parsePathGroup() []node {
@@ -570,9 +562,9 @@ func (p *parser) parseSingleArg(allowedArgs []string, allowedFlags []string) (st
 	defer un(trace(p, "single argument"))
 	arg := p.parseSimpleWord("name")
 	var value string
-	if sliceContains(allowedArgs, arg) {
+	if pie.Contains(allowedArgs, arg) {
 		value = p.parseArgValue()
-	} else if sliceContains(allowedFlags, arg) {
+	} else if pie.Contains(allowedFlags, arg) {
 		value = ""
 	} else {
 		p.error("unexpected argument : " + arg)
@@ -795,7 +787,7 @@ func (p *parser) parseMan() node {
 		return &helpNode{""}
 	}
 	commandName := p.parseKeyWord(manCommands)
-	if !sliceContains(manCommands, commandName) {
+	if !pie.Contains(manCommands, commandName) {
 		p.error("no manual for this command")
 	}
 	return &helpNode{commandName}
@@ -804,7 +796,7 @@ func (p *parser) parseMan() node {
 func (p *parser) parseCd() node {
 	defer un(trace(p, "cd"))
 	if p.commandEnd() {
-		return &cdNode{&pathNode{&valueNode{"/"}}}
+		return &cdNode{&pathNode{path: &valueNode{"/"}}}
 	}
 	return &cdNode{p.parsePath("")}
 }
@@ -812,7 +804,7 @@ func (p *parser) parseCd() node {
 func (p *parser) parseTree() node {
 	defer un(trace(p, "tree"))
 	if p.commandEnd() {
-		return &treeNode{&pathNode{&valueNode{"."}}, 1}
+		return &treeNode{&pathNode{path: &valueNode{"."}}, 1}
 	}
 	path := p.parsePath("")
 	if p.commandEnd() {
@@ -1052,6 +1044,15 @@ func (p *parser) parseCreateTag() node {
 	return &createTagNode{slug, color}
 }
 
+func (p *parser) parseCreateLayer() node {
+	defer un(trace(p, "create layer"))
+	slug := p.parseString("slug")
+	p.expect("@")
+	applicability := p.parsePath(models.LayerApplicability)
+
+	return &createLayerNode{slug, applicability}
+}
+
 func (p *parser) parseCreateCorridor() node {
 	defer un(trace(p, "create corridor"))
 	path := p.parsePath("")
@@ -1104,7 +1105,7 @@ func (p *parser) parseAddRole() node {
 
 func (p *parser) parseUpdate() node {
 	defer un(trace(p, "update"))
-	path := p.parsePath("")
+	path := p.parsePathOrSelection("")
 	p.skipWhiteSpaces()
 	p.expect(":")
 	p.skipWhiteSpaces()
@@ -1121,6 +1122,17 @@ func (p *parser) parseUpdate() node {
 		moreValues = p.parseExact("@")
 	}
 	return &updateObjNode{path, attr, values, sharpe}
+}
+
+func (p *parser) parseCp() node {
+	defer un(trace(p, "cp"))
+	source := p.parsePath("source")
+
+	p.skipWhiteSpaces()
+
+	dest := p.parseString("dest")
+
+	return &cpNode{source: source, dest: dest}
 }
 
 func (p *parser) parseCommandKeyWord() string {
@@ -1225,6 +1237,7 @@ func newParser(buffer string) *parser {
 		"for":              p.parseFor,
 		"if":               p.parseIf,
 		"alias":            p.parseAlias,
+		commands.Cp:        p.parseCp,
 	}
 	p.createObjDispatch = map[string]parseCommandFunc{
 		"domain":   p.parseCreateDomain,
@@ -1245,6 +1258,7 @@ func newParser(buffer string) *parser {
 		"group":    p.parseCreateGroup,
 		"gr":       p.parseCreateGroup,
 		"tag":      p.parseCreateTag,
+		"layer":    p.parseCreateLayer,
 		"orphan":   p.parseCreateOrphan,
 		"user":     p.parseCreateUser,
 		"role":     p.parseAddRole,

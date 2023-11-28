@@ -3,15 +3,13 @@ package controllers_test
 import (
 	"cli/controllers"
 	"cli/models"
-	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
 
 func TestUpdateTagColorSendsTagTo3DWithSameOldSlugAsSlug(t *testing.T) {
-	controller, mockAPI, mockOgree3D := newControllerWithMocks(t)
+	controller, mockAPI, mockOgree3D, _ := newControllerWithMocks(t)
 
 	oldSlug := "slug"
 	path := models.TagsPath + oldSlug
@@ -31,15 +29,9 @@ func TestUpdateTagColorSendsTagTo3DWithSameOldSlugAsSlug(t *testing.T) {
 		"color":       "aaaaab",
 	}
 
-	mockAPI.On("Request", http.MethodPatch, mock.Anything, dataUpdate, http.StatusOK).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": dataUpdated,
-			},
-		}, nil,
-	)
+	mockUpdateObject(mockAPI, dataUpdate, dataUpdated)
 
-	mockOgree3D.On("InformOptional", "UpdateObj", controllers.TAG, map[string]any{
+	mockOgree3D.On("InformOptional", "UpdateObj", models.TAG, map[string]any{
 		"type": "modify-tag",
 		"data": map[string]any{
 			"old-slug": oldSlug,
@@ -54,7 +46,7 @@ func TestUpdateTagColorSendsTagTo3DWithSameOldSlugAsSlug(t *testing.T) {
 }
 
 func TestUpdateTagSlugSendsTagTo3DWithNewSlug(t *testing.T) {
-	controller, mockAPI, mockOgree3D := newControllerWithMocks(t)
+	controller, mockAPI, mockOgree3D, _ := newControllerWithMocks(t)
 
 	oldSlug := "slug"
 	newSlug := "new-slug"
@@ -76,15 +68,9 @@ func TestUpdateTagSlugSendsTagTo3DWithNewSlug(t *testing.T) {
 		"color":       "aaaaaa",
 	}
 
-	mockAPI.On("Request", http.MethodPatch, mock.Anything, dataUpdate, http.StatusOK).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": dataUpdated,
-			},
-		}, nil,
-	)
+	mockUpdateObject(mockAPI, dataUpdate, dataUpdated)
 
-	mockOgree3D.On("InformOptional", "UpdateObj", controllers.TAG, map[string]any{
+	mockOgree3D.On("InformOptional", "UpdateObj", models.TAG, map[string]any{
 		"type": "modify-tag",
 		"data": map[string]any{
 			"old-slug": oldSlug,

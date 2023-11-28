@@ -6,6 +6,7 @@ import (
 	u "p3/utils"
 	"strings"
 
+	"github.com/bmatcuk/doublestar/v4"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -333,6 +334,11 @@ func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 					}
 				}
 			}
+		}
+	} else if entity == u.LAYER && !doublestar.ValidatePattern(t["applicability"].(string)) {
+		return &u.Error{
+			Type:    u.ErrBadFormat,
+			Message: "Layer applicability pattern is not valid",
 		}
 	}
 

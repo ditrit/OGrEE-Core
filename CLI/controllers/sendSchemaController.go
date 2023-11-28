@@ -6,6 +6,7 @@ package controllers
 import (
 	"bytes"
 	l "cli/logger"
+	"cli/models"
 	"fmt"
 	"strconv"
 	"strings"
@@ -161,7 +162,7 @@ func GenerateFilteredJson(x map[string]interface{}) map[string]interface{} {
 	attrs := map[string]interface{}{}
 	if catInf, ok := x["category"]; ok {
 		if cat, ok := catInf.(string); ok {
-			if EntityStrToInt(cat) != -1 {
+			if models.EntityStrToInt(cat) != -1 {
 
 				//Start the filtration
 				for i := range x {

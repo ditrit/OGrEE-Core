@@ -3,10 +3,10 @@ package main
 import (
 	"bytes"
 	"cli/config"
-	c "cli/controllers"
 	cmd "cli/controllers"
 	"cli/models"
 	"cli/utils"
+	"cli/views"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -21,8 +21,8 @@ func InitVars(variables []config.Vardef) (err error) {
 			err = fmt.Errorf("cannot parse config variables")
 		}
 	}()
-	c.State.DynamicSymbolTable = make(map[string]interface{})
-	c.State.FuncTable = make(map[string]interface{})
+	cmd.State.DynamicSymbolTable = make(map[string]interface{})
+	cmd.State.FuncTable = make(map[string]interface{})
 	for _, v := range variables {
 		var varNode node
 		switch val := v.Value.(type) {
@@ -79,7 +79,7 @@ type funcDefNode struct {
 }
 
 func (n *funcDefNode) execute() (interface{}, error) {
-	c.State.FuncTable[n.name] = n.body
+	cmd.State.FuncTable[n.name] = n.body
 	if cmd.State.DebugLvl >= 3 {
 		println("New function ", n.name)
 	}
@@ -91,7 +91,7 @@ type funcCallNode struct {
 }
 
 func (n *funcCallNode) execute() (interface{}, error) {
-	val, ok := c.State.FuncTable[n.name]
+	val, ok := cmd.State.FuncTable[n.name]
 	if !ok {
 		return nil, fmt.Errorf("undefined function %s", n.name)
 	}
@@ -124,7 +124,7 @@ type lenNode struct {
 }
 
 func (n *lenNode) execute() (interface{}, error) {
-	val, ok := c.State.DynamicSymbolTable[n.variable]
+	val, ok := cmd.State.DynamicSymbolTable[n.variable]
 	if !ok {
 		return nil, fmt.Errorf("Undefined variable %s", n.variable)
 	}
@@ -165,7 +165,7 @@ func (n *cdNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return nil, cmd.CD(path)
+	return nil, cmd.C.CD(path)
 }
 
 type lsNode struct {
@@ -188,7 +188,7 @@ func (n *lsNode) execute() (interface{}, error) {
 		}
 		filters[key] = filterVal.(string)
 	}
-	objects, err := cmd.Ls(path, filters, n.sortAttr)
+	objects, err := cmd.C.Ls(path, filters, n.sortAttr)
 	if err != nil {
 		return nil, err
 	}
@@ -198,25 +198,13 @@ func (n *lsNode) execute() (interface{}, error) {
 	if n.sortAttr != "" {
 		n.attrList = append([]string{n.sortAttr}, n.attrList...)
 	}
-	for _, obj := range objects {
-		if n.sortAttr == "" {
-			fmt.Println(utils.NameOrSlug(obj))
-			continue
-		}
-		printStr := "Name : %s"
-		attrVals := []any{utils.NameOrSlug(obj)}
-		for _, attr := range n.attrList {
-			attrVal, hasAttr := utils.ObjectAttr(obj, attr)
-			if !hasAttr {
-				attrVal = "-"
-			}
-			attrVals = append(attrVals, attr)
-			attrVals = append(attrVals, attrVal)
-			printStr += "    %v : %v"
-		}
-		printStr += "\n"
-		fmt.Printf(printStr, attrVals...)
+
+	if n.sortAttr == "" {
+		views.Objects(objects)
+	} else {
+		views.SortedObjects(objects, n.attrList)
 	}
+
 	return nil, nil
 }
 
@@ -342,7 +330,7 @@ func (n *deleteSelectionNode) execute() (interface{}, error) {
 		}
 	}
 	println(fmt.Sprintf("%d objects deleted", deleted))
-	notDeleted := len(c.State.ClipBoard) - deleted
+	notDeleted := len(cmd.State.ClipBoard) - deleted
 	if notDeleted > 0 {
 		fmt.Printf("%d objects could not be deleted :\n%s", notDeleted, errBuilder.String())
 	}
@@ -404,7 +392,7 @@ func (n *getObjectNode) execute() (interface{}, error) {
 	}
 
 	for _, obj := range objs {
-		cmd.DisplayObject(obj)
+		views.Object(path, obj)
 	}
 	return objs, nil
 }
@@ -418,23 +406,12 @@ func (n *selectObjectNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	var selection []string
-	if strings.Contains(path, "*") {
-		_, selection, err = cmd.C.GetObjectsWildcard(path)
-		if err != nil {
-			return nil, err
-		}
-	} else if path != "" {
-		selection = []string{path}
-		err = cmd.CD(path)
-		if err != nil {
-			return nil, err
-		}
-	}
-	_, err = cmd.SetClipBoard(selection)
+
+	selection, err := cmd.C.Select(path)
 	if err != nil {
 		return nil, err
 	}
+
 	if len(selection) == 0 {
 		fmt.Println("Selection is now empty")
 	}
@@ -697,7 +674,7 @@ func (n *updateObjNode) execute() (interface{}, error) {
 		}
 		values = append(values, val)
 	}
-	paths, err := c.UnfoldPath(path)
+	paths, err := cmd.C.UnfoldPath(path)
 	if err != nil {
 		return nil, err
 	}
@@ -707,6 +684,8 @@ func (n *updateObjNode) execute() (interface{}, error) {
 			if n.attr == "slug" || n.attr == "color" || n.attr == "description" {
 				_, err = cmd.C.UpdateObj(path, map[string]any{n.attr: values[0]})
 			}
+		} else if models.IsLayer(path) {
+			err = cmd.C.UpdateLayer(path, n.attr, values[0])
 		} else {
 			switch n.attr {
 			case "content", "alpha", "tilesName", "tilesColor", "U", "slots", "localCS":
@@ -773,11 +752,13 @@ func (n *treeNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	root, err := cmd.Tree(path, n.depth)
+	root, err := cmd.C.Tree(path, n.depth)
 	if err != nil {
 		return nil, err
 	}
+
 	fmt.Println(path)
+
 	s := root.String(n.depth)
 	if s != "" {
 		fmt.Println(s)
@@ -796,17 +777,8 @@ func (n *drawNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	paths, err := c.UnfoldPath(path)
-	if err != nil {
-		return nil, err
-	}
-	for _, subpath := range paths {
-		err = cmd.Draw(subpath, n.depth, n.force)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return nil, nil
+
+	return nil, cmd.C.Draw(path, n.depth, n.force)
 }
 
 type undrawNode struct {
@@ -815,23 +787,15 @@ type undrawNode struct {
 
 func (n *undrawNode) execute() (interface{}, error) {
 	if n.path == nil {
-		return nil, cmd.Undraw("")
+		return nil, cmd.C.Undraw("")
 	}
+
 	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
 	}
-	paths, err := c.UnfoldPath(path)
-	if err != nil {
-		return nil, err
-	}
-	for _, subpath := range paths {
-		err = cmd.Undraw(subpath)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return nil, nil
+
+	return nil, cmd.C.Undraw(path)
 }
 
 type lsogNode struct{}
@@ -863,7 +827,7 @@ func (n *clrNode) execute() (interface{}, error) {
 type envNode struct{}
 
 func (n *envNode) execute() (interface{}, error) {
-	cmd.Env(c.State.DynamicSymbolTable, c.State.FuncTable)
+	cmd.Env(cmd.State.DynamicSymbolTable, cmd.State.FuncTable)
 	return nil, nil
 }
 
@@ -894,7 +858,7 @@ func (n *selectChildrenNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	v, err := cmd.SetClipBoard(paths)
+	v, err := cmd.C.SetClipBoard(paths)
 	if err != nil {
 		return nil, err
 	}
@@ -912,7 +876,7 @@ type unsetFuncNode struct {
 }
 
 func (n *unsetFuncNode) execute() (interface{}, error) {
-	delete(c.State.FuncTable, n.funcName)
+	delete(cmd.State.FuncTable, n.funcName)
 	return nil, nil
 }
 
@@ -921,7 +885,7 @@ type unsetVarNode struct {
 }
 
 func (n *unsetVarNode) execute() (interface{}, error) {
-	delete(c.State.DynamicSymbolTable, n.varName)
+	delete(cmd.State.DynamicSymbolTable, n.varName)
 	return nil, nil
 }
 
@@ -978,7 +942,7 @@ func (n *createDomainNode) execute() (interface{}, error) {
 
 	attributes := map[string]interface{}{"attributes": map[string]interface{}{"color": color}}
 
-	return nil, cmd.CreateObject(path, cmd.DOMAIN, attributes)
+	return nil, cmd.CreateObject(path, models.DOMAIN, attributes)
 }
 
 type createSiteNode struct {
@@ -990,7 +954,7 @@ func (n *createSiteNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = cmd.CreateObject(path, cmd.SITE, map[string]any{})
+	err = cmd.CreateObject(path, models.SITE, map[string]any{})
 	if err != nil {
 		return nil, err
 	}
@@ -1030,12 +994,12 @@ func (n *createBuildingNode) execute() (interface{}, error) {
 		if !ok {
 			return nil, fmt.Errorf("vector3 (size) or string (template) expected")
 		}
-		if !checkIfTemplate(template, cmd.BLDG) {
+		if !checkIfTemplate(template, models.BLDG) {
 			return nil, fmt.Errorf("template not found")
 		}
 		attributes["template"] = template
 	}
-	err = cmd.CreateObject(path, cmd.BLDG, map[string]any{"attributes": attributes})
+	err = cmd.CreateObject(path, models.BLDG, map[string]any{"attributes": attributes})
 	if err != nil {
 		return nil, err
 	}
@@ -1071,7 +1035,7 @@ func (n *createRoomNode) execute() (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-		if !checkIfTemplate(template, cmd.ROOM) {
+		if !checkIfTemplate(template, models.ROOM) {
 			return nil, fmt.Errorf("template not found")
 		}
 		attributes["template"] = template
@@ -1094,7 +1058,7 @@ func (n *createRoomNode) execute() (interface{}, error) {
 		}
 		attributes["floorUnit"] = floorUnit
 	}
-	err = cmd.CreateObject(path, cmd.ROOM, map[string]any{"attributes": attributes})
+	err = cmd.CreateObject(path, models.ROOM, map[string]any{"attributes": attributes})
 	if err != nil {
 		return nil, err
 	}
@@ -1143,12 +1107,12 @@ func (n *createRackNode) execute() (interface{}, error) {
 		if !ok {
 			return nil, fmt.Errorf("vector3 (size) or string (template) expected")
 		}
-		if !checkIfTemplate(template, cmd.RACK) {
+		if !checkIfTemplate(template, models.RACK) {
 			return nil, fmt.Errorf("template not found")
 		}
 		attributes["template"] = template
 	}
-	err = cmd.CreateObject(path, cmd.RACK, map[string]any{"attributes": attributes})
+	err = cmd.CreateObject(path, models.RACK, map[string]any{"attributes": attributes})
 	if err != nil {
 		return nil, err
 	}
@@ -1185,7 +1149,7 @@ func (n *createDeviceNode) execute() (interface{}, error) {
 		if !ok {
 			return nil, fmt.Errorf("int (sizeU) or string (template) expected")
 		}
-		if !checkIfTemplate(template, cmd.DEVICE) {
+		if !checkIfTemplate(template, models.DEVICE) {
 			return nil, fmt.Errorf("template not found")
 		}
 		attr["template"] = sizeUOrTemplate
@@ -1198,7 +1162,7 @@ func (n *createDeviceNode) execute() (interface{}, error) {
 		attr["orientation"] = side
 	}
 	attributes := map[string]interface{}{"attributes": attr}
-	err = cmd.CreateObject(path, cmd.DEVICE, attributes)
+	err = cmd.CreateObject(path, models.DEVICE, attributes)
 	if err != nil {
 		return nil, err
 	}
@@ -1226,7 +1190,7 @@ func (n *createGroupNode) execute() (interface{}, error) {
 		objs = append(objs, obj)
 	}
 	data["attributes"] = map[string]interface{}{"content": objs}
-	err = cmd.CreateObject(path, cmd.GROUP, data)
+	err = cmd.CreateObject(path, models.GROUP, data)
 	if err != nil {
 		return nil, err
 	}
@@ -1250,6 +1214,25 @@ func (n *createTagNode) execute() (interface{}, error) {
 	}
 
 	return nil, cmd.CreateTag(slug, color)
+}
+
+type createLayerNode struct {
+	slug          node
+	applicability node
+}
+
+func (n *createLayerNode) execute() (interface{}, error) {
+	slug, err := nodeToString(n.slug, "slug")
+	if err != nil {
+		return nil, err
+	}
+
+	applicability, err := nodeToString(n.applicability, models.LayerApplicability)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, cmd.C.CreateLayer(slug, applicability)
 }
 
 type createCorridorNode struct {
@@ -1294,7 +1277,7 @@ func (n *createCorridorNode) execute() (interface{}, error) {
 		return nil, err
 	}
 	attributes := map[string]any{"posXYZ": pos, "posXYUnit": unit, "rotation": rotation, "size": size, "temperature": temp}
-	err = cmd.CreateObject(path, cmd.CORRIDOR, map[string]any{"attributes": attributes})
+	err = cmd.CreateObject(path, models.CORRIDOR, map[string]any{"attributes": attributes})
 	if err != nil {
 		return nil, err
 	}
@@ -1315,11 +1298,11 @@ func (n *createOrphanNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	if !checkIfTemplate(template, cmd.STRAY_DEV) {
+	if !checkIfTemplate(template, models.STRAY_DEV) {
 		return nil, fmt.Errorf("template not found")
 	}
 	attributes := map[string]any{"template": template}
-	err = cmd.CreateObject(path, cmd.STRAY_DEV, map[string]any{"attributes": attributes})
+	err = cmd.CreateObject(path, models.STRAY_DEV, map[string]any{"attributes": attributes})
 	if err != nil {
 		return nil, err
 	}
@@ -1497,7 +1480,7 @@ type symbolReferenceNode struct {
 }
 
 func (s *symbolReferenceNode) execute() (interface{}, error) {
-	val, ok := c.State.DynamicSymbolTable[s.va]
+	val, ok := cmd.State.DynamicSymbolTable[s.va]
 	if !ok {
 		return nil, fmt.Errorf("undefined variable %s", s.va)
 	}
@@ -1510,7 +1493,7 @@ type arrayReferenceNode struct {
 }
 
 func (n *arrayReferenceNode) execute() (interface{}, error) {
-	v, ok := c.State.DynamicSymbolTable[n.variable]
+	v, ok := cmd.State.DynamicSymbolTable[n.variable]
 	if !ok {
 		return nil, fmt.Errorf("Undefined variable %s", n.variable)
 	}
@@ -1545,7 +1528,7 @@ func (a *assignNode) execute() (interface{}, error) {
 	}
 	switch v := val.(type) {
 	case bool, int, float64, string, []float64, map[string]interface{}:
-		c.State.DynamicSymbolTable[a.variable] = v
+		cmd.State.DynamicSymbolTable[a.variable] = v
 		if cmd.State.DebugLvl >= 3 {
 			println("You want to assign", a.variable, "with value of", v)
 		}
@@ -1591,4 +1574,23 @@ func parseAreas(areas map[string]interface{}) (map[string]interface{}, error) {
 		return nil, errorResponder("reserved", "4", false)
 	}
 	return areas, nil
+}
+
+type cpNode struct {
+	source node
+	dest   node
+}
+
+func (n *cpNode) execute() (interface{}, error) {
+	source, err := nodeToString(n.source, "source")
+	if err != nil {
+		return nil, err
+	}
+
+	dest, err := nodeToString(n.dest, "dest")
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, cmd.C.Cp(source, dest)
 }

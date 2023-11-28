@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -14,11 +13,12 @@ const (
 	BuildingTemplatesPath = LogicalPath + "BldgTemplates/"
 	GroupsPath            = LogicalPath + "Groups/"
 	TagsPath              = LogicalPath + "Tags/"
+	LayersPath            = LogicalPath + "Layers/"
 	OrganisationPath      = "/Organisation/"
 	DomainsPath           = OrganisationPath + "Domain/"
 )
 
-var pathPrefixes = []string{
+var PathPrefixes = []string{
 	StayPath,
 	PhysicalPath,
 	ObjectTemplatesPath,
@@ -26,41 +26,78 @@ var pathPrefixes = []string{
 	BuildingTemplatesPath,
 	GroupsPath,
 	TagsPath,
+	LayersPath,
 	DomainsPath,
 }
 
-func SplitPath(path string) (string, string, error) {
-	for _, prefix := range pathPrefixes {
-		if strings.HasPrefix(path, prefix) {
-			id := path[len(prefix):]
-			id = strings.ReplaceAll(id, "/", ".")
-			return prefix, id, nil
-		}
-	}
-	return "", "", fmt.Errorf("invalid object path")
+type Path struct {
+	Prefix   string // The prefix indicating to which entity class it belongs (physical, template, group, etc.)
+	ObjectID string
+	Layer    Layer // If the path is inside a layer
 }
 
-func IsHierarchical(path string) bool {
-	return !IsNonHierarchical(path)
+func IsPhysical(path string) bool {
+	return pathIs(path, PhysicalPath)
 }
 
-func IsNonHierarchical(path string) bool {
-	return IsObjectTemplate(path) || IsRoomTemplate(path) ||
-		IsBuildingTemplate(path) || IsTag(path)
+func IsStray(path string) bool {
+	return pathIs(path, StayPath)
 }
 
 func IsObjectTemplate(path string) bool {
-	return strings.HasPrefix(path, ObjectTemplatesPath)
+	return pathIs(path, ObjectTemplatesPath)
 }
 
 func IsRoomTemplate(path string) bool {
-	return strings.HasPrefix(path, RoomTemplatesPath)
+	return pathIs(path, RoomTemplatesPath)
 }
 
 func IsBuildingTemplate(path string) bool {
-	return strings.HasPrefix(path, BuildingTemplatesPath)
+	return pathIs(path, BuildingTemplatesPath)
 }
 
 func IsTag(path string) bool {
-	return strings.HasPrefix(path, TagsPath)
+	return pathIs(path, TagsPath)
+}
+
+func IsLayer(path string) bool {
+	return pathIs(path, LayersPath)
+}
+
+func IsGroup(path string) bool {
+	return pathIs(path, GroupsPath)
+}
+
+func pathIs(path, prefix string) bool {
+	return strings.HasPrefix(addLastSlash(path), prefix)
+}
+
+func addLastSlash(path string) string {
+	if !strings.HasSuffix(path, "/") {
+		return path + "/"
+	}
+
+	return path
+}
+
+func SplitPath(path string) []string {
+	return strings.Split(path, "/")
+}
+
+func PhysicalPathToObjectID(path string) string {
+	return strings.TrimSuffix(
+		strings.ReplaceAll(
+			strings.TrimPrefix(
+				addLastSlash(path),
+				PhysicalPath,
+			),
+			"/", ".",
+		),
+		".",
+	)
+}
+
+// Transforms the id of a physical object to its path
+func PhysicalIDToPath(id string) string {
+	return PhysicalPath + strings.ReplaceAll(id, ".", "/")
 }

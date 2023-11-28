@@ -46,7 +46,7 @@ func ListEntities(line string) []string {
 			}
 		}
 	}
-	objects, _ := c.Ls(pathutil.Clean(path), nil, "")
+	objects, _ := c.C.Ls(pathutil.Clean(path), nil, "")
 	return utils.ObjectsToNames(objects)
 }
 
@@ -146,7 +146,7 @@ func ListForUI(line string) []string {
 			}
 		}
 	}
-	objects, _ := c.Ls(pathutil.Clean(path), nil, "")
+	objects, _ := c.C.Ls(pathutil.Clean(path), nil, "")
 	return utils.ObjectsToNames(objects)
 
 }
@@ -268,7 +268,6 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("lscorridor", false),
 			readline.PcItem("lsac", false),
 			readline.PcItem("lspanel", false),
-			readline.PcItem("lssensor", false),
 			readline.PcItem("lsenterprise", false),
 			readline.PcItem("get", false),
 			readline.PcItem("getu", false),
@@ -302,8 +301,6 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("gr:", true,
 				readline.PcItemDynamic(SiteOCLICompleter, true)),
 			readline.PcItem("co:", true,
-				readline.PcItemDynamic(SiteOCLICompleter, true)),
-			readline.PcItem("orphan sensor:", true,
 				readline.PcItemDynamic(SiteOCLICompleter, true)),
 			readline.PcItem("orphan device:", true,
 				readline.PcItemDynamic(SiteOCLICompleter, true))),
@@ -349,9 +346,6 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("-r", false),
 			readline.PcItemDynamic(ListEntities, false)),
 		readline.PcItem("lspanel", true,
-			readline.PcItem("-r", false),
-			readline.PcItemDynamic(ListEntities, false)),
-		readline.PcItem("lssensor", true,
 			readline.PcItem("-r", false),
 			readline.PcItemDynamic(ListEntities, false)),
 		readline.PcItem("lsog", false),

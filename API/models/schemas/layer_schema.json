@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OGrEE Layer Schema",
+  "type": "object",
+  "properties": {
+    "slug": {
+      "type": "string",
+      "$ref": "refs/types.json#/definitions/slug"
+    },
+    "filters": {
+      "type": "object"
+    },
+    "applicability": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "slug",
+    "filters",
+    "applicability"
+  ],
+  "examples": [
+    {
+      "slug": "racks",
+      "filters": {"category": "rack"},
+      "applicability": ""
+    },
+    {
+      "slug": "racks",
+      "filters": {"category": "rack"},
+      "applicability": "BASIC.A.R1"
+    },
+    {
+      "slug": "racks",
+      "filters": {"category": "rack"},
+      "applicability": "BASIC.A.R1.*"
+    },
+    {
+      "slug": "racks",
+      "filters": {"category": "rack"},
+      "applicability": "*"
+    },
+    {
+      "slug": "racks",
+      "filters": {"category": "rack"},
+      "applicability": "BASIC.A.R*"
+    },
+    {
+      "slug": "racks",
+      "filters": {"category": "rack"},
+      "applicability": "BASIC.A.**"
+    }
+  ]
+}
