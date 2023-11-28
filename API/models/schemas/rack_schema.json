@@ -13,7 +13,7 @@
         },
         "heightUnit": {
           "type": "string",
-          "enum": ["mm", "cm", "m", "U", "OU", "f"]
+          "$ref": "refs/types.json#/definitions/metricImperialUUnit"
         },
         "rotation": {
           "type": "string",
