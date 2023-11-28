@@ -3,6 +3,7 @@ module p3
 go 1.20
 
 require (
+	github.com/bmatcuk/doublestar/v4 v4.6.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/elliotchance/pie/v2 v2.8.0
 	github.com/gorilla/handlers v1.5.2
@@ -11,6 +12,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1
 	github.com/stretchr/testify v1.8.4
+	github.com/vincent-petithory/dataurl v1.0.0
 	go.mongodb.org/mongo-driver v1.13.0
 	golang.org/x/crypto v0.15.0
 )
@@ -22,7 +24,6 @@ require (
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/vincent-petithory/dataurl v1.0.0
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.2 // indirect
 	github.com/xdg-go/stringprep v1.0.4 // indirect

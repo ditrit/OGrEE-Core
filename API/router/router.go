@@ -11,7 +11,7 @@ import (
 // Obtain by query
 var dmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 	println("Checking MATCH")
-	return regexp.MustCompile(`^(\/api\/(domains|sites|buildings|rooms|acs|panels|cabinets|groups|corridors|racks|devices|stray-objects|(room|obj|bldg)-templates|tags)\?.*)$`).
+	return regexp.MustCompile(`^(\/api\/(domains|sites|buildings|rooms|acs|panels|cabinets|groups|corridors|racks|devices|stray-objects|(room|obj|bldg)-templates|tags|layers)\?.*)$`).
 		MatchString(request.URL.String())
 }
 

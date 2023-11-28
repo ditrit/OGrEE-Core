@@ -635,6 +635,9 @@ func prepareUpdateObject(ctx mongo.SessionContext, entity int, id string, update
 		return err
 	}
 
+	// filters list edition support for layers
+	removeFromFilters(updateData)
+
 	// Ensure the update is valid
 	err = ValidateEntity(entity, updateData)
 	if err != nil {

@@ -32,6 +32,7 @@
   - [Tree](#tree)
   - [Delete object](#delete-object)
   - [Focus an object](#focus-an-object)
+  - [Copy object](#copy-object)
 - [Create commands](#create-commands)
   - [Create a Tenant](#create-a-tenant)
   - [Create a Site](#create-a-site)
@@ -42,6 +43,9 @@
   - [Create a Group](#create-a-group)
   - [Create a Corridor](#create-a-corridor)
   - [Create a Tag](#create-a-tag)
+  - [Create a Layer](#create-a-layer)
+    - [Applicability Patterns](#applicability-patterns)
+      - [Character Classes](#character-classes)
 - [Set commands](#set-commands)
   - [Set colors for zones of all rooms in a datacenter](#set-colors-for-zones-of-all-rooms-in-a-datacenter)
   - [Set reserved and technical zones of a room](#set-reserved-and-technical-zones-of-a-room)
@@ -222,6 +226,8 @@ When ls is performed on an object, the corresponding layers are added. These mak
 
 The automatic layers are those that are added automatically depending on the entity of the object on which the ls is performed. They will appear only if at least one of the children of the object meets the conditions of the layer. The list of automatic layers added to each entity is described in the following sections.
 
+In addition, custom layers can be created. For this, see [Create a Layer](#create-a-layer).
+
 #### Room's automatic layers
 
 - \#corridors: children whose category is corridor
@@ -271,6 +277,16 @@ Works with single or multi selection.
 ```
 >[name]
 ```
+
+## Copy object
+
+Currently it is only possible to copy layers. To copy an object use:
+
+```
+cp [source] [dest]
+```
+
+where `[source]` is the path of the object to be copied (currently only objects in /Logical/Layers are accepted) and `[dest]` is the destination path or slug of the destination layer.
 
 # Create commands
 ## Create a Tenant
@@ -406,6 +422,66 @@ Tags are identified by a slug. In addition, they have a color, a description and
 The description will initially be defined the same as the slug, but can be modified (see [Modify object's attribute](#modify-objects-attribute)). Image can only be modified from the web version.
 
 After the tag is created, it can be seen in /Logical/Tags. The command `get /Logical/Tags/[slug]` can be used to get the tag information. In doing so, the tag image will be the route in which the image can be obtained via an http request.
+
+## Create a Layer
+
+Layers are identified by a slug. In addition, they have an applicability and the filters they apply. To create a layer, use:
+
+```
++layer:[slug]@[applicability]
+```
+
+The applicability is the path in which the layer should be added when doing ls. Patterns can be used in the applicability (see [Applicability Patterns](#applicability-patterns)).
+
+Filters are automatically created as empty. To add filters, edit the layer using the object modification syntax (see [Modify object's attribute](#modify-objects-attribute)). Example:
+
+```
+[layer_path]:category=device
+```
+
+Where [layer_path] is `/Logical/Layers/[slug]` (or only `[slug]` if the current path is /Logical/Layers).
+
+For the layer to filter the children whose category is device. When adding filters on different attributes, all must be fulfilled for a child to be part of the layer.
+
+Layers are not applied until their filters are defined.
+
+A filter can also be removed, using the syntax:
+
+```
+[layer_path]:filters-=[filter_name]
+```
+
+After the layer is created, it can be seen in /Logical/Layers. The command `get /Logical/Layers/[slug]` can be used to get the layer information.
+
+### Applicability Patterns
+
+The following special terms are supported in the patterns:
+
+Special Terms | Meaning
+------------- | -------
+`*`           | matches any sequence of non-path-separators
+`/**/`        | matches zero or more directories
+`?`           | matches any single non-path-separator character
+`[class]`     | matches any single non-path-separator character against a class of characters (see [Character classes](#character-classes))
+`{alt1,...}`  | matches a sequence of characters if one of the comma-separated alternatives matches
+
+Any character with a special meaning can be escaped with a backslash (`\`).
+
+A doublestar (`**`) should appear surrounded by path separators such as `/**/`.
+A mid-pattern doublestar (`**`) behaves like bash's globstar option: a pattern
+such as `path/to/**.txt` would return the same results as `path/to/*.txt`. The
+pattern you're looking for is `path/to/**/*.txt`.
+
+#### Character Classes
+
+Character classes support the following:
+
+Class      | Meaning
+---------- | -------
+`[abc]`    | matches any single character within the set
+`[a-z]`    | matches any single character in the range
+`[^class]` | matches any single character which does *not* match the class
+`[!class]` | same as `^`: negates the class
 
 # Set commands
 ## Set colors for zones of all rooms in a datacenter

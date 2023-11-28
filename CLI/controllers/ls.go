@@ -141,9 +141,37 @@ func (controller Controller) lsNode(path string) (*HierarchyNode, error) {
 		return nil, err
 	}
 
-	addAutomaticLayers(n)
+	err = controller.addLayers(path, n)
+	if err != nil {
+		return nil, err
+	}
 
 	return n, nil
+}
+
+func (controller Controller) addLayers(path string, rootNode *HierarchyNode) error {
+	addAutomaticLayers(rootNode)
+	return controller.addUserDefinedLayers(path, rootNode)
+}
+
+func (controller Controller) addUserDefinedLayers(path string, rootNode *HierarchyNode) error {
+	if models.IsPhysical(path) && !models.PathIsLayer(path) {
+		layersNode, err := controller.Tree(models.LayersPath, 1)
+		if err != nil {
+			return err
+		}
+
+		for _, layerNode := range layersNode.Children {
+			layer := layerNode.Obj.(models.UserDefinedLayer)
+			if layer.Matches(path) && len(layer.Filters) > 0 {
+				// layer in hierarchy has a pointer to the layer stored in /Logical/Layers
+				layerInHierarchyNode := NewLayerNode(layer.Name(), &layerNode.Obj)
+				rootNode.AddChild(layerInHierarchyNode)
+			}
+		}
+	}
+
+	return nil
 }
 
 // Adds to the children the automatic layers, depending of the category of the rootObject
@@ -165,7 +193,7 @@ func addAutomaticLayers(rootNode *HierarchyNode) {
 
 		for _, factory := range layerFactories {
 			for _, layer := range factory.FromObjects(children) {
-				rootNode.AddChild(NewLayerNode(layer.Name, layer))
+				rootNode.AddChild(NewLayerNode(layer.Name(), layer))
 			}
 		}
 	}

@@ -67,11 +67,11 @@ func AttrIsInObj(obj map[string]interface{}, attr string) (bool, bool) {
 	return false, false
 }
 
-func TranslatePath(p string) string {
+func TranslatePath(p string, acceptSelection bool) string {
 	if p == "" {
 		p = "."
 	}
-	if p == "_" {
+	if p == "_" && acceptSelection {
 		return "_"
 	}
 	if p == "-" {
@@ -79,7 +79,12 @@ func TranslatePath(p string) string {
 	}
 	var output_words []string
 	if p[0] != '/' {
-		output_words = strings.Split(State.CurrPath, "/")[1:]
+		outputBase := State.CurrPath
+		if p[0] == '-' {
+			outputBase = State.PrevPath
+		}
+
+		output_words = strings.Split(outputBase, "/")[1:]
 		if len(output_words) == 1 && output_words[0] == "" {
 			output_words = output_words[0:0]
 		}
@@ -87,8 +92,8 @@ func TranslatePath(p string) string {
 		p = p[1:]
 	}
 	input_words := strings.Split(p, "/")
-	for _, word := range input_words {
-		if word == "." {
+	for i, word := range input_words {
+		if word == "." || (i == 0 && word == "-") {
 			continue
 		} else if word == ".." {
 			if len(output_words) > 0 {

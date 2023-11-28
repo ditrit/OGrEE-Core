@@ -55,7 +55,7 @@ func SetupDB(db *mongo.Database) error {
 	}
 
 	// Make slugs unique identifiers for templates
-	for _, entity := range []int{u.ROOMTMPL, u.OBJTMPL, u.BLDGTMPL, u.TAG} {
+	for _, entity := range []int{u.ROOMTMPL, u.OBJTMPL, u.BLDGTMPL, u.TAG, u.LAYER} {
 		if err := createUniqueIndex(db, u.EntityToString(entity), bson.M{"slug": 1}); err != nil {
 			return err
 		}

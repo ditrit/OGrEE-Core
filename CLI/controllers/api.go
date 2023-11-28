@@ -5,6 +5,11 @@ import (
 	"fmt"
 )
 
+const (
+	baseURL   = "/api/"
+	LayersURL = baseURL + "layers"
+)
+
 var API APIPort = &apiPortImpl{}
 
 type APIPort interface {

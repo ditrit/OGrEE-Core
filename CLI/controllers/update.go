@@ -38,6 +38,12 @@ func (controller Controller) UpdateObj(pathStr string, data map[string]any) (map
 	entityType := models.EntityStrToInt(category)
 	if models.IsTag(pathStr) {
 		entityType = models.TAG
+	} else if models.IsLayer(pathStr) {
+		// For layers, update the object to the hierarchy in order to be cached
+		_, err = State.Hierarchy.AddObjectInPath(resp.Body["data"].(map[string]any), pathStr)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	message := map[string]any{}
