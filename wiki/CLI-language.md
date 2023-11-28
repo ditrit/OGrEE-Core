@@ -403,7 +403,7 @@ A corridor is a cold or warm corridor.
   "right":  [0, -90, 0]  
   "top":    [90, 0, 0]  
   "bottom": [-90, 0, 0]  
-`[size]` is a Vector3 [width,length,height] (cm,cm,u)  
+`[size]` is a Vector3 [width,length,height] (cm,cm,cm)  
 `[temperature]` is cold or warm.
 
 ```
