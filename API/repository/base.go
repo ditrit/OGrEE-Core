@@ -49,16 +49,20 @@ func SetupDB(db *mongo.Database) error {
 	// Indexes creation
 	// Enforce unique children
 	for _, entity := range []int{u.DOMAIN, u.SITE, u.BLDG, u.ROOM, u.RACK, u.DEVICE, u.AC, u.PWRPNL, u.CABINET, u.CORRIDOR, u.GROUP, u.STRAYOBJ} {
-		if err := createUniqueIndex(db, entity, bson.M{"id": 1}); err != nil {
+		if err := createUniqueIndex(db, u.EntityToString(entity), bson.M{"id": 1}); err != nil {
 			return err
 		}
 	}
 
 	// Make slugs unique identifiers for templates
 	for _, entity := range []int{u.ROOMTMPL, u.OBJTMPL, u.BLDGTMPL, u.TAG} {
-		if err := createUniqueIndex(db, entity, bson.M{"slug": 1}); err != nil {
+		if err := createUniqueIndex(db, u.EntityToString(entity), bson.M{"slug": 1}); err != nil {
 			return err
 		}
+	}
+
+	if err := createUniqueIndex(db, "account", bson.M{"email": 1}); err != nil {
+		return err
 	}
 
 	return nil
@@ -86,11 +90,11 @@ func createInitialData(db *mongo.Database, tenantName string) error {
 	return nil
 }
 
-func createUniqueIndex(db *mongo.Database, entity int, on bson.M) error {
+func createUniqueIndex(db *mongo.Database, collection string, on bson.M) error {
 	indexCtx, indexCancel := u.Connect()
 	defer indexCancel()
 
-	_, err := db.Collection(u.EntityToString(entity)).Indexes().CreateOne(
+	_, err := db.Collection(collection).Indexes().CreateOne(
 		indexCtx,
 		mongo.IndexModel{
 			Keys:    on,
