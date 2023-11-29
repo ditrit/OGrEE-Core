@@ -459,7 +459,7 @@ func (n *getObjectNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	if !strings.Contains(path, "*") && len(objs) == 0 {
+	if !strings.Contains(path, "*") && !models.PathIsLayer(path) && len(objs) == 0 {
 		return nil, errors.New("object not found")
 	}
 
