@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/url"
 	u "p3/utils"
@@ -50,16 +49,20 @@ func SetupDB(db *mongo.Database) error {
 	// Indexes creation
 	// Enforce unique children
 	for _, entity := range []int{u.DOMAIN, u.SITE, u.BLDG, u.ROOM, u.RACK, u.DEVICE, u.AC, u.PWRPNL, u.CABINET, u.CORRIDOR, u.GROUP, u.STRAYOBJ} {
-		if err := createUniqueIndex(db, entity, bson.M{"id": 1}); err != nil {
+		if err := createUniqueIndex(db, u.EntityToString(entity), bson.M{"id": 1}); err != nil {
 			return err
 		}
 	}
 
 	// Make slugs unique identifiers for templates
 	for _, entity := range []int{u.ROOMTMPL, u.OBJTMPL, u.BLDGTMPL, u.TAG, u.LAYER} {
-		if err := createUniqueIndex(db, entity, bson.M{"slug": 1}); err != nil {
+		if err := createUniqueIndex(db, u.EntityToString(entity), bson.M{"slug": 1}); err != nil {
 			return err
 		}
+	}
+
+	if err := createUniqueIndex(db, "account", bson.M{"email": 1}); err != nil {
+		return err
 	}
 
 	return nil
@@ -87,11 +90,11 @@ func createInitialData(db *mongo.Database, tenantName string) error {
 	return nil
 }
 
-func createUniqueIndex(db *mongo.Database, entity int, on bson.M) error {
+func createUniqueIndex(db *mongo.Database, collection string, on bson.M) error {
 	indexCtx, indexCancel := u.Connect()
 	defer indexCancel()
 
-	_, err := db.Collection(u.EntityToString(entity)).Indexes().CreateOne(
+	_, err := db.Collection(collection).Indexes().CreateOne(
 		indexCtx,
 		mongo.IndexModel{
 			Keys:    on,
@@ -104,17 +107,17 @@ func createUniqueIndex(db *mongo.Database, entity int, on bson.M) error {
 
 func GetDatabase(client *mongo.Client, name string) (*mongo.Database, error) {
 	if name == "admin" || name == "config" || name == "local" {
-		return nil, errors.New("database not accessible")
+		return nil, fmt.Errorf("database %s not accessible", name)
 	}
 
 	// Check if API is authenticated
 	if exists := databaseExists(client, name); !exists {
-		return nil, errors.New("database not found, check that you are authorized")
+		return nil, fmt.Errorf("database %s not found, check that you are authorized", name)
 	}
 
 	db := client.Database(name)
 	if db == nil {
-		return nil, errors.New("error while getting database")
+		return nil, fmt.Errorf("error while getting database %s", name)
 	}
 
 	return db, nil

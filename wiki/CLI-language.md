@@ -50,8 +50,8 @@
 - [Set commands](#set-commands)
   - [Set colors for zones of all rooms in a datacenter](#set-colors-for-zones-of-all-rooms-in-a-datacenter)
   - [Set reserved and technical zones of a room](#set-reserved-and-technical-zones-of-a-room)
-  - [Add a separator to a room](#add-a-separator-to-a-room)
-  - [Add a pillar to a room](#add-a-pillar-to-a-room)
+  - [Room separators](#room-separators)
+  - [Room pillars](#room-pillars)
   - [Modify object's attribute](#modify-objects-attribute)
   - [Tags](#tags)
   - [Labels](#labels)
@@ -534,27 +534,55 @@ You can modify areas only if the room has no racks in it.
 [room]:areas=[reserved]@[technical]  
 ```
 
-## Add a separator to a room
-Add a separator (wired or plain wall) inside a room.  
+## Room separators
+
+Separators (wired or plain walls) can be added inside rooms. To do it, use:
+
+```
+[room]:separators+=[name]@[startPos]@[endPos]@[type]
+```
+
+Where:  
 *`[name]` is an identifier for the separator  
 `[startPos]` is a vector2: [x,y] (m,m)  
 `[endPos]` is a vector2: [x,y] (m,m)  
 `[type]` is the type of wall: wireframe or plain*  
-```
-[room]:separator=[name]@[startPos]@[endPos]@[type]
-```
-It will add the given coordinates to `[room].attributes["separators"]` witch is a list of all its separators parameters
 
-## Add a pillar to a room
-Add a pillar inside a room.  
+It will add the given separator to `[room].attributes["separators"]`, which is a list of all its separators.
+
+Separators can be removed using:
+
+```
+[room]:separators-=[name]
+```
+
+Where:  
+*`[name]` is the identifier of the separator to be removed  
+
+## Room pillars
+
+Pillars can be added inside rooms. To do it, use:
+
+```
+[room]:pillars+=[name]@[centerXY]@[sizeXY]@[rotation]
+```
+
+Where:  
 *`[name]` is an identifier for the pillar  
 `[centerXY]` is a vector2: [x,y] (m,m)  
 `[sizeXY]` is a vector2: [x,y] (m,m)  
-`[rotation]` is the angle of the pillar, in degree*  
+`[rotation]` is the angle of the pillar, in degrees*  
+
+It will add the given pillar to `[room].attributes["pillars"]`, which is a list of all its pillars.
+
+Pillars can be removed using:
+
 ```
-[room]:pillar=[name]@[centerXY]@[sizeXY]@[rotation]
+[room]:pillars-=[name]
 ```
-It will add the given coordinates to `[room].attributes["pillars"]` witch is a list of all its pillars parameters
+
+Where:  
+*`[name]` is the identifier of the pillar to be removed  
 
 ## Modify object's attribute
 Works with single or multi selection.  

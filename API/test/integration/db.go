@@ -13,11 +13,11 @@ const testDBUser = TestDBName + "Admin"
 func init() {
 	recreateTestDB()
 
-	log.Println("database recreated")
+	log.Println("database recreated: ", TestDBName)
 
 	err := repository.ConnectToDB("", testDBPort, testDBUser, "123", TestDBName, TestDBName)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalln("Error connecting to", TestDBName, ":", err.Error())
 	}
 }
 
@@ -29,7 +29,8 @@ func recreateTestDB() {
 
 	db := client.Database(TestDBName)
 
-	ctx, _ := utils.Connect()
+	ctx, cancel := utils.Connect()
+	defer cancel()
 
 	err = db.Drop(ctx)
 	if err != nil {
@@ -39,9 +40,7 @@ func recreateTestDB() {
 	db = client.Database(TestDBName)
 
 	err = repository.SetupDB(db)
-	for err != nil {
-		// An error can occur if the database was not dropped yet (not synchronic)
-		log.Println("Error while doing setup:", err.Error())
-		err = repository.SetupDB(db)
+	if err != nil {
+		log.Fatalln("Error while doing setup:", err.Error())
 	}
 }
