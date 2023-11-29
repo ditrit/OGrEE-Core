@@ -18,7 +18,11 @@ type RelativePathArgs struct {
 
 func (args RelativePathArgs) getFromPath() string {
 	if args.fromPathWithoutLayer == "" {
-		args.fromPathWithoutLayer = models.PathRemoveLast(args.FromPath, 1) // remove layer
+		if models.PathIsLayer(args.FromPath) {
+			args.fromPathWithoutLayer = models.PathRemoveLast(args.FromPath, 1) // remove layer
+		} else {
+			args.fromPathWithoutLayer = args.FromPath
+		}
 	}
 
 	return args.fromPathWithoutLayer
