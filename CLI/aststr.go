@@ -10,8 +10,12 @@ type pathNode struct {
 	acceptSelection bool
 }
 
+func (n pathNode) Path() (string, error) {
+	return nodeToString(n.path, "path")
+}
+
 func (n pathNode) execute() (interface{}, error) {
-	p, err := nodeToString(n.path, "path")
+	p, err := n.Path()
 	if err != nil {
 		return nil, err
 	}

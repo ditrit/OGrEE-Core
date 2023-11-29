@@ -165,7 +165,7 @@ type recursiveArgs struct {
 	maxDepth    string
 }
 
-func (args *recursiveArgs) toParams() (*cmd.RecursiveParams, error) {
+func (args *recursiveArgs) toParams(path string) (*cmd.RecursiveParams, error) {
 	if !args.isRecursive {
 		return nil, nil
 	}
@@ -181,8 +181,9 @@ func (args *recursiveArgs) toParams() (*cmd.RecursiveParams, error) {
 	}
 
 	return &cmd.RecursiveParams{
-		MinDepth: minDepth,
-		MaxDepth: maxDepth,
+		PathEntered: path,
+		MinDepth:    minDepth,
+		MaxDepth:    maxDepth,
 	}, nil
 }
 

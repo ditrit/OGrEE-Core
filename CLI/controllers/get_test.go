@@ -51,9 +51,16 @@ func TestGetSomethingStarWithFilters(t *testing.T) {
 func TestGetRecursiveSearchAllChildrenCalledInThatWay(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	mockGetObjects(mockAPI, "id=BASIC.A.**R1&namespace=physical.hierarchy", []any{roomWithChildren})
+	mockGetObjects(mockAPI, "id=BASIC.A.**.R1&namespace=physical.hierarchy", []any{roomWithChildren})
 
-	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1", nil, &controllers.RecursiveParams{MaxDepth: models.UnlimitedDepth})
+	objects, _, err := controller.GetObjectsWildcard(
+		"/Physical/BASIC/A/R1",
+		nil,
+		&controllers.RecursiveParams{
+			MaxDepth:    models.UnlimitedDepth,
+			PathEntered: "R1",
+		},
+	)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
 	assert.Contains(t, objects, removeChildren(roomWithChildren))
@@ -62,11 +69,14 @@ func TestGetRecursiveSearchAllChildrenCalledInThatWay(t *testing.T) {
 func TestGetRecursiveWithFilters(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	mockGetObjects(mockAPI, "category=room&id=BASIC.A.**R1&namespace=physical.hierarchy", []any{roomWithChildren})
+	mockGetObjects(mockAPI, "category=room&id=BASIC.A.**.R1&namespace=physical.hierarchy", []any{roomWithChildren})
 
 	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1", map[string]string{
 		"category": "room",
-	}, &controllers.RecursiveParams{MaxDepth: models.UnlimitedDepth})
+	}, &controllers.RecursiveParams{
+		MaxDepth:    models.UnlimitedDepth,
+		PathEntered: "R1",
+	})
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
 	assert.Contains(t, objects, removeChildren(roomWithChildren))
@@ -75,7 +85,7 @@ func TestGetRecursiveWithFilters(t *testing.T) {
 func TestGetStarRecursiveWithFilters(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	mockGetObjects(mockAPI, "category=device&id=BASIC.A.R1.**&namespace=physical.hierarchy", []any{chassis, pdu})
+	mockGetObjects(mockAPI, "category=device&id=BASIC.A.R1.**.*&namespace=physical.hierarchy", []any{chassis, pdu})
 
 	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/*", map[string]string{
 		"category": "device",
@@ -89,12 +99,47 @@ func TestGetStarRecursiveWithFilters(t *testing.T) {
 func TestGetSomethingStarRecursiveWithFilters(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	mockGetObjects(mockAPI, "category=device&id=BASIC.A.R1.**ch*&namespace=physical.hierarchy", []any{chassis})
+	mockGetObjects(mockAPI, "category=device&id=BASIC.A.R1.**.ch*&namespace=physical.hierarchy", []any{chassis})
 
 	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/ch*", map[string]string{
 		"category": "device",
-	}, &controllers.RecursiveParams{MaxDepth: models.UnlimitedDepth})
+	}, &controllers.RecursiveParams{
+		MaxDepth:    models.UnlimitedDepth,
+		PathEntered: "ch*",
+	})
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
 	assert.Contains(t, objects, removeChildren(chassis))
+}
+
+func TestGetFolderSomethingStarRecursiveWithFilters(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+
+	mockGetObjects(mockAPI, "category=device&id=BASIC.A.**.R1.ch*&namespace=physical.hierarchy", []any{chassis})
+
+	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/ch*", map[string]string{
+		"category": "device",
+	}, &controllers.RecursiveParams{
+		MaxDepth:    models.UnlimitedDepth,
+		PathEntered: "R1/ch*",
+	})
+	assert.Nil(t, err)
+	assert.Len(t, objects, 1)
+	assert.Contains(t, objects, removeChildren(chassis))
+}
+
+func TestGetPointRecursiveIsEqualToNotRecursive(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+
+	mockGetObjects(mockAPI, "category=device&id=BASIC.A.R1&namespace=physical.hierarchy", []any{roomWithChildren})
+
+	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1", map[string]string{
+		"category": "device",
+	}, &controllers.RecursiveParams{
+		MaxDepth:    models.UnlimitedDepth,
+		PathEntered: ".",
+	})
+	assert.Nil(t, err)
+	assert.Len(t, objects, 1)
+	assert.Contains(t, objects, removeChildren(roomWithChildren))
 }

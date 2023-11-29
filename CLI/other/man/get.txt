@@ -8,8 +8,7 @@ DESCRIPTION
     Retrieves object information from API and displays it's information in JSON format.
 
     If no PATH is given, then the current path will be used (equivalent to "get .").
-
-    PATH can use the character * to use wildcards. A PATH equal to * means all objects in the current path.
+    PATH can use the character * to use wildcards. A PATH equal to * means all objects in the current path while A* means all object which name starts with A.
 
     [FILTERS] is an optional list of filters that can be used to only get the objects that meet certain conditions.
     In order to use FILTERS, PATH must be present.

@@ -87,7 +87,7 @@ func (controller Controller) ObjectUrlGeneric(pathStr string, depth int, filters
 	}
 
 	if recursive != nil {
-		err = path.MakeRecursive(recursive.MinDepth, recursive.MaxDepth)
+		err = path.MakeRecursive(recursive.MinDepth, recursive.MaxDepth, recursive.PathEntered)
 		if err != nil {
 			return "", err
 		}

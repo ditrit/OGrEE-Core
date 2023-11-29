@@ -372,20 +372,20 @@ func GetEntitiesByNamespace(namespace Namespace, hierarchyName string) []string 
 			}
 
 			// Add entities according to hierarchyName possibilities
-			if strings.Contains(hierarchyName, "**") {
+			if strings.Contains(hierarchyName, ".**") {
 				var initialEntity int
 				finalEntity := GROUP
 
 				switch strings.Count(hierarchyName, HN_DELIMETER) {
-				case 0:
-					initialEntity = SITE
 				case 1:
-					initialEntity = BLDG
+					initialEntity = SITE
 				case 2:
-					initialEntity = ROOM
+					initialEntity = BLDG
 				case 3:
-					initialEntity = RACK
+					initialEntity = ROOM
 				case 4:
+					initialEntity = RACK
+				case 5:
 					initialEntity = DEVICE
 				default:
 					// only devices

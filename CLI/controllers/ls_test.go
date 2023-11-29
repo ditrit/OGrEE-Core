@@ -111,7 +111,7 @@ func TestLsRecursiveReturnsError(t *testing.T) {
 func TestLsRecursiveWithFilters(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	mockGetObjects(mockAPI, "category=rack&id=BASIC.A.R1.**&namespace=physical.hierarchy", []any{rack1, rack2})
+	mockGetObjects(mockAPI, "category=rack&id=BASIC.A.R1.**.*&namespace=physical.hierarchy", []any{rack1, rack2})
 
 	objects, err := controller.Ls("/Physical/BASIC/A/R1", map[string]string{
 		"category": "rack",
@@ -122,7 +122,7 @@ func TestLsRecursiveWithFilters(t *testing.T) {
 	utils.ContainsObjectNamed(t, objects, "B01")
 }
 
-func TestLsRecursiveMaxLessThatMinReturnsError(t *testing.T) {
+func TestLsPointRecursiveMaxLessThatMinReturnsError(t *testing.T) {
 	controller, _, _ := layersSetup(t)
 
 	_, err := controller.Ls("/Physical/BASIC/A/R1", map[string]string{
@@ -134,7 +134,7 @@ func TestLsRecursiveMaxLessThatMinReturnsError(t *testing.T) {
 func TestLsRecursiveWithMinButNotMax(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	mockGetObjects(mockAPI, "category=device&id=BASIC.A.R1.**{1,}&namespace=physical.hierarchy", []any{chassis, pdu})
+	mockGetObjects(mockAPI, "category=device&id=BASIC.A.R1.**{1,}.*&namespace=physical.hierarchy", []any{chassis, pdu})
 
 	objects, err := controller.Ls("/Physical/BASIC/A/R1", map[string]string{
 		"category": "device",
@@ -148,7 +148,7 @@ func TestLsRecursiveWithMinButNotMax(t *testing.T) {
 func TestLsRecursiveWithMinAndMax(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	mockGetObjects(mockAPI, "category=device&id=BASIC.A.R1.**{1,2}&namespace=physical.hierarchy", []any{chassis, pdu})
+	mockGetObjects(mockAPI, "category=device&id=BASIC.A.R1.**{1,2}.*&namespace=physical.hierarchy", []any{chassis, pdu})
 
 	objects, err := controller.Ls("/Physical/BASIC/A/R1", map[string]string{
 		"category": "device",

@@ -15,8 +15,9 @@ var errLayerNotFound = errors.New("the layer used does not exist")
 var ErrRecursiveOnlyFiltersLayers = errors.New("-r can only be applied to ls with filters or layers")
 
 type RecursiveParams struct {
-	MinDepth int
-	MaxDepth int
+	PathEntered string
+	MinDepth    int
+	MaxDepth    int
 }
 
 func (controller Controller) Ls(path string, filters map[string]string, recursive *RecursiveParams) ([]map[string]any, error) {

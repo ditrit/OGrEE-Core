@@ -1131,7 +1131,7 @@ func TestLsNotShowLayerIfDoubleStarIsAtTheEndAndZeroFoldersAreFound(t *testing.T
 	})
 	mockGetObjectHierarchy(mockAPI, roomWithoutChildren)
 
-	objects, err := controller.Ls("/Physical/BASIC/A/R1", nil, "")
+	objects, err := controller.Ls("/Physical/BASIC/A/R1", nil, nil)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 0)
 }
@@ -1291,7 +1291,7 @@ func TestLsRecursiveOnLayerListLayerRecursive(t *testing.T) {
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{devices})
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
-	mockGetObjects(mockAPI, "category=device&id=BASIC.A.R1.**&namespace=physical.hierarchy", []any{chassis, pdu})
+	mockGetObjects(mockAPI, "category=device&id=BASIC.A.R1.**.*&namespace=physical.hierarchy", []any{chassis, pdu})
 
 	objects, err := controller.Ls("/Physical/BASIC/A/R1/#devices", nil, &controllers.RecursiveParams{MaxDepth: models.UnlimitedDepth})
 	assert.Nil(t, err)
@@ -1313,7 +1313,7 @@ func TestGetRecursiveOnLayerReturnsLayerRecursive(t *testing.T) {
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{devices})
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
-	mockGetObjects(mockAPI, "category=device&id=BASIC.A.R1.**&namespace=physical.hierarchy", []any{chassis, pdu})
+	mockGetObjects(mockAPI, "category=device&id=BASIC.A.R1.**.*&namespace=physical.hierarchy", []any{chassis, pdu})
 
 	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/#devices", nil, &controllers.RecursiveParams{MaxDepth: models.UnlimitedDepth})
 	assert.Nil(t, err)

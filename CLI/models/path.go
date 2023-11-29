@@ -46,7 +46,7 @@ var ErrMaxLessMin = errors.New("max depth cannot be less than the min depth")
 
 // Transforms the path into a recursive path, transforming the * wildcard into **.
 // minDepth and mexDepth are use to set the minimum and maximum amount of children between the path and the results
-func (path *Path) MakeRecursive(minDepth, maxDepth int) error {
+func (path *Path) MakeRecursive(minDepth, maxDepth int, fromPath string) error {
 	depth := ""
 	if maxDepth > UnlimitedDepth {
 		if minDepth > maxDepth {
@@ -60,18 +60,20 @@ func (path *Path) MakeRecursive(minDepth, maxDepth int) error {
 
 	recursiveWildcard := "**" + depth
 
-	index := strings.LastIndex(path.ObjectID, ".*")
-	if index != -1 {
+	if strings.HasSuffix(path.ObjectID, ".*") {
 		// finishes in .*, meaning all the children
-		path.ObjectID = path.ObjectID[:index] + strings.Replace(path.ObjectID[index:], ".*", "."+recursiveWildcard, 1)
+		path.ObjectID = path.ObjectID[:len(path.ObjectID)-2] + "." + recursiveWildcard + ".*"
 		return nil
 	}
 
-	// all the children that are called as the last element of the id
-	idElements := strings.Split(path.ObjectID, ".")
+	fromID := PhysicalPathToObjectID(fromPath)
 
-	idElements[len(idElements)-1] = recursiveWildcard + idElements[len(idElements)-1]
-	path.ObjectID = strings.Join(idElements, ".")
+	if !pie.Contains([]string{"", ".", "_", "-"}, fromID) {
+		index := strings.Index(path.ObjectID, fromID)
+		if index != -1 {
+			path.ObjectID = path.ObjectID[:index] + recursiveWildcard + "." + path.ObjectID[index:]
+		}
+	}
 
 	return nil
 }

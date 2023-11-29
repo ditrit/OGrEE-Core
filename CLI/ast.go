@@ -169,7 +169,7 @@ func (n *cdNode) execute() (interface{}, error) {
 }
 
 type lsNode struct {
-	path      node
+	path      *pathNode
 	filters   map[string]node
 	sortAttr  string
 	recursive recursiveArgs
@@ -187,7 +187,12 @@ func (n *lsNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	recursive, err := n.recursive.toParams()
+	pathEntered, err := n.path.Path()
+	if err != nil {
+		return nil, err
+	}
+
+	recursive, err := n.recursive.toParams(pathEntered)
 	if err != nil {
 		return nil, err
 	}
@@ -423,7 +428,7 @@ func (n *isAttrDrawableNode) execute() (interface{}, error) {
 }
 
 type getObjectNode struct {
-	path      node
+	path      *pathNode
 	filters   map[string]node
 	recursive recursiveArgs
 }
@@ -439,7 +444,12 @@ func (n *getObjectNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	recursive, err := n.recursive.toParams()
+	pathEntered, err := n.path.Path()
+	if err != nil {
+		return nil, err
+	}
+
+	recursive, err := n.recursive.toParams(pathEntered)
 	if err != nil {
 		return nil, err
 	}
