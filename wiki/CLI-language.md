@@ -282,7 +282,7 @@ ls [path] tag=[tag_slug]
 
 #### Filter by category
 
-Several commands are provided for running ls with category filter without typing them by hand: `lssite`, `lsbldg`, `lsroom`, `lsrack`, `lsdev`, `lsac`, `lspanel`, `lscabinet`, `lscorridor`, `lssensor`.
+Several commands are provided for running ls with category filter without typing them by hand: `lssite`, `lsbldg`, `lsroom`, `lsrack`, `lsdev`, `lsac`, `lspanel`, `lscabinet`, `lscorridor`.
 
 In addition, each of these commands accepts all the options of the ls command and the addition of more filters.
 
