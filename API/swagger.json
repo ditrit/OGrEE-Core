@@ -209,18 +209,23 @@
             "bearer": []
           }
         ],
-        "description": "Filters can be applied as query params and a wildcard (*) can be used.",
+        "description": " Special Terms | Meaning                                     |\n-------------  | --------------------------------------------|\n `*`           | matches any sequence of non-path-separators |\n `.**.`        | matches zero or more directories            |\n `.**{m,M}.`   | matches from m to M directories             |\n\nA doublestar (`**`) should appear surrounded by id separators such as `.**.`.\nA mid-pattern doublestar (`**`) behaves like star: a pattern\nsuch as `path.to.**` would return the same results as `path.to.*`. To apply recursion, the\nid you're looking for is `path.to.**.*`.\nExamples:\nid=path.to.a* will return all the children of path.to which name starts with a.\nid=path.to.**.a* will return all the descendant hierarchy of path.to which name starts with a.\nid=path.to.**{1,3}.a* will return all the grandchildren to great-great-grandchildren of path.to which name starts with a.",
         "produces": [
           "application/json"
         ],
         "tags": [
           "Objects"
         ],
-        "summary": "Get all objects from any entity. Return as a list.",
+        "summary": "Get all objects from any entity. Return as a list.\nWildcards can be used on any of the parameters present in query.",
         "operationId": "GetGenericObject",
         "parameters": [
           {
-            "description": "One of the values: physical, physical.stray, physical.hierarchy, logical, logical.objtemplate, logical.bldgtemplate, logical.roomtemplate, organisational. If none provided, all namespaces are used by default.",
+            "description": "id of the object to obtain. If none provided, all objects of the namespace will be obtained",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "description": "One of the values: physical, physical.stray, physical.hierarchy, logical, logical.objtemplate, logical.bldgtemplate, logical.roomtemplate, logical.tag, organisational. If none provided, all namespaces are used by default.",
             "name": "namespace",
             "in": "query"
           },
@@ -269,13 +274,14 @@
             "bearer": []
           }
         ],
+        "description": " Special Terms | Meaning                                     |\n-------------  | --------------------------------------------|\n `*`           | matches any sequence of non-path-separators |\n `.**.`        | matches zero or more directories            |\n `.**{m,M}.`   | matches from m to M directories             |\n\nA doublestar (`**`) should appear surrounded by id separators such as `.**.`.\nA mid-pattern doublestar (`**`) behaves like star: a pattern\nsuch as `path.to.**` would return the same results as `path.to.*`. To apply recursion, the\nid you're looking for is `path.to.**.*`.\nExamples:\nid=path.to.a* will delete all the children of path.to which name starts with a.\nid=path.to.**.a* will delete all the descendant hierarchy of path.to which name starts with a.\nid=path.to.**{1,3}.a* will delete all the grandchildren to great-great-grandchildren of path.to which name starts with a.",
         "produces": [
           "application/json"
         ],
         "tags": [
           "Objects"
         ],
-        "summary": "Deletes an object in the system from any of the entities with no need to specify it..",
+        "summary": "Deletes an object in the system from any of the entities with no need to specify it.\nWildcards can be used on any of the parameters present in query.",
         "operationId": "DeleteGenericObject",
         "parameters": [
           {
@@ -300,7 +306,7 @@
             "in": "query"
           },
           {
-            "description": "One of the values: physical, physical.stray, physical.hierarchy, logical, logical.objtemplate, logical.bldgtemplate, logical.roomtemplate, organisational. If none provided, all namespaces are used by default.",
+            "description": "One of the values: physical, physical.stray, physical.hierarchy, logical, logical.objtemplate, logical.bldgtemplate, logical.roomtemplate, logical.tag, organisational. If none provided, all namespaces are used by default.",
             "name": "namespace",
             "in": "query"
           }
