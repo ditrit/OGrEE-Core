@@ -8,7 +8,7 @@ DESCRIPTION
     Lists the children of type OBJ of the specified path (equivalent to ls with filter: category=[type]).
     Where OBJ can be:
         site
-        bldg
+        building
         room
         rack
         dev
@@ -48,7 +48,7 @@ OPTIONS
 
 EXAMPLES
     lssite
-    lsbldg DEMO_RACK/DeviceA
+    lsbuilding DEMO_RACK/DeviceA
     lsroom /Physical/SiteA
     lsrack $x
     lsdev -s height

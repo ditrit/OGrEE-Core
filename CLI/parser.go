@@ -13,7 +13,7 @@ import (
 type parseCommandFunc func() node
 
 var lsCommands = []string{
-	"ls", "lssite", "lsbuilding", "lsroom",
+	"ls", "lssite", commands.LsBuilding, "lsroom",
 	"lsrack", "lsdev", "lsac",
 	"lspanel", "lscabinet", "lscorridor"}
 
@@ -23,7 +23,7 @@ var manCommands = []string{
 	".cmds", ".template", ".var",
 	commands.Connect3D, "ui", "camera",
 	"link", "unlink",
-	"lssite", "lsbldg", "lsroom", "lsrack", "lsdev", "lsac",
+	"lssite", commands.LsBuilding, "lsroom", "lsrack", "lsdev", "lsac",
 	"lspanel", "lscabinet", "lscorridor", "lsenterprise",
 	"drawable", "draw", "undraw",
 	"tree", "lsog", "env", "cd", "pwd", "clear", "grep", "ls", "exit", "len", "man", "hc",
