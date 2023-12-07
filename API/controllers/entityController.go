@@ -326,8 +326,8 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 // id you're looking for is `path.to.**.*`.
 // Examples:
 // id=path.to.a* will return all the children of path.to which name starts with a.
-// id=path.to.**.a* will return all the descendant hierarchy of path.to which name starts with a.
-// id=path.to.**{1,3}.a* will return all the grandchildren to great-great-grandchildren of path.to which name starts with a.
+// id=path.to.`**`.a* will return all the descendant hierarchy of path.to which name starts with a.
+// id=path.to.`**`{1,3}.a* will return all the grandchildren to great-great-grandchildren of path.to which name starts with a.
 // ---
 // security:
 // - bearer: []
