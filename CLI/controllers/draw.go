@@ -29,7 +29,9 @@ func (controller Controller) Draw(path string, depth int, force bool) error {
 				"Do you want to continue ? (y/n)\n"
 			(*State.Terminal).Write([]byte(msg))
 			(*State.Terminal).SetPrompt(">")
+			(*State.Terminal).Operation.SetDisableAutoSaveHistory(true)
 			ans, _ := (*State.Terminal).Readline()
+			(*State.Terminal).Operation.SetDisableAutoSaveHistory(false)
 			if ans != "y" && ans != "Y" {
 				okToGo = false
 			}
