@@ -109,108 +109,48 @@
         "slug": {
             "type": "string",
             "pattern": "^[a-zA-Z0-9-]+$"
-        }
-    },
-    "if": {
-        "properties": {
-            "category": {
-                "const": "rack"
-            }
-        }
-    },
-    "then": {
-        "properties": {
-            "slots": {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "required": [
-                        "elemOrient",
-                        "elemPos",
-                        "elemSize",
-                        "labelPos",
-                        "location",
-                        "type"
-                    ],
-                    "properties": {
-                        "elemOrient": {
-                            "type": "string",
-                            "enum": [
-                                "horizontal",
-                                "vertical"
-                            ]
-                        },
-                        "attributes": {
-                            "$ref": "#/$defs/attributes"
-                        },
-                        "color": {
-                            "$ref": "#/$defs/color"
-                        },
-                        
-                        "elemPos": {
-                            "$ref": "#/$defs/elemPos"
-                        },
-                        "elemSize": {
-                            "$ref": "#/$defs/elemSize"
-                        },
-                        "labelPos": {
-                            "$ref": "#/$defs/labelPos"
-                        },
-                        "location": {
-                            "type": "string"
-                        },
-                        "type": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        }
-    },
-    "else": {
-        "properties": {
-            "slots": {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "required": [
-                        "elemPos",
-                        "elemSize",
-                        "labelPos",
-                        "location",
-                        "type"
-                    ],
-                    "properties": {
-                        "elemOrient": {
-                            "type": "string",
-                            "enum": [
-                                "horizontal",
-                                "vertical",
-                                ""
-                            ]
-                        },
-                        "attributes": {
-                            "$ref": "#/$defs/attributes"
-                        },
-                        "color": {
-                            "$ref": "#/$defs/color"
-                        },
-                        
-                        "elemPos": {
-                            "$ref": "#/$defs/elemPos"
-                        },
-                        "elemSize": {
-                            "$ref": "#/$defs/elemSize"
-                        },
-                        "labelPos": {
-                            "$ref": "#/$defs/labelPos"
-                        },
-                        "location": {
-                            "type": "string"
-                        },
-                        "type": {
-                            "type": "string"
-                        }
+        },
+        "slots": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "elemOrient",
+                    "elemPos",
+                    "elemSize",
+                    "labelPos",
+                    "location",
+                    "type"
+                ],
+                "properties": {
+                    "elemOrient": {
+                        "type": "string",
+                        "enum": [
+                            "horizontal",
+                            "vertical"
+                        ]
+                    },
+                    "attributes": {
+                        "$ref": "#/$defs/attributes"
+                    },
+                    "color": {
+                        "$ref": "#/$defs/color"
+                    },
+                    
+                    "elemPos": {
+                        "$ref": "#/$defs/elemPos"
+                    },
+                    "elemSize": {
+                        "$ref": "#/$defs/elemSize"
+                    },
+                    "labelPos": {
+                        "$ref": "#/$defs/labelPos"
+                    },
+                    "location": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
                     }
                 }
             }
@@ -291,7 +231,7 @@
                 {
                     "location": "cpu1",
                     "type": "processor",
-                    "elemOrient": "",
+                    "elemOrient": "horizontal",
                     "elemPos": [68, 343, 0],
                     "elemSize": [97, 97, 30],
                     "mandatory": "yes",
