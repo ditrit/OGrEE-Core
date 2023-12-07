@@ -7,6 +7,10 @@ on:
         paths:
         - wiki/**
 
+env:
+  OWNER: ${{ github.event.repository.owner.name }} # This is the repository owner
+  REPOSITORY_NAME: ${{ github.event.repository.name }} # This is the repository name
+
 jobs:
     verify_conflicts_wiki:
         name: Verify conflicts in wiki
@@ -25,7 +29,7 @@ jobs:
                 mkdir tmp_wiki
                 cd tmp_wiki
                 git init
-                git pull https://github.com/ditrit/OGrEE-Core.wiki.git
+                git pull https://github.com/$OWNER/$REPOSITORY_NAME.wiki.git
             - name: Setup main branch locally without switching current branch
               run: git fetch origin main:main
             # 4. Try to apply all the changes to the wiki
