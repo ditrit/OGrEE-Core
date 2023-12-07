@@ -314,7 +314,6 @@ func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 								Message: "Unable to verify objects in specified group" +
 									" please check and try again"}
 						}
-
 					} else if parent["parent"].(string) == "room" {
 						//If parent is room, retrieve corridors and racks
 						corridors, err := GetManyObjects("corridor", filter, u.RequestFilters{}, nil)
@@ -330,6 +329,21 @@ func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 							return &u.Error{Type: u.ErrBadFormat,
 								Message: "Some object(s) could be not be found. " +
 									"Please check and try again"}
+						}
+					}
+
+					// Check if Group ID is unique
+					entities := u.GetEntitiesByNamespace(u.Physical, t["id"].(string))
+					for _, entStr := range entities {
+						// Get objects
+						entData, err := GetManyObjects(entStr, bson.M{"id": t["id"]}, u.RequestFilters{}, nil)
+						if err != nil {
+							err.Message = "Error while check id unicity at " + entStr + ":" + err.Message
+							return err
+						}
+						if len(entData) > 0 {
+							return &u.Error{Type: u.ErrBadFormat,
+								Message: "This group ID is not unique among " + entStr + "s"}
 						}
 					}
 				}
