@@ -481,6 +481,12 @@ func (o *Operation) SetHistoryPath(path string) {
 	o.history = newOpHistory(o.cfg)
 }
 
+func (o *Operation) SetDisableAutoSaveHistory(valeur bool) {
+	o.m.Lock()
+	o.cfg.DisableAutoSaveHistory = valeur
+	o.m.Unlock()
+}
+
 func (o *Operation) IsNormalMode() bool {
 	return !o.IsInCompleteMode() && !o.IsSearchMode()
 }
