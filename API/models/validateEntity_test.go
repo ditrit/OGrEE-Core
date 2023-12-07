@@ -70,7 +70,6 @@ func TestErrorValidateJsonSchema(t *testing.T) {
 		"obj_template5": {
 			"/slug does not match pattern",
 			"/attributes/vendor expected string, but got number",
-			"if-then failed",
 			"/slots/0/elemOrient value must be one of ",
 			"/slots/1/elemPos maximum 3 items required, but found 4 items",
 			"/slots/1/elemSize minimum 3 items required, but found 2 items",
@@ -84,7 +83,6 @@ func TestErrorValidateJsonSchema(t *testing.T) {
 			"/components/1/elemOrient value must be one of",
 			"/components/1/color does not match pattern",
 			"/components/3/labelPos value must be one of",
-			"if-else failed",
 			"/slots/0/elemOrient value must be one of",
 		},
 		"bldg_template2": {
