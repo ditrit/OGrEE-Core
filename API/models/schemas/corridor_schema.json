@@ -23,7 +23,7 @@
                 },
                 "heightUnit": {
                     "type": "string",
-                    "$ref": "refs/types.json#/definitions/metricImperialUUnit"
+                    "$ref": "refs/types.json#/definitions/metricImperialUnit"
                 },
                 "rotation": {
                     "type": "string",
