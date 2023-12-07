@@ -1,0 +1,59 @@
+NAME
+    lsOBJ - list children of a type
+
+SYNOPSIS
+    lsOBJ [OPTION]... [PATH] [FILTERS]
+
+DESCRIPTION
+    Lists the children of type OBJ of the specified path (equivalent to ls with filter: category=[type]).
+    Where OBJ can be:
+        site
+        building
+        room
+        rack
+        dev
+        ac
+        cabinet
+        corridor
+        panel
+
+    If no PATH is given, then the current path will be used (equivalent to "ls .").
+
+    [FILTERS] is an optional list of filters that can be used to only list the children that meet certain conditions.
+    In order to use FILTERS, PATH must be present.
+    The format to use is attribute1=expected_value,attribute2=expected_value,....
+
+OPTIONS
+    -s attribute_name
+        Specifies the attribute of the objects to be used to sort the results.
+        By default, the results are listed in alphabetical order according to their name.
+
+    -f attributes
+        The results are listed with the attributes present in format.
+        The format of attributes is a list separated by : (attribute1:attribute2:...)
+
+    -r
+        Specifies that you want to do a recursive ls, i.e., not only list the direct children but the entire descendant hierarchy.
+        This option can only be used when there are FILTERS or the PATH is a layer.
+
+    -m min_depth
+        Only affects when used in conjunction with -r.
+        Specifies the minimum number of children between the PATH and the listed results.
+        Default is 0.
+
+    -M max_depth
+        Only affects when used in conjunction with -r.
+        Specifies the maximum number of children between the PATH and the listed results.
+        Default is no limit.
+
+EXAMPLES
+    lssite
+    lsbuilding DEMO_RACK/DeviceA
+    lsroom /Physical/SiteA
+    lsrack $x
+    lsdev -s height
+    lsac -f height:size
+    lscabinet -s height -f size
+    lscorridor . height=12
+    lspanel -r .
+    lssite -r -m 1 -M 2 .

@@ -13,7 +13,7 @@ import (
 type parseCommandFunc func() node
 
 var lsCommands = []string{
-	"ls", "lssite", "lsbuilding", "lsroom",
+	"ls", "lssite", commands.LsBuilding, "lsroom",
 	"lsrack", "lsdev", "lsac",
 	"lspanel", "lscabinet", "lscorridor"}
 
@@ -23,7 +23,7 @@ var manCommands = []string{
 	".cmds", ".template", ".var",
 	commands.Connect3D, "ui", "camera",
 	"link", "unlink",
-	"lssite", "lsbldg", "lsroom", "lsrack", "lsdev", "lsac",
+	"lssite", commands.LsBuilding, "lsroom", "lsrack", "lsdev", "lsac",
 	"lspanel", "lscabinet", "lscorridor", "lsenterprise",
 	"drawable", "draw", "undraw",
 	"tree", "lsog", "env", "cd", "pwd", "clear", "grep", "ls", "exit", "len", "man", "hc",
@@ -605,16 +605,38 @@ func (p *parser) parseIndexing() node {
 
 func (p *parser) parseLs(category string) node {
 	defer un(trace(p, "ls"))
-	args := p.parseArgs([]string{"s", "f"}, nil, "ls")
+	args := p.parseArgs([]string{"s", "f", "M", "m"}, []string{"r"}, "ls")
 	path := p.parsePath("")
 	var attrList []string
 	if formatArg, ok := args["f"]; ok {
 		attrList = strings.Split(formatArg, ":")
 	}
-	filters := map[string]node{}
+
+	filters := p.parseFilters()
 	if category != "" {
-		filters["category"] = &valueNode{category}
+		filters["category"] = &valueNode{
+			models.EntityToString(models.EntityStrToInt(category)),
+		}
 	}
+
+	_, isRecursive := args["r"]
+
+	return &lsNode{
+		path:     path,
+		filters:  filters,
+		sortAttr: args["s"],
+		recursive: recursiveArgs{
+			isRecursive: isRecursive,
+			minDepth:    args["m"],
+			maxDepth:    args["M"],
+		},
+		attrList: attrList,
+	}
+}
+
+func (p *parser) parseFilters() map[string]node {
+	filters := map[string]node{}
+
 	first := true
 	for !p.commandEnd() {
 		p.skipWhiteSpaces()
@@ -627,12 +649,24 @@ func (p *parser) parseLs(category string) node {
 		attrVal := p.parseValue()
 		filters[attrName] = attrVal
 	}
-	return &lsNode{path, filters, args["s"], attrList}
+
+	return filters
 }
 
 func (p *parser) parseGet() node {
 	defer un(trace(p, "get"))
-	return &getObjectNode{p.parsePath("")}
+	args := p.parseArgs([]string{"m", "M"}, []string{"r"}, "get")
+	_, isRecursive := args["r"]
+
+	path := p.parsePath("")
+
+	filters := p.parseFilters()
+
+	return &getObjectNode{path: path, filters: filters, recursive: recursiveArgs{
+		isRecursive: isRecursive,
+		minDepth:    args["m"],
+		maxDepth:    args["M"],
+	}}
 }
 
 func (p *parser) parseGetU() node {

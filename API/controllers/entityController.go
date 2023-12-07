@@ -312,13 +312,32 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 
 // swagger:operation GET /api/objects Objects GetGenericObject
 // Get all objects from any entity. Return as a list.
-// Filters can be applied as query params and a wildcard (*) can be used.
+// Wildcards can be used on any of the parameters present in query.
+//
+// | Special Terms | Meaning                                     |
+// |-------------  | --------------------------------------------|
+// | `*`           | matches any sequence of non-path-separators |
+// | `.**.`        | matches zero or more directories            |
+// | `.**{m,M}.`   | matches from m to M directories             |
+//
+// A doublestar (`**`) should appear surrounded by id separators such as `.**.`.
+// A mid-pattern doublestar (`**`) behaves like star: a pattern
+// such as `path.to.**` would return the same results as `path.to.*`. To apply recursion, the
+// id you're looking for is `path.to.**.*`.
+// Examples:
+// id=path.to.a* will return all the children of path.to which name starts with a.
+// id=path.to.`**`.a* will return all the descendant hierarchy of path.to which name starts with a.
+// id=path.to.`**`{1,3}.a* will return all the grandchildren to great-great-grandchildren of path.to which name starts with a.
 // ---
 // security:
 // - bearer: []
 // produces:
 // - application/json
 // parameters:
+//   - name: id
+//     in: path
+//     description: 'id of the object to obtain.
+//     If none provided, all objects of the namespace will be obtained'
 //   - name: namespace
 //     in: query
 //     description: 'One of the values: physical, physical.stray, physical.hierarchy,
@@ -362,7 +381,23 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 //		    description: Internal Error. A system error stopped the request.
 
 // swagger:operation DELETE /api/objects Objects DeleteGenericObject
-// Deletes an object in the system from any of the entities with no need to specify it..
+// Deletes an object in the system from any of the entities with no need to specify it.
+// Wildcards can be used on any of the parameters present in query.
+//
+// | Special Terms | Meaning                                     |
+// |-------------  | --------------------------------------------|
+// | `*`           | matches any sequence of non-path-separators |
+// | `.**.`        | matches zero or more directories            |
+// | `.**{m,M}.`   | matches from m to M directories             |
+//
+// A doublestar (`**`) should appear surrounded by id separators such as `.**.`.
+// A mid-pattern doublestar (`**`) behaves like star: a pattern
+// such as `path.to.**` would return the same results as `path.to.*`. To apply recursion, the
+// id you're looking for is `path.to.**.*`.
+// Examples:
+// id=path.to.a* will delete all the children of path.to which name starts with a.
+// id=path.to.**.a* will delete all the descendant hierarchy of path.to which name starts with a.
+// id=path.to.**{1,3}.a* will delete all the grandchildren to great-great-grandchildren of path.to which name starts with a.
 // ---
 // security:
 // - bearer: []

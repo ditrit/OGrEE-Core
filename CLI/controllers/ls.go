@@ -2,11 +2,9 @@ package controllers
 
 import (
 	"cli/models"
-	"cli/utils"
 	"errors"
 	"fmt"
 	"net/http"
-	"sort"
 	"strings"
 
 	"github.com/elliotchance/pie/v2"
@@ -14,61 +12,23 @@ import (
 )
 
 var errLayerNotFound = errors.New("the layer used does not exist")
+var ErrRecursiveOnlyFiltersLayers = errors.New("-r can only be applied to ls with filters or layers")
 
-func (controller Controller) Ls(path string, filters map[string]string, sortAttr string) ([]map[string]any, error) {
-	var objects []map[string]any
-	var err error
-
-	if len(filters) == 0 && !models.PathIsLayer(path) {
-		objects, err = controller.lsObjectsWithoutFilters(path)
-	} else {
-		objects, err = controller.lsObjectsWithFilters(path, filters)
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	if sortAttr != "" {
-		objects = pie.Filter(objects, func(object map[string]any) bool {
-			_, hasAttr := utils.ObjectAttr(object, sortAttr)
-			return hasAttr
-		})
-
-		if !objectsAreSortable(objects, sortAttr) {
-			return nil, fmt.Errorf("objects cannot be sorted according to this attribute")
-		}
-
-		sort.Slice(objects, func(i, j int) bool {
-			vali, _ := utils.ObjectAttr(objects[i], sortAttr)
-			valj, _ := utils.ObjectAttr(objects[j], sortAttr)
-			res, _ := utils.CompareVals(vali, valj)
-			return res
-		})
-	} else {
-		sort.Slice(objects, func(i, j int) bool {
-			if isObjectLayer(objects[i]) {
-				if !isObjectLayer(objects[j]) {
-					return false
-				}
-			} else if isObjectLayer(objects[j]) {
-				return true
-			}
-
-			return utils.NameOrSlug(objects[i]) < utils.NameOrSlug(objects[j])
-		})
-	}
-
-	return objects, nil
+type RecursiveParams struct {
+	PathEntered string
+	MinDepth    int
+	MaxDepth    int
 }
 
-func isObjectLayer(object map[string]any) bool {
-	name, hasName := object["name"].(string)
-	if !hasName {
-		return false
+func (controller Controller) Ls(path string, filters map[string]string, recursive *RecursiveParams) ([]map[string]any, error) {
+	if len(filters) == 0 && !models.PathIsLayer(path) {
+		if recursive != nil {
+			return nil, ErrRecursiveOnlyFiltersLayers
+		}
+		return controller.lsObjectsWithoutFilters(path)
 	}
 
-	return models.IsObjectIDLayer(name)
+	return controller.lsObjectsWithFilters(path, filters, recursive)
 }
 
 func (controller Controller) lsObjectsWithoutFilters(path string) ([]map[string]any, error) {
@@ -96,42 +56,34 @@ func (controller Controller) lsObjectsWithoutFilters(path string) ([]map[string]
 	return objects, nil
 }
 
-func (controller Controller) lsObjectsWithFilters(path string, filters map[string]string) ([]map[string]any, error) {
-	url, err := controller.ObjectUrlGeneric(path+"/*", 0, filters)
+func (controller Controller) lsObjectsWithFilters(path string, filters map[string]string, recursive *RecursiveParams) ([]map[string]any, error) {
+	url, err := controller.ObjectUrlGeneric(path+"/*", 0, filters, recursive)
 	if err != nil {
-		if errors.Is(err, errLayerNotFound) {
+		if errors.Is(err, errLayerNotFound) || errors.Is(err, models.ErrMaxLessMin) {
 			return nil, err
 		}
 
 		return nil, fmt.Errorf("cannot use filters at this location")
 	}
 
-	resp, err := controller.API.Request("GET", url, nil, http.StatusOK)
+	resp, err := controller.API.Request(http.MethodGet, url, nil, http.StatusOK)
 	if err != nil {
 		return nil, err
 	}
+
 	objectsAny := resp.Body["data"].([]any)
 	objects := []map[string]any{}
+
 	for _, objAny := range objectsAny {
 		obj, ok := objAny.(map[string]any)
 		if !ok {
 			return nil, fmt.Errorf("invalid response from API on GET %s", url)
 		}
+
 		objects = append(objects, obj)
 	}
-	return objects, nil
-}
 
-func objectsAreSortable(objects []map[string]any, attr string) bool {
-	for i := 1; i < len(objects); i++ {
-		val0, _ := utils.ObjectAttr(objects[0], attr)
-		vali, _ := utils.ObjectAttr(objects[i], attr)
-		_, comparable := utils.CompareVals(val0, vali)
-		if !comparable {
-			return false
-		}
-	}
-	return true
+	return objects, nil
 }
 
 // Obtains a HierarchyNode using Tree and adds the layers

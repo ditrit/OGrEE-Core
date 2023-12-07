@@ -22,6 +22,7 @@
   - [Select child / children object](#select-child--children-object)
   - [Select parent object](#select-parent-object)
   - [Get object/s](#get-objects)
+    - [Wildcards](#wildcards)
   - [Ls object](#ls-object)
     - [Layers](#layers)
       - [Room's automatic layers](#rooms-automatic-layers)
@@ -29,6 +30,7 @@
       - [Device's automatic layers](#devices-automatic-layers)
     - [Filters](#filters)
       - [Filter by tag](#filter-by-tag)
+      - [Filter by category](#filter-by-category)
   - [Tree](#tree)
   - [Delete object](#delete-object)
   - [Focus an object](#focus-an-object)
@@ -208,7 +210,49 @@ The information of an object or a list of objects can be obtained using the get 
 get [path]
 ```
 
-where `[path]` can be either the path of a single object (get rack1) or a list of objects using wildcards (get rack1/*).
+where `[path]` can be either the path of a single object (get rack1) or a list of objects using wildcards (get rack1/*) (see [Wildcards](#wildcards)).
+
+To see all possible options run:
+
+```
+man get
+```
+
+### Wildcards
+
+The path used for the get command may contain wildcards:
+
+Special Terms | Meaning
+------------- | -------
+`*`           | matches any sequence of non-path-separators (including 0 characters)
+`/**/`        | matches zero or more directories
+
+Any character with a special meaning can be escaped with a backslash (`\`).
+
+For example:
+
+- `get A*` will allow you to obtain all objects whose name begins with A (or is A).
+- `get *A` will allow you to obtain all objects whose name finishes with A (or is A).
+- `get *A*` will allow you to obtain all objects whose name has an A (or is A).
+- `get *` will allow you to obtain all objects which are children of the current object.
+- `get path/to/*` will allow you to obtain all objects which are children of `path/to`.
+
+A doublestar (`**`) should appear surrounded by path separators such as `/**/`.
+A mid-pattern doublestar (`**`) behaves like bash's globstar option: a pattern
+such as `path/to/**` would return the same results as `path/to/*`. The
+pattern you're looking for is `path/to/**/*`.
+
+For example:
+
+- `get **/*` will allow to obtain all the objects that are in the descending inheritance of the current object.
+- `get **/A*` will allow to obtain all the objects that are in the descending inheritance of the current object whose name begins with A.
+
+Using the -r parameter will automatically add a doublestar to your search being:
+
+- `get -r A*` equivalent to `get **/A*`.
+- `get -r *` equivalent to `get **/*`.
+
+By using the -r option you can select the minimum and maximum depth of the search with the -m and -M parameters, while these options do not exist using `/**/` manually.
 
 ## Ls object
 
@@ -220,6 +264,12 @@ ls [path]
 
 ls can also be used without [path] to do ls on the current path.
 
+To see all possible options run:
+
+```
+man ls
+```
+
 ### Layers
 
 When ls is performed on an object, the corresponding layers are added. These make navigation easier since they group the children of the object according to their characteristics.
@@ -227,6 +277,18 @@ When ls is performed on an object, the corresponding layers are added. These mak
 The automatic layers are those that are added automatically depending on the entity of the object on which the ls is performed. They will appear only if at least one of the children of the object meets the conditions of the layer. The list of automatic layers added to each entity is described in the following sections.
 
 In addition, custom layers can be created. For this, see [Create a Layer](#create-a-layer).
+
+Layers can be used with the `ls` and `get` commands to list and to get the information of all the objects that meet the conditions of the layer. By default, only direct children of the object to which the layer belongs will be part of the response of these commands. To get results in the object hierarchy use the -r flag:
+
+```
+ls -r [layer_name]
+```
+
+or
+
+```
+get -r [layer_name]
+```
 
 #### Room's automatic layers
 
@@ -254,6 +316,12 @@ By adding the filter tag=[tag_slug] to the ls, we can obtain the children that h
 ```
 ls [path] tag=[tag_slug]
 ```
+
+#### Filter by category
+
+Several commands are provided for running ls with category filter without typing them by hand: `lssite`, `lsbuilding`, `lsroom`, `lsrack`, `lsdev`, `lsac`, `lspanel`, `lscabinet`, `lscorridor`.
+
+In addition, each of these commands accepts all the options of the ls command and the addition of more filters.
 
 ## Tree
 
@@ -469,8 +537,8 @@ Any character with a special meaning can be escaped with a backslash (`\`).
 
 A doublestar (`**`) should appear surrounded by path separators such as `/**/`.
 A mid-pattern doublestar (`**`) behaves like bash's globstar option: a pattern
-such as `path/to/**.txt` would return the same results as `path/to/*.txt`. The
-pattern you're looking for is `path/to/**/*.txt`.
+such as `path/to/**` would return the same results as `path/to/*`. The
+pattern you're looking for is `path/to/**/*`.
 
 #### Character Classes
 

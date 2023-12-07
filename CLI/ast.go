@@ -169,10 +169,11 @@ func (n *cdNode) execute() (interface{}, error) {
 }
 
 type lsNode struct {
-	path     node
-	filters  map[string]node
-	sortAttr string
-	attrList []string
+	path      *pathNode
+	filters   map[string]node
+	sortAttr  string
+	recursive recursiveArgs
+	attrList  []string
 }
 
 func (n *lsNode) execute() (interface{}, error) {
@@ -180,32 +181,51 @@ func (n *lsNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	filters := map[string]string{}
-	for key := range n.filters {
-		filterVal, err := n.filters[key].execute()
-		if err != nil {
-			return nil, err
-		}
-		filters[key] = filterVal.(string)
-	}
-	objects, err := cmd.C.Ls(path, filters, n.sortAttr)
+
+	filters, err := filtersToMapString(n.filters)
 	if err != nil {
 		return nil, err
 	}
+
+	pathEntered, err := n.path.Path()
+	if err != nil {
+		return nil, err
+	}
+
+	recursive, err := n.recursive.toParams(pathEntered)
+	if err != nil {
+		return nil, err
+	}
+
+	objects, err := cmd.C.Ls(path, filters, recursive)
+	if err != nil {
+		return nil, err
+	}
+
+	var relativePath *views.RelativePathArgs
+	if n.recursive.isRecursive {
+		relativePath = &views.RelativePathArgs{
+			FromPath: path,
+		}
+	}
+
 	if n.attrList == nil {
 		n.attrList = []string{}
 	}
-	if n.sortAttr != "" {
-		n.attrList = append([]string{n.sortAttr}, n.attrList...)
-	}
 
-	if n.sortAttr == "" {
-		views.Objects(objects)
+	var toPrint string
+	if len(n.attrList) == 0 {
+		toPrint, err = views.Ls(objects, n.sortAttr, relativePath)
 	} else {
-		views.SortedObjects(objects, n.attrList)
+		toPrint, err = views.LsWithFormat(objects, n.sortAttr, relativePath, n.attrList)
 	}
 
-	return nil, nil
+	if err == nil {
+		fmt.Print(toPrint)
+	}
+
+	return nil, err
+
 }
 
 type getUNode struct {
@@ -373,7 +393,9 @@ func (n *isAttrDrawableNode) execute() (interface{}, error) {
 }
 
 type getObjectNode struct {
-	path node
+	path      *pathNode
+	filters   map[string]node
+	recursive recursiveArgs
 }
 
 func (n *getObjectNode) execute() (interface{}, error) {
@@ -382,18 +404,39 @@ func (n *getObjectNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	objs, _, err := cmd.C.GetObjectsWildcard(path)
+	filters, err := filtersToMapString(n.filters)
 	if err != nil {
 		return nil, err
 	}
 
-	if !strings.Contains(path, "*") && len(objs) == 0 {
+	pathEntered, err := n.path.Path()
+	if err != nil {
+		return nil, err
+	}
+
+	recursive, err := n.recursive.toParams(pathEntered)
+	if err != nil {
+		return nil, err
+	}
+
+	objs, _, err := cmd.C.GetObjectsWildcard(path, filters, recursive)
+	if err != nil {
+		return nil, err
+	}
+
+	if !strings.Contains(path, "*") && !models.PathIsLayer(path) && len(objs) == 0 {
 		return nil, errors.New("object not found")
+	}
+
+	objs, err = views.SortObjects(objs, "")
+	if err != nil {
+		return nil, err
 	}
 
 	for _, obj := range objs {
 		views.Object(path, obj)
 	}
+
 	return objs, nil
 }
 

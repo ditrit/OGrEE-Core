@@ -254,9 +254,28 @@ func TestParseLs(t *testing.T) {
 		"attr1":    &valueNode{"a"},
 		"attr2":    &valueNode{"b"},
 	}
-	expected := &lsNode{path, filters, sort, attrList}
+	expected := &lsNode{path: path, filters: filters, sortAttr: sort, attrList: attrList}
 	testCommand(buffer, expected, t)
 	buffer = "lsbuilding -s height - f \"attr1:attr2\" plouf.plaf attr1=a, attr2=b"
+	testCommand(buffer, expected, t)
+}
+
+func TestParseLsRecursive(t *testing.T) {
+	path := &pathNode{path: &valueNode{"#test"}}
+	expected := &lsNode{path: path, filters: map[string]node{}, recursive: recursiveArgs{isRecursive: true}}
+	buffer := "ls -r #test"
+	testCommand(buffer, expected, t)
+
+	expected = &lsNode{path: path, filters: map[string]node{}, recursive: recursiveArgs{isRecursive: true, minDepth: "1"}}
+	buffer = "ls -r -m 1 #test"
+	testCommand(buffer, expected, t)
+
+	expected = &lsNode{path: path, filters: map[string]node{}, recursive: recursiveArgs{isRecursive: true, minDepth: "1", maxDepth: "2"}}
+	buffer = "ls -r -m 1 -M 2 #test"
+	testCommand(buffer, expected, t)
+
+	expected = &lsNode{path: path, filters: map[string]node{}, recursive: recursiveArgs{isRecursive: false, minDepth: "1", maxDepth: "2"}}
+	buffer = "ls -m 1 -M 2 #test"
 	testCommand(buffer, expected, t)
 }
 
@@ -277,35 +296,37 @@ func vec4(x float64, y float64, z float64, w float64) node {
 }
 
 var commandsMatching = map[string]node{
-	"man":                            &helpNode{""},
-	"man draw":                       &helpNode{"draw"},
-	"man camera":                     &helpNode{"camera"},
-	"man ui":                         &helpNode{"ui"},
-	"ls":                             &lsNode{&pathNode{path: &valueNode{""}}, map[string]node{}, "", nil},
-	"cd":                             &cdNode{&pathNode{path: &valueNode{"/"}}},
-	"tree":                           &treeNode{&pathNode{path: &valueNode{"."}}, 1},
-	"get ${toto}/tata":               &getObjectNode{testPath},
-	"getu rackA 42":                  &getUNode{&pathNode{path: &valueNode{"rackA"}}, &valueNode{42}},
-	"undraw":                         &undrawNode{nil},
-	"undraw ${toto}/tata":            &undrawNode{testPath},
-	"draw":                           &drawNode{&pathNode{path: &valueNode{""}}, 0, false},
-	"draw ${toto}/tata":              &drawNode{testPath, 0, false},
-	"draw ${toto}/tata 4":            &drawNode{testPath, 4, false},
-	"draw -f":                        &drawNode{&pathNode{path: &valueNode{""}}, 0, true},
-	"draw -f ${toto}/tata":           &drawNode{testPath, 0, true},
-	"draw -f ${toto}/tata 4 ":        &drawNode{testPath, 4, true},
-	".cmds:../toto/tata.ocli":        &loadNode{&valueNode{"../toto/tata.ocli"}},
-	".template:../toto/tata.ocli":    &loadTemplateNode{&valueNode{"../toto/tata.ocli"}},
-	".var:a=42":                      &assignNode{"a", &valueNode{"42"}},
-	".var:b= $(($a+3))":              &assignNode{"b", &formatStringNode{&valueNode{"%v"}, []node{&arithNode{"+", &symbolReferenceNode{"a"}, &valueNode{3}}}}},
-	"=${toto}/tata":                  &selectObjectNode{testPath},
-	"=..":                            &selectObjectNode{&pathNode{path: &valueNode{".."}}},
-	"={${toto}/tata}":                &selectChildrenNode{[]node{testPath}},
-	"={${toto}/tata, /toto/../tata}": &selectChildrenNode{[]node{testPath, testPath2}},
-	"-${toto}/tata":                  &deleteObjNode{testPath},
-	">${toto}/tata":                  &focusNode{testPath},
-	"+site:${toto}/tata":             &createSiteNode{testPath},
-	"+si:${toto}/tata":               &createSiteNode{testPath},
+	"man":                               &helpNode{""},
+	"man draw":                          &helpNode{"draw"},
+	"man camera":                        &helpNode{"camera"},
+	"man ui":                            &helpNode{"ui"},
+	"ls":                                &lsNode{path: &pathNode{path: &valueNode{""}}, filters: map[string]node{}},
+	"cd":                                &cdNode{&pathNode{path: &valueNode{"/"}}},
+	"tree":                              &treeNode{&pathNode{path: &valueNode{"."}}, 1},
+	"get ${toto}/tata":                  &getObjectNode{path: testPath, filters: map[string]node{}},
+	"get -r ${toto}/tata":               &getObjectNode{path: testPath, filters: map[string]node{}, recursive: recursiveArgs{isRecursive: true}},
+	"get -r ${toto}/tata category=room": &getObjectNode{path: testPath, filters: map[string]node{"category": &valueNode{"room"}}, recursive: recursiveArgs{isRecursive: true}},
+	"getu rackA 42":                     &getUNode{&pathNode{path: &valueNode{"rackA"}}, &valueNode{42}},
+	"undraw":                            &undrawNode{nil},
+	"undraw ${toto}/tata":               &undrawNode{testPath},
+	"draw":                              &drawNode{&pathNode{path: &valueNode{""}}, 0, false},
+	"draw ${toto}/tata":                 &drawNode{testPath, 0, false},
+	"draw ${toto}/tata 4":               &drawNode{testPath, 4, false},
+	"draw -f":                           &drawNode{&pathNode{path: &valueNode{""}}, 0, true},
+	"draw -f ${toto}/tata":              &drawNode{testPath, 0, true},
+	"draw -f ${toto}/tata 4 ":           &drawNode{testPath, 4, true},
+	".cmds:../toto/tata.ocli":           &loadNode{&valueNode{"../toto/tata.ocli"}},
+	".template:../toto/tata.ocli":       &loadTemplateNode{&valueNode{"../toto/tata.ocli"}},
+	".var:a=42":                         &assignNode{"a", &valueNode{"42"}},
+	".var:b= $(($a+3))":                 &assignNode{"b", &formatStringNode{&valueNode{"%v"}, []node{&arithNode{"+", &symbolReferenceNode{"a"}, &valueNode{3}}}}},
+	"=${toto}/tata":                     &selectObjectNode{testPath},
+	"=..":                               &selectObjectNode{&pathNode{path: &valueNode{".."}}},
+	"={${toto}/tata}":                   &selectChildrenNode{[]node{testPath}},
+	"={${toto}/tata, /toto/../tata}":    &selectChildrenNode{[]node{testPath, testPath2}},
+	"-${toto}/tata":                     &deleteObjNode{testPath},
+	">${toto}/tata":                     &focusNode{testPath},
+	"+site:${toto}/tata":                &createSiteNode{testPath},
+	"+si:${toto}/tata":                  &createSiteNode{testPath},
 	"+building:${toto}/tata@[1., 2.]@3.@[.1, 2., 3.]":           &createBuildingNode{testPath, vec2(1., 2.), &valueNode{3.}, vec3(.1, 2., 3.)},
 	"+room:${toto}/tata@[1., 2.]@3.@[.1, 2., 3.]@+x-y":          &createRoomNode{testPath, vec2(1., 2.), &valueNode{3.}, vec3(.1, 2., 3.), &valueNode{"+x-y"}, nil, nil},
 	"+room:${toto}/tata@[1., 2.]@3.@[.1, 2., 3.]@+x-y@m":        &createRoomNode{testPath, vec2(1., 2.), &valueNode{3.}, vec3(.1, 2., 3.), &valueNode{"+x-y"}, &valueNode{"m"}, nil},
@@ -405,7 +426,7 @@ func TestElif(t *testing.T) {
 	command := "if 5 == 6  {ls;} elif 5 == 4 {tree;} else {pwd;}"
 	condition := &equalityNode{"==", &valueNode{5}, &valueNode{6}}
 	conditionElif := &equalityNode{"==", &valueNode{5}, &valueNode{4}}
-	ifBody := &ast{[]node{&lsNode{&pathNode{path: &valueNode{""}}, map[string]node{}, "", nil}, nil}}
+	ifBody := &ast{[]node{&lsNode{path: &pathNode{path: &valueNode{""}}, filters: map[string]node{}}, nil}}
 	elifBody := &ast{[]node{&treeNode{&pathNode{path: &valueNode{"."}}, 1}, nil}}
 	elseBody := &ast{[]node{&pwdNode{}, nil}}
 	elif := &ifNode{conditionElif, elifBody, elseBody}

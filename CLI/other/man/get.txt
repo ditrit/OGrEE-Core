@@ -1,0 +1,43 @@
+NAME
+    get - get object information
+
+SYNOPSIS
+    get [OPTION]... [PATH] [FILTERS]
+
+DESCRIPTION
+    Retrieves object information from API and displays it's information in JSON format.
+
+    If no PATH is given, then the current path will be used (equivalent to "get .").
+    PATH can use the character * to use wildcards. A PATH equal to * means all objects in the current path while A* means all object which name starts with A.
+
+    [FILTERS] is an optional list of filters that can be used to only get the objects that meet certain conditions.
+    In order to use FILTERS, PATH must be present.
+    The format to use is attribute1=expected_value,attribute2=expected_value,....
+
+OPTIONS
+    -r
+        Specifies that you want to do a recursive get, i.e., not only get objects in the current path but the entire descendant hierarchy.
+        Using -r [name] will search for all objects with that name in the descendant hierarchy.
+        [name] can have wildcards as A*.
+
+    -m min_depth
+        Only affects when used in conjunction with -r.
+        Specifies the minimum number of children between the PATH and the results.
+        Default is 0.
+
+    -M max_depth
+        Only affects when used in conjunction with -r.
+        Specifies the maximum number of children between the PATH and the results.
+        Default is no limit.
+
+EXAMPLES
+    get
+    get SiteA
+    get /Physical/SiteB
+    get *
+    get A*
+    get A* category=rack
+    get -r A*
+    get #racks
+    get -r #racks
+    get -r -m 1 -M 2 #racks

@@ -3,6 +3,7 @@ package controllers_test
 import (
 	"cli/controllers"
 	"cli/models"
+	"cli/utils"
 	"testing"
 	"time"
 
@@ -73,10 +74,10 @@ func TestCpLayerWhenSourceIsCachedCopiesSource(t *testing.T) {
 	mockClock.On("Now").Return(now).Once()
 	mockGetObjectsByEntity(mockAPI, "layers", []any{layer1})
 
-	objects, err := controller.Ls("/Logical/Layers", nil, "")
+	objects, err := controller.Ls("/Logical/Layers", nil, nil)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
-	assert.Equal(t, "layer1", objects[0]["name"])
+	utils.ContainsObjectNamed(t, objects, "layer1")
 
 	mockGetObjectByEntity(mockAPI, "layers", layer1)
 	mockCreateObject(mockAPI, "layer", map[string]any{
@@ -89,18 +90,18 @@ func TestCpLayerWhenSourceIsCachedCopiesSource(t *testing.T) {
 	assert.Nil(t, err)
 
 	mockClock.On("Now").Return(now.Add(5 * time.Second)).Once()
-	objects, err = controller.Ls("/Logical/Layers", nil, "")
+	objects, err = controller.Ls("/Logical/Layers", nil, nil)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 2)
-	assert.Equal(t, "layer1", objects[0]["name"])
-	assert.Equal(t, "layer2", objects[1]["name"])
+	utils.ContainsObjectNamed(t, objects, "layer1")
+	utils.ContainsObjectNamed(t, objects, "layer2")
 
 	mockGetObjectHierarchy(mockAPI, roomWithoutChildren)
 	mockClock.On("Now").Return(now.Add(6 * time.Second)).Once()
 
-	objects, err = controller.Ls("/Physical/BASIC/A/R1", nil, "")
+	objects, err = controller.Ls("/Physical/BASIC/A/R1", nil, nil)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 2)
-	assert.Equal(t, "#layer1", objects[0]["name"])
-	assert.Equal(t, "#layer2", objects[1]["name"])
+	utils.ContainsObjectNamed(t, objects, "#layer1")
+	utils.ContainsObjectNamed(t, objects, "#layer2")
 }

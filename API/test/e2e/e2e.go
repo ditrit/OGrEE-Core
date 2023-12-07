@@ -2,6 +2,7 @@ package e2e
 
 import (
 	"bytes"
+	"encoding/json"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -10,6 +11,7 @@ import (
 	"p3/router"
 	_ "p3/test/integration"
 
+	"github.com/elliotchance/pie/v2"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -48,4 +50,19 @@ func MakeRequest(method, url string, requestBody []byte) *httptest.ResponseRecor
 	appRouter.ServeHTTP(recorder, request)
 
 	return recorder
+}
+
+func GetObjects(queryParams string) (*httptest.ResponseRecorder, []map[string]any) {
+	response := MakeRequest(http.MethodGet, router.GenericObjectsURL+"?"+queryParams, nil)
+
+	var objects []map[string]any
+	if response.Code == http.StatusOK {
+		var responseBody map[string]interface{}
+		json.Unmarshal(response.Body.Bytes(), &responseBody)
+		objects = pie.Map(responseBody["data"].([]any), func(objectAny any) map[string]any {
+			return objectAny.(map[string]any)
+		})
+	}
+
+	return response, objects
 }

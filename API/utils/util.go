@@ -62,9 +62,8 @@ const (
 	LLayers        Namespace = "logical.layer"
 )
 
-const HN_DELIMETER = "."           // hierarchyName path delimiter
-const NAME_REGEX = "\\w(\\w|\\-)*" // accepted regex for names that compose ids
-const RESET_TAG = "RESET"          // used as email to identify a reset token
+const HN_DELIMETER = "."  // hierarchyName path delimiter
+const RESET_TAG = "RESET" // used as email to identify a reset token
 const HIERARCHYOBJS_ENT = "hierarchy_object"
 
 type RequestFilters struct {
@@ -176,18 +175,20 @@ func FilteredReqFromQueryParams(link *url.URL) bson.M {
 			key != "limit" && key != "namespace" {
 			var keyValue interface{}
 			keyValue = queryValues.Get(key)
+
 			if key == "parentId" {
-				regex := strings.ReplaceAll(strings.ReplaceAll(keyValue.(string), ".", "\\."), "*", NAME_REGEX) + "\\.(" + NAME_REGEX + ")"
-				bsonMap["id"] = bson.M{"$regex": "^" + regex + "$"}
+				regex := applyWildcards(keyValue.(string)) + `\.(` + NAME_REGEX + ")"
+				bsonMap["id"] = regexToMongoFilter(regex)
 				continue
 			} else if key == "tag" {
 				// tag is in tags list
 				bsonMap["tags"] = bson.M{"$eq": keyValue}
 				continue
 			} else if strings.Contains(keyValue.(string), "*") {
-				regex := strings.ReplaceAll(strings.ReplaceAll(keyValue.(string), ".", "\\."), "*", NAME_REGEX)
-				keyValue = bson.M{"$regex": "^" + regex + "$"}
+				regex := applyWildcards(keyValue.(string))
+				keyValue = regexToMongoFilter(regex)
 			}
+
 			switch key {
 			case "id", "name", "category",
 				"description", "domain",
@@ -349,55 +350,80 @@ func GetEntitiesByNamespace(namespace Namespace, hierarchyName string) []string 
 	case PStray:
 		entNames = append(entNames, EntityToString(STRAYOBJ))
 	case Physical, PHierarchy, Any:
-		if hierarchyName == "" {
+		entities := []int{}
+
+		if hierarchyName == "" || hierarchyName == "**" {
 			// All entities of each namespace
 			switch namespace {
 			case Physical:
-				for i := STRAYOBJ; i <= GROUP; i++ {
-					entNames = append(entNames, EntityToString(i))
+				for entity := STRAYOBJ; entity <= GROUP; entity++ {
+					entities = append(entities, entity)
 				}
 			case PHierarchy:
-				for i := SITE; i <= GROUP; i++ {
-					entNames = append(entNames, EntityToString(i))
+				for entity := SITE; entity <= GROUP; entity++ {
+					entities = append(entities, entity)
 				}
 			case Any:
-				// All collections
-				for _, entity := range Entities {
-					entNames = append(entNames, EntityToString(entity))
-				}
+				entities = Entities
 			}
 		} else {
-			// Add entities according to hierarchyName possibilities
-			resp := []int{}
 			if namespace == Any {
-				resp = append(resp, DOMAIN)
+				entities = append(entities, DOMAIN)
 			}
-			switch strings.Count(hierarchyName, HN_DELIMETER) {
-			case 0:
-				resp = append(resp, SITE)
-				if namespace == Any {
-					resp = append(resp, OBJTMPL, ROOMTMPL, BLDGTMPL, TAG, LAYER)
+
+			// Add entities according to hierarchyName possibilities
+			if strings.Contains(hierarchyName, ".**") {
+				var initialEntity int
+				finalEntity := GROUP
+
+				switch strings.Count(hierarchyName, HN_DELIMETER) {
+				case 1, 2:
+					initialEntity = BLDG
+				case 3:
+					initialEntity = ROOM
+				case 4:
+					initialEntity = RACK
+				case 5:
+					initialEntity = DEVICE
+				default:
+					// only devices
+					initialEntity = DEVICE
+					finalEntity = DEVICE
 				}
-				if namespace == Any || namespace == Physical {
-					resp = append(resp, STRAYOBJ)
+
+				for entity := initialEntity; entity <= finalEntity; entity++ {
+					entities = append(entities, entity)
 				}
-			case 1:
-				resp = append(resp, BLDG)
-			case 2:
-				resp = append(resp, ROOM)
-			case 3:
-				resp = append(resp, RACK, AC, CORRIDOR, PWRPNL, CABINET, GROUP)
-			case 4:
-				resp = append(resp, DEVICE, GROUP)
-			default:
-				resp = append(resp, DEVICE)
-			}
-			// Convert entities to string
-			for _, entInt := range resp {
-				entNames = append(entNames, EntityToString(entInt))
+			} else {
+				switch strings.Count(hierarchyName, HN_DELIMETER) {
+				case 0:
+					entities = append(entities, SITE)
+					if namespace == Any {
+						entities = append(entities, OBJTMPL, ROOMTMPL, BLDGTMPL, TAG, LAYER)
+					}
+					if namespace == Any || namespace == Physical {
+						entities = append(entities, STRAYOBJ)
+					}
+				case 1:
+					entities = append(entities, BLDG)
+				case 2:
+					entities = append(entities, ROOM)
+				case 3:
+					entities = append(entities, RACK, AC, CORRIDOR, PWRPNL, CABINET, GROUP)
+				case 4:
+					entities = append(entities, DEVICE, GROUP)
+				default:
+					entities = append(entities, DEVICE)
+				}
 			}
 		}
+
+		// Convert entities to string
+		for _, entInt := range entities {
+			entNames = append(entNames, EntityToString(entInt))
+		}
 	}
+
 	return entNames
 }
 

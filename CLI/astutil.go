@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"strconv"
 )
 
 func nodeToFloat(n node, name string) (float64, error) {
@@ -142,4 +143,54 @@ func errorResponder(attr, numElts string, multi bool) error {
 		"using this syntax"
 
 	return fmt.Errorf(errorMsg + segment)
+}
+
+func filtersToMapString(filters map[string]node) (map[string]string, error) {
+	filtersString := map[string]string{}
+
+	for key := range filters {
+		filterVal, err := filters[key].execute()
+		if err != nil {
+			return nil, err
+		}
+		filtersString[key] = filterVal.(string)
+	}
+
+	return filtersString, nil
+}
+
+type recursiveArgs struct {
+	isRecursive bool
+	minDepth    string
+	maxDepth    string
+}
+
+func (args *recursiveArgs) toParams(path string) (*cmd.RecursiveParams, error) {
+	if !args.isRecursive {
+		return nil, nil
+	}
+
+	minDepth, err := stringToIntOr(args.minDepth, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	maxDepth, err := stringToIntOr(args.maxDepth, models.UnlimitedDepth)
+	if err != nil {
+		return nil, err
+	}
+
+	return &cmd.RecursiveParams{
+		PathEntered: path,
+		MinDepth:    minDepth,
+		MaxDepth:    maxDepth,
+	}, nil
+}
+
+func stringToIntOr(value string, defaultValue int) (int, error) {
+	if value != "" {
+		return strconv.Atoi(value)
+	}
+
+	return defaultValue, nil
 }

@@ -28,7 +28,7 @@ func PWD() string {
 
 func (controller Controller) UnfoldPath(path string) ([]string, error) {
 	if strings.Contains(path, "*") || models.PathHasLayer(path) {
-		_, subpaths, err := controller.GetObjectsWildcard(path)
+		_, subpaths, err := controller.GetObjectsWildcard(path, nil, nil)
 		return subpaths, err
 	}
 
@@ -79,11 +79,18 @@ func (controller Controller) ObjectUrl(pathStr string, depth int) (string, error
 	return parsedUrl.String(), nil
 }
 
-func (controller Controller) ObjectUrlGeneric(pathStr string, depth int, filters map[string]string) (string, error) {
+func (controller Controller) ObjectUrlGeneric(pathStr string, depth int, filters map[string]string, recursive *RecursiveParams) (string, error) {
 	params := url.Values{}
 	path, err := controller.SplitPath(pathStr)
 	if err != nil {
 		return "", err
+	}
+
+	if recursive != nil {
+		err = path.MakeRecursive(recursive.MinDepth, recursive.MaxDepth, recursive.PathEntered)
+		if err != nil {
+			return "", err
+		}
 	}
 
 	if filters == nil {
@@ -136,7 +143,8 @@ func (controller Controller) ObjectUrlGeneric(pathStr string, depth int, filters
 
 	url, _ := url.Parse("/api/objects")
 	url.RawQuery = params.Encode()
-	return strings.ReplaceAll(url.String(), "%2A", "*"), nil
+
+	return url.String(), nil
 }
 
 func PollObject(path string) (map[string]any, error) {
@@ -422,35 +430,35 @@ func Help(entry string) {
 		"cmds", "var", "unset", "selection", commands.Connect3D, "camera", "ui", "hc", "drawable",
 		"link", "unlink", "draw", "getu", "getslot", "undraw",
 		"lsenterprise", commands.Cp:
-		path = "./other/man/" + entry + ".md"
+		path = "./other/man/" + entry + ".txt"
 
 	case ">":
-		path = "./other/man/focus.md"
+		path = "./other/man/focus.txt"
 
 	case "+":
-		path = "./other/man/plus.md"
+		path = "./other/man/plus.txt"
 
 	case "=":
-		path = "./other/man/equal.md"
+		path = "./other/man/equal.txt"
 
 	case "-":
-		path = "./other/man/minus.md"
+		path = "./other/man/minus.txt"
 
 	case ".template":
-		path = "./other/man/template.md"
+		path = "./other/man/template.txt"
 
 	case ".cmds":
-		path = "./other/man/cmds.md"
+		path = "./other/man/cmds.txt"
 
 	case ".var":
-		path = "./other/man/var.md"
+		path = "./other/man/var.txt"
 
-	case "lsobj", "lsten", "lssite", "lsbldg", "lsroom", "lsrack",
+	case "lsobj", "lsten", "lssite", commands.LsBuilding, "lsroom", "lsrack",
 		"lsdev", "lsac", "lscorridor", "lspanel", "lscabinet":
-		path = "./other/man/lsobj.md"
+		path = "./other/man/lsobj.txt"
 
 	default:
-		path = "./other/man/default.md"
+		path = "./other/man/default.txt"
 	}
 	text, e := os.ReadFile(utils.ExeDir() + "/" + path)
 	if e != nil {

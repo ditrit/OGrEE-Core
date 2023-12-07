@@ -1,7 +1,11 @@
 package models
 
 import (
+	"errors"
+	"fmt"
 	"strings"
+
+	"github.com/elliotchance/pie/v2"
 )
 
 const (
@@ -34,6 +38,44 @@ type Path struct {
 	Prefix   string // The prefix indicating to which entity class it belongs (physical, template, group, etc.)
 	ObjectID string
 	Layer    Layer // If the path is inside a layer
+}
+
+const UnlimitedDepth = -1
+
+var ErrMaxLessMin = errors.New("max depth cannot be less than the min depth")
+
+// Transforms the path into a recursive path, transforming the * wildcard into **.
+// minDepth and mexDepth are use to set the minimum and maximum amount of children between the path and the results
+func (path *Path) MakeRecursive(minDepth, maxDepth int, fromPath string) error {
+	depth := ""
+	if maxDepth > UnlimitedDepth {
+		if minDepth > maxDepth {
+			return ErrMaxLessMin
+		}
+
+		depth = fmt.Sprintf("{%v,%v}", minDepth, maxDepth)
+	} else if minDepth > 0 {
+		depth = fmt.Sprintf("{%v,}", minDepth)
+	}
+
+	recursiveWildcard := "**" + depth
+
+	if strings.HasSuffix(path.ObjectID, ".*") {
+		// finishes in .*, meaning all the children
+		path.ObjectID = path.ObjectID[:len(path.ObjectID)-2] + "." + recursiveWildcard + ".*"
+		return nil
+	}
+
+	fromID := PhysicalPathToObjectID(fromPath)
+
+	if !pie.Contains([]string{"", ".", "_", "-"}, fromID) {
+		index := strings.Index(path.ObjectID, fromID)
+		if index != -1 {
+			path.ObjectID = path.ObjectID[:index] + recursiveWildcard + "." + path.ObjectID[index:]
+		}
+	}
+
+	return nil
 }
 
 func IsPhysical(path string) bool {
@@ -84,6 +126,10 @@ func SplitPath(path string) []string {
 	return strings.Split(path, "/")
 }
 
+func JoinPath(path []string) string {
+	return strings.Join(path, "/")
+}
+
 func PhysicalPathToObjectID(path string) string {
 	return strings.TrimSuffix(
 		strings.ReplaceAll(
@@ -100,4 +146,26 @@ func PhysicalPathToObjectID(path string) string {
 // Transforms the id of a physical object to its path
 func PhysicalIDToPath(id string) string {
 	return PhysicalPath + strings.ReplaceAll(id, ".", "/")
+}
+
+// Removes last "amount" elements from the "path"
+func PathRemoveLast(path string, amount int) string {
+	pathSplit := SplitPath(path)
+
+	return JoinPath(pathSplit[:len(pathSplit)-amount])
+}
+
+// Transform an object id into a relative path from the path "fromPath"
+// Example: BASIC.A.R1 is A/R1 from /Physical/BASIC
+func ObjectIDToRelativePath(objectID, fromPath string) string {
+	objectIDElements := strings.Split(objectID, ".")
+	fromPathLast := pie.Last(SplitPath(fromPath))
+
+	index := pie.FindFirstUsing(objectIDElements, func(element string) bool {
+		return element == fromPathLast
+	})
+
+	remainingElements := objectIDElements[index+1:]
+
+	return JoinPath(remainingElements)
 }

@@ -1,9 +1,10 @@
 package main
 
 import (
+	"cli/commands"
 	c "cli/controllers"
 	"cli/readline"
-	"cli/utils"
+	"cli/views"
 	"fmt"
 	"os"
 	pathutil "path"
@@ -46,8 +47,11 @@ func ListEntities(line string) []string {
 			}
 		}
 	}
-	objects, _ := c.C.Ls(pathutil.Clean(path), nil, "")
-	return utils.ObjectsToNames(objects)
+
+	objects, _ := c.C.Ls(pathutil.Clean(path), nil, nil)
+
+	stringList, _ := views.ListObjects(objects, "", nil)
+	return stringList
 }
 
 func ListLocal(line string) []string {
@@ -146,9 +150,11 @@ func ListForUI(line string) []string {
 			}
 		}
 	}
-	objects, _ := c.C.Ls(pathutil.Clean(path), nil, "")
-	return utils.ObjectsToNames(objects)
 
+	objects, _ := c.C.Ls(pathutil.Clean(path), nil, nil)
+
+	stringList, _ := views.ListObjects(objects, "", nil)
+	return stringList
 }
 
 func ListUserVars(path string, appendDeref bool) func(string) []string {
@@ -260,7 +266,7 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("link", false),
 			readline.PcItem("unlink", false),
 			readline.PcItem("lssite", false),
-			readline.PcItem("lsbldg", false),
+			readline.PcItem(commands.LsBuilding, false),
 			readline.PcItem("lsroom", false),
 			readline.PcItem("lsrack", false),
 			readline.PcItem("lsdev", false),
@@ -324,7 +330,7 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 		readline.PcItem("lssite", true,
 			readline.PcItem("-r", false),
 			readline.PcItemDynamic(ListEntities, false)),
-		readline.PcItem("lsbldg", true,
+		readline.PcItem(commands.LsBuilding, true,
 			readline.PcItem("-r", false),
 			readline.PcItemDynamic(ListEntities, false)),
 		readline.PcItem("lsroom", true,

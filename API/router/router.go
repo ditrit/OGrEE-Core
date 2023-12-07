@@ -8,6 +8,8 @@ import (
 	"github.com/gorilla/mux"
 )
 
+const GenericObjectsURL = "/api/objects"
+
 // Obtain by query
 var dmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 	println("Checking MATCH")
@@ -91,7 +93,7 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 		controllers.DeleteProject).Methods("DELETE", "OPTIONS")
 
 	// GENERIC
-	router.HandleFunc("/api/objects",
+	router.HandleFunc(GenericObjectsURL,
 		controllers.HandleGenericObjects).Methods("GET", "HEAD", "OPTIONS", "DELETE")
 
 	//GET ENTITY HIERARCHY
