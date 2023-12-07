@@ -19,8 +19,8 @@
 
     "slots"  : [
     { "location": "blade01",  "type": "blade",   "elemOrient" : "banana", "elemPos" : [225,260, 0],  "elemSize" : [225,660, 45], "labelPos" : "front" },
-    { "location": "blade02",  "type": "blade",   "elemPos" : [  0,260, 0],  "elemSize" : [225,660, 45], "labelPos" : "front" },
-    { "location": "blade03",  "type": "blade",   "elemOrient" : "", "elemPos" : [225,260,45],  "elemSize" : [225,660, 45], "labelPos" : "front", "color" : "" }
+    { "location": "blade02",  "type": "blade",   "elemOrient" : "vertical", "elemPos" : [  0,260, 0],  "elemSize" : [225,660, 45], "labelPos" : "front" },
+    { "location": "blade03",  "type": "blade",   "elemOrient" : "horizontal", "elemPos" : [225,260,45],  "elemSize" : [225,660, 45], "labelPos" : "front", "color" : "" }
         ]
             ,
     "sensors"  : [
