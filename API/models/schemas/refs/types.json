@@ -7,6 +7,9 @@
         "metricImperialUnit": {
             "enum": ["mm", "cm", "m", "f"]
         },
+        "metricImperialUUnit": {
+            "enum": ["mm", "cm", "m", "f", "U", "OU"]
+        },
         "vector2": {
             "pattern": "^\\s*{\\s*\"x\"\\s*:\\s*([-|+]?[0-9]*[.]?)?[0-9]+\\s*,\\s*\"y\"\\s*:\\s*([-|+]?[0-9]*[.]?)?[0-9]+\\s*}\\s*$"
         },
