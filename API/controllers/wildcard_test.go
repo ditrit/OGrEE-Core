@@ -11,16 +11,16 @@ import (
 )
 
 func init() {
-	integration.CreateSite("wildcard-site-1")
-	integration.CreateBuilding("wildcard-site-1", "wildcard-building-1")
-	integration.CreateBuilding("wildcard-site-1", "wildcard-building-2")
-	integration.CreateRoom("wildcard-site-1.wildcard-building-1", "wildcard-1")
-	integration.CreateRack("wildcard-site-1.wildcard-building-1.wildcard-1", "wildcard-1")
-	integration.CreateDevice("wildcard-site-1.wildcard-building-1.wildcard-1.wildcard-1", "wildcard-device-1")
-	integration.CreateRoom("wildcard-site-1.wildcard-building-2", "wildcard-1")
-	integration.CreateRack("wildcard-site-1.wildcard-building-2.wildcard-1", "wildcard-2")
-	integration.CreateSite("wildcard-site-2")
-	integration.CreateBuilding("wildcard-site-2", "wildcard-building-3")
+	integration.RequireCreateSite("wildcard-site-1")
+	integration.RequireCreateBuilding("wildcard-site-1", "wildcard-building-1")
+	integration.RequireCreateBuilding("wildcard-site-1", "wildcard-building-2")
+	integration.RequireCreateRoom("wildcard-site-1.wildcard-building-1", "wildcard-1")
+	integration.RequireCreateRack("wildcard-site-1.wildcard-building-1.wildcard-1", "wildcard-1")
+	integration.RequireCreateDevice("wildcard-site-1.wildcard-building-1.wildcard-1.wildcard-1", "wildcard-device-1")
+	integration.RequireCreateRoom("wildcard-site-1.wildcard-building-2", "wildcard-1")
+	integration.RequireCreateRack("wildcard-site-1.wildcard-building-2.wildcard-1", "wildcard-2")
+	integration.RequireCreateSite("wildcard-site-2")
+	integration.RequireCreateBuilding("wildcard-site-2", "wildcard-building-3")
 }
 
 func TestWildcardSomethingStarReturnsSites(t *testing.T) {
