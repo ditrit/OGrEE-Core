@@ -320,6 +320,21 @@ func ValidateEntity(ctx context.Context, entity int, t map[string]interface{}) *
 					}
 				}
 			}
+
+			// Check if Group ID is unique
+			entities := u.GetEntitiesByNamespace(u.Physical, t["id"].(string))
+			for _, entStr := range entities {
+				// Get objects
+				entData, err := GetManyObjects(entStr, bson.M{"id": t["id"]}, u.RequestFilters{}, nil)
+				if err != nil {
+					err.Message = "Error while check id unicity at " + entStr + ":" + err.Message
+					return err
+				}
+				if len(entData) > 0 {
+					return &u.Error{Type: u.ErrBadFormat,
+						Message: "This group ID is not unique among " + entStr + "s"}
+				}
+			}
 		}
 	} else if entity == u.LAYER && !doublestar.ValidatePattern(t["applicability"].(string)) {
 		return &u.Error{
