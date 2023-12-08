@@ -448,7 +448,7 @@ func Help(entry string) {
 	case ".var":
 		path = "./other/man/var.txt"
 
-	case "lsobj", "lsten", "lssite", "lsbldg", "lsroom", "lsrack",
+	case "lsobj", "lsten", "lssite", commands.LsBuilding, "lsroom", "lsrack",
 		"lsdev", "lsac", "lscorridor", "lspanel", "lscabinet":
 		path = "./other/man/lsobj.txt"
 

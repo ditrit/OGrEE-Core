@@ -17,8 +17,8 @@ DESCRIPTION
 OPTIONS
     -r
         Specifies that you want to do a recursive get, i.e., not only get objects in the current path but the entire descendant hierarchy.
-        Using -r with an exact PATH has no effect.
-        Using -r with a wildcard (e.g. A*) will search for all objects with that name in the descendant hierarchy.
+        Using -r [name] will search for all objects with that name in the descendant hierarchy.
+        [name] can have wildcards as A*.
 
     -m min_depth
         Only affects when used in conjunction with -r.
@@ -40,3 +40,4 @@ EXAMPLES
     get -r A*
     get #racks
     get -r #racks
+    get -r -m 1 -M 2 #racks

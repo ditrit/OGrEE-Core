@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cli/commands"
 	c "cli/controllers"
 	"cli/readline"
 	"cli/views"
@@ -263,7 +264,7 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("link", false),
 			readline.PcItem("unlink", false),
 			readline.PcItem("lssite", false),
-			readline.PcItem("lsbldg", false),
+			readline.PcItem(commands.LsBuilding, false),
 			readline.PcItem("lsroom", false),
 			readline.PcItem("lsrack", false),
 			readline.PcItem("lsdev", false),
@@ -327,7 +328,7 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 		readline.PcItem("lssite", true,
 			readline.PcItem("-r", false),
 			readline.PcItemDynamic(ListEntities, false)),
-		readline.PcItem("lsbldg", true,
+		readline.PcItem(commands.LsBuilding, true,
 			readline.PcItem("-r", false),
 			readline.PcItemDynamic(ListEntities, false)),
 		readline.PcItem("lsroom", true,

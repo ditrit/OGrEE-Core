@@ -23,7 +23,7 @@
                 },
                 "heightUnit": {
                     "type": "string",
-                    "enum": ["mm", "cm", "m", "U", "OU", "f"]
+                    "$ref": "refs/types.json#/definitions/metricImperialUnit"
                 },
                 "rotation": {
                     "type": "string",
@@ -70,7 +70,7 @@
                 "content": "B11,C19",
                 "temperature": "cold",
                 "height": "47",
-                "heightUnit": "U",
+                "heightUnit": "cm",
                 "rotation": "{\"x\":45 ,\"y\":45 ,\"z\":45}",
                 "posXYUnit": "m",
                 "posXYZ": "{\"x\":4.6666666666667 ,\"y\": -2 ,\"z\":0}",
@@ -79,7 +79,7 @@
             },
             "category": "corridor",
             "description": [],
-            "domain": "DEMO",
+            "domain": "domainTest",
             "name": "GCorridor",
             "parentId": "Site.Bldg.Rooom"
         }

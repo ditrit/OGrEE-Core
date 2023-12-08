@@ -21,6 +21,7 @@
   - [Select child / children object](#select-child--children-object)
   - [Select parent object](#select-parent-object)
   - [Get object/s](#get-objects)
+    - [Wildcards](#wildcards)
   - [Ls object](#ls-object)
     - [Layers](#layers)
       - [Room's automatic layers](#rooms-automatic-layers)
@@ -317,7 +318,49 @@ The information of an object or a list of objects can be obtained using the get 
 get [path]
 ```
 
-where `[path]` can be either the path of a single object (get rack1) or a list of objects using wildcards (get rack1/*).
+where `[path]` can be either the path of a single object (get rack1) or a list of objects using wildcards (get rack1/*) (see [Wildcards](#wildcards)).
+
+To see all possible options run:
+
+```
+man get
+```
+
+### Wildcards
+
+The path used for the get command may contain wildcards:
+
+Special Terms | Meaning
+------------- | -------
+`*`           | matches any sequence of non-path-separators (including 0 characters)
+`/**/`        | matches zero or more directories
+
+Any character with a special meaning can be escaped with a backslash (`\`).
+
+For example:
+
+- `get A*` will allow you to obtain all objects whose name begins with A (or is A).
+- `get *A` will allow you to obtain all objects whose name finishes with A (or is A).
+- `get *A*` will allow you to obtain all objects whose name has an A (or is A).
+- `get *` will allow you to obtain all objects which are children of the current object.
+- `get path/to/*` will allow you to obtain all objects which are children of `path/to`.
+
+A doublestar (`**`) should appear surrounded by path separators such as `/**/`.
+A mid-pattern doublestar (`**`) behaves like bash's globstar option: a pattern
+such as `path/to/**` would return the same results as `path/to/*`. The
+pattern you're looking for is `path/to/**/*`.
+
+For example:
+
+- `get **/*` will allow to obtain all the objects that are in the descending inheritance of the current object.
+- `get **/A*` will allow to obtain all the objects that are in the descending inheritance of the current object whose name begins with A.
+
+Using the -r parameter will automatically add a doublestar to your search being:
+
+- `get -r A*` equivalent to `get **/A*`.
+- `get -r *` equivalent to `get **/*`.
+
+By using the -r option you can select the minimum and maximum depth of the search with the -m and -M parameters, while these options do not exist using `/**/` manually.
 
 To see all possible options run:
 
@@ -390,7 +433,7 @@ ls [path] tag=[tag_slug]
 
 #### Filter by category
 
-Several commands are provided for running ls with category filter without typing them by hand: `lssite`, `lsbldg`, `lsroom`, `lsrack`, `lsdev`, `lsac`, `lspanel`, `lscabinet`, `lscorridor`.
+Several commands are provided for running ls with category filter without typing them by hand: `lssite`, `lsbuilding`, `lsroom`, `lsrack`, `lsdev`, `lsac`, `lspanel`, `lscabinet`, `lscorridor`.
 
 In addition, each of these commands accepts all the options of the ls command and the addition of more filters.
 
@@ -565,7 +608,7 @@ A corridor is a cold or warm corridor.
   "right":  [0, -90, 0]  
   "top":    [90, 0, 0]  
   "bottom": [-90, 0, 0]  
-`[size]` is a Vector3 [width,length,height] (cm,cm,u)  
+`[size]` is a Vector3 [width,length,height] (cm,cm,cm)  
 `[temperature]` is cold or warm.
 
 ```
@@ -631,8 +674,8 @@ Any character with a special meaning can be escaped with a backslash (`\`).
 
 A doublestar (`**`) should appear surrounded by path separators such as `/**/`.
 A mid-pattern doublestar (`**`) behaves like bash's globstar option: a pattern
-such as `path/to/**.txt` would return the same results as `path/to/*.txt`. The
-pattern you're looking for is `path/to/**/*.txt`.
+such as `path/to/**` would return the same results as `path/to/*`. The
+pattern you're looking for is `path/to/**/*`.
 
 #### Character Classes
 

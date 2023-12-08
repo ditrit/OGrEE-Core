@@ -143,4 +143,6 @@ To run locally an http server with the generated spec use:
 
 ```bash
 swagger serve -p 3003 --no-open ./swagger.json
+OR with docker:
+docker run -p 80:8080 -e SWAGGER_JSON=/swagger.json -v ./swagger.json:/swagger.json swaggerapi/swagger-ui
 ```

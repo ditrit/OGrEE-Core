@@ -53,7 +53,7 @@ dependencies:
 
 dev_dependencies:
   mockito: ^5.4.3
-  build_runner: ^2.3.3
+  build_runner: ^2.4.7
   flutter_test:
     sdk: flutter
 

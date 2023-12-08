@@ -48,7 +48,7 @@ func TestObjects(t *testing.T) {
 	var parentId string
 
 	// Create objects from schema examples
-	for _, entInt := range []int{u.DOMAIN, u.SITE, u.BLDG, u.ROOM, u.RACK, u.DEVICE} {
+	for _, entInt := range []int{u.DOMAIN, u.SITE, u.BLDG, u.ROOM, u.CORRIDOR, u.RACK, u.DEVICE} {
 		// Get object from schema
 		entStr := u.EntityToString(entInt)
 		data, _ := os.ReadFile("models/schemas/" + entStr + "_schema.json")
@@ -90,7 +90,9 @@ func TestObjects(t *testing.T) {
 		id = strings.Replace(id, oldName, obj["name"].(string), 1)
 		recorder = e2e.MakeRequest("GET", "/api/"+entStr+"s/"+id, nil)
 		assert.Equal(t, http.StatusOK, recorder.Code)
-		parentId = id
+		if entInt != u.CORRIDOR { // corridor has no child, but a rack brother
+			parentId = id
+		}
 	}
 
 	// Try to patch site name
