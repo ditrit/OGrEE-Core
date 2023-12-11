@@ -1,7 +1,6 @@
 package models_test
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"p3/models"
@@ -278,7 +277,7 @@ func TestUpdateSetEmptyImageRemovesOldImage(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Empty(t, updatedTag["image"])
 
-	_, err = repository.GetImage(context.Background(), tagImage.(primitive.ObjectID).Hex())
+	_, err = repository.GetImage(tagImage.(primitive.ObjectID).Hex())
 	assert.NotNil(t, err)
 	assert.ErrorContains(t, err, "Nothing matches this request")
 
@@ -317,7 +316,7 @@ func TestUpdateWithNewImageRemovesOldImage(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotEmpty(t, updatedTag["image"])
 
-	_, err = repository.GetImage(context.Background(), tagOldImage.(primitive.ObjectID).Hex())
+	_, err = repository.GetImage(tagOldImage.(primitive.ObjectID).Hex())
 	assert.NotNil(t, err)
 	assert.ErrorContains(t, err, "Nothing matches this request")
 }
@@ -336,7 +335,7 @@ func TestDeleteTagAlsoDeletesTagImage(t *testing.T) {
 	err = models.DeleteTag("delete-tag-4")
 	assert.Nil(t, err)
 
-	_, err = repository.GetImage(context.Background(), tagOldImage.(primitive.ObjectID).Hex())
+	_, err = repository.GetImage(tagOldImage.(primitive.ObjectID).Hex())
 	assert.NotNil(t, err)
 	assert.ErrorContains(t, err, "Nothing matches this request")
 }

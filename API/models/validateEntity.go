@@ -1,7 +1,6 @@
 package models
 
 import (
-	"context"
 	"embed"
 	"fmt"
 	"p3/repository"
@@ -193,7 +192,7 @@ func validateJsonSchema(entity int, t map[string]interface{}) (bool, *u.Error) {
 	}
 }
 
-func ValidateEntity(ctx context.Context, entity int, t map[string]interface{}) *u.Error {
+func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 	/*
 		TODO:
 		Need to capture device if it is a parent
@@ -245,7 +244,6 @@ func ValidateEntity(ctx context.Context, entity int, t map[string]interface{}) *
 		if pie.Contains(u.RoomChildren, entity) {
 			// if entity is room children, verify that the id (name) is not repeated in other children
 			idIsPresent, err := ObjectsHaveAttribute(
-				ctx,
 				u.SliceRemove(u.RoomChildren, entity),
 				"id",
 				t["id"].(string),
@@ -296,7 +294,7 @@ func ValidateEntity(ctx context.Context, entity int, t map[string]interface{}) *
 
 			// If parent is rack, retrieve devices
 			if parent["parent"].(string) == "rack" {
-				count, err := repository.CountObjects(ctx, u.DEVICE, filter)
+				count, err := repository.CountObjects(u.DEVICE, filter)
 				if err != nil {
 					return err
 				}
@@ -308,7 +306,7 @@ func ValidateEntity(ctx context.Context, entity int, t map[string]interface{}) *
 				}
 			} else if parent["parent"].(string) == "room" {
 				// If parent is room, retrieve room children
-				count, err := repository.CountObjectsManyEntities(ctx, u.RoomChildren, filter)
+				count, err := repository.CountObjectsManyEntities(u.RoomChildren, filter)
 				if err != nil {
 					return err
 				}
@@ -348,9 +346,9 @@ func ValidateEntity(ctx context.Context, entity int, t map[string]interface{}) *
 }
 
 // Returns true if at least 1 objects of type "entities" have the "value" for the "attribute".
-func ObjectsHaveAttribute(ctx context.Context, entities []int, attribute, value string) (bool, *u.Error) {
+func ObjectsHaveAttribute(entities []int, attribute, value string) (bool, *u.Error) {
 	for _, entity := range entities {
-		count, err := repository.CountObjects(ctx, entity, bson.M{attribute: value})
+		count, err := repository.CountObjects(entity, bson.M{attribute: value})
 		if err != nil {
 			return false, err
 		}

@@ -8,7 +8,6 @@ import (
 
 	"github.com/elliotchance/pie/v2"
 	"github.com/vincent-petithory/dataurl"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 const imageMaxSizeInMegaBytes = 16
@@ -49,7 +48,5 @@ func createImageFromDataURI(ctx context.Context, dataURI string) (any, *u.Error)
 
 // Returns image with "id" from database
 func GetImage(id string) (*u.Image, *u.Error) {
-	return WithTransaction(func(ctx mongo.SessionContext) (*u.Image, error) {
-		return repository.GetImage(ctx, id)
-	})
+	return repository.GetImage(id)
 }
