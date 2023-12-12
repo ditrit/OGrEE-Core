@@ -24,7 +24,7 @@
         },
         "posXYZ": {
           "type": "string",
-          "$ref": "refs/types.json#/definitions/vector3"
+          "enum": ["m", "t", "f"]
         },
         "posXYUnit": {
           "type": "string",
@@ -65,7 +65,7 @@
         "posXYUnit",
         "size",
         "sizeUnit",
-        "template"
+        "type"
       ]
     }
   },
