@@ -79,8 +79,6 @@ func TestErrorValidateJsonSchema(t *testing.T) {
 			"/slots/3/color does not match pattern",
 		},
 		"obj_template4": {
-			"allOf failed",
-			"if-then failed",
 			"/components/0/elemPos minimum 3 items required, but found 0 items",
 			`/components/1/elemOrient value must be one of "horizontal", "vertical", ""`,
 			"/components/1/color does not match pattern",

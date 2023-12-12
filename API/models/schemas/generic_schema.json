@@ -28,7 +28,7 @@
         },
         "posXYUnit": {
           "type": "string",
-          "$ref": "refs/types.json#/definitions/metricImperialTilesUnit"
+          "$ref": "refs/types.json#/definitions/metricImperialUnit"
         },
         "posZUnit": {
           "type": "string",
