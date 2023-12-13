@@ -496,12 +496,12 @@ After the tag is created, it can be seen in /Logical/Tags. The command `get /Log
 Layers are identified by a slug. In addition, they have an applicability and the filters they apply. To create a layer, use:
 
 ```
-+layer:[slug]@[applicability]
++layer:[slug]@[applicability]@[filter]
 ```
 
 The applicability is the path in which the layer should be added when doing ls. Patterns can be used in the applicability (see [Applicability Patterns](#applicability-patterns)).
 
-Filters are automatically created as empty. To add filters, edit the layer using the object modification syntax (see [Modify object's attribute](#modify-objects-attribute)). Example:
+A first filter in the format `field=value` should be given to create the layer. To add more filters, edit the layer using the object modification syntax (see [Modify object's attribute](#modify-objects-attribute)). Example:
 
 ```
 [layer_path]:category=device

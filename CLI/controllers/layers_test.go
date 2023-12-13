@@ -1164,10 +1164,10 @@ func TestLsReturnsLayerCreatedAfterLastUpdate(t *testing.T) {
 
 	mockCreateObject(mockAPI, "layer", map[string]any{
 		"slug":                    "test",
-		models.LayerFilters:       map[string]any{},
+		models.LayerFilters:       map[string]any{"key": "value"},
 		models.LayerApplicability: "BASIC.A.R1",
 	})
-	err = controller.CreateLayer("test", "/Physical/BASIC/A/R1")
+	err = controller.CreateLayer("test", "/Physical/BASIC/A/R1", "key", "value")
 	assert.Nil(t, err)
 
 	objects, err = controller.Ls("/Logical/Layers", nil, nil)
@@ -1187,12 +1187,12 @@ func TestLsReturnsLayerCreatedAndUpdatedAfterLastUpdate(t *testing.T) {
 
 	testLayer := map[string]any{
 		"slug":                    "test",
-		models.LayerFilters:       map[string]any{},
+		models.LayerFilters:       map[string]any{"key": "value"},
 		models.LayerApplicability: "BASIC.A.R1",
 	}
 
 	mockCreateObject(mockAPI, "layer", testLayer)
-	err = controller.CreateLayer("test", "/Physical/BASIC/A/R1")
+	err = controller.CreateLayer("test", "/Physical/BASIC/A/R1", "key", "value")
 	assert.Nil(t, err)
 
 	mockGetObjectByEntity(mockAPI, "layers", testLayer)

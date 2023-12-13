@@ -140,7 +140,7 @@ func (controller Controller) GetLayer(id string) (string, models.Layer, error) {
 	return realID, layer, nil
 }
 
-func (controller Controller) CreateLayer(slug, applicability string) error {
+func (controller Controller) CreateLayer(slug, applicability, filterName, filterValue string) error {
 	applicability, err := TranslateApplicability(applicability)
 	if err != nil {
 		return err
@@ -148,7 +148,7 @@ func (controller Controller) CreateLayer(slug, applicability string) error {
 
 	return controller.PostObj(models.LAYER, models.EntityToString(models.LAYER), map[string]any{
 		"slug":                    slug,
-		models.LayerFilters:       map[string]any{},
+		models.LayerFilters:       map[string]any{filterName: filterValue},
 		models.LayerApplicability: applicability,
 	}, models.LayersPath+slug)
 }

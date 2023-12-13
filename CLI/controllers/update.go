@@ -40,9 +40,13 @@ func (controller Controller) UpdateObj(pathStr string, data map[string]any) (map
 		entityType = models.TAG
 	} else if models.IsLayer(pathStr) {
 		// For layers, update the object to the hierarchy in order to be cached
-		_, err = State.Hierarchy.AddObjectInPath(resp.Body["data"].(map[string]any), pathStr)
+		data := resp.Body["data"].(map[string]any)
+		_, err = State.Hierarchy.AddObjectInPath(data, pathStr)
 		if err != nil {
 			return nil, err
+		}
+		if len(data["filters"].(map[string]any)) == 0 {
+			println("Attention: this layer is never shown as an option since it has no filters")
 		}
 	}
 
