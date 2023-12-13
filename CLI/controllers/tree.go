@@ -227,6 +227,10 @@ func (n *HierarchyNode) Fill(path string, depth int, now time.Time) error {
 
 	n.LastHierarchyGet = now
 
+	if n.Name == "Layers" {
+		n.IsCached = true
+	}
+
 	if n.FillFn != nil {
 		return n.FillFn(n, path, depth)
 	}
@@ -363,6 +367,12 @@ func FillUrlTree[T any](n *HierarchyNode, api APIPort, path string, depth int, u
 	objects, hasObjects := data["objects"].([]any)
 	if !hasObjects {
 		return invalidRespErr
+	}
+
+	if _, ok := n.Children["Stray"]; ok {
+		n.Children = map[string]*HierarchyNode{"Stray": n.Children["Stray"]}
+	} else {
+		n.Children = map[string]*HierarchyNode{}
 	}
 
 	for _, objAny := range objects {
