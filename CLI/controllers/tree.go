@@ -240,6 +240,11 @@ func (n *HierarchyNode) Fill(path string, depth int, now time.Time) error {
 
 func (n *HierarchyNode) FillWithMap(obj map[string]any) error {
 	children, hasChildren := obj["children"].([]any)
+
+	if len(n.Children) != 0 {
+		n.Children = map[string]*HierarchyNode{}
+	}
+
 	if hasChildren {
 		delete(obj, "children")
 
