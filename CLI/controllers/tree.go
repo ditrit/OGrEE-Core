@@ -374,7 +374,7 @@ func FillUrlTree[T any](n *HierarchyNode, api APIPort, path string, depth int, u
 		return invalidRespErr
 	}
 
-	if _, ok := n.Children["Stray"]; ok {
+	if _, ok := n.Children["Stray"]; ok && n.Name == "Physical" {
 		n.Children = map[string]*HierarchyNode{"Stray": n.Children["Stray"]}
 	} else {
 		n.Children = map[string]*HierarchyNode{}
