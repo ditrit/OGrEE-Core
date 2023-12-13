@@ -134,13 +134,15 @@
         "posXYUnit": "m",
         "size": "{\"x\":80 ,\"y\":100.532442}",
         "sizeUnit": "cm",
-        "template": ""
+        "template": "",
+        "shape": "cube",
+        "type": "box"
       },
       "category": "generic",
       "description": ["A table"],
       "domain": "domainTest",
       "name": "GeneticA",
-      "parentId": "xxxx5a111ac5f3b6f313xxxx"
+      "parentId": "someRoomId"
     }
   ]
 }
