@@ -101,7 +101,7 @@ func TestCreateGenericWithParentNotRoomReturnsError(t *testing.T) {
 
 	_, err := integration.CreateGeneric(rack["id"].(string), "create-object-8-generic")
 	assert.NotNil(t, err)
-	assert.ErrorContains(t, err, "ParentID should correspond to Existing ID")
+	assert.ErrorContains(t, err, "ParentID should correspond to Existing Room ID")
 }
 
 func TestCreateGenericWithParentRoomWorks(t *testing.T) {
