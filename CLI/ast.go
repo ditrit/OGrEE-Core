@@ -1081,16 +1081,15 @@ func (n *createRoomNode) execute() (interface{}, error) {
 	return nil, cmd.C.CreateObject(path, models.ROOM, map[string]any{"attributes": attributes})
 }
 
-type createRackOrGenericNode struct {
+type createRackNode struct {
 	path           node
 	pos            node
 	unit           node
 	rotation       node
 	sizeOrTemplate node
-	entity         int
 }
 
-func (n *createRackOrGenericNode) execute() (interface{}, error) {
+func (n *createRackNode) execute() (interface{}, error) {
 	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
@@ -1113,9 +1112,61 @@ func (n *createRackOrGenericNode) execute() (interface{}, error) {
 
 	attributes := map[string]any{"posXYZ": pos, "posXYUnit": unit, "rotation": rotation}
 
-	addSizeOrTemplate(n.sizeOrTemplate, attributes, n.entity)
+	addSizeOrTemplate(n.sizeOrTemplate, attributes, models.RACK)
 
-	return nil, cmd.C.CreateObject(path, n.entity, map[string]any{"attributes": attributes})
+	return nil, cmd.C.CreateObject(path, models.RACK, map[string]any{"attributes": attributes})
+}
+
+type createGenericNode struct {
+	path           node
+	pos            node
+	unit           node
+	rotation       node
+	sizeOrTemplate node
+	shape          node
+	getype         node
+}
+
+func (n *createGenericNode) execute() (interface{}, error) {
+	path, err := nodeToString(n.path, "path")
+	if err != nil {
+		return nil, err
+	}
+
+	pos, err := nodeToPosXYZ(n.pos)
+	if err != nil {
+		return nil, err
+	}
+
+	unit, err := nodeToString(n.unit, "unit")
+	if err != nil {
+		return nil, err
+	}
+
+	rotation, err := nodeTo3dRotation(n.rotation)
+	if err != nil {
+		return nil, err
+	}
+
+	attributes := map[string]any{"posXYZ": pos, "posXYUnit": unit, "rotation": rotation}
+
+	if n.shape != nil {
+		shape, err := nodeToString(n.shape, "shape")
+		if err != nil {
+			return nil, err
+		}
+		attributes["shape"] = shape
+
+		getype, err := nodeToString(n.getype, "type")
+		if err != nil {
+			return nil, err
+		}
+		attributes["type"] = getype
+	}
+
+	addSizeOrTemplate(n.sizeOrTemplate, attributes, models.GENERIC)
+
+	return nil, cmd.C.CreateObject(path, models.GENERIC, map[string]any{"attributes": attributes})
 }
 
 type createDeviceNode struct {

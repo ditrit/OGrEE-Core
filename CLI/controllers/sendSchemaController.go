@@ -59,7 +59,15 @@ func serialiseStringVector(attr map[string]interface{}, want string) string {
 			newSize = "{" + newSize + "}"
 
 			if len(nums) == 3 && want == "size" {
-				attr["height"] = nums[2]
+				if attr["shape"] == "sphere" || attr["shape"] == "cylinder" {
+					attr["diameter"] = nums[2]
+					if attr["shape"] == "cylinder" {
+						attr["height"] = nums[1]
+					}
+					return ""
+				} else {
+					attr["height"] = nums[2]
+				}
 			}
 		}
 	}
@@ -101,7 +109,15 @@ func serialiseFloatVector(attr map[string]interface{}, want string) string {
 		newSize = "{" + newSize + "}"
 
 		if len(items) == 3 && want == "size" {
-			attr["height"] = strconv.FormatFloat(items[2], 'G', -1, 64)
+			if attr["shape"] == "sphere" || attr["shape"] == "cylinder" {
+				attr["diameter"] = strconv.FormatFloat(items[2], 'G', -1, 64)
+				if attr["shape"] == "cylinder" {
+					attr["height"] = strconv.FormatFloat(items[1], 'G', -1, 64)
+				}
+				return ""
+			} else {
+				attr["height"] = strconv.FormatFloat(items[2], 'G', -1, 64)
+			}
 		}
 	}
 	return newSize

@@ -1035,15 +1035,6 @@ func (p *parser) parseCreateRoom() node {
 
 func (p *parser) parseCreateRack() node {
 	defer un(trace(p, "create rack"))
-	return p.parseCreateRackOrGeneric(models.RACK)
-}
-
-func (p *parser) parseCreateGeneric() node {
-	defer un(trace(p, "create generic"))
-	return p.parseCreateRackOrGeneric(models.GENERIC)
-}
-
-func (p *parser) parseCreateRackOrGeneric(entity int) node {
 	path := p.parsePath("")
 	p.expect("@")
 	pos := p.parseExpr("position")
@@ -1053,7 +1044,27 @@ func (p *parser) parseCreateRackOrGeneric(entity int) node {
 	rotation := p.parseStringOrVec("rotation")
 	p.expect("@")
 	sizeOrTemplate := p.parseStringOrVec("sizeOrTemplate")
-	return &createRackOrGenericNode{path, pos, unit, rotation, sizeOrTemplate, entity}
+	return &createRackNode{path, pos, unit, rotation, sizeOrTemplate}
+}
+
+func (p *parser) parseCreateGeneric() node {
+	defer un(trace(p, "create generic"))
+	path := p.parsePath("")
+	p.expect("@")
+	pos := p.parseExpr("position")
+	p.expect("@")
+	unit := p.parseString("unit")
+	p.expect("@")
+	rotation := p.parseStringOrVec("rotation")
+	p.expect("@")
+	sizeOrTemplate := p.parseStringOrVec("sizeOrTemplate")
+	if !p.parseExact("@") {
+		return &createGenericNode{path, pos, unit, rotation, sizeOrTemplate, nil, nil}
+	}
+	shape := p.parseString("shape")
+	p.expect("@")
+	getype := p.parseString("type")
+	return &createGenericNode{path, pos, unit, rotation, sizeOrTemplate, shape, getype}
 }
 
 func (p *parser) parseCreateDevice() node {

@@ -8,12 +8,32 @@
         "fbxModel",
         "sizeWDHmm",
         "slug",
-        "category",
-        "components",
-        "slots"
+        "category"
     ],
+    "if": {
+        "properties": {
+          "category": { "const": "generic" }
+        }
+    },
+    "then": { 
+        "required": ["shape"],
+        "properties": {
+            "shape": {
+                "type": "string",
+                "enum": [
+                    "cube",
+                    "sphere",
+                    "cylinder"
+                ]
+            }
+        }
+    },
+    "else": { "required": [
+        "components", 
+        "slots"
+    ] },
     "properties": {
-        "attributes": {
+        "attributes": { 
             "type": "object",
             "patternProperties": {
                 "^.*$": {

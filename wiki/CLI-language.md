@@ -697,7 +697,7 @@ They must be child of a room.
 To create them, use one of the following options:
 
 ```
-+generic:[name]@[pos]@[unit]@[rotation]@[size]
++generic:[name]@[pos]@[unit]@[rotation]@[size]@[shape]@[type]
 ```
 
 ```
@@ -705,7 +705,7 @@ To create them, use one of the following options:
 ```
 
 ```
-+ge:[name]@[pos]@[unit]@[rotation]@[size]
++ge:[name]@[pos]@[unit]@[rotation]@[size]@[shape]@[type]
 ```
 
 ```
@@ -715,7 +715,7 @@ To create them, use one of the following options:
 Where:
 
 - `[pos]` is a Vector3 [x,y,z] or a Vector2 [x,y] if z is 0. Each value can be decimal (1, 1.2, etc.) or fraction (1/2, 2/3, etc.). Can also be negative (-1, -1.2, -1/2).
-- `[unit]` is the unit of the position [pos]. It can be: `t` (tiles), `m` (meters) or `f` (feet)  
+- `[unit]` is the unit of the position [pos]. It can be: `t` (tiles), `m` (meters) or `f` (feet).
 - `[rotation]` is a Vector3 of angles or one of following keywords:
 
   "front":  [0, 0, 180]  
@@ -724,7 +724,13 @@ Where:
   "right":  [0, -90, 0]  
   "top":    [90, 0, 0]  
   "bottom": [-90, 0, 0]  
-- `[size]` is a Vector3 [width,length,height] (cm,cm,cm)  
+- `[size]` is a Vector3 whose interpretation varies according to the shape. All values are in cm.
+
+  if shape = `cube`: [width,length,height]  
+  if shape = `sphere`: [ignored,ignored,diameter]  
+  if shape = `cylinder`: [ignored,height,diameter]  
+- `[shape]` is a string defining the shape of the object. It can be: `cube`, `sphere` or `cylinder`.
+- `[type]` is a string defining the type shape. No predefined values.
 - `[template]` is the name of the rack template
 
 # Set commands
