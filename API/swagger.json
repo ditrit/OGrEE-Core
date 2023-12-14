@@ -168,6 +168,56 @@
         }
       }
     },
+    "/api/layers/{id}/objects": {
+      "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "Apply the layer filters to get children objects of a given root query param.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Gets the object of a given layer.",
+        "operationId": "GetLayerObjects",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "layer_slug",
+            "description": "ID of desired layer.",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Mandatory, accepts IDs. The root object from where to apply the layer",
+            "name": "root",
+            "in": "query",
+            "required": true
+          },
+          {
+            "description": "Accepts true or false. If true, get objects from all levels beneath root. If false, get objects directly under root.",
+            "name": "recursive",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. A response body will be returned with a meaningful message."
+          },
+          "400": {
+            "description": "Bad request. An error message will be returned."
+          },
+          "404": {
+            "description": "Not Found. An error message will be returned."
+          }
+        }
+      }
+    },
     "/api/login": {
       "post": {
         "description": "Create a new JWT Key. This can also be used to verify credentials\nThe authorize and 'Try it out' buttons don't work",

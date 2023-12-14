@@ -619,6 +619,110 @@ func GetEntity(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// swagger:operation GET /api/layers/{id}/objects Objects GetLayerObjects
+// Gets the object of a given layer.
+// Apply the layer filters to get children objects of a given root query param.
+// ---
+// security:
+// - bearer: []
+// produces:
+// - application/json
+// parameters:
+//   - name: id
+//     in: path
+//     description: 'ID of desired layer.'
+//     required: true
+//     type: string
+//     default: "layer_slug"
+//   - name: root
+//     in: query
+//     description: 'Mandatory, accepts IDs. The root object from where to apply the layer'
+//     required: true
+//   - name: recursive
+//     in: query
+//     description: 'Accepts true or false. If true, get objects
+//     from all levels beneath root. If false, get objects directly under root.'
+// responses:
+// 	'200':
+// 	  description: 'Found. A response body will be returned with
+// 	  a meaningful message.'
+// 	'400':
+// 	  description: Bad request. An error message will be returned.
+// 	'404':
+// 	  description: Not Found. An error message will be returned.
+
+func GetLayerObjects(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION CALL: 	 GetLayerObjects ")
+	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
+	var data map[string]interface{}
+	var id string
+	var canParse bool
+	var modelErr *u.Error
+
+	// Get user roles for permissions
+	user := getUserFromToken(w, r)
+	if user == nil {
+		return
+	}
+
+	// Get query params
+	var filters u.LayerObjsFilters
+	decoder.Decode(&filters, r.URL.Query())
+	if filters.Root == "" {
+		//error
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message("Query param root is mandatory"))
+		return
+	}
+
+	if id, canParse = mux.Vars(r)["slug"]; canParse {
+		// Get layer
+		data, modelErr = models.GetObject(bson.M{"slug": id}, u.EntityToString(u.LAYER), u.RequestFilters{}, user.Roles)
+		if modelErr != nil {
+			u.RespondWithError(w, modelErr)
+		}
+
+		// Apply layer to get objects request
+		req := bson.M{}
+		for filterName, filterValue := range data["filters"].(map[string]interface{}) {
+			u.AddFilterToReq(req, filterName, filterValue.(string))
+		}
+		var searchId string
+		if filters.IsRecursive {
+			searchId = filters.Root + ".**.*"
+		} else {
+			searchId = filters.Root + ".*"
+		}
+		u.AddFilterToReq(req, "id", searchId)
+
+		// Get objects
+		matchingObjects := []map[string]interface{}{}
+		entities := u.GetEntitiesByNamespace(u.Any, searchId)
+		for _, entStr := range entities {
+			entData, err := models.GetManyObjects(entStr, req, u.RequestFilters{}, user.Roles)
+			if err != nil {
+				u.RespondWithError(w, err)
+				return
+			}
+			matchingObjects = append(matchingObjects, entData...)
+		}
+
+		// Respond
+		if r.Method == "OPTIONS" {
+			w.Header().Add("Content-Type", "application/json")
+			w.Header().Add("Allow", "GET, DELETE, OPTIONS, PATCH, PUT")
+		} else {
+			u.Respond(w, u.RespDataWrapper("successfully processed request", matchingObjects))
+		}
+	} else {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message("Error while parsing path parameters"))
+		return
+	}
+}
+
 // swagger:operation GET /api/{entity} Objects GetAllEntities
 // Gets all present objects for specified entity (category).
 // Returns JSON body with all specified objects of type.
