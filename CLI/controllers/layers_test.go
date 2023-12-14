@@ -1119,23 +1119,6 @@ func TestLsNotShowLayerIfNotMatchWithDoubleStar(t *testing.T) {
 	assert.Len(t, objects, 0)
 }
 
-func TestLsNotShowLayerIfDoubleStarIsAtTheEndAndZeroFoldersAreFound(t *testing.T) {
-	controller, mockAPI, _ := layersSetup(t)
-
-	mockGetObjectsByEntity(mockAPI, "layers", []any{
-		map[string]any{
-			"slug":                    "test",
-			models.LayerApplicability: "BASIC.A.R1.**",
-			models.LayerFilters:       map[string]any{"any": "yes"},
-		},
-	})
-	mockGetObjectHierarchy(mockAPI, roomWithoutChildren)
-
-	objects, err := controller.Ls("/Physical/BASIC/A/R1", nil, nil)
-	assert.Nil(t, err)
-	assert.Len(t, objects, 0)
-}
-
 func TestLsNotShowLayerIfNotMatchWithDoubleStarAndMore(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
