@@ -21,7 +21,7 @@ var manCommands = []string{
 	"get", "getu", "getslot",
 	"+", "-", "=", ">",
 	".cmds", ".template", ".var",
-	commands.Connect3D, "ui", "camera",
+	commands.Connect3D, commands.Disconnect3D, "ui", "camera",
 	"link", "unlink",
 	"lssite", commands.LsBuilding, "lsroom", "lsrack", "lsdev", "lsac",
 	"lspanel", "lscabinet", "lscorridor", "lsenterprise",
@@ -1306,6 +1306,7 @@ func newParser(buffer string) *parser {
 		"pwd":          &pwdNode{},
 		"exit":         &exitNode{},
 		"changepw":     &changePasswordNode{},
+		"disconnect3d": &disconnect3DNode{},
 	}
 	for command := range p.commandDispatch {
 		p.commandKeywords = append(p.commandKeywords, command)
