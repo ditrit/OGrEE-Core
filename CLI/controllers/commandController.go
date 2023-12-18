@@ -427,7 +427,7 @@ func Help(entry string) {
 	switch entry {
 	case "ls", "pwd", "print", "printf", "cd", "tree", "get", "clear",
 		"lsog", "grep", "for", "while", "if", "env",
-		"cmds", "var", "unset", "selection", commands.Connect3D, "camera", "ui", "hc", "drawable",
+		"cmds", "var", "unset", "selection", commands.Connect3D, commands.Disconnect3D, "camera", "ui", "hc", "drawable",
 		"link", "unlink", "draw", "getu", "getslot", "undraw",
 		"lsenterprise", commands.Cp:
 		path = "./other/man/" + entry + ".txt"
@@ -714,6 +714,10 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 
 func Connect3D(url string) error {
 	return Ogree3D.Connect(url, *State.Terminal)
+}
+
+func Disconnect3D() {
+	Ogree3D.Disconnect()
 }
 
 func UIDelay(time float64) error {
