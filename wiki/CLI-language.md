@@ -129,7 +129,7 @@ They can be used to build more complex expressions through operators.
 ## Operators
 ### Compute operators : 
 these will only work if both side return a number  
-+, -, *, /, // (integer division), % (modulo)
++, -, *, /, \ (integer division), % (modulo)
 ### Boolean operators : 
 <, >, <=, >=, ==, !=, || (or), && (and) 
 
