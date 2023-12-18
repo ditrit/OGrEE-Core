@@ -1,0 +1,2 @@
+USAGE: disconnect3d
+Disconnects the OGrEE-CLI from OGrEE-3D.
