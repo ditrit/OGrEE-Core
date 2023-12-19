@@ -592,7 +592,7 @@ Future<Result<List<DockerContainer>, Exception>> fetchTenantDockerInfo(
   print("API get Tenant Docker Info");
   client ??= http.Client();
   try {
-    Uri url = Uri.parse('$apiUrl/api/tenants/${tenantName.toLowerCase()}');
+    Uri url = Uri.parse('$apiUrl/api/tenants/${tenantName}');
     final response = await client.get(url, headers: getHeader(token));
     print(response.statusCode);
     if (response.statusCode == 200) {
