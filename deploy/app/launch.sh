@@ -1,7 +1,7 @@
 #!/bin/bash
 
 portWeb=8080
-portBack=8082
+portBack=8081
 forceStop=false
 isMac=false
 while getopts w:b:fm flag
