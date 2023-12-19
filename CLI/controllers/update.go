@@ -48,6 +48,7 @@ func (controller Controller) UpdateObj(pathStr string, data map[string]any) (map
 		if len(data["filters"].(map[string]any)) == 0 {
 			println("Attention: this layer is never shown as an option since it has no filters")
 		}
+		entityType = models.LAYER
 	}
 
 	message := map[string]any{}
