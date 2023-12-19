@@ -1160,7 +1160,7 @@ func TestLsReturnsLayerCreatedAfterLastUpdate(t *testing.T) {
 }
 
 func TestLsReturnsLayerCreatedAndUpdatedAfterLastUpdate(t *testing.T) {
-	controller, mockAPI, _ := layersSetup(t)
+	controller, mockAPI, mockOgree3D := layersSetup(t)
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
 
@@ -1186,6 +1186,13 @@ func TestLsReturnsLayerCreatedAndUpdatedAfterLastUpdate(t *testing.T) {
 		models.LayerFilters:       map[string]any{"category": "device"},
 		models.LayerApplicability: "BASIC.A.R1",
 	})
+	mockOgree3D.On(
+		"InformOptional", "UpdateObj",
+		models.LAYER, map[string]any{"data": map[string]interface{}{
+			"layer": map[string]interface{}{
+				"applicability": "BASIC.A.R1", "filters": map[string]interface{}{"category": "device"},
+				"slug": "test"}, "old-slug": "test"}, "type": "modify-layer"},
+	).Return(nil)
 	err = controller.UpdateLayer("/Logical/Layers/test", models.LayerFiltersAdd, "category=device")
 	assert.Nil(t, err)
 
@@ -1203,7 +1210,7 @@ func TestLsReturnsLayerCreatedAndUpdatedAfterLastUpdate(t *testing.T) {
 }
 
 func TestLsOnLayerUpdatedAfterLastUpdateDoesUpdatedFilter(t *testing.T) {
-	controller, mockAPI, _ := layersSetup(t)
+	controller, mockAPI, mockOgree3D := layersSetup(t)
 
 	testLayer := map[string]any{
 		"slug": "test",
@@ -1229,6 +1236,13 @@ func TestLsOnLayerUpdatedAfterLastUpdateDoesUpdatedFilter(t *testing.T) {
 		models.LayerFilters:       map[string]any{"category": "device"},
 		models.LayerApplicability: "BASIC.A.R1",
 	})
+	mockOgree3D.On(
+		"InformOptional", "UpdateObj",
+		models.LAYER, map[string]any{"data": map[string]interface{}{
+			"layer": map[string]interface{}{
+				"applicability": "BASIC.A.R1", "filters": map[string]interface{}{"category": "device"},
+				"slug": "test"}, "old-slug": "test"}, "type": "modify-layer"},
+	).Return(nil)
 	err = controller.UpdateLayer("/Logical/Layers/test", models.LayerFiltersAdd, "category=device")
 	assert.Nil(t, err)
 
