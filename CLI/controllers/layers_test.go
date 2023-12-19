@@ -1186,7 +1186,7 @@ func TestLsReturnsLayerCreatedAndUpdatedAfterLastUpdate(t *testing.T) {
 		models.LayerFilters:       map[string]any{"category": "device"},
 		models.LayerApplicability: "BASIC.A.R1",
 	})
-	err = controller.UpdateLayer("/Logical/Layers/test", "category", "device")
+	err = controller.UpdateLayer("/Logical/Layers/test", models.LayerFiltersAdd, "category=device")
 	assert.Nil(t, err)
 
 	objects, err = controller.Ls("/Logical/Layers", nil, nil)
@@ -1229,7 +1229,7 @@ func TestLsOnLayerUpdatedAfterLastUpdateDoesUpdatedFilter(t *testing.T) {
 		models.LayerFilters:       map[string]any{"category": "device"},
 		models.LayerApplicability: "BASIC.A.R1",
 	})
-	err = controller.UpdateLayer("/Logical/Layers/test", "category", "device")
+	err = controller.UpdateLayer("/Logical/Layers/test", models.LayerFiltersAdd, "category=device")
 	assert.Nil(t, err)
 
 	mockGetObjects(mockAPI, "category=device&id=BASIC.A.R1.*&namespace=physical.hierarchy", []any{})
