@@ -12,6 +12,7 @@ const (
 	LayerApplicability = "applicability"
 	LayerFilters       = "filters"
 	LayerFiltersRemove = LayerFilters + "-"
+	LayerFiltersAdd    = LayerFilters + "+"
 )
 
 var pluralizeClient = pluralize.NewClient()

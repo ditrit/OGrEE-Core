@@ -166,10 +166,18 @@ func (controller Controller) UpdateLayer(path string, attributeName string, valu
 		_, err = controller.UpdateObj(path, map[string]any{attributeName: applicability})
 	case models.LayerFiltersRemove:
 		_, err = controller.UpdateObj(path, map[string]any{attributeName: value})
-	default:
-		filters := map[string]any{attributeName: value}
-
+	case models.LayerFiltersAdd:
+		values := strings.Split(value.(string), "=")
+		if len(values) != 2 || len(values[0]) == 0 || len(values[0]) == 0 {
+			return fmt.Errorf("invalid filter format")
+		}
+		filters := map[string]any{values[0]: values[1]}
 		_, err = controller.UpdateObj(path, map[string]any{models.LayerFilters: filters})
+	default:
+		_, err = controller.UpdateObj(path, map[string]any{attributeName: value})
+		if attributeName == "slug" {
+			State.Hierarchy.Children["Logical"].Children["Layers"].IsCached = false
+		}
 	}
 
 	return err
