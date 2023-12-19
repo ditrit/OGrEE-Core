@@ -26,6 +26,9 @@ func (controller Controller) DeleteObj(path string) ([]string, error) {
 		}
 		if models.IsLayer(path) {
 			State.Hierarchy.Children["Logical"].Children["Layers"].IsCached = false
+			if IsEntityTypeForOGrEE3D(models.LAYER) {
+				controller.Ogree3D.InformOptional("DeleteObj", -1, map[string]any{"type": "delete-layer", "data": obj["slug"].(string)})
+			}
 		}
 	}
 	if path == State.CurrPath {

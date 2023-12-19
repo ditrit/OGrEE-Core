@@ -103,6 +103,17 @@ func (controller Controller) UpdateObj(pathStr string, data map[string]any) (map
 			"old-slug": path.ObjectID,
 			"tag":      resp.Body["data"],
 		}
+	} else if entityType == models.LAYER {
+		path, err := controller.SplitPath(pathStr)
+		if err != nil {
+			return nil, err
+		}
+
+		message["type"] = "modify-layer"
+		message["data"] = map[string]any{
+			"old-slug": path.ObjectID,
+			"layer":    resp.Body["data"],
+		}
 	} else {
 		message["type"] = "modify"
 		message["data"] = resp.Body["data"]

@@ -136,5 +136,5 @@ func GetParentOfEntity(ent int) int {
 }
 
 func EntityCreationMustBeInformed(entity int) bool {
-	return entity != TAG && entity != LAYER
+	return entity != TAG
 }
