@@ -227,6 +227,10 @@ func (n *HierarchyNode) Fill(path string, depth int, now time.Time) error {
 
 	n.LastHierarchyGet = now
 
+	if n.Name == "Layers" {
+		n.IsCached = true
+	}
+
 	if n.FillFn != nil {
 		return n.FillFn(n, path, depth)
 	}
@@ -236,6 +240,11 @@ func (n *HierarchyNode) Fill(path string, depth int, now time.Time) error {
 
 func (n *HierarchyNode) FillWithMap(obj map[string]any) error {
 	children, hasChildren := obj["children"].([]any)
+
+	if len(n.Children) != 0 {
+		n.Children = map[string]*HierarchyNode{}
+	}
+
 	if hasChildren {
 		delete(obj, "children")
 
@@ -363,6 +372,12 @@ func FillUrlTree[T any](n *HierarchyNode, api APIPort, path string, depth int, u
 	objects, hasObjects := data["objects"].([]any)
 	if !hasObjects {
 		return invalidRespErr
+	}
+
+	if _, ok := n.Children["Stray"]; ok && n.Name == "Physical" {
+		n.Children = map[string]*HierarchyNode{"Stray": n.Children["Stray"]}
+	} else {
+		n.Children = map[string]*HierarchyNode{}
 	}
 
 	for _, objAny := range objects {
