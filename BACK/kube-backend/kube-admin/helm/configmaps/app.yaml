@@ -1,7 +1,0 @@
-- name: webapp-env
-  data:
-    - mountPath: /usr/share/nginx/html/assets/assets/custom/.env
-      name: env
-      value: |-
-        API_URL=http://api.localhost
-        ALLOW_SET_BACK=false

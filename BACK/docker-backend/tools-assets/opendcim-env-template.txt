@@ -1,6 +1,0 @@
-DCIM_HTTP_PORT={{.DcimPort}}
-ADMINER_PORT={{.AdminerPort}}
-MYSQL_ROOT_PASSWORD=changerootdbpwd
-MYSQL_DATABASE=dcim
-MYSQL_USER=dcim
-MYSQL_PASSWORD=changeme

@@ -1,0 +1,7 @@
+- name: api-list
+  data:
+    - mountPath: /bin/api.json
+      name: api-list
+      value: |
+        [{"name":"server","url":"http://arango-api:8080"},{"name":"objects","url":"http://mongo-api:3001"}]
+
