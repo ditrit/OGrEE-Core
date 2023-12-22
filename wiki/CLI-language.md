@@ -501,10 +501,10 @@ Layers are identified by a slug. In addition, they have an applicability and the
 
 The applicability is the path in which the layer should be added when doing ls. Patterns can be used in the applicability (see [Applicability Patterns](#applicability-patterns)).
 
-A first filter in the format `field=value` should be given to create the layer. To add more filters, edit the layer using the object modification syntax (see [Modify object's attribute](#modify-objects-attribute)). Example:
+A first filter in the format `field=value` should be given to create the layer. To add more filters, edit the layer using the following syntax:
 
 ```
-[layer_path]:category=device
+[layer_path]:filters+=[filter_name]=[filter_value]
 ```
 
 Where [layer_path] is `/Logical/Layers/[slug]` (or only `[slug]` if the current path is /Logical/Layers).
