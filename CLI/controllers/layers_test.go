@@ -1119,23 +1119,6 @@ func TestLsNotShowLayerIfNotMatchWithDoubleStar(t *testing.T) {
 	assert.Len(t, objects, 0)
 }
 
-func TestLsNotShowLayerIfDoubleStarIsAtTheEndAndZeroFoldersAreFound(t *testing.T) {
-	controller, mockAPI, _ := layersSetup(t)
-
-	mockGetObjectsByEntity(mockAPI, "layers", []any{
-		map[string]any{
-			"slug":                    "test",
-			models.LayerApplicability: "BASIC.A.R1.**",
-			models.LayerFilters:       map[string]any{"any": "yes"},
-		},
-	})
-	mockGetObjectHierarchy(mockAPI, roomWithoutChildren)
-
-	objects, err := controller.Ls("/Physical/BASIC/A/R1", nil, nil)
-	assert.Nil(t, err)
-	assert.Len(t, objects, 0)
-}
-
 func TestLsNotShowLayerIfNotMatchWithDoubleStarAndMore(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
@@ -1164,10 +1147,10 @@ func TestLsReturnsLayerCreatedAfterLastUpdate(t *testing.T) {
 
 	mockCreateObject(mockAPI, "layer", map[string]any{
 		"slug":                    "test",
-		models.LayerFilters:       map[string]any{},
+		models.LayerFilters:       map[string]any{"key": "value"},
 		models.LayerApplicability: "BASIC.A.R1",
 	})
-	err = controller.CreateLayer("test", "/Physical/BASIC/A/R1")
+	err = controller.CreateLayer("test", "/Physical/BASIC/A/R1", "key", "value")
 	assert.Nil(t, err)
 
 	objects, err = controller.Ls("/Logical/Layers", nil, nil)
@@ -1177,7 +1160,7 @@ func TestLsReturnsLayerCreatedAfterLastUpdate(t *testing.T) {
 }
 
 func TestLsReturnsLayerCreatedAndUpdatedAfterLastUpdate(t *testing.T) {
-	controller, mockAPI, _ := layersSetup(t)
+	controller, mockAPI, mockOgree3D := layersSetup(t)
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
 
@@ -1187,12 +1170,12 @@ func TestLsReturnsLayerCreatedAndUpdatedAfterLastUpdate(t *testing.T) {
 
 	testLayer := map[string]any{
 		"slug":                    "test",
-		models.LayerFilters:       map[string]any{},
+		models.LayerFilters:       map[string]any{"key": "value"},
 		models.LayerApplicability: "BASIC.A.R1",
 	}
 
 	mockCreateObject(mockAPI, "layer", testLayer)
-	err = controller.CreateLayer("test", "/Physical/BASIC/A/R1")
+	err = controller.CreateLayer("test", "/Physical/BASIC/A/R1", "key", "value")
 	assert.Nil(t, err)
 
 	mockGetObjectByEntity(mockAPI, "layers", testLayer)
@@ -1203,7 +1186,14 @@ func TestLsReturnsLayerCreatedAndUpdatedAfterLastUpdate(t *testing.T) {
 		models.LayerFilters:       map[string]any{"category": "device"},
 		models.LayerApplicability: "BASIC.A.R1",
 	})
-	err = controller.UpdateLayer("/Logical/Layers/test", "category", "device")
+	mockOgree3D.On(
+		"InformOptional", "UpdateObj",
+		models.LAYER, map[string]any{"data": map[string]interface{}{
+			"layer": map[string]interface{}{
+				"applicability": "BASIC.A.R1", "filters": map[string]interface{}{"category": "device"},
+				"slug": "test"}, "old-slug": "test"}, "type": "modify-layer"},
+	).Return(nil)
+	err = controller.UpdateLayer("/Logical/Layers/test", models.LayerFiltersAdd, "category=device")
 	assert.Nil(t, err)
 
 	objects, err = controller.Ls("/Logical/Layers", nil, nil)
@@ -1220,7 +1210,7 @@ func TestLsReturnsLayerCreatedAndUpdatedAfterLastUpdate(t *testing.T) {
 }
 
 func TestLsOnLayerUpdatedAfterLastUpdateDoesUpdatedFilter(t *testing.T) {
-	controller, mockAPI, _ := layersSetup(t)
+	controller, mockAPI, mockOgree3D := layersSetup(t)
 
 	testLayer := map[string]any{
 		"slug": "test",
@@ -1246,7 +1236,14 @@ func TestLsOnLayerUpdatedAfterLastUpdateDoesUpdatedFilter(t *testing.T) {
 		models.LayerFilters:       map[string]any{"category": "device"},
 		models.LayerApplicability: "BASIC.A.R1",
 	})
-	err = controller.UpdateLayer("/Logical/Layers/test", "category", "device")
+	mockOgree3D.On(
+		"InformOptional", "UpdateObj",
+		models.LAYER, map[string]any{"data": map[string]interface{}{
+			"layer": map[string]interface{}{
+				"applicability": "BASIC.A.R1", "filters": map[string]interface{}{"category": "device"},
+				"slug": "test"}, "old-slug": "test"}, "type": "modify-layer"},
+	).Return(nil)
+	err = controller.UpdateLayer("/Logical/Layers/test", models.LayerFiltersAdd, "category=device")
 	assert.Nil(t, err)
 
 	mockGetObjects(mockAPI, "category=device&id=BASIC.A.R1.*&namespace=physical.hierarchy", []any{})

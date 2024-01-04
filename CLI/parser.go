@@ -1083,8 +1083,14 @@ func (p *parser) parseCreateLayer() node {
 	slug := p.parseString("slug")
 	p.expect("@")
 	applicability := p.parsePath(models.LayerApplicability)
+	p.expect("@")
+	filterName := p.parseSimpleWord("filterName")
+	p.skipWhiteSpaces()
+	p.expect("=")
+	p.skipWhiteSpaces()
+	filterValue := p.parseString("filterValue")
 
-	return &createLayerNode{slug, applicability}
+	return &createLayerNode{slug, applicability, filterName, filterValue}
 }
 
 func (p *parser) parseCreateCorridor() node {
