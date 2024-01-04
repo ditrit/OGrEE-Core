@@ -245,8 +245,8 @@ func (n *getUNode) execute() (interface{}, error) {
 	if u < 0 {
 		return nil, fmt.Errorf("The U value must be positive")
 	}
-	cmd.GetByAttr(path, u)
-	return nil, nil
+
+	return nil, cmd.GetByAttr(path, u)
 }
 
 type getSlotNode struct {
@@ -263,8 +263,8 @@ func (n *getSlotNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	cmd.GetByAttr(path, slot)
-	return nil, nil
+
+	return nil, cmd.GetByAttr(path, slot)
 }
 
 type loadNode struct {
@@ -294,7 +294,7 @@ func (n *loadTemplateNode) execute() (interface{}, error) {
 	if data == nil {
 		return nil, fmt.Errorf("cannot read json file : %s", path)
 	}
-	return path, cmd.LoadTemplate(data, path)
+	return path, cmd.C.LoadTemplate(data)
 }
 
 type printNode struct {
@@ -886,12 +886,6 @@ func (n *pwdNode) execute() (interface{}, error) {
 	return cmd.PWD(), nil
 }
 
-type grepNode struct{}
-
-func (n *grepNode) execute() (interface{}, error) {
-	return nil, nil
-}
-
 type selectChildrenNode struct {
 	paths []node
 }
@@ -985,7 +979,7 @@ func (n *createDomainNode) execute() (interface{}, error) {
 
 	attributes := map[string]interface{}{"attributes": map[string]interface{}{"color": color}}
 
-	return nil, cmd.CreateObject(path, models.DOMAIN, attributes)
+	return nil, cmd.C.CreateObject(path, models.DOMAIN, attributes)
 }
 
 type createSiteNode struct {
@@ -997,11 +991,8 @@ func (n *createSiteNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = cmd.CreateObject(path, models.SITE, map[string]any{})
-	if err != nil {
-		return nil, err
-	}
-	return nil, nil
+
+	return nil, cmd.C.CreateObject(path, models.SITE, map[string]any{})
 }
 
 type createBuildingNode struct {
@@ -1024,29 +1015,12 @@ func (n *createBuildingNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	attributes := map[string]any{"posXY": posXY, "rotation": rotation}
-	sizeOrTemplateAny, err := n.sizeOrTemplate.execute()
-	if err != nil {
-		return nil, err
-	}
-	size, ok := sizeOrTemplateAny.([]float64)
-	if ok {
-		attributes["size"] = size
-	} else {
-		template, ok := sizeOrTemplateAny.(string)
-		if !ok {
-			return nil, fmt.Errorf("vector3 (size) or string (template) expected")
-		}
-		if !checkIfTemplate(template, models.BLDG) {
-			return nil, fmt.Errorf("template not found")
-		}
-		attributes["template"] = template
-	}
-	err = cmd.CreateObject(path, models.BLDG, map[string]any{"attributes": attributes})
-	if err != nil {
-		return nil, err
-	}
-	return nil, nil
+
+	addSizeOrTemplate(n.sizeOrTemplate, attributes, models.BLDG)
+
+	return nil, cmd.C.CreateObject(path, models.BLDG, map[string]any{"attributes": attributes})
 }
 
 type createRoomNode struct {
@@ -1072,40 +1046,39 @@ func (n *createRoomNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	attributes := map[string]any{"posXY": posXY, "rotation": rotation}
+
 	if n.template != nil {
 		template, err := nodeToString(n.template, "template")
 		if err != nil {
 			return nil, err
 		}
-		if !checkIfTemplate(template, models.ROOM) {
-			return nil, fmt.Errorf("template not found")
-		}
+
 		attributes["template"] = template
 	} else {
-		size, err := nodeToVec(n.size, 3, "size")
+		size, err := nodeToSize(n.size)
 		if err != nil {
 			return nil, err
 		}
 		attributes["size"] = size
+
 		axisOrientation, err := nodeToString(n.axisOrientation, "orientation")
 		if err != nil {
 			return nil, err
 		}
 		attributes["axisOrientation"] = axisOrientation
-	}
-	if n.floorUnit != nil {
-		floorUnit, err := nodeToString(n.floorUnit, "floorUnit")
-		if err != nil {
-			return nil, err
+
+		if n.floorUnit != nil {
+			floorUnit, err := nodeToString(n.floorUnit, "floorUnit")
+			if err != nil {
+				return nil, err
+			}
+			attributes["floorUnit"] = floorUnit
 		}
-		attributes["floorUnit"] = floorUnit
 	}
-	err = cmd.CreateObject(path, models.ROOM, map[string]any{"attributes": attributes})
-	if err != nil {
-		return nil, err
-	}
-	return nil, nil
+
+	return nil, cmd.C.CreateObject(path, models.ROOM, map[string]any{"attributes": attributes})
 }
 
 type createRackNode struct {
@@ -1121,45 +1094,79 @@ func (n *createRackNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	pos, err := nodeToVec(n.pos, -1, "position")
+
+	pos, err := nodeToPosXYZ(n.pos)
 	if err != nil {
 		return nil, err
 	}
-	if len(pos) != 2 && len(pos) != 3 {
-		return nil, fmt.Errorf("position should be a vector2 or a vector3")
-	}
+
 	unit, err := nodeToString(n.unit, "unit")
 	if err != nil {
 		return nil, err
 	}
-	attributes := map[string]any{"posXYZ": pos, "posXYUnit": unit}
+
 	rotation, err := nodeTo3dRotation(n.rotation)
 	if err != nil {
 		return nil, err
 	}
-	attributes["rotation"] = rotation
-	sizeOrTemplateAny, err := n.sizeOrTemplate.execute()
+
+	attributes := map[string]any{"posXYZ": pos, "posXYUnit": unit, "rotation": rotation}
+
+	addSizeOrTemplate(n.sizeOrTemplate, attributes, models.RACK)
+
+	return nil, cmd.C.CreateObject(path, models.RACK, map[string]any{"attributes": attributes})
+}
+
+type createGenericNode struct {
+	path           node
+	pos            node
+	unit           node
+	rotation       node
+	sizeOrTemplate node
+	shape          node
+	getype         node
+}
+
+func (n *createGenericNode) execute() (interface{}, error) {
+	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
 	}
-	size, ok := sizeOrTemplateAny.([]float64)
-	if ok {
-		attributes["size"] = size
-	} else {
-		template, ok := sizeOrTemplateAny.(string)
-		if !ok {
-			return nil, fmt.Errorf("vector3 (size) or string (template) expected")
-		}
-		if !checkIfTemplate(template, models.RACK) {
-			return nil, fmt.Errorf("template not found")
-		}
-		attributes["template"] = template
-	}
-	err = cmd.CreateObject(path, models.RACK, map[string]any{"attributes": attributes})
+
+	pos, err := nodeToPosXYZ(n.pos)
 	if err != nil {
 		return nil, err
 	}
-	return nil, nil
+
+	unit, err := nodeToString(n.unit, "unit")
+	if err != nil {
+		return nil, err
+	}
+
+	rotation, err := nodeTo3dRotation(n.rotation)
+	if err != nil {
+		return nil, err
+	}
+
+	attributes := map[string]any{"posXYZ": pos, "posXYUnit": unit, "rotation": rotation}
+
+	if n.shape != nil {
+		shape, err := nodeToString(n.shape, "shape")
+		if err != nil {
+			return nil, err
+		}
+		attributes["shape"] = shape
+
+		getype, err := nodeToString(n.getype, "type")
+		if err != nil {
+			return nil, err
+		}
+		attributes["type"] = getype
+	}
+
+	addSizeOrTemplate(n.sizeOrTemplate, attributes, models.GENERIC)
+
+	return nil, cmd.C.CreateObject(path, models.GENERIC, map[string]any{"attributes": attributes})
 }
 
 type createDeviceNode struct {
@@ -1178,38 +1185,34 @@ func (n *createDeviceNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	attr := map[string]any{"posU/slot": posUOrSlot}
 
-	sizeUOrTemplate, err := n.sizeUOrTemplate.execute()
-	if err != nil {
-		return nil, err
-	}
-	sizeU, err := utils.ValToInt(sizeUOrTemplate, "sizeU")
+	attributes := map[string]any{"posU/slot": posUOrSlot}
+
+	sizeU, err := nodeToInt(n.sizeUOrTemplate, "sizeU")
 	if err == nil {
-		attr["sizeU"] = sizeU
+		attributes["sizeU"] = sizeU
 	} else {
-		template, ok := sizeUOrTemplate.(string)
-		if !ok {
-			return nil, fmt.Errorf("int (sizeU) or string (template) expected")
+		template, err := nodeToString(n.sizeUOrTemplate, "template")
+		if err != nil {
+			if errors.Is(err, utils.ErrShouldBeAString) {
+				return nil, errors.New("int (sizeU) or string (template) expected")
+			}
+
+			return nil, err
 		}
-		if !checkIfTemplate(template, models.DEVICE) {
-			return nil, fmt.Errorf("template not found")
-		}
-		attr["template"] = sizeUOrTemplate
+
+		attributes["template"] = template
 	}
+
 	if n.side != nil {
 		side, err := n.side.execute()
 		if err != nil {
 			return nil, err
 		}
-		attr["orientation"] = side
+		attributes["orientation"] = side
 	}
-	attributes := map[string]interface{}{"attributes": attr}
-	err = cmd.CreateObject(path, models.DEVICE, attributes)
-	if err != nil {
-		return nil, err
-	}
-	return nil, nil
+
+	return nil, cmd.C.CreateObject(path, models.DEVICE, map[string]any{"attributes": attributes})
 }
 
 type createGroupNode struct {
@@ -1233,11 +1236,8 @@ func (n *createGroupNode) execute() (interface{}, error) {
 		objs = append(objs, obj)
 	}
 	data["attributes"] = map[string]interface{}{"content": objs}
-	err = cmd.CreateObject(path, models.GROUP, data)
-	if err != nil {
-		return nil, err
-	}
-	return nil, nil
+
+	return nil, cmd.C.CreateObject(path, models.GROUP, data)
 }
 
 type createTagNode struct {
@@ -1299,39 +1299,34 @@ func (n *createCorridorNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	pos, err := nodeToVec(n.pos, -1, "position")
+
+	pos, err := nodeToPosXYZ(n.pos)
 	if err != nil {
 		return nil, err
 	}
-	if len(pos) != 2 && len(pos) != 3 {
-		return nil, fmt.Errorf("position should be a vector2 or a vector3")
-	}
+
 	unit, err := nodeToString(n.unit, "unit")
 	if err != nil {
 		return nil, err
 	}
+
 	rotation, err := nodeTo3dRotation(n.rotation)
 	if err != nil {
 		return nil, err
 	}
-	sizeAny, err := n.size.execute()
+
+	size, err := nodeToSize(n.size)
 	if err != nil {
 		return nil, err
 	}
-	size, ok := sizeAny.([]float64)
-	if !ok || len(size) != 3 {
-		return nil, fmt.Errorf("vector3 (size) or string (template) expected")
-	}
+
 	temp, err := nodeToString(n.temp, "temperature")
 	if err != nil {
 		return nil, err
 	}
 	attributes := map[string]any{"posXYZ": pos, "posXYUnit": unit, "rotation": rotation, "size": size, "temperature": temp}
-	err = cmd.CreateObject(path, models.CORRIDOR, map[string]any{"attributes": attributes})
-	if err != nil {
-		return nil, err
-	}
-	return nil, nil
+
+	return nil, cmd.C.CreateObject(path, models.CORRIDOR, map[string]any{"attributes": attributes})
 }
 
 type createOrphanNode struct {
@@ -1344,19 +1339,15 @@ func (n *createOrphanNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	template, err := nodeToString(n.template, "template")
 	if err != nil {
 		return nil, err
 	}
-	if !checkIfTemplate(template, models.STRAY_DEV) {
-		return nil, fmt.Errorf("template not found")
-	}
+
 	attributes := map[string]any{"template": template}
-	err = cmd.CreateObject(path, models.STRAY_DEV, map[string]any{"attributes": attributes})
-	if err != nil {
-		return nil, err
-	}
-	return nil, nil
+
+	return nil, cmd.C.CreateObject(path, models.STRAY_DEV, map[string]any{"attributes": attributes})
 }
 
 type createUserNode struct {
@@ -1378,11 +1369,8 @@ func (n *createUserNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = cmd.CreateUser(email, role, domain)
-	if err != nil {
-		return nil, err
-	}
-	return nil, nil
+
+	return nil, cmd.CreateUser(email, role, domain)
 }
 
 type addRoleNode struct {
@@ -1404,11 +1392,8 @@ func (n *addRoleNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = cmd.AddRole(email, role, domain)
-	if err != nil {
-		return nil, err
-	}
-	return nil, nil
+
+	return nil, cmd.AddRole(email, role, domain)
 }
 
 type changePasswordNode struct{}

@@ -26,7 +26,7 @@ var manCommands = []string{
 	"lssite", commands.LsBuilding, "lsroom", "lsrack", "lsdev", "lsac",
 	"lspanel", "lscabinet", "lscorridor", "lsenterprise",
 	"drawable", "draw", "undraw",
-	"tree", "lsog", "env", "cd", "pwd", "clear", "grep", "ls", "exit", "len", "man", "hc",
+	"tree", "lsog", "env", "cd", "pwd", "clear", "ls", "exit", "len", "man", "hc",
 	"print", "printf", "unset", "selection",
 	"for", "while", "if",
 	commands.Cp,
@@ -1047,6 +1047,26 @@ func (p *parser) parseCreateRack() node {
 	return &createRackNode{path, pos, unit, rotation, sizeOrTemplate}
 }
 
+func (p *parser) parseCreateGeneric() node {
+	defer un(trace(p, "create generic"))
+	path := p.parsePath("")
+	p.expect("@")
+	pos := p.parseExpr("position")
+	p.expect("@")
+	unit := p.parseString("unit")
+	p.expect("@")
+	rotation := p.parseStringOrVec("rotation")
+	p.expect("@")
+	sizeOrTemplate := p.parseStringOrVec("sizeOrTemplate")
+	if !p.parseExact("@") {
+		return &createGenericNode{path, pos, unit, rotation, sizeOrTemplate, nil, nil}
+	}
+	shape := p.parseString("shape")
+	p.expect("@")
+	getype := p.parseString("type")
+	return &createGenericNode{path, pos, unit, rotation, sizeOrTemplate, shape, getype}
+}
+
 func (p *parser) parseCreateDevice() node {
 	defer un(trace(p, "create device"))
 	path := p.parsePath("")
@@ -1302,11 +1322,12 @@ func newParser(buffer string) *parser {
 		"orphan":   p.parseCreateOrphan,
 		"user":     p.parseCreateUser,
 		"role":     p.parseAddRole,
+		"generic":  p.parseCreateGeneric,
+		"ge":       p.parseCreateGeneric,
 	}
 	p.noArgsCommands = map[string]node{
 		"selection":    &selectNode{},
 		"clear":        &clrNode{},
-		"grep":         &grepNode{},
 		"lsog":         &lsogNode{},
 		"lsenterprise": &lsenterpriseNode{},
 		"pwd":          &pwdNode{},

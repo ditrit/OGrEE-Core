@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OGrEE Generic object Schema",
+  "$ref": "refs/base.json",
+  "type": "object",
+  "properties": {
+    "attributes": {
+      "type": "object",
+      "properties": {
+        "fbxModel": {
+          "type": "string"
+        },
+        "diameter": {
+          "type": "string",
+          "$ref": "refs/types.json#/definitions/float"
+        },
+        "diameterUnit": {
+          "type": "string",
+          "$ref": "refs/types.json#/definitions/metricImperialUnit"
+        },
+        "height": {
+          "type": "string",
+          "$ref": "refs/types.json#/definitions/float"
+        },
+        "heightUnit": {
+          "type": "string",
+          "$ref": "refs/types.json#/definitions/metricImperialUnit"
+        },
+        "rotation": {
+          "type": "string",
+          "$ref": "refs/types.json#/definitions/vector3"
+        },
+        "posXYZ": {
+          "type": "string",
+          "$ref": "refs/types.json#/definitions/vector3"
+        },
+        "posXYUnit": {
+          "type": "string",
+          "enum": ["m", "t", "f"]
+        },
+        "posZUnit": {
+          "type": "string",
+          "$ref": "refs/types.json#/definitions/metricImperialUnit"
+        },
+        "size": {
+          "type": "string",
+          "format": "vector2"
+        },
+        "sizeUnit": {
+          "type": "string",
+          "$ref": "refs/types.json#/definitions/metricImperialUnit"
+        },
+        "type": {
+          "type": "string"
+        },
+        "template": {
+          "type": "string"
+        },
+        "shape": {
+          "type": "string",
+          "enum": [
+            "cube",
+            "sphere",
+            "cylinder"
+          ]
+        },
+        "color": {
+          "type": "string",
+          "$ref": "refs/types.json#/definitions/color"
+        },
+        "clearance": {
+          "type": "string",
+          "$ref": "refs/types.json#/definitions/clearanceVector"
+        }
+      },
+      "if": {
+        "properties": {
+          "shape": { "const": "sphere" }
+        }
+      },
+      "then": { 
+        "required": [
+          "diameter",
+          "diameterUnit",
+          "rotation",
+          "posXYZ",
+          "posXYUnit",
+          "type",
+          "shape"
+        ]
+      }, 
+      "else": {
+        "if": {
+          "properties": {
+            "shape": { "const": "cylinder" }
+          }
+        },
+        "then": { 
+          "required": [
+            "diameter",
+            "diameterUnit",
+            "height",
+            "heightUnit",
+            "rotation",
+            "posXYZ",
+            "posXYUnit",
+            "type",
+            "shape"
+          ]
+        },
+        "else": { 
+          "required": [
+            "height",
+            "heightUnit",
+            "rotation",
+            "posXYZ",
+            "posXYUnit",
+            "size",
+            "sizeUnit",
+            "type",
+            "shape"
+          ]
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "attributes": {
+        "height": "47",
+        "heightUnit": "cm",
+        "rotation": "{\"x\":45 ,\"y\":45 ,\"z\":45}",
+        "posXYZ": "{\"x\":4.6666666666667 ,\"y\": -2 ,\"z\":0}",
+        "posXYUnit": "m",
+        "size": "{\"x\":80 ,\"y\":100.532442}",
+        "sizeUnit": "cm",
+        "template": "",
+        "shape": "cube",
+        "type": "box"
+      },
+      "category": "generic",
+      "description": ["A table"],
+      "domain": "domainTest",
+      "name": "GeneticA",
+      "parentId": "someRoomId"
+    }
+  ]
+}

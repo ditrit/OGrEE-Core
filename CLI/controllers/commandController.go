@@ -7,7 +7,6 @@ import (
 	"cli/readline"
 	"cli/utils"
 	"cli/views"
-	"encoding/json"
 	"fmt"
 	"math/rand"
 	"net/http"
@@ -145,10 +144,6 @@ func (controller Controller) ObjectUrlGeneric(pathStr string, depth int, filters
 	url.RawQuery = params.Encode()
 
 	return url.String(), nil
-}
-
-func PollObject(path string) (map[string]any, error) {
-	return C.PollObjectWithChildren(path, 0)
 }
 
 func GetSlot(rack map[string]any, location string) (map[string]any, error) {
@@ -426,7 +421,7 @@ func Help(entry string) {
 	entry = strings.TrimSpace(entry)
 	switch entry {
 	case "ls", "pwd", "print", "printf", "cd", "tree", "get", "clear",
-		"lsog", "grep", "for", "while", "if", "env",
+		"lsog", "for", "while", "if", "env",
 		"cmds", "var", "unset", "selection", commands.Connect3D, "camera", "ui", "hc", "drawable",
 		"link", "unlink", "draw", "getu", "getslot", "undraw",
 		"lsenterprise", commands.Cp:
@@ -474,242 +469,6 @@ func Exit() {
 	//writeHistoryOnExit(&State.sessionBuffer)
 	//runtime.Goexit()
 	os.Exit(0)
-}
-
-// If user provided templates, get the JSON
-// and parse into templates
-func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int) error {
-	//Inner func declaration used for importing
-	//data from templates
-	attrSerialiser := func(someVal interface{}, idx string, ent int) string {
-		if x, ok := someVal.(int); ok {
-			if ent == models.DEVICE || ent == models.ROOM || ent == models.BLDG {
-				return strconv.Itoa(x)
-			}
-			return strconv.Itoa(x / 10)
-		} else if x, ok := someVal.(float64); ok {
-			if ent == models.DEVICE || ent == models.ROOM || ent == models.BLDG {
-				return strconv.FormatFloat(x, 'G', -1, 64)
-			}
-			return strconv.FormatFloat(x/10.0, 'G', -1, 64)
-		} else {
-			msg := "Warning: Invalid " + idx +
-				" value detected in size." +
-				" Resorting to default"
-			println(msg)
-			return "5"
-		}
-	}
-
-	if q, ok := attr["template"]; ok {
-		if qS, ok := q.(string); ok {
-			//Determine the type of template
-			tInt := 0
-			if ent == models.ROOM {
-				tInt = models.ROOMTMPL
-			} else if ent == models.BLDG {
-				tInt = models.BLDGTMPL
-			} else {
-				tInt = models.OBJTMPL
-			} //End of determine block
-			tmpl, err := fetchTemplate(qS, tInt)
-			if err != nil {
-				return err
-			}
-
-			//MergeMaps(attr, tmpl, true)
-			key := determineStrKey(tmpl, []string{"sizeWDHmm", "sizeWDHm"})
-
-			if sizeInf, ok := tmpl[key].([]interface{}); ok && len(sizeInf) == 3 {
-				var xS, yS, zS string
-				xS = attrSerialiser(sizeInf[0], "x", ent)
-				yS = attrSerialiser(sizeInf[1], "y", ent)
-				zS = attrSerialiser(sizeInf[2], "height", ent)
-
-				attr["size"] = "{\"x\":" + xS + ", \"y\":" + yS + "}"
-				attr["height"] = zS
-
-				if ent == models.DEVICE {
-					attr["sizeUnit"] = "mm"
-					attr["heightUnit"] = "mm"
-					if tmpx, ok := tmpl["attributes"]; ok {
-						if x, ok := tmpx.(map[string]interface{}); ok {
-							if tmp, ok := x["type"]; ok {
-								if t, ok := tmp.(string); ok {
-									if t == "chassis" || t == "server" {
-										res := 0
-										if val, ok := sizeInf[2].(float64); ok {
-											res = int((val / 1000) / RACKUNIT)
-										} else if val, ok := sizeInf[2].(int); ok {
-											res = int((float64(val) / 1000) / RACKUNIT)
-										} else {
-											//Resort to default value
-											msg := "Warning, invalid value provided for" +
-												" sizeU. Defaulting to 5"
-											println(msg)
-											res = int((5 / 1000) / RACKUNIT)
-										}
-										attr["sizeU"] = strconv.Itoa(res)
-
-									}
-								}
-							}
-						}
-					}
-
-				} else if ent == models.ROOM {
-					attr["sizeUnit"] = "m"
-					attr["heightUnit"] = "m"
-
-					//Copy additional Room specific attributes
-					var tmp []byte
-					CopyAttr(attr, tmpl, "technicalArea")
-					if _, ok := attr["technicalArea"]; ok {
-						//tmp, _ := json.Marshal(attr["technicalArea"])
-						attr["technical"] = attr["technicalArea"]
-						delete(attr, "technicalArea")
-					}
-
-					CopyAttr(attr, tmpl, "axisOrientation")
-
-					CopyAttr(attr, tmpl, "reservedArea")
-					if _, ok := attr["reservedArea"]; ok {
-						//tmp, _ = json.Marshal(attr["reservedArea"])
-						attr["reserved"] = attr["reservedArea"]
-						delete(attr, "reservedArea")
-					}
-
-					parseReservedTech(attr)
-
-					CopyAttr(attr, tmpl, "separators")
-					if _, ok := attr["separators"]; ok {
-						tmp, _ = json.Marshal(attr["separators"])
-						attr["separators"] = string(tmp)
-					}
-
-					CopyAttr(attr, tmpl, "pillars")
-					if _, ok := attr["pillars"]; ok {
-						tmp, _ = json.Marshal(attr["pillars"])
-						attr["pillars"] = string(tmp)
-					}
-
-					CopyAttr(attr, tmpl, "floorUnit")
-					if _, ok := attr["floorUnit"]; ok {
-						if floorUnit, ok := attr["floorUnit"].(string); ok {
-							attr["floorUnit"] = floorUnit
-						}
-					}
-
-					CopyAttr(attr, tmpl, "tiles")
-					if _, ok := attr["tiles"]; ok {
-						tmp, _ = json.Marshal(attr["tiles"])
-						attr["tiles"] = string(tmp)
-					}
-
-					CopyAttr(attr, tmpl, "rows")
-					if _, ok := attr["rows"]; ok {
-						tmp, _ = json.Marshal(attr["rows"])
-						attr["rows"] = string(tmp)
-					}
-
-					CopyAttr(attr, tmpl, "aisles")
-					if _, ok := attr["aisles"]; ok {
-						tmp, _ = json.Marshal(attr["aisles"])
-						attr["aisles"] = string(tmp)
-					}
-
-					CopyAttr(attr, tmpl, "vertices")
-					if _, ok := attr["vertices"]; ok {
-						tmp, _ = json.Marshal(attr["vertices"])
-						attr["vertices"] = string(tmp)
-					}
-
-					CopyAttr(attr, tmpl, "colors")
-					if _, ok := attr["colors"]; ok {
-						tmp, _ = json.Marshal(attr["colors"])
-						attr["colors"] = string(tmp)
-					}
-
-					CopyAttr(attr, tmpl, "tileAngle")
-					if _, ok := attr["tileAngle"]; ok {
-						if tileAngle, ok := attr["tileAngle"].(int); ok {
-							attr["tileAngle"] = strconv.Itoa(tileAngle)
-						}
-
-						if tileAngleF, ok := attr["tileAngle"].(float64); ok {
-							tileAngleStr := strconv.FormatFloat(tileAngleF, 'f', -1, 64)
-							attr["tileAngle"] = tileAngleStr
-						}
-					}
-
-				} else if ent == models.BLDG {
-					attr["sizeUnit"] = "m"
-					attr["heightUnit"] = "m"
-
-				} else {
-					attr["sizeUnit"] = "cm"
-					attr["heightUnit"] = "cm"
-				}
-
-				//Copy Description
-				if _, ok := tmpl["description"]; ok {
-					if descTable, ok := tmpl["description"].([]interface{}); ok {
-						data["description"] = descTable
-					} else {
-						data["description"] = []interface{}{tmpl["description"]}
-					}
-				} else {
-					data["description"] = []string{}
-				}
-
-				//fbxModel section
-				if check := CopyAttr(attr, tmpl, "fbxModel"); !check {
-					if ent != models.BLDG {
-						attr["fbxModel"] = ""
-					}
-
-				}
-
-				//Copy orientation if available
-				CopyAttr(attr, tmpl, "orientation")
-
-				//Merge attributes if available
-				if tmplAttrsInf, ok := tmpl["attributes"]; ok {
-					if tmplAttrs, ok := tmplAttrsInf.(map[string]interface{}); ok {
-						MergeMaps(attr, tmplAttrs, false)
-					}
-				}
-			} else {
-				if State.DebugLvl > 1 {
-					println("Warning, invalid size value in template.",
-						"Default values will be assigned")
-				}
-
-			}
-
-		} else {
-			attr["template"] = ""
-			if State.DebugLvl > 1 {
-				println("Warning: template must be a string that",
-					" refers to an existing imported template.",
-					q, " will not be used")
-			}
-
-			l.GetWarningLogger().Println("Invalid data type used to invoke template")
-		}
-
-	} else {
-		if ent != models.CORRIDOR {
-			attr["template"] = ""
-		}
-		//Serialise size and posXY if given
-		if _, ok := attr["size"].(string); ok {
-			attr["size"] = serialiseAttr(attr, "size")
-		} else {
-			attr["size"] = serialiseAttr2(attr, "size")
-		}
-	}
-	return nil
 }
 
 func Connect3D(url string) error {
@@ -912,27 +671,6 @@ func ShowClipBoard() []string {
 	return nil
 }
 
-func LoadTemplate(data map[string]interface{}, filePath string) error {
-	var URL string
-	if cat := data["category"]; cat == "room" {
-		//Room template
-		URL = "/api/room-templates"
-	} else if cat == "bldg" || cat == "building" {
-		//Bldg template
-		URL = "/api/bldg-templates"
-	} else if cat == "rack" || cat == "device" {
-		// Obj template
-		URL = "/api/obj-templates"
-	} else {
-		return fmt.Errorf("this template does not have a valid category. Please add a category attribute with a value of building or room or rack or device")
-	}
-	_, err := API.Request("POST", URL, data, http.StatusCreated)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 func SetEnv(arg string, val interface{}) {
 	switch arg {
 	case "Filter":
@@ -1048,34 +786,6 @@ func InteractObject(path string, keyword string, val interface{}, fromAttr bool)
 
 	//-1 since its not neccessary to check for filtering
 	return Ogree3D.InformOptional("Interact", -1, ans)
-}
-
-// Helper function for GetOCLIAttr which retrieves
-// template from server if available, this func mainly helps
-// to keep code organised
-func fetchTemplate(name string, objType int) (map[string]interface{}, error) {
-	var url string
-	if objType == models.ROOMTMPL {
-		url = "/api/room_templates/"
-	} else if objType == models.BLDGTMPL {
-		url = "/api/bldg_templates/"
-	} else {
-		url = "/api/obj_templates/"
-	}
-	url += name
-	resp, err := API.Request("GET", url, nil, http.StatusOK)
-	if err != nil {
-		return nil, err
-	}
-	tmplInf, ok := resp.Body["data"]
-	if !ok {
-		return nil, fmt.Errorf("invalid response on GET %s", url)
-	}
-	tmpl, ok := tmplInf.(map[string]interface{})
-	if !ok {
-		return nil, fmt.Errorf("invalid response on GET %s", url)
-	}
-	return tmpl, nil
 }
 
 func randPassword(n int) string {

@@ -1,13 +1,13 @@
-{ 
+{
     "slug"        : "ERROR-example-123",
     "description" : "NeXtScale ns1200",
     "category"    : "device",
     "sizeWDHmm"   : [447, 914.5, 263.3],
     "fbxModel"    : "",
     "attributes"  : {
-    "type"        : "chassis",
-    "vendor"      : "IBM",
-    "model"       : "5456-HC1"
+        "type"    : "chassis",
+        "vendor"  : "IBM",
+        "model"   : "5456-HC1"
     },
     "colors"      : [],
     "components"  : [
@@ -24,6 +24,6 @@
         ]
             ,
     "sensors"  : [
-    {	"location":"sensor01", "elemPos":["center", "center", "center"], "elemSize":[ 20,20,20] }
-        ]
+        { "location":"sensor01", "elemPos":["center", "center", "center"], "elemSize":[ 20,20,20] }
+    ]
 }

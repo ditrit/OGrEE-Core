@@ -25,7 +25,7 @@ func getTags(object map[string]any) ([]any, bool) {
 }
 
 // Verifies that a list of tags has not duplicated values and that all the elements exist
-func verifyTagList(ctx mongo.SessionContext, tags []any) *u.Error {
+func verifyTagList(tags []any) *u.Error {
 	if !pie.AreUnique(tags) {
 		return &u.Error{
 			Type:    u.ErrBadFormat,
@@ -36,7 +36,7 @@ func verifyTagList(ctx mongo.SessionContext, tags []any) *u.Error {
 	for _, tagSlugAny := range tags {
 		tagSlug := tagSlugAny.(string)
 
-		_, err := repository.GetTagBySlug(ctx, tagSlug)
+		_, err := repository.GetTagBySlug(tagSlug)
 		if err != nil {
 			if err.Type == u.ErrNotFound {
 				return &u.Error{
@@ -55,7 +55,7 @@ func verifyTagList(ctx mongo.SessionContext, tags []any) *u.Error {
 // Edits object's "tags" list by:
 //  1. adding tags in "tags+"
 //  2. removing tags in "tags-"
-func addAndRemoveFromTags(ctx mongo.SessionContext, entity int, objectID string, object map[string]interface{}) *u.Error {
+func addAndRemoveFromTags(entity int, objectID string, object map[string]interface{}) *u.Error {
 	if u.EntityHasTags(entity) {
 		tags, tagsPresent := getTags(object)
 		if !tagsPresent || tags == nil {
@@ -64,7 +64,7 @@ func addAndRemoveFromTags(ctx mongo.SessionContext, entity int, objectID string,
 
 		plusTag, plusTagPresent := object["tags+"]
 		if plusTagPresent {
-			err := verifyTagList(ctx, []any{plusTag})
+			err := verifyTagList([]any{plusTag})
 			if err != nil {
 				return err
 			}
@@ -94,13 +94,14 @@ func addAndRemoveFromTags(ctx mongo.SessionContext, entity int, objectID string,
 
 // Deletes tag with slug "slug"
 func DeleteTag(slug string) *u.Error {
-	_, err := WithTransaction(func(ctx mongo.SessionContext) (interface{}, error) {
-		tag, err := repository.GetTagBySlug(ctx, slug)
-		if err != nil {
-			return nil, err
-		}
+	tag, err := repository.GetTagBySlug(slug)
+	if err != nil {
+		return err
+	}
 
-		err = repository.DeleteObject(ctx, u.EntityToString(u.TAG), bson.M{"slug": slug})
+	_, err = WithTransaction(func(ctx mongo.SessionContext) (interface{}, error) {
+
+		err := repository.DeleteObject(ctx, u.EntityToString(u.TAG), bson.M{"slug": slug})
 		if err != nil {
 			// Unable to delete given id
 			return nil, err

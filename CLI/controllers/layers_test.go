@@ -26,6 +26,7 @@ var roomWithChildren = map[string]any{
 		rack2,
 		corridor,
 		roomGroup,
+		generic,
 	},
 	"id":       "BASIC.A.R1",
 	"name":     "R1",
@@ -54,6 +55,16 @@ var rack2 = map[string]any{
 	"id":       "BASIC.A.R1.B01",
 	"name":     "B01",
 	"parentId": "BASIC.A.R1",
+}
+
+var generic = map[string]any{
+	"category": "generic",
+	"id":       "BASIC.A.R1.table1",
+	"name":     "table1",
+	"parentId": "BASIC.A.R1",
+	"attributes": map[string]any{
+		"type": "table",
+	},
 }
 
 var chassis = map[string]any{
@@ -103,7 +114,7 @@ func layersSetup(t *testing.T) (controllers.Controller, *mocks.APIPort, *mocks.O
 	return controller, mockAPI, mockOgree3d
 }
 
-func TestLsOnASiteShowsRacksIfAnyObjectIsRack(t *testing.T) {
+func TestLsOnARoomShowsRacksIfAnyObjectIsRack(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
@@ -124,7 +135,7 @@ func TestLsOnASiteShowsRacksIfAnyObjectIsRack(t *testing.T) {
 	utils.ContainsObjectNamed(t, objects, models.RacksLayer.Name())
 }
 
-func TestLsOnASiteShowsCorridorsIfAnyObjectIsCorridor(t *testing.T) {
+func TestLsOnARoomShowsCorridorsIfAnyObjectIsCorridor(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
@@ -145,7 +156,7 @@ func TestLsOnASiteShowsCorridorsIfAnyObjectIsCorridor(t *testing.T) {
 	utils.ContainsObjectNamed(t, objects, models.CorridorsLayer.Name())
 }
 
-func TestLsOnASiteShowsGroupsIfAnyObjectIsGroup(t *testing.T) {
+func TestLsOnARoomShowsGroupsIfAnyObjectIsGroup(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
@@ -166,7 +177,29 @@ func TestLsOnASiteShowsGroupsIfAnyObjectIsGroup(t *testing.T) {
 	utils.ContainsObjectNamed(t, objects, models.GroupsLayer.Name())
 }
 
-func TestLsOnASiteWithAllChildrenShowsAllLayers(t *testing.T) {
+func TestLsOnARoomShowsGenericsAndGenericsByTypeIfAnyObjectIsGeneric(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+
+	mockGetObjectsByEntity(mockAPI, "layers", []any{})
+	mockGetObjectHierarchy(mockAPI, map[string]any{
+		"category": "room",
+		"children": []any{
+			generic,
+		},
+		"id":       "BASIC.A.R1",
+		"name":     "R1",
+		"parentId": "BASIC.A",
+	})
+
+	objects, err := controller.Ls("/Physical/BASIC/A/R1", nil, nil)
+	assert.Nil(t, err)
+	assert.Len(t, objects, 3)
+	utils.ContainsObjectNamed(t, objects, "table1")
+	utils.ContainsObjectNamed(t, objects, models.GenericsLayer.Name())
+	utils.ContainsObjectNamed(t, objects, "#tables")
+}
+
+func TestLsOnARoomWithAllChildrenShowsAllLayers(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
@@ -174,14 +207,17 @@ func TestLsOnASiteWithAllChildrenShowsAllLayers(t *testing.T) {
 
 	objects, err := controller.Ls("/Physical/BASIC/A/R1", nil, nil)
 	assert.Nil(t, err)
-	assert.Len(t, objects, 7)
+	assert.Len(t, objects, 10)
 	utils.ContainsObjectNamed(t, objects, "A01")
 	utils.ContainsObjectNamed(t, objects, "B01")
 	utils.ContainsObjectNamed(t, objects, "CO1")
 	utils.ContainsObjectNamed(t, objects, "GRT")
+	utils.ContainsObjectNamed(t, objects, "table1")
 	utils.ContainsObjectNamed(t, objects, models.CorridorsLayer.Name())
 	utils.ContainsObjectNamed(t, objects, models.GroupsLayer.Name())
 	utils.ContainsObjectNamed(t, objects, models.RacksLayer.Name())
+	utils.ContainsObjectNamed(t, objects, models.GenericsLayer.Name())
+	utils.ContainsObjectNamed(t, objects, "#tables")
 }
 
 func TestLsOnARackShowsGroupsIfAnyObjectIsGroup(t *testing.T) {
@@ -260,7 +296,20 @@ func TestLsOnCorridorsLayerShowsCorridors(t *testing.T) {
 	utils.ContainsObjectNamed(t, objects, "CO1")
 }
 
-func TestLsOnTypeLayerShowsDevicesOfThatType(t *testing.T) {
+func TestLsOnGenericLayerShowsGeneric(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+
+	mockGetObjectsByEntity(mockAPI, "layers", []any{})
+	mockGetObjectHierarchy(mockAPI, roomWithChildren)
+	mockGetObjects(mockAPI, "category=generic&id=BASIC.A.R1.*&namespace=physical.hierarchy", []any{generic})
+
+	objects, err := controller.Ls("/Physical/BASIC/A/R1/#generics", nil, nil)
+	assert.Nil(t, err)
+	assert.Len(t, objects, 1)
+	utils.ContainsObjectNamed(t, objects, "table1")
+}
+
+func TestLsOnDeviceTypeLayerShowsDevicesOfThatType(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
@@ -271,6 +320,19 @@ func TestLsOnTypeLayerShowsDevicesOfThatType(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
 	utils.ContainsObjectNamed(t, objects, "chT")
+}
+
+func TestLsOnGenericTypeLayerShowsDevicesOfThatType(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+
+	mockGetObjectsByEntity(mockAPI, "layers", []any{})
+	mockGetObjectHierarchy(mockAPI, roomWithChildren)
+	mockGetObjects(mockAPI, "category=generic&id=BASIC.A.R1.*&namespace=physical.hierarchy&type=table", []any{generic})
+
+	objects, err := controller.Ls("/Physical/BASIC/A/R1/#tables", nil, nil)
+	assert.Nil(t, err)
+	assert.Len(t, objects, 1)
+	utils.ContainsObjectNamed(t, objects, "table1")
 }
 
 func TestLsOnLayerChildWorks(t *testing.T) {

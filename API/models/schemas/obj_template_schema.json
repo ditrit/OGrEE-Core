@@ -4,16 +4,36 @@
     "type": "object",
     "required": [
         "attributes",
-        "components",
         "description",
         "fbxModel",
         "sizeWDHmm",
-        "slots",
         "slug",
         "category"
     ],
+    "if": {
+        "properties": {
+          "category": { "const": "generic" }
+        }
+    },
+    "then": { 
+        "required": ["shape"],
+        "properties": {
+            "shape": {
+                "type": "string",
+                "enum": [
+                    "cube",
+                    "sphere",
+                    "cylinder"
+                ]
+            }
+        }
+    },
+    "else": { "required": [
+        "components", 
+        "slots"
+    ] },
     "properties": {
-        "attributes": {
+        "attributes": { 
             "type": "object",
             "patternProperties": {
                 "^.*$": {
@@ -26,7 +46,8 @@
             "type": "string",
             "enum": [
                 "rack",
-                "device"
+                "device",
+                "generic"
             ]
         },
         "colors": {
@@ -200,7 +221,7 @@
     },
     "examples": [
         {
-            "slug": "ibm-example",
+            "slug": "device-example",
             "description": "example",
             "category": "device",
             "sizeWDHmm": [216, 659, 41],
@@ -217,7 +238,7 @@
                     "location": "eth2",
                     "type": "port",
                     "elemOrient": "",
-                    "elemPos": [ 104, 649, 0],
+                    "elemPos": [104, 649, 0],
                     "elemSize": [14, 11, 11],
                     "mandatory": "yes",
                     "labelPos": "front",
@@ -242,6 +263,51 @@
                     }
                 }
             ]
+        },
+        {
+            "slug": "rack-example",
+            "description": "example",
+            "category": "rack",
+            "sizeWDHmm": [605, 1200, 2003],
+            "fbxModel": "",
+            "attributes": {
+                "vendor": "IBM",
+                "model": "9360-4PX"
+            },
+            "colors": [],
+            "components": [],
+            "slots": [
+                {
+                    "location": "u01",
+                    "type": "u",
+                    "elemOrient": "horizontal",
+                    "elemPos": [58, 51, 44.45],
+                    "elemSize": [482.6, 1138, 44.45],
+                    "mandatory": "no",
+                    "labelPos": "frontrear",
+                    "color": "@color1"
+                }
+            ],
+            "sensors": [
+                {
+                    "location": "se1",
+                    "elemPos": ["right", "rear", "upper"],
+                    "elemSize": [50, 20, 20]
+                }
+            ]
+        },
+        {
+            "slug"        : "generic-example",
+            "description" : "a table",
+            "category"    : "generic",
+            "sizeWDHmm"   : [447, 914.5, 263.3],
+            "fbxModel"    : "",
+            "attributes"  : {
+                "type"    : "table"
+            },
+            "colors"      : [],
+            "components"  : [],
+            "slots"       : []
         }
     ]
 }

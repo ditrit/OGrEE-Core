@@ -1,7 +1,6 @@
 package models_test
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"p3/models"
@@ -17,10 +16,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
-
-var userRoles = map[string]models.Role{
-	models.ROOT_DOMAIN: models.Manager,
-}
 
 func TestAddTagThatNotExistReturnsError(t *testing.T) {
 	err := createSite("add-tag-1-site", nil)
@@ -282,7 +277,7 @@ func TestUpdateSetEmptyImageRemovesOldImage(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Empty(t, updatedTag["image"])
 
-	_, err = repository.GetImage(context.Background(), tagImage.(primitive.ObjectID).Hex())
+	_, err = repository.GetImage(tagImage.(primitive.ObjectID).Hex())
 	assert.NotNil(t, err)
 	assert.ErrorContains(t, err, "Nothing matches this request")
 
@@ -321,7 +316,7 @@ func TestUpdateWithNewImageRemovesOldImage(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotEmpty(t, updatedTag["image"])
 
-	_, err = repository.GetImage(context.Background(), tagOldImage.(primitive.ObjectID).Hex())
+	_, err = repository.GetImage(tagOldImage.(primitive.ObjectID).Hex())
 	assert.NotNil(t, err)
 	assert.ErrorContains(t, err, "Nothing matches this request")
 }
@@ -340,7 +335,7 @@ func TestDeleteTagAlsoDeletesTagImage(t *testing.T) {
 	err = models.DeleteTag("delete-tag-4")
 	assert.Nil(t, err)
 
-	_, err = repository.GetImage(context.Background(), tagOldImage.(primitive.ObjectID).Hex())
+	_, err = repository.GetImage(tagOldImage.(primitive.ObjectID).Hex())
 	assert.NotNil(t, err)
 	assert.ErrorContains(t, err, "Nothing matches this request")
 }
@@ -421,7 +416,7 @@ func TestCreateObjectWithTagsThatNotExistsReturnsError(t *testing.T) {
 			"name":        "create-object-tags-1",
 			"tags":        []any{"not-exists"},
 		},
-		userRoles,
+		integration.ManagerUserRoles,
 	)
 	assert.NotNil(t, err)
 	assert.Equal(t, u.ErrBadFormat, err.Type)
@@ -443,7 +438,7 @@ func TestCreateObjectWithDuplicatedTagsReturnsError(t *testing.T) {
 			"name":        "create-object-tags-1",
 			"tags":        []any{"tag1", "tag1"},
 		},
-		userRoles,
+		integration.ManagerUserRoles,
 	)
 	assert.NotNil(t, err)
 	assert.Equal(t, u.ErrBadFormat, err.Type)
@@ -456,7 +451,7 @@ func TestUpdateObjectWithTagsThatNotExistsReturnsError(t *testing.T) {
 
 	_, err = models.UpdateObject(u.EntityToString(u.SITE), "update-object-tags-1", map[string]any{
 		"tags": []any{"not-exists"},
-	}, false, userRoles)
+	}, false, integration.ManagerUserRoles)
 	assert.NotNil(t, err)
 	assert.Equal(t, u.ErrBadFormat, err.Type)
 	assert.Equal(t, "Tag \"not-exists\" not found", err.Message)
@@ -468,7 +463,7 @@ func TestPatchObjectWithTagsReturnsError(t *testing.T) {
 
 	_, err = models.UpdateObject(u.EntityToString(u.SITE), "update-object-tags-2", map[string]any{
 		"tags": []any{"not-exists"},
-	}, true, userRoles)
+	}, true, integration.ManagerUserRoles)
 	assert.NotNil(t, err)
 	assert.Equal(t, u.ErrBadFormat, err.Type)
 	assert.Equal(t, "Tags cannot be modified in this way, use tags+ and tags-", err.Message)
@@ -489,7 +484,7 @@ func TestCreateObjectWithTagsAsStringReturnsError(t *testing.T) {
 			"name":        "create-objects-tags-string",
 			"tags":        "a string that is not an array",
 		},
-		userRoles,
+		integration.ManagerUserRoles,
 	)
 	assert.NotNil(t, err)
 	assert.ErrorContains(t, err, "JSON body doesn't validate with the expected JSON schema")
@@ -539,7 +534,7 @@ func createSite(name string, tags any) *u.Error {
 			"name":        name,
 			"tags":        tags,
 		},
-		userRoles,
+		integration.ManagerUserRoles,
 	)
 	if err != nil {
 		return err
@@ -556,7 +551,7 @@ func addTagToObject(objectID string, tagSlug string) (map[string]any, *u.Error) 
 			"tags+": tagSlug,
 		},
 		true,
-		userRoles,
+		integration.ManagerUserRoles,
 	)
 }
 
@@ -568,7 +563,7 @@ func removeTagFromObject(objectID string, tagSlug string) (map[string]any, *u.Er
 			"tags-": tagSlug,
 		},
 		true,
-		userRoles,
+		integration.ManagerUserRoles,
 	)
 }
 
@@ -577,7 +572,7 @@ func getSite(name string) (map[string]interface{}, *u.Error) {
 		bson.M{"name": name},
 		u.EntityToString(u.SITE),
 		u.RequestFilters{},
-		userRoles,
+		integration.ManagerUserRoles,
 	)
 }
 
@@ -586,6 +581,6 @@ func getTag(slug string) (map[string]interface{}, *u.Error) {
 		bson.M{"slug": slug},
 		u.EntityToString(u.TAG),
 		u.RequestFilters{},
-		userRoles,
+		integration.ManagerUserRoles,
 	)
 }

@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+var ErrObjectNotFound = errors.New("object not found")
+
 func (controller Controller) GetObject(path string) (map[string]any, error) {
 	return controller.GetObjectWithChildren(path, 0)
 }
@@ -58,10 +60,14 @@ func (controller Controller) GetObjectWithChildren(path string, depth int) (map[
 	}
 
 	if obj == nil {
-		return nil, fmt.Errorf("object not found")
+		return nil, ErrObjectNotFound
 	}
 
 	return obj, nil
+}
+
+func (controller Controller) PollObject(path string) (map[string]any, error) {
+	return controller.PollObjectWithChildren(path, 0)
 }
 
 func (controller Controller) PollObjectWithChildren(path string, depth int) (map[string]any, error) {
@@ -75,7 +81,7 @@ func (controller Controller) PollObjectWithChildren(path string, depth int) (map
 	}
 	resp, err := controller.API.Request(http.MethodGet, url, nil, http.StatusOK)
 	if err != nil {
-		if resp != nil && resp.status == http.StatusNotFound {
+		if resp != nil && resp.Status == http.StatusNotFound {
 			return nil, nil
 		}
 		return nil, err

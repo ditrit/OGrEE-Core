@@ -27,6 +27,10 @@
           "type": "string",
           "enum": ["m", "t", "f"]
         },
+        "posZUnit": {
+          "type": "string",
+          "$ref": "refs/types.json#/definitions/metricImperialUnit"
+        },
         "size": {
           "type": "string",
           "$ref": "refs/types.json#/definitions/vector2"
@@ -51,8 +55,8 @@
         "height",
         "heightUnit",
         "rotation",
-        "posXYUnit",
         "posXYZ",
+        "posXYUnit",
         "size",
         "sizeUnit",
         "template"
@@ -65,8 +69,8 @@
         "height": "47",
         "heightUnit": "U",
         "rotation": "{\"x\":45 ,\"y\":45 ,\"z\":45}",
-        "posXYUnit": "m",
         "posXYZ": "{\"x\":4.6666666666667 ,\"y\": -2 ,\"z\":0}",
+        "posXYUnit": "m",
         "size": "{\"x\":80 ,\"y\":100.532442}",
         "sizeUnit": "cm",
         "template": ""
