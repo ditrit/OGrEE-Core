@@ -135,6 +135,9 @@ func (n *forRangeNode) execute() (interface{}, error) {
 	}
 	for i := start; i <= end; i++ {
 		c.State.DynamicSymbolTable[n.variable] = i
+		if n.body == nil {
+			return nil, fmt.Errorf("loop body should not be empty")
+		}
 		_, err = n.body.execute()
 		if err != nil {
 			return nil, err

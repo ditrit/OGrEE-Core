@@ -16,6 +16,7 @@ import (
 
 	"github.com/elliotchance/pie/v2"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 var BuildHash string
@@ -74,6 +75,11 @@ type RequestFilters struct {
 	Limit        string    `schema:"limit"`
 	Namespace    Namespace `schema:"namespace"`
 	Id           string    `schema:"id"`
+}
+
+type LayerObjsFilters struct {
+	Root        string `schema:"root"`
+	IsRecursive bool   `schema:"recursive"`
 }
 
 type HierarchyFilters struct {
@@ -174,33 +180,37 @@ func FilteredReqFromQueryParams(link *url.URL) bson.M {
 	for key := range queryValues {
 		if key != "fieldOnly" && key != "startDate" && key != "endDate" &&
 			key != "limit" && key != "namespace" {
-			var keyValue interface{}
-			keyValue = queryValues.Get(key)
-
-			if key == "parentId" {
-				regex := applyWildcards(keyValue.(string)) + `\.(` + NAME_REGEX + ")"
-				bsonMap["id"] = regexToMongoFilter(regex)
-				continue
-			} else if key == "tag" {
-				// tag is in tags list
-				bsonMap["tags"] = bson.M{"$eq": keyValue}
-				continue
-			} else if strings.Contains(keyValue.(string), "*") {
-				regex := applyWildcards(keyValue.(string))
-				keyValue = regexToMongoFilter(regex)
-			}
-
-			switch key {
-			case "id", "name", "category",
-				"description", "domain",
-				"createdDate", "lastUpdated", "slug":
-				bsonMap[key] = keyValue
-			default:
-				bsonMap["attributes."+key] = keyValue
-			}
+			keyValue := queryValues.Get(key)
+			AddFilterToReq(bsonMap, key, keyValue)
 		}
 	}
 	return bsonMap
+}
+
+func AddFilterToReq(bsonMap primitive.M, key string, value string) {
+	var keyValue interface{}
+	keyValue = value
+	if key == "parentId" {
+		regex := applyWildcards(keyValue.(string)) + `\.(` + NAME_REGEX + ")"
+		bsonMap["id"] = regexToMongoFilter(regex)
+		return
+	} else if key == "tag" {
+		// tag is in tags list
+		bsonMap["tags"] = bson.M{"$eq": keyValue}
+		return
+	} else if strings.Contains(keyValue.(string), "*") {
+		regex := applyWildcards(keyValue.(string))
+		keyValue = regexToMongoFilter(regex)
+	}
+
+	switch key {
+	case "id", "name", "category",
+		"description", "domain",
+		"createdDate", "lastUpdated", "slug":
+		bsonMap[key] = keyValue
+	default:
+		bsonMap["attributes."+key] = keyValue
+	}
 }
 
 func ErrTypeToStatusCode(errType ErrType) int {

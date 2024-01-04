@@ -60,13 +60,15 @@ To quickly deploy a frontend and docker backend in SuperAdmin mode, just execute
 .\launch.ps1
 # Linux 
 ./launch.sh
+# MacOS 
+./launch.sh -m
 ```
 
 If a frontend was already created with a previous run of this script and has allocated the default port, add `-f` option to force run the new container, stopping the old one without removing it:
 ```console
 # Windows (use PowerShell)
 .\launch.ps1 -f
-# Linux 
+# Linux (add also -m for macOS) 
 ./launch.sh -f
 ```
 
@@ -75,6 +77,6 @@ The default is to launch the webapp on port 8080 and backend on port 8082. To se
 ```console
 # Windows (use PowerShell)
 .\launch.ps1 -portWeb XXXX -portBack YYYY
-# Linux 
+# Linux (add also -m for macOS) 
 ./launch.sh -w XXXX -b YYYY
 ```

@@ -183,6 +183,7 @@ func SetObjsForUnity(objs []string) []int {
 		}
 		res = append(res, models.DOMAIN)
 		res = append(res, models.TAG)
+		res = append(res, models.LAYER)
 	}
 	return res
 }
