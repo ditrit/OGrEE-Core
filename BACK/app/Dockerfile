@@ -1,4 +1,4 @@
-FROM golang:1.18.2-alpine3.16 AS build
+FROM golang:1.20-alpine3.16 AS build
 
 # Set the Current Working Directory inside the container
 WORKDIR /build
@@ -51,9 +51,10 @@ WORKDIR /bin
 COPY --from=build /build/kube-admin .
 COPY --from=build /build/.env .
 COPY --from=build /build/swagger.json .
+COPY --from=build /build/handlers handlers
 COPY --from=build /build/helm helm
 COPY --from=build /build/netbox netbox
 
 
 # Run the binary program produced by `go install`
-CMD ["./kube-admin"]
+CMD ["./kube-admin", "-kube"]
