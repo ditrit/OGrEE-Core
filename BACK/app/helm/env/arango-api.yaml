@@ -1,0 +1,14 @@
+- name: ENV
+  value: production
+- name: ARANGO_URL
+  value: http://arango-db:8529
+- name: ARANGO_DATABASE
+  value: _system
+- name: ARANGO_USER
+  value: root
+- name: ARANGO_PASSWORD
+  value: password
+- name: API_SECRET
+  value: myAwesomeApiSecret
+- name: API_PORT
+  value: 8080

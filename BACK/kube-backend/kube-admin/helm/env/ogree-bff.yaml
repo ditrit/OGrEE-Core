@@ -1,6 +1,0 @@
-- name: ENV
-  value: production
-- name: BFF_PORT
-  value: 8085
-- name: BFF_SECRET
-  value: myAwesomeApiSecret

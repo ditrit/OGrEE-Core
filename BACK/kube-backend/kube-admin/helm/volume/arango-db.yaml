@@ -1,3 +1,0 @@
-- name: arango-db
-  storage: 1Gi
-  mountPath: /var/lib/arangodb3

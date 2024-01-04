@@ -51,12 +51,8 @@ Name: "unity"; Description: {#My3DAppName}; Types: full
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "BACK\docker-backend\{#MyBackAppExeName}"; DestDir: "{app}"; Flags: ignoreversion; Components: back
-Source: "BACK\docker-backend\backend-assets\*"; DestDir: "{app}\backend-assets"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: back
-Source: "BACK\docker-backend\flutter-assets\*"; DestDir: "{app}\flutter-assets"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: back
-Source: "BACK\docker-backend\tools-assets\*"; DestDir: "{app}\tools-assets"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: back
+Source: "BACK\*"; DestDir: "{app}\back"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: back
 Source: "deploy\*"; DestDir: "{app}\deploy"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: back
-Source: "BACK\docker-backend\inno.env"; DestDir: "{app}"; DestName: ".env"; Flags: ignoreversion; Components: back
 Source: "APP\build\windows\runner\Release\*"; DestDir: "{app}\front"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: front
 Source: "ogree-icon.ico"; DestDir: "{app}"; DestName: "ogree-icon.ico"; Flags: ignoreversion; Components: back front
 Source: "config-example.toml"; DestDir: "{app}"; DestName: "config.toml"; Flags: ignoreversion; Components: cli
@@ -67,8 +63,8 @@ Source: "OGrEE-3D_win\*"; DestDir: "{app}\3d"; Flags: ignoreversion recursesubdi
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
-Name: "{autoprograms}\{#MyAppName}\{#MyBackAppName}"; Filename: "{app}\{#MyBackAppExeName}"; IconFilename: "{app}\ogree-icon.ico"; Components: back
-Name: "{autodesktop}\{#MyBackAppName}"; Filename: "{app}\{#MyBackAppExeName}"; IconFilename: "{app}\ogree-icon.ico"; Tasks: desktopicon; Components: back
+Name: "{autoprograms}\{#MyAppName}\{#MyBackAppName}"; Filename: "{app}\back\app\{#MyBackAppExeName}"; IconFilename: "{app}\ogree-icon.ico"; Components: back
+Name: "{autodesktop}\{#MyBackAppName}"; Filename: "{app}\back\app\{#MyBackAppExeName}"; IconFilename: "{app}\ogree-icon.ico"; Tasks: desktopicon; Components: back
 Name: "{autoprograms}\{#MyAppName}\{#MyFrontAppName}"; Filename: "{app}\front\{#MyFrontAppExeName}"; IconFilename: "{app}\ogree-icon.ico"; Components: front
 Name: "{autodesktop}\{#MyFrontAppName}"; Filename: "{app}\front\{#MyFrontAppExeName}"; IconFilename: "{app}\ogree-icon.ico"; Tasks: desktopicon; Components: front
 Name: "{autoprograms}\{#MyAppName}\{#MyCliAppName}"; Filename: "{app}\cli\{#MyCliExeName}"; IconFilename: "{app}\ogree-icon.ico"; Components: cli
@@ -77,11 +73,11 @@ Name: "{autoprograms}\{#MyAppName}\{#My3DAppName}"; Filename: "{app}\3d\{#My3DEx
 Name: "{autodesktop}\{#My3DAppName}"; Filename: "{app}\3d\{#My3DExeName}"; Tasks: desktopicon; Components: unity
 
 [Run]
-Filename: "{app}\{#MyBackAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyBackAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent; Components: back
+Filename: "{app}\back\app\{#MyBackAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyBackAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent; Components: back
 Filename: "{app}\front\{#MyFrontAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyFrontAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent; Components: front
 Filename: "{app}\cli\{#MyCliExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyCliAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent; Components: cli
 Filename: "{app}\3d\{#My3DExeName}"; Description: "{cm:LaunchProgram,{#StringChange(My3DAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent; Components: unity
-Filename: "{sys}\sc.exe"; Parameters: "create ogree-backend-svc start=auto binPath=""{app}\{#MyBackAppExeName}""" ; Flags: runhidden
+Filename: "{sys}\sc.exe"; Parameters: "create ogree-backend-svc start=auto binPath=""{app}\back\app\{#MyBackAppExeName}""" ; Flags: runhidden
 
 [UninstallRun]
 Filename: "{sys}\sc.exe"; Parameters: "stop ogree-backend-svc" ; RunOnceId: "DelService" ; Flags: runhidden
