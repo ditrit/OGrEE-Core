@@ -1,9 +1,9 @@
 package docker
 
 import (
+	"back-admin/models"
+	sshcmd "back-admin/services/ssh"
 	"fmt"
-	"kube-admin/models"
-	sshcmd "kube-admin/services/ssh"
 	"net/http"
 	"os"
 	"strings"

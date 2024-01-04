@@ -1,7 +1,7 @@
 package kube
 
 import (
-	"kube-admin/services/k8s"
+	"back-admin/services/k8s"
 	"net/http"
 	"strings"
 

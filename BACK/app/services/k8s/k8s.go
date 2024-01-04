@@ -1,12 +1,12 @@
 package k8s
 
 import (
+	"back-admin/models"
+	"back-admin/services/cmd"
 	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"kube-admin/models"
-	"kube-admin/services/cmd"
 	"os/exec"
 	"strconv"
 	"strings"

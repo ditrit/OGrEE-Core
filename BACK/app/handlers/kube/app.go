@@ -1,8 +1,8 @@
 package kube
 
 import (
-	"kube-admin/models"
-	"kube-admin/services/k8s"
+	"back-admin/models"
+	"back-admin/services/k8s"
 	"net/http"
 	"os"
 

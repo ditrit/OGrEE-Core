@@ -1,10 +1,10 @@
 package kube
 
 import (
-	"kube-admin/models"
-	"kube-admin/services/cmd"
-	"kube-admin/services/helm"
-	"kube-admin/services/k8s"
+	"back-admin/models"
+	"back-admin/services/cmd"
+	"back-admin/services/helm"
+	"back-admin/services/k8s"
 	"net/http"
 	"os"
 	"os/exec"

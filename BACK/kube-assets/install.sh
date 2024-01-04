@@ -66,14 +66,14 @@ systemctl enable nginx
 kubectl create ns ogree-admin
 
 kubectl create secret generic regcred \
-        --from-file=.dockerconfigjson=kube-admin/helm/docker/config.json \
+        --from-file=.dockerconfigjson=back-admin/helm/docker/config.json \
         --type=kubernetes.io/dockerconfigjson \
         -n ogree-admin
 
 kubectl apply -f svc/sa.yaml -n ogree-admin
 
-helm install admin kube-admin/helm/ogree/ \
-    -f kube-admin/helm/admin-values.yaml \
+helm install admin back-admin/helm/ogree/ \
+    -f back-admin/helm/admin-values.yaml \
     --set env[0].name=HOST \
     --set env[0].value=$1 \
     --set ingress.hosts[0].host=api.admin.$1 \
@@ -81,8 +81,8 @@ helm install admin kube-admin/helm/ogree/ \
 
 
 ## Install ogree-app admin
-helm install app kube-admin/helm/ogree \
-    -f kube-admin/helm/app-admin-values.yaml \
+helm install app back-admin/helm/ogree \
+    -f back-admin/helm/app-admin-values.yaml \
     --set ingress.hosts[0].host=app.admin.$ \
     --set configmap[0].data[0].value=API_URL=https://api.admin.$1$'\n'ALLOW_SET_BACK=true$'\n'BACK_URLS=https://api.admin.$1 \
     -n ogree-admin

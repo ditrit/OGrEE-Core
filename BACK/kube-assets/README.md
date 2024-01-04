@@ -110,9 +110,9 @@ kubeadm join k8s-master:6443 --token <token> \
 ```
 Exectute this command line on all worker to join master
 
-# Kube-Admin
+# back-admin
 
-Like Ogree SuperAdmin, Kube-Admin is able to manage ogree tenants on a kubernetes cluster
+Like Ogree SuperAdmin, back-admin is able to manage ogree tenants on a kubernetes cluster
 
 It's will use a custer service Account to interracte with the cluster:
 - SVC file in on svc/sa.yaml
@@ -120,11 +120,11 @@ It's will use a custer service Account to interracte with the cluster:
 A new tenants corresponding to a kubernetes namespace, so you have to be able to manage it
 
 ## helm
-Kube-admin use helm and template to manager deployement, it's will use kube-admin/helm/ogree template for all deployement
+back-admin use helm and template to manager deployement, it's will use back-admin/helm/ogree template for all deployement
 
 ## Traefik
 
-As ingress, kube-admin use traefik, you need to configure traefik into kubernetes cluster
+As ingress, back-admin use traefik, you need to configure traefik into kubernetes cluster
 
 ```bash
 kubectl create ns traefik-v2
@@ -134,13 +134,13 @@ helm install -n traefik-v2 traefik traefik/traefik --set service.type=NodePort
 ```
 ## Install
 
-To install ogree kube-admin on cluster, you can use `install.sh` script, it's will:
+To install ogree back-admin on cluster, you can use `install.sh` script, it's will:
 - Install helm 
 - Install traefik on cluster
 - Add traefik to a nginx reverse-proxy on the machine
 - Create ogree-admin namespace
 - Install ogree service account and role binding
-- Install kube-admin and ogree-app
+- Install back-admin and ogree-app
 
 Usage:
  - DNS: CNAME of the cluster
@@ -158,5 +158,5 @@ kubectl set image deploy/<deploy_name> <pode_name>=<registry>/<image>:<tag>
 
 Example:
 ```bash
-kubectl set image deploy/kube-admin kube-admin=registry.ogree.ditrit.io/kube-admin:0.4.3
+kubectl set image deploy/back-admin back-admin=registry.ogree.ditrit.io/back-admin:0.4.3
 ```

@@ -1,9 +1,9 @@
 package services
 
 import (
-	"kube-admin/auth"
-	"kube-admin/handlers/docker"
-	"kube-admin/handlers/kube"
+	"back-admin/auth"
+	"back-admin/handlers/docker"
+	"back-admin/handlers/kube"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

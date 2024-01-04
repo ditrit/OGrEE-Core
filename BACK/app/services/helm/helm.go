@@ -1,19 +1,19 @@
 package helm
 
 import (
-	"kube-admin/models"
-	"kube-admin/services/cmd"
+	"back-admin/models"
+	"back-admin/services/cmd"
 	"os"
 	"strings"
 
 	"gopkg.in/yaml.v3"
 )
 
-func GetDataFromYaml(filename string, output interface{}) (error) {
+func GetDataFromYaml(filename string, output interface{}) error {
 
-	file, err := os.Open("helm/"+filename) // For read access.
+	file, err := os.Open("helm/" + filename) // For read access.
 	if err != nil {
-		if strings.Contains(err.Error(),"no such file or directory"){
+		if strings.Contains(err.Error(), "no such file or directory") {
 			return nil
 		}
 		return err
@@ -26,18 +26,18 @@ func GetDataFromYaml(filename string, output interface{}) (error) {
 
 	err = yaml.Unmarshal(data[:count], output)
 	if err != nil {
-        return err
-    }
+		return err
+	}
 	defer file.Close()
 	return nil
 }
 
-func DeploytoYaml(filename string,deploy models.Deployement) error{
-	
+func DeploytoYaml(filename string, deploy models.Deployement) error {
+
 	b, err := yaml.Marshal(&deploy)
-    if err != nil {
-        return err
-    }
+	if err != nil {
+		return err
+	}
 
 	err = os.WriteFile("helm/"+filename, b, 0644)
 	if err != nil {
@@ -46,62 +46,62 @@ func DeploytoYaml(filename string,deploy models.Deployement) error{
 	return nil
 }
 
-func WriteDeployementFile(deploy models.Deployement,data models.Tenant) error {
-	if deploy.Ingress.Enabled{
-		deploy.Service.Type="NodePort"
-		deploy.Ingress.Hosts[0].Host += "."+data.Name+"."+os.Getenv("HOST")
-	}else{
-		deploy.Service.Type="ClusterIP"
+func WriteDeployementFile(deploy models.Deployement, data models.Tenant) error {
+	if deploy.Ingress.Enabled {
+		deploy.Service.Type = "NodePort"
+		deploy.Ingress.Hosts[0].Host += "." + data.Name + "." + os.Getenv("HOST")
+	} else {
+		deploy.Service.Type = "ClusterIP"
 	}
-	setBDDPassword(deploy.Env,data.CustomerPassword)
-	setAPPUrl(deploy.ConfigMap,data.Name)
-	if err := DeploytoYaml("values.yaml",deploy);err != nil {
+	setBDDPassword(deploy.Env, data.CustomerPassword)
+	setAPPUrl(deploy.ConfigMap, data.Name)
+	if err := DeploytoYaml("values.yaml", deploy); err != nil {
 		return err
 	}
 	return nil
 }
 
-func setAPPUrl(config []models.ConfigMap,name string){
-	for i := range config{
-		if config[i].Name == "webapp-env"{
-			h:= "https://"
-			if os.Getenv("HOST") =="localhost"{
-				h = "http://" 
+func setAPPUrl(config []models.ConfigMap, name string) {
+	for i := range config {
+		if config[i].Name == "webapp-env" {
+			h := "https://"
+			if os.Getenv("HOST") == "localhost" {
+				h = "http://"
 			}
-			apiUrl := h+"api."+name+"."+os.Getenv("HOST")
-			configValue:="API_URL="+apiUrl+"\nALLOW_SET_BACK=false"
+			apiUrl := h + "api." + name + "." + os.Getenv("HOST")
+			configValue := "API_URL=" + apiUrl + "\nALLOW_SET_BACK=false"
 			config[i].Data[0].Value = configValue
 		}
 	}
 }
 
-func setBDDPassword(env []models.Env,pass string){
-	for i := range env{
-		if env[i].Name =="db_pass" ||
-			env[i].Name =="ARANGO_PASSWORD" ||
-			env[i].Name =="CUSTOMER_API_PASSWORD"||
-			env[i].Name =="ARANGO_ROOT_PASSWORD"{
+func setBDDPassword(env []models.Env, pass string) {
+	for i := range env {
+		if env[i].Name == "db_pass" ||
+			env[i].Name == "ARANGO_PASSWORD" ||
+			env[i].Name == "CUSTOMER_API_PASSWORD" ||
+			env[i].Name == "ARANGO_ROOT_PASSWORD" {
 			env[i].Value = pass
 		}
 	}
 }
 
-func InstallYaml(name,ns string,install bool) error {
+func InstallYaml(name, ns string, install bool) error {
 	verb := "install"
-	if install{
-		verb= "upgrade"
+	if install {
+		verb = "upgrade"
 	}
-	command := "helm "+verb+" "+name+" helm/ogree -f "+"helm/values.yaml -n "+ns
-	_ ,err := cmd.ExecCommand(command)
+	command := "helm " + verb + " " + name + " helm/ogree -f " + "helm/values.yaml -n " + ns
+	_, err := cmd.ExecCommand(command)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func Uninstall(name,ns string) error{
-	command := "helm uninstall "+name+" -n "+ns
-	_ ,err := cmd.ExecCommand(command)
+func Uninstall(name, ns string) error {
+	command := "helm uninstall " + name + " -n " + ns
+	_, err := cmd.ExecCommand(command)
 	if err != nil {
 		return err
 	}

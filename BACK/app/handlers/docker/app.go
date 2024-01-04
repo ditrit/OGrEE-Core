@@ -1,7 +1,7 @@
 package docker
 
 import (
-	"kube-admin/models"
+	"back-admin/models"
 	"net/http"
 	"os"
 	"text/template"

@@ -13,7 +13,7 @@ COPY . .
 
 
 # Build the Go app
-RUN CGO_ENABLED=0 GOOS=linux go build -a -o kube-admin -ldflags "-X main.version=${VERSION} -X 'main.build=$(date)'" .
+RUN CGO_ENABLED=0 GOOS=linux go build -a -o back-admin -ldflags "-X main.version=${VERSION} -X 'main.build=$(date)'" .
 
 # Start fresh from a smaller image
 FROM alpine:3.16
@@ -48,7 +48,7 @@ RUN helm repo add bootc https://charts.boo.tc
 
 WORKDIR /bin
 
-COPY --from=build /build/kube-admin .
+COPY --from=build /build/back-admin .
 COPY --from=build /build/.env .
 COPY --from=build /build/swagger.json .
 COPY --from=build /build/handlers handlers
@@ -57,4 +57,4 @@ COPY --from=build /build/netbox netbox
 
 
 # Run the binary program produced by `go install`
-CMD ["./kube-admin", "-kube"]
+CMD ["./back-admin", "-kube"]

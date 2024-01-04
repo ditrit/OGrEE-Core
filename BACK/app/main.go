@@ -1,4 +1,4 @@
-//	 Kube-admin:
+//	 back-admin:
 //	  version: 1.0.0
 //	  title: Awsome API
 //	 Schemes: http, https
@@ -17,8 +17,8 @@
 package main
 
 import (
+	"back-admin/services"
 	"flag"
-	"kube-admin/services"
 	"strconv"
 
 	"github.com/joho/godotenv"

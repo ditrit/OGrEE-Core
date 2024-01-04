@@ -1,4 +1,4 @@
-module kube-admin
+module back-admin
 
 go 1.20
 

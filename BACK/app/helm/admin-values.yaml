@@ -1,7 +1,7 @@
 
 replicaCount: 1
 image:
-  repository: registry.ogree.ditrit.io/kube-admin
+  repository: registry.ogree.ditrit.io/back-admin
   pullPolicy: Always
   tag: latest
 serviceAccountName: ogree-admin
