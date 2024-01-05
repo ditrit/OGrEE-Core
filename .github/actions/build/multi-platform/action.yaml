@@ -99,13 +99,13 @@ runs:
         NEXT_CREDENTIALS: ${{ inputs.NEXT_CREDENTIALS }}
     
     - name: ⚙️ Build & Publish APP Web on Nextcloud
-      uses: ./.github/actions/build/flutter-app
+      uses: ./.github/actions/build/APP
       with:
         VERSION: ${{ env.VERSION }}
         NEXT_CREDENTIALS: ${{ inputs.NEXT_CREDENTIALS }}
     
     - name: ⚙️ Build & Publish BACK binary on Nextcloud
-      uses: ./.github/actions/build/back-app
+      uses: ./.github/actions/build/BACK
       with:
         VERSION: ${{ env.VERSION }}
         NEXT_CREDENTIALS: ${{ inputs.NEXT_CREDENTIALS }}
