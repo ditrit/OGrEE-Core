@@ -1,4 +1,4 @@
-name: ⚙️ Build - Push to Registery
+name: ⚙️ Build - Publish
 
 on:
   push:
