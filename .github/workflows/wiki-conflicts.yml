@@ -9,7 +9,7 @@ on:
 
 jobs:
     verify_conflicts_wiki:
-        name: Verify conflicts in wiki
+        name: 📚 Verify conflicts in wiki
         runs-on: ubuntu-latest
         steps:
             - name: Checkout repository

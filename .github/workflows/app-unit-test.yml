@@ -1,4 +1,4 @@
-name: 🕵️‍♂️ Flutter Unit Tests
+name: 🕵️‍♂️ APP Unit Tests
 
 on:
   push:

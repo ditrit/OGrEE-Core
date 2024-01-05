@@ -17,7 +17,7 @@ env:
 
 jobs:
     publish_docs_to_wiki:
-        name: Publish docs to Wiki
+        name: 📚 Publish docs to Wiki
         runs-on: ubuntu-latest
         steps:
             - name: Checkout repository
