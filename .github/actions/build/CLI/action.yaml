@@ -23,7 +23,7 @@ runs:
       shell: bash
       run: |
         cd CLI
-        make main && make mac && make win
+        make allos
 
     - name: Upload result for job
       uses: actions/upload-artifact@v3

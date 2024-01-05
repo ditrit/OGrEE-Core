@@ -9,8 +9,8 @@ on:
   workflow_call:
 
 jobs:
-  build-docker:
-    name: 🏗️📤 Build Docker Image - Push to Registery
+  build-publish:
+    name: 🏗️📤 Build Multi-Platform - Publish
     runs-on: ubuntu-latest
     steps:
 
@@ -28,10 +28,10 @@ jobs:
           echo "ENVIRONMENT=Release Candidate" >> $GITHUB_ENV
           fi
 
-      - name: 🏗️📤 Build Docker Image - Push to Registery
-        id: build-docker-deploy
+      - name: 🏗️📤 Build Multi-Platform - Publish
+        id: build-deploy
         if: contains("release",${{ github.ref_name }})
-        uses: ./.github/actions/build/multi-docker
+        uses: ./.github/actions/build/multi-platform
         with:
           ENVIRONMENT: ${{ env.ENVIRONMENT }}
           TEAM_DOCKER_URL: ${{ secrets.TEAM_DOCKER_URL }}
@@ -40,9 +40,9 @@ jobs:
           NEXT_CREDENTIALS: ${{ secrets.NEXT_CREDENTIALS }}
   
   build-app-windows:
-    name: 🏗️📤 Build APP and Installer for Windows
+    name: 🏗️📤 Build Windows Installer - Publish
     permissions: write-all
-    needs: build-docker
+    needs: build-publish
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -58,7 +58,7 @@ jobs:
           fi
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
-      - name: 🏗️📤 Build app and create installer
+      - name: 🏗️📤 Build WinAPP + WinInstaller - Publish
         uses: ./.github/actions/build/windows
         with:
           VERSION: ${{ env.VERSION }}

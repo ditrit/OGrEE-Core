@@ -1,6 +1,6 @@
 # This workflow will build the golang project, create a Mongo database and test it
 
-name: API Unit Tests
+name: 🕵️‍♂️ API Unit Tests
 
 on:
   push:

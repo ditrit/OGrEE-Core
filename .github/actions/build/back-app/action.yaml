@@ -23,7 +23,7 @@ runs:
       shell: bash
       run: |
         cd BACK/app/
-        go build -o ogree_app_backend
+        make allos
 
     - name: Send to Nextcloud
       shell: bash
@@ -33,7 +33,7 @@ runs:
       run: |
         curl -u $NEXT_CREDENTIALS -X MKCOL $NEXT_ADDR
 
-        zip -r OGrEE_APP_Backend_Linux.zip deploy/ \
+        zip -r OGrEE_APP_Backend.zip deploy/ \
               BACK/app/ 
 
-        curl -u $NEXT_CREDENTIALS -T OGrEE_APP_Backend_Linux.zip $NEXT_ADDR/OGrEE_APP_Backend_Linux.zip
+        curl -u $NEXT_CREDENTIALS -T OGrEE_APP_Backend.zip $NEXT_ADDR/OGrEE_APP_Backend.zip

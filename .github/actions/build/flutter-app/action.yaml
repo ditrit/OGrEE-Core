@@ -1,5 +1,5 @@
-name: Flutter Publish
-description: Publish Flutter app on Nexcloud
+name: Flutter Web Publish
+description: Publish Flutter webapp on Nextcloud
 
 inputs:
   VERSION: 
