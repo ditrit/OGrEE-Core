@@ -1,0 +1,9 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: ogree-kube
+  name: ogree-kube-role # DO NOT USE THIS ROLE, IT IS JUST AN EXAMPLE
+rules:
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["*"]
