@@ -1,5 +1,5 @@
-name: Build multi-Docker and Push to Registery
-description: Build multi-Docker and Push to Registery
+name: Build multi-platform and publish
+description: Build multi-platform (docker and binaries) and publish to registry or Nextcloud
 
 inputs:
   ENVIRONMENT:
@@ -86,26 +86,26 @@ runs:
         TEAM_USERNAME: ${{ inputs.TEAM_USERNAME }}
         TEAM_PASSWORD: ${{ inputs.TEAM_PASSWORD }}
 
-    - name: Publish API on Nexcloud
+    - name: ⚙️ Build & Publish API binary on Nextcloud
       uses: ./.github/actions/build/API
       with:
         VERSION: ${{ env.VERSION }}
         NEXT_CREDENTIALS: ${{ inputs.NEXT_CREDENTIALS }}
 
-    - name: Publish CLI on Nexcloud
+    - name: ⚙️ Build & Publish CLI binary on Nextcloud
       uses: ./.github/actions/build/CLI
       with:
         VERSION: ${{ env.VERSION }}
         NEXT_CREDENTIALS: ${{ inputs.NEXT_CREDENTIALS }}
     
-    - name: Publish Flutter Desktop on Nexcloud
-      uses: ./.github/actions/build/flutter-app/linux
+    - name: ⚙️ Build & Publish APP Web on Nextcloud
+      uses: ./.github/actions/build/flutter-app
       with:
         VERSION: ${{ env.VERSION }}
         NEXT_CREDENTIALS: ${{ inputs.NEXT_CREDENTIALS }}
     
-    - name: Publish back-app on Nexcloud
-      uses: ./.github/actions/build/back-app/linux
+    - name: ⚙️ Build & Publish BACK binary on Nextcloud
+      uses: ./.github/actions/build/back-app
       with:
         VERSION: ${{ env.VERSION }}
         NEXT_CREDENTIALS: ${{ inputs.NEXT_CREDENTIALS }}

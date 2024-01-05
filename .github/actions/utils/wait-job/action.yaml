@@ -13,7 +13,7 @@ inputs:
   JOB_PATH:
     description: "Name of the job to wait for"
     required: false
-    default: ".github/workflows/build-docker-deploy.yaml"
+    default: ".github/workflows/build-deploy.yaml"
   BRANCH:
     description: "Branch to wait for"
     required: false
