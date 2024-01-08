@@ -143,7 +143,6 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		} else if err != nil {
 			println("ENTITY VALUE: ", ent)
 			println("We got Parent: ", parent, " with ID:", t["parentId"].(string))
-			fmt.Printf("parent should be %v\n", u.EntityToString(parentInt))
 			return nil, &u.Error{Type: u.ErrInvalidValue,
 				Message: fmt.Sprintf("ParentID should correspond to existing %s ID", parentStr)}
 		}
