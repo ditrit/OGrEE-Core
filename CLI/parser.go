@@ -517,7 +517,7 @@ func (p *parser) parseValue() node {
 		return p.parseExpr("")
 	}
 	if !p.parseExact("$((") && p.parseExact("$(") {
-		n := p.parseCommand("")
+		n, _ := p.parseCommand("")
 		p.expect(")")
 		return n
 	}
@@ -906,7 +906,7 @@ func (p *parser) parseWhile() node {
 	defer un(trace(p, "while"))
 	condition := p.parseExpr("condition")
 	p.expect("{")
-	body := p.parseCommand("body")
+	body, _ := p.parseCommand("body")
 	p.skipWhiteSpaces()
 	p.expect("}")
 	return &whileNode{condition, body}
@@ -920,17 +920,17 @@ func (p *parser) parseFor() node {
 	p.expect("..")
 	end := p.parseExpr("end index")
 	p.expect("{")
-	body := p.parseCommand("body")
+	body, cmds := p.parseCommand("for body")
 	p.skipWhiteSpaces()
 	p.expect("}")
-	return &forRangeNode{varName, start, end, body}
+	return &forRangeNode{varName, start, end, body, cmds}
 }
 
 func (p *parser) parseIf() node {
 	defer un(trace(p, "if"))
 	condition := p.parseExpr("condition")
 	p.expect("{")
-	body := p.parseCommand("if body")
+	body, _ := p.parseCommand("if body")
 	p.expect("}")
 	p.skipWhiteSpaces()
 	keyword := p.parseKeyWord([]string{"else", "elif"})
@@ -940,7 +940,7 @@ func (p *parser) parseIf() node {
 	case "else":
 		p.skipWhiteSpaces()
 		p.expect("{")
-		elseBody := p.parseCommand("else body")
+		elseBody, _ := p.parseCommand("else body")
 		p.skipWhiteSpaces()
 		p.expect("}")
 		return &ifNode{condition, body, elseBody}
@@ -957,7 +957,7 @@ func (p *parser) parseAlias() node {
 	name := p.parseSimpleWord("name")
 	p.expect("{")
 	p.skipWhiteSpaces()
-	command := p.parseCommand("body")
+	command, _ := p.parseCommand("body")
 	p.skipWhiteSpaces()
 	p.expect("}")
 	return &funcDefNode{name, command}
@@ -1200,11 +1200,11 @@ func (p *parser) parseCommandKeyWord() string {
 	return p.parseKeyWord(p.commandKeywords)
 }
 
-func (p *parser) parseSingleCommand() node {
+func (p *parser) parseSingleCommand() (node, string) {
 	defer un(trace(p, ""))
 	p.skipWhiteSpaces()
 	if p.commandEnd() {
-		return nil
+		return nil, ""
 	}
 	commandKeyWord := p.parseCommandKeyWord()
 	if commandKeyWord != "" {
@@ -1221,40 +1221,41 @@ func (p *parser) parseSingleCommand() node {
 			if commandKeyWord == lsCommand {
 				p.skipWhiteSpaces()
 				category := commandKeyWord[2:]
-				return p.parseLs(category)
+				return p.parseLs(category), commandKeyWord
 			}
 		}
 		parseFunc, ok := p.commandDispatch[commandKeyWord]
 		if ok {
 			p.skipWhiteSpaces()
-			return parseFunc()
+			return parseFunc(), commandKeyWord
 		}
 		result, ok := p.noArgsCommands[commandKeyWord]
 		if ok {
-			return result
+			return result, commandKeyWord
 		}
 	}
 	funcName := p.parseSimpleWord("function name")
 	if funcName != "" && p.commandEnd() {
-		return &funcCallNode{funcName}
+		return &funcCallNode{funcName}, funcName
 	}
 	p.reset()
-	return p.parseUpdate()
+	return p.parseUpdate(), "update"
 }
 
-func (p *parser) parseCommand(name string) node {
+func (p *parser) parseCommand(name string) (node, []string) {
 	defer un(trace(p, name))
 	commands := []node{}
-	var command node
+	commandKeyWords := []string{}
 	for {
-		command = p.parseSingleCommand()
+		command, commandKeyWord := p.parseSingleCommand()
 		commands = append(commands, command)
+		commandKeyWords = append(commandKeyWords, commandKeyWord)
 		p.skipWhiteSpaces()
 		if !p.parseExact(";") {
 			if len(commands) > 1 {
-				return &ast{commands}
+				return &ast{commands}, commandKeyWords
 			}
-			return command
+			return command, commandKeyWords
 		}
 		p.skipWhiteSpaces()
 	}
@@ -1356,7 +1357,7 @@ func Parse(buffer string) (n node, err error) {
 			err = fmt.Errorf(r.(string))
 		}
 	}()
-	n = p.parseCommand("")
+	n, _ = p.parseCommand("")
 	if !p.commandEnd() {
 		p.error("unexpected character")
 	}

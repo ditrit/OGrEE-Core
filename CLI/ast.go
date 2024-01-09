@@ -73,6 +73,19 @@ func (a *ast) execute() (interface{}, error) {
 	return nil, nil
 }
 
+func (a *ast) executeWithPrint(cmds []string, index int) (interface{}, error) {
+	for i := range a.statements {
+		if a.statements[i] != nil {
+			println("> Cmd " + cmds[i] + " [i=" + strconv.Itoa(index) + "]")
+			_, err := a.statements[i].execute()
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	return nil, nil
+}
+
 type funcDefNode struct {
 	name string
 	body node
