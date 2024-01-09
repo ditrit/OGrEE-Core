@@ -13,7 +13,7 @@ import 'package:ogree_app/widgets/tenants/popups/tags_popup.dart';
 enum TagSearchFields { Description, Slug, Color }
 
 class TagsView extends StatefulWidget {
-  TagsView({super.key});
+  const TagsView({super.key});
   @override
   State<TagsView> createState() => _TagsViewState();
 }
@@ -214,7 +214,7 @@ class _TagsViewState extends State<TagsView> {
                   DataColumn(
                       label: Text(
                     localeMsg.color,
-                    style: TextStyle(fontWeight: FontWeight.w600),
+                    style: const TextStyle(fontWeight: FontWeight.w600),
                   )),
                   DataColumn(
                       label: const Text(

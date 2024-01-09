@@ -15,7 +15,7 @@ extension StringExtension on String {
 }
 
 class TreeFilter extends StatefulWidget {
-  TreeFilter({super.key});
+  const TreeFilter({super.key});
 
   @override
   State<TreeFilter> createState() => _TreeFilterState();

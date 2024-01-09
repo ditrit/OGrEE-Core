@@ -170,8 +170,9 @@ class _DomainPopupState extends State<DomainPopup>
                                       widget.parentCallback();
                                       showSnackBar(
                                           messenger, localeMsg.deleteOK);
-                                      if (context.mounted)
+                                      if (context.mounted) {
                                         Navigator.of(context).pop();
+                                      }
                                     case Failure(exception: final exception):
                                       setState(() {
                                         _isLoadingDelete = false;
@@ -252,8 +253,9 @@ class _DomainPopupState extends State<DomainPopup>
                                   showSnackBar(messenger,
                                       "${_isEdit ? localeMsg.modifyOK : localeMsg.createOK} 🥳",
                                       isSuccess: true);
-                                  if (context.mounted)
+                                  if (context.mounted) {
                                     Navigator.of(context).pop();
+                                  }
                                 case Failure(exception: final exception):
                                   setState(() {
                                     _isLoading = false;

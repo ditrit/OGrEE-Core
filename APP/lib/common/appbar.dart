@@ -104,8 +104,8 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
                 ],
               ),
             ),
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 15),
+      const Padding(
+        padding: EdgeInsets.symmetric(vertical: 15),
         child: LanguageToggle(),
       ),
       const SizedBox(width: 20),
@@ -121,7 +121,7 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
                 builder: (context) => const TenantPage(userEmail: "admin"),
               ));
             } else {
-              showCustomPopup(context, ChangePasswordPopup());
+              showCustomPopup(context, const ChangePasswordPopup());
             }
           },
           itemBuilder: (_) => entries,

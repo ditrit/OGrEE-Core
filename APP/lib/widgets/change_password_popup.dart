@@ -8,6 +8,8 @@ import 'package:ogree_app/common/theme.dart';
 import '../common/snackbar.dart';
 
 class ChangePasswordPopup extends StatefulWidget {
+  const ChangePasswordPopup({super.key});
+
   @override
   State<ChangePasswordPopup> createState() => _ChangePasswordPopupState();
 }
@@ -93,8 +95,9 @@ class _ChangePasswordPopupState extends State<ChangePasswordPopup> {
                                   case Success():
                                     showSnackBar(messenger, localeMsg.modifyOK,
                                         isSuccess: true);
-                                    if (context.mounted)
+                                    if (context.mounted) {
                                       Navigator.of(context).pop();
+                                    }
                                   case Failure(exception: final exception):
                                     setState(() {
                                       _isLoading = false;

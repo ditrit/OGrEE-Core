@@ -144,7 +144,7 @@ class _ResponsiveBody extends StatelessWidget {
 class SettingsViewPopup extends StatelessWidget {
   final TreeAppController controller;
 
-  SettingsViewPopup({super.key, required this.controller});
+  const SettingsViewPopup({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {

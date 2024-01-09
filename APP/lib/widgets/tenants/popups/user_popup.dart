@@ -187,8 +187,9 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
                                                     ? localeMsg.modifyOK
                                                     : localeMsg.createOK,
                                                 isSuccess: true);
-                                            if (context.mounted)
+                                            if (context.mounted) {
                                               Navigator.of(context).pop();
+                                            }
                                           case Failure(
                                               exception: final exception
                                             ):

@@ -112,28 +112,28 @@ class TreeAppController with ChangeNotifier {
   void selectAll([bool select = true]) {
     //treeController.expandAll();
     if (select) {
-      treeController.roots.forEach((root) {
+      for (var root in treeController.roots) {
         selectedNodes[root.id] = true;
-        root.descendants.forEach(
-          (descendant) => selectedNodes[descendant.id] = true,
-        );
-      });
+        for (var descendant in root.descendants) {
+          selectedNodes[descendant.id] = true;
+        }
+      }
     } else {
-      treeController.roots.forEach((root) {
+      for (var root in treeController.roots) {
         selectedNodes.remove(root.id);
-        root.descendants.forEach(
-          (descendant) => selectedNodes.remove(descendant.id),
-        );
-      });
+        for (var descendant in root.descendants) {
+          selectedNodes.remove(descendant.id);
+        }
+      }
     }
     notifyListeners();
   }
 
   void toggleAllFrom(TreeNode node) {
     toggleSelection(node.id);
-    node.descendants.forEach(
-      (descendant) => toggleSelection(descendant.id),
-    );
+    for (var descendant in node.descendants) {
+      toggleSelection(descendant.id);
+    }
     notifyListeners();
   }
 
