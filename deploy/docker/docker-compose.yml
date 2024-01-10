@@ -4,6 +4,8 @@ services:
     build:
       context: ${CORE_DIR}
       dockerfile: ${API_BUILD_DIR}/Dockerfile
+      args:
+        BUILDKIT_CONTEXT_KEEP_GIT_DIR: true
     image: ogree/api:${IMAGE_TAG}
     container_name: ${COMPOSE_PROJECT_NAME}_api
     environment:
