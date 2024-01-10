@@ -40,7 +40,8 @@ runs:
       uses: ./.github/actions/build/docker
       with:
         IMAGE_NAME: "mongo-api"
-        FOLDER_NAME: "./API"
+        FOLDER_NAME: "."
+        DOCKERFILE: "API/Dockerfile"
         VERSION: ${{ env.VERSION }}
         TEAM_DOCKER_URL: ${{ inputs.TEAM_DOCKER_URL }}
         TEAM_USERNAME: ${{ inputs.TEAM_USERNAME }}
