@@ -1173,6 +1173,7 @@ type createDeviceNode struct {
 	path            node
 	posUOrSlot      node
 	sizeUOrTemplate node
+	invertOffset    bool
 	side            node
 }
 
@@ -1202,6 +1203,12 @@ func (n *createDeviceNode) execute() (interface{}, error) {
 		}
 
 		attributes["template"] = template
+	}
+
+	if n.invertOffset {
+		attributes["invertOffset"] = "true"
+	} else {
+		attributes["invertOffset"] = "false"
 	}
 
 	if n.side != nil {

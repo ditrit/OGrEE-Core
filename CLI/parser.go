@@ -1075,10 +1075,14 @@ func (p *parser) parseCreateDevice() node {
 	p.expect("@")
 	sizeUOrTemplate := p.parseString("sizeUOrTemplate")
 	if !p.parseExact("@") {
-		return &createDeviceNode{path, posUOrSlot, sizeUOrTemplate, nil}
+		return &createDeviceNode{path, posUOrSlot, sizeUOrTemplate, false, nil}
+	}
+	invertOffset := p.parseBool()
+	if !p.parseExact("@") {
+		return &createDeviceNode{path, posUOrSlot, sizeUOrTemplate, invertOffset, nil}
 	}
 	side := p.parseString("side")
-	return &createDeviceNode{path, posUOrSlot, sizeUOrTemplate, side}
+	return &createDeviceNode{path, posUOrSlot, sizeUOrTemplate, invertOffset, side}
 }
 
 func (p *parser) parseCreateGroup() node {
