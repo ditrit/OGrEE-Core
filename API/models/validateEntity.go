@@ -89,17 +89,9 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		}
 
 		return nil, &u.Error{Type: u.ErrInvalidValue,
-			Message: "ParentID should correspond to Existing Rack or Device ID"}
+			Message: "ParentID should correspond to existing rack or device ID"}
 
 	case u.GROUP:
-		w, _ := GetObject(req, "device", u.RequestFilters{}, nil)
-		if w != nil {
-			parent["parent"] = "device"
-			parent["domain"] = w["domain"]
-			parent["id"] = w["id"]
-			return parent, nil
-		}
-
 		x, _ := GetObject(req, "rack", u.RequestFilters{}, nil)
 		if x != nil {
 			parent["parent"] = "rack"
@@ -125,7 +117,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		}
 
 		return nil, &u.Error{Type: u.ErrInvalidValue,
-			Message: "ParentID should correspond to Existing ID"}
+			Message: "ParentID should correspond to existing rack, room or building ID"}
 
 	case u.GENERIC:
 		x, _ := GetObject(req, "room", u.RequestFilters{}, nil)
@@ -137,7 +129,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		}
 
 		return nil, &u.Error{Type: u.ErrInvalidValue,
-			Message: "ParentID should correspond to Existing Room ID"}
+			Message: "ParentID should correspond to existing room ID"}
 	default:
 		parentInt := u.GetParentOfEntityByInt(entNum)
 		parentStr := u.EntityToString(parentInt)
@@ -152,7 +144,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 			println("ENTITY VALUE: ", ent)
 			println("We got Parent: ", parent, " with ID:", t["parentId"].(string))
 			return nil, &u.Error{Type: u.ErrInvalidValue,
-				Message: "ParentID should correspond to Existing ID"}
+				Message: fmt.Sprintf("ParentID should correspond to existing %s ID", parentStr)}
 		}
 	}
 	return nil, nil
