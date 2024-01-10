@@ -10,7 +10,7 @@ inputs:
     required: true
   DOCKERFILE:
     description: "Name of Dockerfile, can include path"
-    default: "./Dockerfile"
+    default: ""
   VERSION: 
     description: "Version given to docker image"
     required: true
@@ -40,11 +40,22 @@ runs:
         username: ${{ inputs.TEAM_USERNAME }}
         password: ${{ inputs.TEAM_PASSWORD }}
 
-    - name: 🐋🏗️ Build & Tag Docker images
-      if: ${{ !contains('dependabot', github.ref) }}
+    - name: 🐋🏗️ Build Docker images
+      if: ${{ inputs.DOCKERFILE == '' }}
+      shell: bash
+      run: |
+        docker build -t ${{ inputs.IMAGE_NAME }}:latest ${{ inputs.FOLDER_NAME }}
+
+    - name: 🐋🏗️ Build Docker images with custom context
+      if: ${{ inputs.DOCKERFILE != '' }}
       shell: bash
       run: |
         docker build -t ${{ inputs.IMAGE_NAME }}:latest -f ${{ inputs.DOCKERFILE }} ${{ inputs.FOLDER_NAME }}
+
+    - name: 🐋🏗️ Tag Docker images
+      if: ${{ !contains('dependabot', github.ref) }}
+      shell: bash
+      run: |
         docker tag ${{ inputs.IMAGE_NAME }}:latest ${{ inputs.TEAM_DOCKER_URL }}/${{ inputs.IMAGE_NAME }}:latest
         docker tag ${{ inputs.IMAGE_NAME }}:latest ${{ inputs.TEAM_DOCKER_URL }}/${{ inputs.IMAGE_NAME }}:${{ inputs.VERSION }}
 
