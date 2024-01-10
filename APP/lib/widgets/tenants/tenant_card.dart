@@ -11,7 +11,7 @@ class TenantCard extends StatelessWidget {
   final Tenant tenant;
   final Function parentCallback;
   const TenantCard(
-      {super.key, Key? key, required this.tenant, required this.parentCallback});
+      {super.key, required this.tenant, required this.parentCallback});
 
   @override
   Widget build(BuildContext context) {
