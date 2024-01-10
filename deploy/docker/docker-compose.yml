@@ -2,7 +2,8 @@ version: '3.9'
 services:
   ogree_api:
     build:
-      context: ${CORE_DIR}/${API_BUILD_DIR}
+      context: ${CORE_DIR}
+      dockerfile: ${API_BUILD_DIR}/Dockerfile
     image: ogree/api:${IMAGE_TAG}
     container_name: ${COMPOSE_PROJECT_NAME}_api
     environment:
