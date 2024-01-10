@@ -100,9 +100,11 @@ git pull origin main
 
 # 🔁 OGree-Core GitFlow
 
-![Workflows diagram](/assets/images/main.jpg)
+![Workflows diagram](/assets/images/actions.png)
 
 ## Release candidate
+
+![Release candidate diagram](/assets/images/main.jpg)
 
 After merging a dev branch on main, workflows will create a new branch name `release-candidate/x.x.x`.
 
