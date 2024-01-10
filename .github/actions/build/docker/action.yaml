@@ -10,7 +10,7 @@ inputs:
     required: true
   DOCKERFILE:
     description: "Name of Dockerfile, can include path"
-    default: "Dockerfile"
+    default: "./Dockerfile"
   VERSION: 
     description: "Version given to docker image"
     required: true
