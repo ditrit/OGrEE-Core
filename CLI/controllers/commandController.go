@@ -705,15 +705,11 @@ func determineStrKey(x map[string]interface{}, possible []string) string {
 
 // Function called by InteractObject to extract the value of an attribute from the object
 func valFromObj(obj map[string]any, val interface{}) (interface{}, error) {
-
 	if value, ok := val.(string); ok {
-
 		innerMap := obj["attributes"].(map[string]interface{})
 
 		if _, ok := obj[value]; ok {
-
 			if value == "description" {
-
 				desc := obj["description"].([]interface{})
 				val = ""
 				//Combine entire the description array into a string
@@ -723,13 +719,11 @@ func valFromObj(obj map[string]any, val interface{}) (interface{}, error) {
 					} else {
 						val = val.(string) + "\n" + desc[i].(string)
 					}
-
 				}
 				return val, nil
 			} else {
 				val = obj[value]
 			}
-
 		} else if _, ok := innerMap[value]; ok {
 			val = innerMap[value]
 		} else {
@@ -754,21 +748,17 @@ func valFromObj(obj map[string]any, val interface{}) (interface{}, error) {
 							return "", fmt.Errorf(msg)
 						}
 						val = desc[num]
-
 					} else {
 						val = innerMap[value]
 					}
-				} //Otherwise the description is a string
-
+				}
 			} else {
 				msg := "The specified attribute '" + val.(string) + "' does not exist" +
 					" in the object. \nPlease view the object" +
 					" (ie. $> get) and try again"
 				return "", fmt.Errorf(msg)
 			}
-
 		}
-
 	} else {
 		return "", fmt.Errorf("The label value must be a string")
 	}
