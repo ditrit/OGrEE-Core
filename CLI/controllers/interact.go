@@ -111,6 +111,13 @@ func InteractObject(path string, keyword string, val interface{}, fromAttr bool)
 
 		// Check all words
 		for i, word := range words {
+			// Substitute \n for <br> so 3D understands the linebreak
+			for strings.Contains(word, "\\n") {
+				j := strings.Index(word, "\\n")
+				word = word[:j] + "<br>" + word[j+2:]
+				words[i] = word
+			}
+
 			// While there is at least one attribute to be evaluated in the word
 			for strings.Contains(word, "#") {
 				j := strings.Index(word, "#")
