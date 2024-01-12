@@ -4,6 +4,7 @@ import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/pages/select_page.dart';
 import 'package:ogree_app/widgets/select_objects/treeapp_controller.dart';
+import 'object_popup.dart';
 import 'settings_view/settings_view.dart';
 import 'tree_view/custom_tree_view.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -11,9 +12,9 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 class SelectObjects extends StatefulWidget {
   final String dateRange;
   final Namespace namespace;
-  final bool load;
+  bool load;
 
-  const SelectObjects(
+  SelectObjects(
       {super.key,
       required this.dateRange,
       required this.namespace,
@@ -63,7 +64,10 @@ class _SelectObjectsState extends State<SelectObjects> {
                       )
                     : _ResponsiveBody(
                         noFilters: widget.namespace != Namespace.Physical,
-                        controller: appController),
+                        controller: appController,
+                        callback: () => setState(() {
+                              widget.load = true;
+                            })),
               ),
             );
           }
@@ -92,8 +96,12 @@ class _Unfocus extends StatelessWidget {
 class _ResponsiveBody extends StatelessWidget {
   final bool noFilters;
   final TreeAppController controller;
+  final Function() callback;
   const _ResponsiveBody(
-      {Key? key, required this.controller, this.noFilters = false})
+      {Key? key,
+      required this.controller,
+      this.noFilters = false,
+      required this.callback})
       : super(key: key);
 
   @override
@@ -125,16 +133,47 @@ class _ResponsiveBody extends StatelessWidget {
     }
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: Row(
+      child: Stack(
         children: [
-          const Flexible(flex: 2, child: CustomTreeView(isTenantMode: false)),
-          const VerticalDivider(
-            width: 1,
-            thickness: 1,
-            color: Colors.black26,
+          Row(
+            children: [
+              const Flexible(
+                  flex: 2, child: CustomTreeView(isTenantMode: false)),
+              const VerticalDivider(
+                width: 1,
+                thickness: 1,
+                color: Colors.black26,
+              ),
+              Expanded(
+                  child:
+                      SettingsView(isTenantMode: false, noFilters: noFilters)),
+            ],
           ),
-          Expanded(
-              child: SettingsView(isTenantMode: false, noFilters: noFilters)),
+          Padding(
+            padding: const EdgeInsets.only(left: 6, bottom: 6),
+            child: Align(
+              alignment: Alignment.bottomLeft,
+              child: SizedBox(
+                height: 34,
+                width: 34,
+                child: IconButton(
+                  padding: EdgeInsets.all(0.0),
+                  iconSize: 24,
+                  // splashRadius: 20,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue.shade600,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: () => showCustomPopup(
+                      context, CreateObjectPopup(parentCallback: callback),
+                      isDismissible: true),
+                  icon: const Icon(Icons.add),
+                  // label: Text(
+                  //     "${AppLocalizations.of(context)!.create} ${AppLocalizations.of(context)!.domain}"),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

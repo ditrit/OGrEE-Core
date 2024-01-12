@@ -6,6 +6,7 @@ import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/pages/tenant_page.dart';
+import 'package:ogree_app/widgets/select_objects/object_popup.dart';
 import 'package:ogree_app/widgets/tenants/popups/domain_popup.dart';
 
 import '../treeapp_controller.dart';
@@ -104,7 +105,35 @@ class _TreeNodeTileState extends State<TreeNodeTile> {
                         ),
                       ],
                     )
-                  : _NodeSelector(id: widget.entry.node.id),
+                  : Row(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          child: _NodeSelector(id: widget.entry.node.id),
+                        ),
+                        CircleAvatar(
+                          radius: 10,
+                          child: IconButton(
+                              splashRadius: 18,
+                              iconSize: 14,
+                              padding: const EdgeInsets.all(2),
+                              onPressed: () => showCustomPopup(
+                                  context,
+                                  CreateObjectPopup(
+                                    parentCallback: () => appController.init({},
+                                        namespace: Namespace.Physical,
+                                        reload: true,
+                                        isTenantMode: true),
+                                    parentId: widget.entry.node.id,
+                                  ),
+                                  isDismissible: true),
+                              icon: const Icon(
+                                Icons.add,
+                                color: Colors.black,
+                              )),
+                        ),
+                      ],
+                    ),
             ],
           ),
         ),

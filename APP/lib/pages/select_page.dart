@@ -57,7 +57,12 @@ class SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
       for (var obj in widget.project!.objects) {
         _selectedObjects[obj] = true;
       }
-      _currentStep = Steps.result;
+      if (widget.project!.authorLastUpdate == "Automatically generated") {
+        _loadObjects = true;
+        _currentStep = Steps.objects;
+      } else {
+        _currentStep = Steps.result;
+      }
     }
     super.initState();
   }

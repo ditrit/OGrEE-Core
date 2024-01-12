@@ -6,14 +6,17 @@ import 'package:ogree_app/widgets/projects/project_popup.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/models/project.dart';
 import 'package:ogree_app/pages/select_page.dart';
+import 'package:ogree_app/widgets/select_objects/select_objects.dart';
 
-class ProjectCard extends StatelessWidget {
-  final Project project;
+class AutoProjectCard extends StatelessWidget {
+  // final Project project;
+  final Namespace namespace;
   final String userEmail;
   final Function parentCallback;
-  const ProjectCard(
+  const AutoProjectCard(
       {Key? key,
-      required this.project,
+      // required this.project,
+      required this.namespace,
       required this.userEmail,
       required this.parentCallback})
       : super(key: key);
@@ -66,30 +69,43 @@ class ProjectCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  // SizedBox(
+                  //   width: 170,
+                  //   child: Text(project.name,
+                  //       overflow: TextOverflow.clip,
+                  //       style: const TextStyle(
+                  //           fontWeight: FontWeight.bold, fontSize: 16)),
+                  // ),
                   SizedBox(
-                    width: 170,
-                    child: Text(project.name,
-                        overflow: TextOverflow.clip,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16)),
+                    height: 30,
+                    child: Badge(
+                      backgroundColor: Colors.deepPurple.shade50,
+                      label: Text(
+                        " ${namespace.name} ",
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.deepPurple.shade900),
+                      ),
+                    ),
                   ),
-                  CircleAvatar(
-                    radius: 13,
-                    child: IconButton(
-                        splashRadius: 18,
-                        iconSize: 13,
-                        padding: const EdgeInsets.all(2),
-                        onPressed: () => showProjectDialog(
-                            context,
-                            project,
-                            localeMsg.editProject,
-                            deleteCallback: deleteProjectCallback,
-                            modifyProjectCallback,
-                            parentCallback: parentCallback),
-                        icon: const Icon(
-                          Icons.mode_edit_outline_rounded,
-                        )),
-                  )
+                  // CircleAvatar(
+                  //   radius: 13,
+                  //   child: IconButton(
+                  //       splashRadius: 18,
+                  //       iconSize: 13,
+                  //       padding: const EdgeInsets.all(2),
+                  //       onPressed: () => showProjectDialog(
+                  //           context,
+                  //           project,
+                  //           localeMsg.editProject,
+                  //           deleteCallback: deleteProjectCallback,
+                  //           modifyProjectCallback,
+                  //           parentCallback: parentCallback),
+                  //       icon: const Icon(
+                  //         Icons.mode_edit_outline_rounded,
+                  //       )),
+                  // )
                 ],
               ),
               Column(
@@ -100,7 +116,7 @@ class ProjectCard extends StatelessWidget {
                     child: Text(localeMsg.author),
                   ),
                   Text(
-                    "${project.authorLastUpdate}",
+                    "Automatically created",
                     style: TextStyle(backgroundColor: Colors.grey.shade200),
                   ),
                 ],
@@ -110,10 +126,10 @@ class ProjectCard extends StatelessWidget {
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(bottom: 2.0),
-                    child: Text(localeMsg.lastUpdate),
+                    child: Text("Description :"),
                   ),
                   Text(
-                    "${project.lastUpdate}",
+                    "View all objects of ${namespace.name} namespace",
                     style: TextStyle(backgroundColor: Colors.grey.shade200),
                   ),
                 ],
@@ -125,7 +141,15 @@ class ProjectCard extends StatelessWidget {
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (context) => SelectPage(
-                            project: project,
+                            project: Project(
+                                "Physical",
+                                "",
+                                Namespace.Physical.name,
+                                "Automatically generated",
+                                "",
+                                false,
+                                false,
+                                false, [], [], []),
                             userEmail: userEmail,
                           ),
                         ),

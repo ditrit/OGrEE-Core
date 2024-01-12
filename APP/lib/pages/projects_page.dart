@@ -10,6 +10,7 @@ import 'package:ogree_app/models/project.dart';
 import 'package:ogree_app/models/tenant.dart';
 import 'package:ogree_app/pages/select_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:ogree_app/widgets/projects/autoproject_card.dart';
 import 'package:ogree_app/widgets/tenants/popups/create_tenant_popup.dart';
 import 'package:ogree_app/widgets/projects/project_card.dart';
 import 'package:ogree_app/widgets/tenants/tenant_card.dart';
@@ -312,6 +313,11 @@ class _ProjectsPageState extends State<ProjectsPage> {
         }
       }
     } else {
+      cards.add(AutoProjectCard(
+        namespace: Namespace.Physical,
+        userEmail: widget.userEmail,
+        parentCallback: refreshFromChildren,
+      ));
       for (var project in _projects!) {
         cards.add(ProjectCard(
           project: project,

@@ -400,6 +400,25 @@ Future<Result<void, Exception>> createProject(Project project) async {
   }
 }
 
+Future<Result<void, Exception>> createObject(
+    Map<String, dynamic> object, String category) async {
+  print("API create Object");
+  try {
+    Uri url = Uri.parse('$apiUrl/api/${category}s');
+    final response = await http.post(url,
+        body: json.encode(object), headers: getHeader(token));
+    print(response);
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return const Success(null);
+    } else {
+      final Map<String, dynamic> data = json.decode(response.body);
+      return Failure(Exception(data["message"].toString()));
+    }
+  } on Exception catch (e) {
+    return Failure(e);
+  }
+}
+
 Future<Result<(List<Tenant>, List<DockerContainer>), Exception>>
     fetchApplications({http.Client? client}) async {
   print("API get Apps");
