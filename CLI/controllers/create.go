@@ -84,6 +84,9 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			data["parentId"] = ""
 		}
 
+	case models.SITE:
+		break
+
 	case models.BLDG:
 		//Check for template
 		if _, ok := attr["template"]; ok {
