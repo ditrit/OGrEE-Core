@@ -86,9 +86,9 @@ func splitAttrAndSuffix(input string) (string, string) {
 }
 
 // Function called by update node for interact commands (ie label, labelFont)
-func InteractObject(path string, keyword string, val interface{}, fromAttr bool) error {
+func (controller Controller) InteractObject(path string, keyword string, val interface{}, fromAttr bool) error {
 	// First retrieve the object
-	obj, err := C.GetObject(path)
+	obj, err := controller.GetObject(path)
 	if err != nil {
 		return err
 	}
@@ -133,14 +133,13 @@ func InteractObject(path string, keyword string, val interface{}, fromAttr bool)
 
 		}
 		val = strings.Join(words, " ")
-
-		data := map[string]interface{}{"id": obj["id"],
-			"param": keyword, "value": val}
-		ans := map[string]interface{}{"type": "interact", "data": data}
-
-		//-1 since its not neccessary to check for filtering
-		return Ogree3D.InformOptional("Interact", -1, ans)
-	} else {
+	} else if keyword == "label" {
 		return fmt.Errorf("The label value must be a string")
 	}
+
+	data := map[string]interface{}{"id": obj["id"], "param": keyword, "value": val}
+	ans := map[string]interface{}{"type": "interact", "data": data}
+
+	//-1 since its not neccessary to check for filtering
+	return Ogree3D.InformOptional("Interact", -1, ans)
 }
