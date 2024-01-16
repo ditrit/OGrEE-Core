@@ -64,6 +64,9 @@ func SetupDB(db *mongo.Database) error {
 	if err := createUniqueIndex(db, "account", bson.M{"email": 1}); err != nil {
 		return err
 	}
+	if err := createUniqueIndex(db, "application", bson.M{"name": 1}); err != nil {
+		return err
+	}
 
 	return nil
 }

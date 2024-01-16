@@ -39,23 +39,126 @@ generate_namespace_json() {
         \"children\": ["
 
       # Get pods in the service
-      pods=$(kubectl get pods -n "$namespace" -l k8s-app="$service" -o jsonpath='{range .items[*]}{.metadata.name}{" "}{end}' | tr ' ' '\n')
+      pods=$(kubectl get pods -n "$namespace" -l app.kubernetes.io/name="$service" -o jsonpath='{range .items[*]}{.metadata.name}{" "}{end}' | tr ' ' '\n')
 
       for pod in $pods; do
-        # Get PV information (currently empty, modify as needed)
-        pv_location=$(kubectl get pod "$pod" -n "$namespace" -o jsonpath='{.spec.volumes[0].persistentVolumeClaim.volumeName}' 2>/dev/null)
-        if [ -z "$pv_location" ]; then
-          pv_location="local"
-        else
-          pv_location="external"
-        fi
-
         namespace_json+="{ 
           \"category\": \"application\",
           \"type\": \"pod\",
           \"name\": \"$pod\",
-          \"pv_location\": \"$pv_location\"
-        },"
+          \"children\": ["
+
+        # Get a list of PVCs for the current pod
+        pvc_names=$(kubectl get pods "$pod" -n "$namespace" -o=jsonpath='{.spec.volumes[*].persistentVolumeClaim.claimName}')
+
+        # Loop through each PVC
+        for pvc in $pvc_names; do
+          namespace_json+="{ 
+            \"pvc\": \"$pvc\",
+            \"children\": ["
+
+          # Get PV information for the current PVC
+          pv_info=$(kubectl get pvc "$pvc" -n "$namespace" -o=jsonpath='{.spec.volumeName},{.spec.storageClassName}')
+
+          # Extract PV name and storage class
+          pv_name=$(echo "$pv_info" | cut -d',' -f1)
+          storage_class=$(echo "$pv_info" | cut -d',' -f2)
+
+          # Get PV details based on storage class
+          case $storage_class in
+            "azure-disk")
+              pv_details=$(kubectl get pv "$pv_name" -o=jsonpath='{.spec.volumeMode},{.spec.azureDisk.diskURI}')
+              pv_type="AzureDisk"
+              pv_path=$(echo "$pv_details" | cut -d',' -f2)
+              pv_ip=""
+              ;;
+            "awsElasticBlockStore")
+              pv_details=$(kubectl get pv "$pv_name" -o=jsonpath='{.spec.volumeMode},{.spec.awsElasticBlockStore.volumeID}')
+              pv_type="ElasticBlockStore"
+              pv_path=$(echo "$pv_details" | cut -d',' -f2)
+              pv_ip=""
+              ;;
+            "CephFS")
+              pv_details=$(kubectl get pv "$pv_name" -o=jsonpath='{.spec.volumeMode},{.spec.cephfs.monitors[0]},{.spec.cephfs.path}')
+              pv_type="CephFS"
+              pv_ip=$(echo "$pv_details" | cut -d',' -f2)
+              pv_path=$(echo "$pv_details" | cut -d',' -f3)
+              ;;
+            "nfs-client")
+              pv_details=$(kubectl get pv "$pv_name" -o=jsonpath='{.spec.volumeMode},{.spec.nfs.server},{.spec.nfs.path}')
+              pv_type="NFS"
+              pv_ip=$(echo "$pv_details" | cut -d',' -f2)
+              pv_path=$(echo "$pv_details" | cut -d',' -f3)
+              ;;
+            "azureFile")
+              pv_details=$(kubectl get pv "$pv_name" -o=jsonpath='{.spec.volumeMode},{.spec.azureFile.secretName},{.spec.azureFile.shareName}')
+              pv_type="AzureFile"
+              pv_path=$(echo "$pv_details" | cut -d',' -f2)
+              pv_ip=""
+              ;;
+            "csi")
+              pv_details=$(kubectl get pv "$pv_name" -o=jsonpath='{.spec.volumeMode},{.spec.csi.driver}')
+              pv_type="CSI"
+              pv_path=""
+              pv_ip=""
+              ;;
+            "gcePersistentDisk")
+              pv_details=$(kubectl get pv "$pv_name" -o=jsonpath='{.spec.volumeMode},{.spec.gcePersistentDisk.pdName}')
+              pv_type="GCEPersistentDisk"
+              pv_path=$(echo "$pv_details" | cut -d',' -f2)
+              pv_ip=""
+              ;;
+            "glusterfs")
+              pv_details=$(kubectl get pv "$pv_name" -o=jsonpath='{.spec.volumeMode},{.spec.glusterfs.endpoints-name},{.spec.glusterfs.path}')
+              pv_type="GlusterFS"
+              pv_ip=$(echo "$pv_details" | cut -d',' -f2)
+              pv_path=$(echo "$pv_details" | cut -d',' -f3)
+              ;;
+            "fc")
+              pv_details=$(kubectl get pv "$pv_name" -o=jsonpath='{.spec.volumeMode}')
+              pv_type="FibreChannel"
+              pv_path=""
+              pv_ip=""
+              ;;
+            "cinder")
+              pv_details=$(kubectl get pv "$pv_name" -o=jsonpath='{.spec.volumeMode},{.spec.cinder.volumeID}')
+              pv_type="Cinder"
+              pv_path=$(echo "$pv_details" | cut -d',' -f2)
+              pv_ip=""
+              ;;
+            "iscsi")
+              pv_details=$(kubectl get pv "$pv_name" -o=jsonpath='{.spec.volumeMode},{.spec.iscsi.targetPortal},{.spec.iscsi.iqn},{.spec.iscsi.lun}')
+              pv_type="iSCSI"
+              pv_ip=$(echo "$pv_details" | cut -d',' -f2)
+              pv_path=$(echo "$pv_details" | cut -d',' -f3)
+              ;;
+            "local-path")
+              pv_details=$(kubectl get pv "$pv_name" -o=jsonpath='{.spec.volumeMode},{.spec.hostPath.path}')
+              pv_type="HostPath"
+              pv_path=$(echo "$pv_details" | cut -d',' -f2)
+              pv_ip="None"
+              ;;
+            *)
+              pv_type="Unknown"
+              pv_path="None"
+              pv_ip="None"
+              ;;
+          esac
+
+          # Print PV details
+          namespace_json+="{ 
+              \"pv-type\": \"$pv_type\",
+              \"pv-path\": \"$pv_path\",
+              \"pv-ip\": \"$pv_ip\"
+            }"
+
+          namespace_json+="]},"
+        done
+
+        # Remove comma
+        namespace_json="${namespace_json%,}"
+
+        namespace_json+="]},"
       done
 
       # Remove comma

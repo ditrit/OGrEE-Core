@@ -44,6 +44,7 @@ const (
 	BLDGTMPL
 	TAG
 	LAYER
+	APPLICATION
 )
 
 type Namespace string
@@ -222,7 +223,7 @@ var Entities = []int{
 	DOMAIN,
 	STRAYOBJ, SITE,
 	BLDG, ROOM, RACK, DEVICE, AC, CABINET, CORRIDOR, PWRPNL, GROUP,
-	ROOMTMPL, OBJTMPL, BLDGTMPL, TAG, LAYER,
+	ROOMTMPL, OBJTMPL, BLDGTMPL, TAG, LAYER, APPLICATION,
 }
 
 var EntitiesWithTags = []int{
@@ -277,6 +278,8 @@ func EntityToString(entity int) string {
 		return "tag"
 	case LAYER:
 		return "layer"
+	case APPLICATION:
+		return "application"
 	default:
 		return "INVALID"
 	}
@@ -318,6 +321,8 @@ func EntityStrToInt(entity string) int {
 		return TAG
 	case "layer":
 		return LAYER
+	case "application":
+		return APPLICATION
 	default:
 		return -1
 	}
