@@ -1,0 +1,27 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: visualtisation
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: visualization
+            image: busybox
+            imagePullPolicy: IfNotPresent
+            command:
+            - /bin/sh
+            - -c
+            - /myscript/test.sh
+            volumeMounts:
+            - name: script-dir
+              mountPath: /myscript
+          restartPolicy: OnFailure
+          volumes:
+          - name: script-dir
+            hostPath:
+              path: /path/to/my/script/dir
+              type: Directory
