@@ -7,58 +7,92 @@ import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/theme.dart';
+import 'package:ogree_app/widgets/actionbtn_row.dart';
 
 class CreateObjectPopup extends StatefulWidget {
   Function() parentCallback;
   String? parentId;
-  CreateObjectPopup({super.key, required this.parentCallback, this.parentId});
+  String? objId;
+  Namespace namespace;
+  CreateObjectPopup(
+      {super.key,
+      required this.parentCallback,
+      required this.namespace,
+      this.parentId,
+      this.objId});
 
   @override
   State<CreateObjectPopup> createState() => _CreateObjectPopupState();
 }
 
-enum AuthOption { pKey, password }
+enum PhyCategories { site, building, room, rack, device, group }
 
-enum ObjCategories { site, building, room, rack, device, group }
+enum OrgCategories { domain }
+
+enum LogCategories { group, layer, obj_template, room_template, tag }
+
+Map<Namespace, List<String>> objsByNamespace = {
+  Namespace.Physical: PhyCategories.values.map((e) => e.name).toList(),
+  Namespace.Organisational: OrgCategories.values.map((e) => e.name).toList(),
+  Namespace.Logical: LogCategories.values.map((e) => e.name).toList(),
+};
 
 class _CreateObjectPopupState extends State<CreateObjectPopup> {
   final _formKey = GlobalKey<FormState>();
-  String? _parentId;
-  bool _isLoading = false;
   bool _isSmallDisplay = false;
-  ObjCategories _objCategory = ObjCategories.site;
+  String _objCategory = PhyCategories.site.name;
+  String _objId = "";
   List<Widget> attributesRows = [];
   List<String> attributes = [];
-  Map<ObjCategories, List<String>> categoryAttrs = {};
+  Map<String, List<String>> categoryAttrs = {};
   List<String> domainList = [];
   Map<String, dynamic> createObjData = {};
+  Map<String, dynamic> editObjData = {};
   Map<String, String> createObjDataAttrs = {};
+  bool _isEdit = false;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     if (widget.parentId != null) {
-      _parentId = widget.parentId;
-      switch (".".allMatches(_parentId!).length) {
-        case 0:
-          _objCategory = ObjCategories.building;
-        case 1:
-          _objCategory = ObjCategories.room;
-        case 2:
-          _objCategory = ObjCategories.rack;
+      createObjData["parentId"] = widget.parentId;
+      if (widget.namespace == Namespace.Organisational) {
+        _objCategory = OrgCategories.domain.name;
+      } else {
+        switch (".".allMatches(widget.parentId!).length) {
+          case 0:
+            _objCategory = PhyCategories.building.name;
+          case 1:
+            _objCategory = PhyCategories.room.name;
+          case 2:
+            _objCategory = PhyCategories.rack.name;
+          default:
+            _objCategory = PhyCategories.device.name;
+        }
+      }
+    } else {
+      switch (widget.namespace) {
+        case Namespace.Logical:
+          _objCategory = LogCategories.group.name;
+          break;
+        case Namespace.Organisational:
+          _objCategory = OrgCategories.domain.name;
+          break;
         default:
-          _objCategory = ObjCategories.device;
+          _objCategory = PhyCategories.site.name;
       }
     }
+    if (widget.objId != null && widget.objId!.isNotEmpty) {
+      _isEdit = true;
+      _objId = widget.objId!;
+    }
+    print("IS EDIT " + _isEdit.toString());
   }
 
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
     _isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
-
-    print(_parentId);
 
     return FutureBuilder(
         future: categoryAttrs.isEmpty ? getExternalAssets() : null,
@@ -70,7 +104,9 @@ class _CreateObjectPopupState extends State<CreateObjectPopup> {
           return Center(
             child: Container(
               width: 500,
-              constraints: BoxConstraints(maxHeight: 590),
+              constraints: BoxConstraints(
+                  maxHeight:
+                      _objCategory != OrgCategories.domain.name ? 590 : 470),
               margin: const EdgeInsets.symmetric(horizontal: 20),
               decoration: PopupDecoration,
               child: Padding(
@@ -86,7 +122,9 @@ class _CreateObjectPopupState extends State<CreateObjectPopup> {
                           children: [
                             Center(
                               child: Text(
-                                "Créer un nouveau objet",
+                                _isEdit
+                                    ? "Modifier l'objet"
+                                    : "Créer un nouveau objet",
                                 style:
                                     Theme.of(context).textTheme.headlineMedium,
                               ),
@@ -101,76 +139,100 @@ class _CreateObjectPopupState extends State<CreateObjectPopup> {
                                 SizedBox(
                                   height: 35,
                                   width: 147,
-                                  child: DropdownButtonFormField<ObjCategories>(
+                                  child: DropdownButtonFormField<String>(
                                     borderRadius: BorderRadius.circular(12.0),
                                     decoration: GetFormInputDecoration(
                                       false,
                                       null,
-                                      icon: Icons.catching_pokemon,
+                                      icon: Icons.bookmark,
                                     ),
                                     value: _objCategory,
-                                    items: ObjCategories.values
-                                        .map<DropdownMenuItem<ObjCategories>>(
-                                            (ObjCategories value) {
-                                      return DropdownMenuItem<ObjCategories>(
+                                    items: objsByNamespace[widget.namespace]!
+                                        .map<DropdownMenuItem<String>>(
+                                            (String value) {
+                                      return DropdownMenuItem<String>(
                                         value: value,
                                         child: Text(
-                                          value.name,
+                                          value,
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       );
                                     }).toList(),
-                                    onChanged: (ObjCategories? value) {
-                                      setState(() {
-                                        _objCategory = value!;
-                                      });
-                                    },
+                                    onChanged: _isEdit
+                                        ? null
+                                        : (String? value) {
+                                            setState(() {
+                                              _objCategory = value!;
+                                            });
+                                          },
                                   ),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 10),
-                            _objCategory != ObjCategories.site
+                            _objCategory != PhyCategories.site.name
                                 ? getFormField(
                                     save: (newValue) {
                                       if (newValue != null &&
                                           newValue.isNotEmpty) {
-                                        _parentId = newValue;
-                                        createObjData["parentId"] = _parentId;
+                                        createObjData["parentId"] = newValue;
                                       }
                                     },
                                     label: "Parent ID",
                                     icon: Icons.family_restroom,
-                                    initial: widget.parentId)
+                                    initial: createObjData["parentId"])
                                 : Container(),
                             getFormField(
                                 save: (newValue) =>
                                     createObjData["name"] = newValue,
                                 label: "Name",
-                                icon: Icons.edit),
-                            domainList.isEmpty
-                                ? getFormField(
-                                    save: (newValue) =>
-                                        createObjData["domain"] = newValue,
-                                    label: "Domain",
-                                    icon: Icons.edit)
-                                : domainAutoFillField(),
+                                icon: Icons.edit,
+                                initial: createObjData["name"]),
+                            _objCategory != OrgCategories.domain.name
+                                ? (domainList.isEmpty
+                                    ? getFormField(
+                                        save: (newValue) =>
+                                            createObjData["domain"] = newValue,
+                                        label: "Domain",
+                                        icon: Icons.edit,
+                                        initial: createObjData["domain"])
+                                    : domainAutoFillField())
+                                : Container(),
                             getFormField(
                                 save: (newValue) =>
                                     createObjData["description"] = [newValue],
                                 label: "Description",
                                 icon: Icons.edit,
-                                shouldValidate: false),
-                            getFormField(
-                                save: (newValue) {
-                                  var tags = newValue!.split(",");
-                                  if (!(tags.length == 1 && tags.first == "")) {
-                                    createObjData["tags"] = tags;
-                                  }
-                                },
-                                label: "Tags",
-                                icon: Icons.tag_sharp,
-                                shouldValidate: false),
+                                shouldValidate: false,
+                                initial: createObjData["description"] != null &&
+                                        List<String>.from(
+                                                createObjData["description"])
+                                            .isNotEmpty
+                                    ? createObjData["description"][0]
+                                    : null),
+                            _objCategory != OrgCategories.domain.name
+                                ? getFormField(
+                                    save: (newValue) {
+                                      var tags = newValue!
+                                          .replaceAll(" ", "")
+                                          .split(",");
+                                      if (!(tags.length == 1 &&
+                                          tags.first == "")) {
+                                        createObjData["tags"] = tags;
+                                      }
+                                    },
+                                    label: "Tags",
+                                    icon: Icons.tag_sharp,
+                                    shouldValidate: false,
+                                    initial: createObjData["tags"]
+                                        ?.toString()
+                                        .substring(
+                                            1,
+                                            createObjData["tags"]
+                                                    .toString()
+                                                    .length -
+                                                1))
+                                : Container(),
                             Padding(
                               padding: const EdgeInsets.only(
                                   top: 4.0, left: 6, bottom: 6),
@@ -189,13 +251,11 @@ class _CreateObjectPopupState extends State<CreateObjectPopup> {
                                 crossAxisCount: 2,
                                 children:
                                     List.generate(attributes.length, (index) {
+                                  print(createObjDataAttrs[
+                                      attributes[index].replaceFirst("*", "")]);
                                   return getFormField(
                                       save: (newValue) {
-                                        if (attributes[index] == "template") {
-                                          createObjDataAttrs[attributes[index]
-                                                  .replaceFirst("*", "")] =
-                                              newValue ?? "";
-                                        } else if (newValue != null &&
+                                        if (newValue != null &&
                                             newValue.isNotEmpty) {
                                           createObjDataAttrs[attributes[index]
                                                   .replaceFirst("*", "")] =
@@ -206,7 +266,10 @@ class _CreateObjectPopupState extends State<CreateObjectPopup> {
                                       icon: Icons.tag_sharp,
                                       isCompact: true,
                                       shouldValidate:
-                                          attributes[index].contains("*"));
+                                          attributes[index].contains("*"),
+                                      initial: createObjDataAttrs[
+                                          attributes[index]
+                                              .replaceFirst("*", "")]);
                                 }),
                               ),
                             ),
@@ -227,40 +290,15 @@ class _CreateObjectPopupState extends State<CreateObjectPopup> {
                                     label: Text("Attribute")),
                               ),
                             ),
-
                             const SizedBox(height: 12),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                TextButton.icon(
-                                  style: OutlinedButton.styleFrom(
-                                      foregroundColor: Colors.blue.shade900),
-                                  onPressed: () => Navigator.pop(context),
-                                  label: Text(localeMsg.cancel),
-                                  icon: const Icon(
-                                    Icons.cancel_outlined,
-                                    size: 16,
-                                  ),
-                                ),
-                                const SizedBox(width: 15),
-                                ElevatedButton.icon(
-                                    onPressed: () =>
-                                        submitCreateObject(localeMsg),
-                                    label: Text(localeMsg.create),
-                                    icon: _isLoading
-                                        ? Container(
-                                            width: 24,
-                                            height: 24,
-                                            padding: const EdgeInsets.all(2.0),
-                                            child:
-                                                const CircularProgressIndicator(
-                                              color: Colors.white,
-                                              strokeWidth: 3,
-                                            ),
-                                          )
-                                        : const Icon(Icons.check_circle,
-                                            size: 16))
-                              ],
+                            ActionBtnRow(
+                              isEdit: _isEdit,
+                              submitCreate: () =>
+                                  submitCreateObject(localeMsg, context),
+                              submitModify: () =>
+                                  submitModifyObject(localeMsg, context),
+                              submitDelete: () =>
+                                  submitDeleteObject(localeMsg, context),
                             )
                           ],
                         ),
@@ -275,27 +313,32 @@ class _CreateObjectPopupState extends State<CreateObjectPopup> {
   getExternalAssets() async {
     await readJsonAssets();
     await getDomains();
+    if (_isEdit) {
+      await getObject();
+    }
   }
 
   readJsonAssets() async {
-    for (var obj in ObjCategories.values) {
+    List<String> objects = objsByNamespace[widget.namespace]!;
+    for (var obj in objects) {
       print(obj);
-      String schemaPrefix = obj.name;
+      // read JSON schema
       String data = await DefaultAssetBundle.of(context)
-          .loadString("../API/models/schemas/${schemaPrefix}_schema.json");
+          .loadString("../API/models/schemas/${obj}_schema.json");
       final Map<String, dynamic> jsonResult = json.decode(data);
       if (jsonResult["properties"]["attributes"]["properties"] != null) {
+        // Get all properties
         var attrs = Map<String, dynamic>.from(
             jsonResult["properties"]["attributes"]["properties"]);
         print(attrs.keys);
         categoryAttrs[obj] = attrs.keys.toList();
-        // categoryAttrs[obj]!.sort((a, b) => a.compareTo(b));
         if (jsonResult["properties"]["attributes"]["required"] != null) {
+          // Get required ones
           var requiredAttrs = List<String>.from(
               jsonResult["properties"]["attributes"]["required"]);
           for (var i = 0; i < categoryAttrs[obj]!.length; i++) {
             var attr = categoryAttrs[obj]![i];
-            if (requiredAttrs.contains(attr) && attr != "template") {
+            if (requiredAttrs.contains(attr)) {
               categoryAttrs[obj]![i] = "*$attr";
             }
           }
@@ -322,6 +365,22 @@ class _CreateObjectPopupState extends State<CreateObjectPopup> {
     }
   }
 
+  getObject() async {
+    final messenger = ScaffoldMessenger.of(context);
+    var result = await fetchObject(_objId);
+    switch (result) {
+      case Success(value: final value):
+        createObjData = value;
+        createObjDataAttrs =
+            Map<String, String>.from(createObjData["attributes"]);
+        print(createObjDataAttrs);
+      case Failure(exception: final exception):
+        showSnackBar(messenger, exception.toString(), isError: true);
+        if (context.mounted) Navigator.pop(context);
+        return;
+    }
+  }
+
   domainAutoFillField() {
     return Padding(
       padding: const EdgeInsets.only(right: 10, left: 1, bottom: 6),
@@ -335,6 +394,9 @@ class _CreateObjectPopupState extends State<CreateObjectPopup> {
             TextEditingController textEditingController,
             FocusNode focusNode,
             VoidCallback onFieldSubmitted) {
+          if (createObjData["domain"] != null) {
+            textEditingController.text = createObjData["domain"];
+          }
           return TextFormField(
             controller: textEditingController,
             focusNode: focusNode,
@@ -345,11 +407,6 @@ class _CreateObjectPopupState extends State<CreateObjectPopup> {
               onFieldSubmitted();
             },
             onSaved: (newValue) => createObjData["domain"] = newValue,
-            onTap: () {
-              // force call optionsBuilder for
-              // when widgets.options changes
-              // textEditingController.notifyListeners();
-            },
           );
         },
         optionsViewBuilder: (BuildContext context,
@@ -438,30 +495,68 @@ class _CreateObjectPopupState extends State<CreateObjectPopup> {
     });
   }
 
-  submitCreateObject(AppLocalizations localeMsg) async {
+  submitCreateObject(
+      AppLocalizations localeMsg, BuildContext popupContext) async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      setState(() {
-        _isLoading = true;
-      });
 
-      createObjData["category"] = _objCategory.name;
+      createObjData["category"] = _objCategory;
       createObjData["attributes"] = createObjDataAttrs;
       print(createObjData);
 
       final messenger = ScaffoldMessenger.of(context);
-      final result = await createObject(createObjData, _objCategory.name);
+      final errorMessenger = ScaffoldMessenger.of(popupContext);
+      final result = await createObject(createObjData, _objCategory);
       switch (result) {
         case Success():
           widget.parentCallback();
           showSnackBar(messenger, localeMsg.createOK, isSuccess: true);
           if (context.mounted) Navigator.of(context).pop();
         case Failure(exception: final exception):
-          setState(() {
-            _isLoading = false;
-          });
+          showSnackBar(errorMessenger, exception.toString(), isError: true);
+      }
+    }
+  }
+
+  submitModifyObject(
+      AppLocalizations localeMsg, BuildContext popupContext) async {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+
+      createObjData["category"] = _objCategory;
+      createObjData["attributes"] = createObjDataAttrs;
+      createObjData.remove("lastUpdated");
+      createObjData.remove("createdDate");
+      createObjData.remove("id");
+      print(createObjData);
+
+      final messenger = ScaffoldMessenger.of(popupContext);
+      final result = await updateObject(_objId, _objCategory, createObjData);
+
+      switch (result) {
+        case Success():
+          widget.parentCallback();
+          showSnackBar(messenger, localeMsg.modifyOK, isSuccess: true);
+        case Failure(exception: final exception):
           showSnackBar(messenger, exception.toString(), isError: true);
       }
+    }
+  }
+
+  submitDeleteObject(
+      AppLocalizations localeMsg, BuildContext popupContext) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final errorMessenger = ScaffoldMessenger.of(popupContext);
+    var result = await deleteObject(_objId, _objCategory);
+    switch (result) {
+      case Success():
+        widget.parentCallback();
+        showSnackBar(messenger, localeMsg.deleteOK);
+        if (context.mounted) {
+          Navigator.of(context).pop();
+        }
+      case Failure(exception: final exception):
+        showSnackBar(errorMessenger, exception.toString(), isError: true);
     }
   }
 

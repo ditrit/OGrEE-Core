@@ -11,6 +11,7 @@ bool isSmallDisplay = false;
 class TreeAppController with ChangeNotifier {
   bool _isInitialized = false;
   bool get isInitialized => _isInitialized;
+  Namespace namespace = Namespace.Physical;
 
   Map<String, List<String>> fetchedData = {};
   Map<String, List<String>> fetchedCategories = {};
@@ -29,7 +30,7 @@ class TreeAppController with ChangeNotifier {
   }
 
   Future<void> init(Map<String, bool> nodes,
-      {Namespace namespace = Namespace.Physical,
+      {Namespace argNamespace = Namespace.Physical,
       bool reload = false,
       String dateRange = "",
       bool isTenantMode = false}) async {
@@ -37,13 +38,14 @@ class TreeAppController with ChangeNotifier {
     final rootNode = TreeNode(id: kRootId);
 
     // Fetch data for the tree
-    if (namespace == Namespace.Test) {
+    if (argNamespace == Namespace.Test) {
       fetchedData = kDataSample;
       fetchedCategories = kDataSampleCategories;
     } else {
+      namespace = argNamespace;
       var result = await fetchObjectsTree(
           dateRange: dateRange,
-          namespace: namespace,
+          namespace: argNamespace,
           isTenantMode: isTenantMode);
 
       switch (result) {

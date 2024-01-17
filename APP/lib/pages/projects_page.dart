@@ -313,11 +313,15 @@ class _ProjectsPageState extends State<ProjectsPage> {
         }
       }
     } else {
-      cards.add(AutoProjectCard(
-        namespace: Namespace.Physical,
-        userEmail: widget.userEmail,
-        parentCallback: refreshFromChildren,
-      ));
+      for (var namespace in Namespace.values) {
+        if (namespace != Namespace.Test) {
+          cards.add(AutoProjectCard(
+            namespace: namespace,
+            userEmail: widget.userEmail,
+            parentCallback: refreshFromChildren,
+          ));
+        }
+      }
       for (var project in _projects!) {
         cards.add(ProjectCard(
           project: project,

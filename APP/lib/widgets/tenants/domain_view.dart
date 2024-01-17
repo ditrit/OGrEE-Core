@@ -28,7 +28,7 @@ class _DomainViewState extends State<DomainView> {
         controller: appController,
         child: FutureBuilder<void>(
           future: appController.init({},
-              namespace: Namespace.Organisational,
+              argNamespace: Namespace.Organisational,
               reload: _reloadDomains,
               isTenantMode: true),
           builder: (_, __) {

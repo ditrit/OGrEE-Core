@@ -60,6 +60,7 @@ class SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
       if (widget.project!.authorLastUpdate == "Automatically generated") {
         _loadObjects = true;
         _currentStep = Steps.objects;
+        widget.project = null;
       } else {
         _currentStep = Steps.result;
       }

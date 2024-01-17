@@ -23,34 +23,11 @@ class AutoProjectCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
-    modifyProjectCallback(String userInput, Project project, bool isCreate,
-        Function? parentCallback) async {
-      if (userInput == project.name) {
-        Navigator.pop(context);
-      } else {
-        project.name = userInput;
-        final messenger = ScaffoldMessenger.of(context);
-        var result = await modifyProject(project);
-        switch (result) {
-          case Success():
-            parentCallback!();
-            if (context.mounted) Navigator.pop(context);
-          case Failure(exception: final exception):
-            showSnackBar(messenger, exception.toString(), isError: true);
-        }
-      }
-    }
-
-    deleteProjectCallback(String projectId, Function? parentCallback) async {
-      final messenger = ScaffoldMessenger.of(context);
-      var result = await deleteProject(projectId);
-      switch (result) {
-        case Success():
-          parentCallback!();
-          if (context.mounted) Navigator.pop(context);
-        case Failure(exception: final exception):
-          showSnackBar(messenger, exception.toString(), isError: true);
-      }
+    var color = Colors.teal;
+    if (namespace == Namespace.Logical) {
+      color = Colors.deepPurple;
+    } else if (namespace == Namespace.Organisational) {
+      color = Colors.deepOrange;
     }
 
     return SizedBox(
@@ -66,47 +43,18 @@ class AutoProjectCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // SizedBox(
-                  //   width: 170,
-                  //   child: Text(project.name,
-                  //       overflow: TextOverflow.clip,
-                  //       style: const TextStyle(
-                  //           fontWeight: FontWeight.bold, fontSize: 16)),
-                  // ),
-                  SizedBox(
-                    height: 30,
-                    child: Badge(
-                      backgroundColor: Colors.deepPurple.shade50,
-                      label: Text(
-                        " ${namespace.name} ",
-                        style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.deepPurple.shade900),
-                      ),
-                    ),
+              SizedBox(
+                height: 30,
+                child: Badge(
+                  backgroundColor: color.shade50,
+                  label: Text(
+                    " ${namespace.name} ",
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: color.shade900),
                   ),
-                  // CircleAvatar(
-                  //   radius: 13,
-                  //   child: IconButton(
-                  //       splashRadius: 18,
-                  //       iconSize: 13,
-                  //       padding: const EdgeInsets.all(2),
-                  //       onPressed: () => showProjectDialog(
-                  //           context,
-                  //           project,
-                  //           localeMsg.editProject,
-                  //           deleteCallback: deleteProjectCallback,
-                  //           modifyProjectCallback,
-                  //           parentCallback: parentCallback),
-                  //       icon: const Icon(
-                  //         Icons.mode_edit_outline_rounded,
-                  //       )),
-                  // )
-                ],
+                ),
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -129,7 +77,7 @@ class AutoProjectCard extends StatelessWidget {
                     child: Text("Description :"),
                   ),
                   Text(
-                    "View all objects of ${namespace.name} namespace",
+                    "View all objects of namespace ${namespace.name}",
                     style: TextStyle(backgroundColor: Colors.grey.shade200),
                   ),
                 ],
@@ -142,9 +90,9 @@ class AutoProjectCard extends StatelessWidget {
                         MaterialPageRoute(
                           builder: (context) => SelectPage(
                             project: Project(
-                                "Physical",
+                                namespace.name,
                                 "",
-                                Namespace.Physical.name,
+                                namespace.name,
                                 "Automatically generated",
                                 "",
                                 false,

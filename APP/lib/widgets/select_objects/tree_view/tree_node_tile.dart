@@ -6,6 +6,7 @@ import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/pages/tenant_page.dart';
+import 'package:ogree_app/widgets/select_objects/logobject_popup.dart';
 import 'package:ogree_app/widgets/select_objects/object_popup.dart';
 import 'package:ogree_app/widgets/tenants/popups/domain_popup.dart';
 
@@ -79,7 +80,8 @@ class _TreeNodeTileState extends State<TreeNodeTile> {
                                     DomainPopup(
                                       parentCallback: () => appController.init(
                                           {},
-                                          namespace: Namespace.Organisational,
+                                          argNamespace:
+                                              Namespace.Organisational,
                                           reload: true,
                                           isTenantMode: true),
                                       domainId: widget.entry.node.id,
@@ -111,27 +113,37 @@ class _TreeNodeTileState extends State<TreeNodeTile> {
                           padding: const EdgeInsets.symmetric(horizontal: 4.0),
                           child: _NodeSelector(id: widget.entry.node.id),
                         ),
-                        CircleAvatar(
-                          radius: 10,
-                          child: IconButton(
-                              splashRadius: 18,
-                              iconSize: 14,
-                              padding: const EdgeInsets.all(2),
-                              onPressed: () => showCustomPopup(
-                                  context,
-                                  CreateObjectPopup(
-                                    parentCallback: () => appController.init({},
-                                        namespace: Namespace.Physical,
-                                        reload: true,
-                                        isTenantMode: true),
-                                    parentId: widget.entry.node.id,
-                                  ),
-                                  isDismissible: true),
-                              icon: const Icon(
-                                Icons.add,
-                                color: Colors.black,
-                              )),
-                        ),
+                        TreeAppController.of(context).namespace !=
+                                Namespace.Logical
+                            ? CircleAvatar(
+                                radius: 10,
+                                child: IconButton(
+                                    splashRadius: 18,
+                                    iconSize: 14,
+                                    padding: const EdgeInsets.all(2),
+                                    onPressed: () => showCustomPopup(
+                                        context,
+                                        CreateObjectPopup(
+                                          namespace:
+                                              TreeAppController.of(context)
+                                                  .namespace,
+                                          parentCallback: () => appController
+                                              .init({},
+                                                  argNamespace:
+                                                      TreeAppController.of(
+                                                              context)
+                                                          .namespace,
+                                                  reload: true,
+                                                  isTenantMode: true),
+                                          parentId: widget.entry.node.id,
+                                        ),
+                                        isDismissible: true),
+                                    icon: const Icon(
+                                      Icons.add,
+                                      color: Colors.black,
+                                    )),
+                              )
+                            : Container(),
                       ],
                     ),
             ],

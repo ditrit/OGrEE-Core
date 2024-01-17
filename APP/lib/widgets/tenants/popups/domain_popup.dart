@@ -155,34 +155,7 @@ class _DomainPopupState extends State<DomainPopup>
                           ? TextButton.icon(
                               style: OutlinedButton.styleFrom(
                                   foregroundColor: Colors.red.shade900),
-                              onPressed: () async {
-                                if (_formKey.currentState!.validate()) {
-                                  _formKey.currentState!.save();
-                                  setState(() {
-                                    _isLoadingDelete = true;
-                                  });
-                                  final messenger =
-                                      ScaffoldMessenger.of(context);
-                                  var result =
-                                      await removeObject(domainId!, "domains");
-                                  switch (result) {
-                                    case Success():
-                                      widget.parentCallback();
-                                      showSnackBar(
-                                          messenger, localeMsg.deleteOK);
-                                      if (context.mounted) {
-                                        Navigator.of(context).pop();
-                                      }
-                                    case Failure(exception: final exception):
-                                      setState(() {
-                                        _isLoadingDelete = false;
-                                      });
-                                      showSnackBar(
-                                          messenger, exception.toString(),
-                                          isError: true);
-                                  }
-                                }
-                              },
+                              onPressed: () => removeDomain(localeMsg),
                               label:
                                   Text(_isSmallDisplay ? "" : localeMsg.delete),
                               icon: _isLoadingDelete
@@ -294,6 +267,30 @@ class _DomainPopupState extends State<DomainPopup>
     );
   }
 
+  removeDomain(AppLocalizations localeMsg) async {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+      setState(() {
+        _isLoadingDelete = true;
+      });
+      final messenger = ScaffoldMessenger.of(context);
+      var result = await removeObject(domainId!, "domains");
+      switch (result) {
+        case Success():
+          widget.parentCallback();
+          showSnackBar(messenger, localeMsg.deleteOK);
+          if (context.mounted) {
+            Navigator.of(context).pop();
+          }
+        case Failure(exception: final exception):
+          setState(() {
+            _isLoadingDelete = false;
+          });
+          showSnackBar(messenger, exception.toString(), isError: true);
+      }
+    }
+  }
+
   getDomainForm() {
     final localeMsg = AppLocalizations.of(context)!;
     return ListView(
@@ -337,7 +334,7 @@ class _DomainPopupState extends State<DomainPopup>
                 child: ElevatedButton.icon(
                     onPressed: () async {
                       FilePickerResult? result =
-                          await FilePicker.platform.pickFiles();
+                          await FilePicker.platform.pickFiles(withData: true);
                       if (result != null) {
                         setState(() {
                           _loadedFile = result.files.single;

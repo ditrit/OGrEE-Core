@@ -333,7 +333,7 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
                 child: ElevatedButton.icon(
                     onPressed: () async {
                       FilePickerResult? result =
-                          await FilePicker.platform.pickFiles();
+                          await FilePicker.platform.pickFiles(withData: true);
                       if (result != null) {
                         setState(() {
                           _loadedFile = result.files.single;

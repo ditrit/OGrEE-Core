@@ -3,6 +3,7 @@ import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/pages/select_page.dart';
+import 'package:ogree_app/widgets/select_objects/logobject_popup.dart';
 import 'package:ogree_app/widgets/select_objects/treeapp_controller.dart';
 import 'object_popup.dart';
 import 'settings_view/settings_view.dart';
@@ -38,7 +39,7 @@ class _SelectObjectsState extends State<SelectObjects> {
                     : SelectPage.of(context)!.selectedObjects,
                 dateRange: widget.dateRange,
                 reload: widget.load,
-                namespace: widget.namespace)
+                argNamespace: widget.namespace)
             : null,
         builder: (_, __) {
           print(widget.load);
@@ -63,6 +64,7 @@ class _SelectObjectsState extends State<SelectObjects> {
                         ],
                       )
                     : _ResponsiveBody(
+                        namespace: widget.namespace,
                         noFilters: widget.namespace != Namespace.Physical,
                         controller: appController,
                         callback: () => setState(() {
@@ -94,11 +96,13 @@ class _Unfocus extends StatelessWidget {
 }
 
 class _ResponsiveBody extends StatelessWidget {
+  final Namespace namespace;
   final bool noFilters;
   final TreeAppController controller;
   final Function() callback;
   const _ResponsiveBody(
       {Key? key,
+      required this.namespace,
       required this.controller,
       this.noFilters = false,
       required this.callback})
@@ -165,7 +169,12 @@ class _ResponsiveBody extends StatelessWidget {
                     foregroundColor: Colors.white,
                   ),
                   onPressed: () => showCustomPopup(
-                      context, CreateObjectPopup(parentCallback: callback),
+                      context,
+                      namespace == Namespace.Logical
+                          ? LogicalObjectPopup(
+                              parentCallback: callback, namespace: namespace)
+                          : CreateObjectPopup(
+                              parentCallback: callback, namespace: namespace),
                       isDismissible: true),
                   icon: const Icon(Icons.add),
                   // label: Text(

@@ -63,8 +63,7 @@
           "heightUnit",
           "orientation",
           "size",
-          "sizeUnit",
-          "template"
+          "sizeUnit"
         ]
       }
     },

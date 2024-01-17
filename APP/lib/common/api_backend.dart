@@ -419,6 +419,85 @@ Future<Result<void, Exception>> createObject(
   }
 }
 
+Future<Result<Map<String, dynamic>, Exception>> fetchObject(String id,
+    {String idKey = "id"}) async {
+  print("API fetch Object");
+  try {
+    Uri url = Uri.parse('$apiUrl/api/objects?$idKey=$id');
+    final response = await http.get(url, headers: getHeader(token));
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      Map<String, dynamic> data = json.decode(response.body);
+      var list = List<Map<String, dynamic>>.from(data["data"]);
+      if (list.isEmpty) {
+        return Failure(Exception("No object found for to this request"));
+      }
+      return Success(list.first);
+    } else {
+      final Map<String, dynamic> data = json.decode(response.body);
+      return Failure(Exception(data["message"].toString()));
+    }
+  } on Exception catch (e) {
+    return Failure(e);
+  }
+}
+
+Future<Result<void, Exception>> updateObject(
+    String objId, String category, Map<String, dynamic> object) async {
+  print("API update object");
+  try {
+    Uri url = Uri.parse('$apiUrl/api/${category}s/$objId');
+    final response = await http.put(url,
+        body: json.encode(object), headers: getHeader(token));
+    print(response.statusCode);
+    if (response.statusCode == 200) {
+      return const Success(null);
+    } else {
+      var data = json.decode(response.body);
+      return Failure(Exception("Error: ${data["message"]}"));
+    }
+  } on Exception catch (e) {
+    return Failure(e);
+  }
+}
+
+Future<Result<void, Exception>> deleteObject(String objId, String category,
+    {http.Client? client}) async {
+  print("API delete object $category");
+  client ??= http.Client();
+  try {
+    Uri url = Uri.parse('$apiUrl/api/${category}s/$objId');
+    final response = await client.delete(url, headers: getHeader(token));
+    print(response.statusCode);
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return const Success(null);
+    } else {
+      var data = json.decode(response.body);
+      return Failure(Exception("Error: ${data["message"]}"));
+    }
+  } on Exception catch (e) {
+    return Failure(e);
+  }
+}
+
+Future<Result<void, Exception>> createTemplate(
+    Uint8List file, String category) async {
+  print("API create template $category");
+  try {
+    Uri url = Uri.parse('$apiUrl/api/${category}s');
+    final response =
+        await http.post(url, body: file, headers: getHeader(token));
+    print(response.statusCode);
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return const Success(null);
+    } else {
+      final Map<String, dynamic> data = json.decode(response.body);
+      return Failure(Exception(data["message"].toString()));
+    }
+  } on Exception catch (e) {
+    return Failure(e);
+  }
+}
+
 Future<Result<(List<Tenant>, List<DockerContainer>), Exception>>
     fetchApplications({http.Client? client}) async {
   print("API get Apps");

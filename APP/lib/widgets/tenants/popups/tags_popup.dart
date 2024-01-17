@@ -9,6 +9,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/theme.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:ogree_app/models/tag.dart';
+import 'package:ogree_app/widgets/actionbtn_row.dart';
 
 class TagsPopup extends StatefulWidget {
   Function() parentCallback;
@@ -105,61 +106,11 @@ class _TagsPopupState extends State<TagsPopup> with TickerProviderStateMixin {
                     ),
                   ),
                   const SizedBox(height: 5),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton.icon(
-                        style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.blue.shade900),
-                        onPressed: () => Navigator.pop(context),
-                        label: Text(localeMsg.cancel),
-                        icon: const Icon(
-                          Icons.cancel_outlined,
-                          size: 16,
-                        ),
-                      ),
-                      _isEdit
-                          ? TextButton.icon(
-                              style: OutlinedButton.styleFrom(
-                                  foregroundColor: Colors.red.shade900),
-                              onPressed: () => onDeleteBtnPressed(localeMsg),
-                              label:
-                                  Text(_isSmallDisplay ? "" : localeMsg.delete),
-                              icon: _isLoadingDelete
-                                  ? Container(
-                                      width: 24,
-                                      height: 24,
-                                      padding: const EdgeInsets.all(2.0),
-                                      child: CircularProgressIndicator(
-                                        color: Colors.red.shade900,
-                                        strokeWidth: 3,
-                                      ),
-                                    )
-                                  : const Icon(
-                                      Icons.delete,
-                                      size: 16,
-                                    ),
-                            )
-                          : Container(),
-                      _isSmallDisplay ? Container() : const SizedBox(width: 10),
-                      ElevatedButton.icon(
-                        onPressed: () => onActionBtnPressed(localeMsg),
-                        label:
-                            Text(_isEdit ? localeMsg.modify : localeMsg.create),
-                        icon: _isLoading
-                            ? Container(
-                                width: 24,
-                                height: 24,
-                                padding: const EdgeInsets.all(2.0),
-                                child: const CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 3,
-                                ),
-                              )
-                            : const Icon(Icons.check_circle, size: 16),
-                      ),
-                    ],
-                  )
+                  ActionBtnRow(
+                      isEdit: _isEdit,
+                      submitCreate: () => onActionBtnPressed(localeMsg),
+                      submitModify: () => onActionBtnPressed(localeMsg),
+                      submitDelete: () => () => onDeleteBtnPressed(localeMsg)),
                 ],
               ),
             ),
