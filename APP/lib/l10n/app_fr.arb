@@ -119,7 +119,7 @@
   "createDomain": "Créer un domaine",
   "domainName": "Nom du domaine",
   "parentDomain": "Domaine Parent",
-  "shouldHaveXChars": "Il faut au moins {X} caractères",
+  "shouldHaveXChars": "Il faut {X} caractères",
   "@shouldHaveXChars": {
     "placeholders": {
       "X": {

@@ -10,6 +10,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/models/tag.dart';
 import 'package:ogree_app/widgets/actionbtn_row.dart';
+import 'package:ogree_app/widgets/tenants/popups/tags_popup.dart';
 
 class ObjectPopup extends StatefulWidget {
   Function() parentCallback;
@@ -51,23 +52,17 @@ class _ObjectPopupState extends State<ObjectPopup> {
   bool _isSmallDisplay = false;
   String _objCategory = LogCategories.group.name;
   String _objId = "";
-  List<Widget> attributesRows = [];
-  List<String> attributes = [];
+  List<Widget> customAttributesRows = [];
   Map<String, List<String>> categoryAttrs = {};
   Map<String, Map<String, String>> examplesAttrs = {};
   List<String> domainList = [];
-  Map<String, dynamic> createObjData = {};
-  Map<String, dynamic> editObjData = {};
-  Map<String, String> createObjDataAttrs = {};
+  Map<String, dynamic> objData = {};
+  Map<String, String> objDataAttrs = {};
   bool _isEdit = false;
 
   // Tags
-  String? _tagSlug;
-  String? _tagDescription;
-  String? _tagColor;
-  Color? _localColor;
   Tag? tag;
-  PlatformFile? _loadedImage;
+  final GlobalKey<TagFormState> _tagFormKey = GlobalKey();
 
   // Templates
   PlatformFile? _loadedFile;
@@ -77,7 +72,8 @@ class _ObjectPopupState extends State<ObjectPopup> {
   void initState() {
     super.initState();
     if (widget.parentId != null) {
-      createObjData["parentId"] = widget.parentId;
+      // side add button to node (parent), suggest a child category
+      objData["parentId"] = widget.parentId;
       if (widget.namespace == Namespace.Organisational) {
         _objCategory = OrgCategories.domain.name;
       } else if (widget.namespace == Namespace.Logical) {
@@ -95,6 +91,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
         }
       }
     } else {
+      // floating general add button
       switch (widget.namespace) {
         case Namespace.Logical:
           _objCategory = LogCategories.group.name;
@@ -124,9 +121,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
           if (categoryAttrs.isEmpty) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (widget.namespace == Namespace.Physical) {
-            attributes = categoryAttrs[_objCategory]!;
-          }
+
           return Center(
             child: Container(
               width: 500,
@@ -144,7 +139,6 @@ class _ObjectPopupState extends State<ObjectPopup> {
                         backgroundColor: Colors.white,
                         body: SingleChildScrollView(
                           child: Column(
-                            // padding: EdgeInsets.zero,
                             children: [
                               Center(
                                 child: Text(
@@ -158,7 +152,6 @@ class _ObjectPopupState extends State<ObjectPopup> {
                                       .headlineMedium,
                                 ),
                               ),
-                              // const Divider(height: 45),
                               const SizedBox(height: 20),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -204,7 +197,6 @@ class _ObjectPopupState extends State<ObjectPopup> {
                                   height: getFormHeightByCategory(),
                                   child: getFormByCategory(
                                       _objCategory, localeMsg)),
-
                               const SizedBox(height: 12),
                               ActionBtnRow(
                                 isEdit: _isEdit,
@@ -212,7 +204,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
                                     _objCategory.contains("template"),
                                 submitCreate: () {
                                   if (_objCategory == LogCategories.tag.name) {
-                                    return onActionBtnPressed(localeMsg);
+                                    return submitActionTag(localeMsg);
                                   } else if (_objCategory
                                       .contains("template")) {
                                     return submitCreateTemplate(
@@ -224,7 +216,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
                                 },
                                 submitModify: () {
                                   if (_objCategory == LogCategories.tag.name) {
-                                    return onActionBtnPressed(localeMsg);
+                                    return submitActionTag(localeMsg);
                                   } else if (_objCategory
                                       .contains("template")) {
                                     return;
@@ -234,7 +226,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
                                   }
                                 },
                                 submitDelete: () =>
-                                    submitDeleteObject(localeMsg, context),
+                                    submitDeleteAny(localeMsg, context),
                               )
                             ],
                           ),
@@ -288,8 +280,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
     }
 
     for (var obj in objects) {
-      print(obj);
-      // read JSON schema
+      // Read JSON schema
       String data = await DefaultAssetBundle.of(context)
           .loadString("../API/models/schemas/${obj}_schema.json");
       final Map<String, dynamic> jsonResult = json.decode(data);
@@ -311,16 +302,16 @@ class _ObjectPopupState extends State<ObjectPopup> {
           }
         }
         categoryAttrs[obj]!.sort((a, b) => a.compareTo(b));
+        // Get examples
         var examples = List<Map<String, dynamic>>.from(jsonResult["examples"]);
         examplesAttrs[obj] =
             Map<String, String>.from(examples[0]["attributes"]);
-        print(examplesAttrs);
       }
     }
-    print(examplesAttrs);
   }
 
   getDomains() async {
+    // Get domains option for dropdown menu of physical
     final messenger = ScaffoldMessenger.of(context);
     var result = await fetchObjectsTree(
         namespace: Namespace.Organisational, isTenantMode: false);
@@ -338,9 +329,10 @@ class _ObjectPopupState extends State<ObjectPopup> {
   }
 
   getObject() async {
+    // Get object info for edit popup
     final messenger = ScaffoldMessenger.of(context);
     var errMsg = "";
-
+    // Try both id and slug since we dont know the obj's category
     for (var keyId in ["id", "slug"]) {
       var result = await fetchObject(_objId, idKey: keyId);
       switch (result) {
@@ -348,6 +340,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
           if (widget.namespace == Namespace.Logical) {
             if (["room", "building", "device", "rack", "generic"]
                 .contains(value["category"])) {
+              // templates
               switch (value["category"]) {
                 case "room":
                   _objCategory = LogCategories.room_template.name;
@@ -358,38 +351,37 @@ class _ObjectPopupState extends State<ObjectPopup> {
                 default:
                   _objCategory = LogCategories.obj_template.name;
               }
-              var encoder = new JsonEncoder.withIndent("     ");
+              var encoder = const JsonEncoder.withIndent("     ");
               _loadFileResult = encoder.convert(value);
-              // _loadFileResult = value.toString();
             } else {
               if (value["applicability"] != null) {
+                // layers
                 _objCategory = LogCategories.layer.name;
-                createObjData = value;
-                createObjDataAttrs =
-                    Map<String, String>.from(createObjData["filters"]);
-                for (var attr in createObjDataAttrs.entries) {
-                  attributesRows.add(addCustomAttrRow(attributesRows.length,
-                      givenAttrName: attr.key, givenAttrValue: attr.value));
+                objData = value;
+                objDataAttrs = Map<String, String>.from(objData["filters"]);
+                for (var attr in objDataAttrs.entries) {
+                  // add filters
+                  customAttributesRows.add(addCustomAttrRow(
+                      customAttributesRows.length,
+                      givenAttrName: attr.key,
+                      givenAttrValue: attr.value));
                 }
               } else if (value["category"] == null) {
+                // tags
                 _objCategory = LogCategories.tag.name;
                 tag = Tag.fromMap(value);
-                _localColor = Color(int.parse("0xFF${tag!.color}"));
               } else {
-                createObjData = value;
-                createObjDataAttrs =
-                    Map<String, String>.from(createObjData["attributes"]);
+                // group
+                objData = value;
+                objDataAttrs = Map<String, String>.from(objData["attributes"]);
+                _objCategory = value["category"];
               }
-
-              print("GOT OBJECT");
-              print(createObjDataAttrs);
             }
           } else {
-            createObjData = value;
-            createObjDataAttrs =
-                Map<String, String>.from(createObjData["attributes"]);
-            print("HEEEERE");
-            print(createObjDataAttrs);
+            // physical or organisational
+            objData = value;
+            objDataAttrs = Map<String, String>.from(objData["attributes"]);
+            _objCategory = value["category"];
           }
 
           return;
@@ -414,8 +406,8 @@ class _ObjectPopupState extends State<ObjectPopup> {
             TextEditingController textEditingController,
             FocusNode focusNode,
             VoidCallback onFieldSubmitted) {
-          if (createObjData["domain"] != null) {
-            textEditingController.text = createObjData["domain"];
+          if (objData["domain"] != null) {
+            textEditingController.text = objData["domain"];
           }
           return TextFormField(
             controller: textEditingController,
@@ -423,10 +415,10 @@ class _ObjectPopupState extends State<ObjectPopup> {
             decoration:
                 GetFormInputDecoration(false, "Domain", icon: Icons.edit),
             onFieldSubmitted: (String value) {
-              createObjData["domain"] = value;
+              objData["domain"] = value;
               onFieldSubmitted();
             },
-            onSaved: (newValue) => createObjData["domain"] = newValue,
+            onSaved: (newValue) => objData["domain"] = newValue,
           );
         },
         optionsViewBuilder: (BuildContext context,
@@ -499,8 +491,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
               Flexible(
                 flex: 4,
                 child: getFormField(
-                    save: (newValue) =>
-                        createObjDataAttrs[attrName!] = newValue!,
+                    save: (newValue) => objDataAttrs[attrName!] = newValue!,
                     label: "Value",
                     icon: Icons.tag_sharp,
                     isCompact: true,
@@ -511,8 +502,8 @@ class _ObjectPopupState extends State<ObjectPopup> {
                   constraints: const BoxConstraints(),
                   iconSize: 14,
                   onPressed: () {
-                    setState(() => attributesRows.removeAt(rowIdx));
-                    createObjDataAttrs.remove(attrName);
+                    setState(() => customAttributesRows.removeAt(rowIdx));
+                    objDataAttrs.remove(attrName);
                   },
                   icon: Icon(
                     Icons.delete,
@@ -526,7 +517,6 @@ class _ObjectPopupState extends State<ObjectPopup> {
   }
 
   getFormByCategory(String category, AppLocalizations localeMsg) {
-    print("get form by " + category);
     if (widget.namespace == Namespace.Physical ||
         widget.namespace == Namespace.Organisational ||
         category == LogCategories.group.name) {
@@ -534,7 +524,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
     } else if (category == LogCategories.layer.name) {
       return getLayerForm();
     } else if (category == LogCategories.tag.name) {
-      return getTagForm();
+      return TagForm(key: _tagFormKey, tag: tag);
     } else {
       //templates
       return getTemplatesForm(localeMsg);
@@ -542,8 +532,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
   }
 
   getObjectForm() {
-    attributes = categoryAttrs[_objCategory]!;
-    print(attributes);
+    List<String> attributes = categoryAttrs[_objCategory]!;
     return ListView(
       padding: EdgeInsets.zero,
       children: [
@@ -551,50 +540,50 @@ class _ObjectPopupState extends State<ObjectPopup> {
             ? getFormField(
                 save: (newValue) {
                   if (newValue != null && newValue.isNotEmpty) {
-                    createObjData["parentId"] = newValue;
+                    objData["parentId"] = newValue;
                   }
                 },
                 label: "Parent ID",
                 icon: Icons.family_restroom,
-                initial: createObjData["parentId"])
+                initial: objData["parentId"])
             : Container(),
         getFormField(
-            save: (newValue) => createObjData["name"] = newValue,
+            save: (newValue) => objData["name"] = newValue,
             label: "Name",
             icon: Icons.edit,
-            initial: createObjData["name"]),
+            initial: objData["name"]),
         _objCategory != OrgCategories.domain.name
             ? (domainList.isEmpty
                 ? getFormField(
-                    save: (newValue) => createObjData["domain"] = newValue,
+                    save: (newValue) => objData["domain"] = newValue,
                     label: "Domain",
                     icon: Icons.edit,
-                    initial: createObjData["domain"])
+                    initial: objData["domain"])
                 : domainAutoFillField())
             : Container(),
         getFormField(
-            save: (newValue) => createObjData["description"] = [newValue],
+            save: (newValue) => objData["description"] = [newValue],
             label: "Description",
             icon: Icons.edit,
             shouldValidate: false,
-            initial: createObjData["description"] != null &&
-                    List<String>.from(createObjData["description"]).isNotEmpty
-                ? createObjData["description"][0]
+            initial: objData["description"] != null &&
+                    List<String>.from(objData["description"]).isNotEmpty
+                ? objData["description"][0]
                 : null),
         _objCategory != OrgCategories.domain.name
             ? getFormField(
                 save: (newValue) {
                   var tags = newValue!.replaceAll(" ", "").split(",");
                   if (!(tags.length == 1 && tags.first == "")) {
-                    createObjData["tags"] = tags;
+                    objData["tags"] = tags;
                   }
                 },
                 label: "Tags",
                 icon: Icons.tag_sharp,
                 shouldValidate: false,
-                initial: createObjData["tags"]
+                initial: objData["tags"]
                     ?.toString()
-                    .substring(1, createObjData["tags"].toString().length - 1))
+                    .substring(1, objData["tags"].toString().length - 1))
             : Container(),
         Padding(
           padding: const EdgeInsets.only(top: 4.0, left: 6, bottom: 6),
@@ -616,22 +605,22 @@ class _ObjectPopupState extends State<ObjectPopup> {
                       "",
                   save: (newValue) {
                     if (newValue != null && newValue.isNotEmpty) {
-                      createObjDataAttrs[
-                          attributes[index].replaceFirst("*", "")] = newValue;
+                      objDataAttrs[attributes[index].replaceFirst("*", "")] =
+                          newValue;
                     }
                   },
                   label: attributes[index],
                   icon: Icons.tag_sharp,
                   isCompact: true,
                   shouldValidate: attributes[index].contains("*"),
-                  initial: createObjDataAttrs[
-                      attributes[index].replaceFirst("*", "")]);
+                  initial:
+                      objDataAttrs[attributes[index].replaceFirst("*", "")]);
             }),
           ),
         ),
         Padding(
           padding: const EdgeInsets.only(left: 4),
-          child: Column(children: attributesRows),
+          child: Column(children: customAttributesRows),
         ),
         Padding(
           padding: const EdgeInsets.only(left: 6),
@@ -639,8 +628,8 @@ class _ObjectPopupState extends State<ObjectPopup> {
             alignment: Alignment.bottomLeft,
             child: TextButton.icon(
                 onPressed: () => setState(() {
-                      attributesRows
-                          .add(addCustomAttrRow(attributesRows.length));
+                      customAttributesRows
+                          .add(addCustomAttrRow(customAttributesRows.length));
                     }),
                 icon: const Icon(Icons.add),
                 label: Text("Attribute")),
@@ -653,21 +642,21 @@ class _ObjectPopupState extends State<ObjectPopup> {
   getLayerForm() {
     return ListView(padding: EdgeInsets.zero, children: [
       getFormField(
-          save: (newValue) => createObjData["slug"] = newValue,
+          save: (newValue) => objData["slug"] = newValue,
           label: "Name",
           icon: Icons.edit,
-          initial: createObjData["slug"]),
+          initial: objData["slug"]),
       getFormField(
-          save: (newValue) => createObjData["applicability"] = newValue,
+          save: (newValue) => objData["applicability"] = newValue,
           label: "Applicability",
           icon: Icons.edit,
-          initial: createObjData["applicability"]),
+          initial: objData["applicability"]),
       Padding(
           padding: const EdgeInsets.only(top: 4.0, left: 6, bottom: 6),
           child: Text("Filters:")),
       Padding(
         padding: const EdgeInsets.only(left: 4),
-        child: Column(children: attributesRows),
+        child: Column(children: customAttributesRows),
       ),
       Padding(
         padding: const EdgeInsets.only(left: 6),
@@ -675,95 +664,14 @@ class _ObjectPopupState extends State<ObjectPopup> {
           alignment: Alignment.bottomLeft,
           child: TextButton.icon(
               onPressed: () => setState(() {
-                    attributesRows.add(addCustomAttrRow(attributesRows.length));
+                    customAttributesRows
+                        .add(addCustomAttrRow(customAttributesRows.length));
                   }),
               icon: const Icon(Icons.add),
               label: Text("Filter")),
         ),
       ),
     ]);
-  }
-
-  getTagForm() {
-    final localeMsg = AppLocalizations.of(context)!;
-    return ListView(
-      padding: EdgeInsets.zero,
-      children: [
-        getFormField(
-            save: (newValue) => _tagSlug = newValue,
-            label: "Slug",
-            icon: Icons.auto_awesome_mosaic,
-            initial: _isEdit ? tag!.slug : null),
-        getFormField(
-            save: (newValue) => _tagDescription = newValue,
-            label: "Description",
-            icon: Icons.auto_awesome_mosaic,
-            initial: _isEdit ? tag!.description : null),
-        getFormField(
-            save: (newValue) => _tagColor = newValue,
-            label: localeMsg.color,
-            icon: Icons.circle,
-            formatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'[0-9a-fA-F]'))
-            ],
-            isColor: true,
-            initial: _isEdit ? tag!.color : null),
-        Padding(
-          padding: const EdgeInsets.only(top: 8.0, bottom: 8),
-          child: Wrap(
-            alignment: WrapAlignment.end,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              _loadedImage != null || (_isEdit && tag!.image != "")
-                  ? IconButton(
-                      padding: const EdgeInsets.all(4),
-                      constraints: const BoxConstraints(),
-                      iconSize: 14,
-                      onPressed: () {
-                        setState(() {
-                          _loadedImage = null;
-                          tag!.image = "";
-                        });
-                      },
-                      icon: const Icon(
-                        Icons.cancel_outlined,
-                      ))
-                  : Container(),
-              Padding(
-                padding: const EdgeInsets.only(right: 20),
-                child: _loadedImage == null
-                    ? (_isEdit && tag!.image != ""
-                        ? Image.network(
-                            tenantUrl + tag!.image,
-                            height: 40,
-                          )
-                        : Container())
-                    : Image.memory(
-                        _loadedImage!.bytes!,
-                        height: 40,
-                      ),
-              ),
-              ElevatedButton.icon(
-                  onPressed: () async {
-                    FilePickerResult? result = await FilePicker.platform
-                        .pickFiles(
-                            type: FileType.custom,
-                            allowedExtensions: ["png", "jpg", "jpeg", "webp"],
-                            withData: true);
-                    if (result != null) {
-                      setState(() {
-                        _loadedImage = result.files.single;
-                      });
-                    }
-                  },
-                  icon: const Icon(Icons.download),
-                  label: Text(
-                      _isSmallDisplay ? "Image" : "${localeMsg.select} image")),
-            ],
-          ),
-        )
-      ],
-    );
   }
 
   getTemplatesForm(AppLocalizations localeMsg) {
@@ -812,37 +720,31 @@ class _ObjectPopupState extends State<ObjectPopup> {
     );
   }
 
-  onActionBtnPressed(AppLocalizations localeMsg) async {
+  submitActionTag(AppLocalizations localeMsg) async {
     final messenger = ScaffoldMessenger.of(context);
-    if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
-      var newTag = Tag(
-          slug: _tagSlug!,
-          description: _tagDescription!,
-          color: _tagColor!,
-          image: _loadedImage != null
-              ? "data:image/png;base64,${base64Encode(_loadedImage!.bytes!)}"
-              : "");
-      Result result;
-      if (_isEdit) {
-        var newTagMap = newTag.toMap();
-        if (_loadedImage == null && tag!.image != "") {
-          newTagMap.remove("image"); // patch and keep old one
-        }
-        result = await updateTag(tag!.slug, newTagMap);
-      } else {
-        result = await createTag(newTag);
+    Tag? newTag = _tagFormKey.currentState!.onActionBtnPressed();
+    if (newTag == null) {
+      return;
+    }
+    Result result;
+    if (_isEdit) {
+      var newTagMap = newTag.toMap();
+      if (newTag.image == "" && tag!.image != "") {
+        newTagMap.remove("image"); // patch and keep old one
       }
-      switch (result) {
-        case Success():
-          widget.parentCallback();
-          showSnackBar(messenger,
-              "${_isEdit ? localeMsg.modifyOK : localeMsg.createOK} 🥳",
-              isSuccess: true);
-          if (context.mounted) Navigator.of(context).pop();
-        case Failure(exception: final exception):
-          showSnackBar(messenger, exception.toString(), isError: true);
-      }
+      result = await updateTag(tag!.slug, newTagMap);
+    } else {
+      result = await createTag(newTag);
+    }
+    switch (result) {
+      case Success():
+        widget.parentCallback();
+        showSnackBar(messenger,
+            "${_isEdit ? localeMsg.modifyOK : localeMsg.createOK} 🥳",
+            isSuccess: true);
+        if (context.mounted) Navigator.of(context).pop();
+      case Failure(exception: final exception):
+        showSnackBar(messenger, exception.toString(), isError: true);
     }
   }
 
@@ -871,16 +773,16 @@ class _ObjectPopupState extends State<ObjectPopup> {
       _formKey.currentState!.save();
 
       if (_objCategory == LogCategories.layer.name) {
-        createObjData["filters"] = createObjDataAttrs;
+        objData["filters"] = objDataAttrs;
       } else {
-        createObjData["category"] = _objCategory;
-        createObjData["attributes"] = createObjDataAttrs;
+        objData["category"] = _objCategory;
+        objData["attributes"] = objDataAttrs;
       }
-      print(createObjData);
+      print(objData);
 
       final messenger = ScaffoldMessenger.of(context);
       final errorMessenger = ScaffoldMessenger.of(popupContext);
-      final result = await createObject(createObjData, _objCategory);
+      final result = await createObject(objData, _objCategory);
       switch (result) {
         case Success():
           widget.parentCallback();
@@ -898,19 +800,19 @@ class _ObjectPopupState extends State<ObjectPopup> {
       _formKey.currentState!.save();
 
       if (_objCategory == LogCategories.layer.name) {
-        createObjData["filters"] = createObjDataAttrs;
+        objData["filters"] = objDataAttrs;
       } else {
-        createObjData["category"] = _objCategory;
-        createObjData["attributes"] = createObjDataAttrs;
+        objData["category"] = _objCategory;
+        objData["attributes"] = objDataAttrs;
       }
 
-      createObjData.remove("lastUpdated");
-      createObjData.remove("createdDate");
-      createObjData.remove("id");
-      print(createObjData);
+      objData.remove("lastUpdated");
+      objData.remove("createdDate");
+      objData.remove("id");
+      print(objData);
 
       final messenger = ScaffoldMessenger.of(popupContext);
-      final result = await updateObject(_objId, _objCategory, createObjData);
+      final result = await updateObject(_objId, _objCategory, objData);
 
       switch (result) {
         case Success():
@@ -923,8 +825,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
     }
   }
 
-  submitDeleteObject(
-      AppLocalizations localeMsg, BuildContext popupContext) async {
+  submitDeleteAny(AppLocalizations localeMsg, BuildContext popupContext) async {
     final messenger = ScaffoldMessenger.of(context);
     final errorMessenger = ScaffoldMessenger.of(popupContext);
     var result = await deleteObject(_objId, _objCategory);
@@ -949,7 +850,6 @@ class _ObjectPopupState extends State<ObjectPopup> {
       List<TextInputFormatter>? formatters,
       String? initial,
       bool shouldValidate = true,
-      bool isColor = false,
       bool isCompact = false,
       String tipStr = ""}) {
     return Padding(
@@ -958,19 +858,6 @@ class _ObjectPopupState extends State<ObjectPopup> {
         message: tipStr != "" ? "Example: $tipStr" : "",
         child: TextFormField(
           initialValue: initial,
-          onChanged: isColor
-              ? (value) {
-                  if (value.length == 6) {
-                    setState(() {
-                      _localColor = Color(int.parse("0xFF$value"));
-                    });
-                  } else {
-                    setState(() {
-                      _localColor = null;
-                    });
-                  }
-                }
-              : null,
           onSaved: (newValue) => save(newValue),
           validator: (text) {
             if (shouldValidate) {
@@ -981,11 +868,9 @@ class _ObjectPopupState extends State<ObjectPopup> {
             return null;
           },
           inputFormatters: formatters,
-          decoration: GetFormInputDecoration(_isSmallDisplay | isCompact, label,
-              prefixText: prefix,
-              suffixText: suffix,
-              icon: icon,
-              iconColor: isColor ? _localColor : null),
+          decoration: GetFormInputDecoration(
+              _isSmallDisplay || isCompact, label,
+              prefixText: prefix, suffixText: suffix, icon: icon),
           cursorWidth: 1.3,
           style: const TextStyle(fontSize: 14),
         ),

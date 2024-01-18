@@ -97,7 +97,7 @@
   "createDomain": "Create Single Domain",
   "domainName": "Domain Name",
   "parentDomain": "Domain Parent",
-  "shouldHaveXChars": "Should have al least {X} characters",
+  "shouldHaveXChars": "Should have exactly {X} characters",
   "noDomain": "Unable to retrieve domain",
   "domain": "Domain",
   "user": "User",

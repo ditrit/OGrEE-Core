@@ -41,7 +41,7 @@ class _TagsViewState extends State<TagsView> {
     final localeMsg = AppLocalizations.of(context)!;
     final isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
     return FutureBuilder(
-        future: _loadTags ? getUsers() : null,
+        future: _loadTags ? getTags() : null,
         builder: (context, _) {
           if (_tags == null) {
             return const Center(child: CircularProgressIndicator());
@@ -111,7 +111,7 @@ class _TagsViewState extends State<TagsView> {
                           textAlignVertical: TextAlignVertical.center,
                           onChanged: (value) {
                             setState(() {
-                              _tags = searchUsers(value);
+                              _tags = searchTags(value);
                             });
                           },
                           decoration: InputDecoration(
@@ -238,14 +238,14 @@ class _TagsViewState extends State<TagsView> {
                     style: TextStyle(fontWeight: FontWeight.w600),
                   ))
                 ],
-                source: _DataSource(context, _tags!, onUserSelected),
+                source: _DataSource(context, _tags!, onTagSelected),
               ),
             ),
           );
         });
   }
 
-  getUsers() async {
+  getTags() async {
     final messenger = ScaffoldMessenger.of(context);
     final result = await fetchTags();
     switch (result) {
@@ -259,7 +259,7 @@ class _TagsViewState extends State<TagsView> {
     _loadTags = false;
   }
 
-  searchUsers(String searchText) {
+  searchTags(String searchText) {
     if (searchText.trim().isEmpty) {
       return _filterTags!.toList();
     }
@@ -280,7 +280,7 @@ class _TagsViewState extends State<TagsView> {
     }
   }
 
-  onUserSelected(int index, bool value) {
+  onTagSelected(int index, bool value) {
     if (index < 0) {
       selectedTags = [];
     } else if (value) {
