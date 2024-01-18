@@ -6,7 +6,6 @@ import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/pages/tenant_page.dart';
-import 'package:ogree_app/widgets/select_objects/logobject_popup.dart';
 import 'package:ogree_app/widgets/select_objects/object_popup.dart';
 import 'package:ogree_app/widgets/tenants/popups/domain_popup.dart';
 
@@ -109,10 +108,13 @@ class _TreeNodeTileState extends State<TreeNodeTile> {
                     )
                   : Row(
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                          child: _NodeSelector(id: widget.entry.node.id),
-                        ),
+                        widget.entry.node.id[0] == "*"
+                            ? Container()
+                            : Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 4.0),
+                                child: _NodeSelector(id: widget.entry.node.id),
+                              ),
                         TreeAppController.of(context).namespace !=
                                 Namespace.Logical
                             ? CircleAvatar(
@@ -123,7 +125,7 @@ class _TreeNodeTileState extends State<TreeNodeTile> {
                                     padding: const EdgeInsets.all(2),
                                     onPressed: () => showCustomPopup(
                                         context,
-                                        CreateObjectPopup(
+                                        ObjectPopup(
                                           namespace:
                                               TreeAppController.of(context)
                                                   .namespace,

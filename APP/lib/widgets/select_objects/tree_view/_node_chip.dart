@@ -52,7 +52,7 @@ class _NodeActionsChipState extends State<_NodeActionsChip> {
           showCustomPopup(
               context,
               namespace == Namespace.Logical
-                  ? LogicalObjectPopup(
+                  ? ObjectPopup(
                       parentCallback: () => TreeAppController.of(context).init(
                           {},
                           argNamespace: namespace,
@@ -61,7 +61,7 @@ class _NodeActionsChipState extends State<_NodeActionsChip> {
                       namespace: namespace,
                       objId: widget.node.id,
                     )
-                  : CreateObjectPopup(
+                  : ObjectPopup(
                       namespace: namespace,
                       parentCallback: () => TreeAppController.of(context).init(
                           {},

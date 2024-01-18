@@ -3,9 +3,8 @@ import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/pages/select_page.dart';
-import 'package:ogree_app/widgets/select_objects/logobject_popup.dart';
+import 'package:ogree_app/widgets/select_objects/object_popup.dart';
 import 'package:ogree_app/widgets/select_objects/treeapp_controller.dart';
-import 'object_popup.dart';
 import 'settings_view/settings_view.dart';
 import 'tree_view/custom_tree_view.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -171,9 +170,9 @@ class _ResponsiveBody extends StatelessWidget {
                   onPressed: () => showCustomPopup(
                       context,
                       namespace == Namespace.Logical
-                          ? LogicalObjectPopup(
+                          ? ObjectPopup(
                               parentCallback: callback, namespace: namespace)
-                          : CreateObjectPopup(
+                          : ObjectPopup(
                               parentCallback: callback, namespace: namespace),
                       isDismissible: true),
                   icon: const Icon(Icons.add),

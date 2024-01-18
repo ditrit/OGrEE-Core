@@ -115,7 +115,9 @@ class TreeAppController with ChangeNotifier {
     //treeController.expandAll();
     if (select) {
       for (var root in treeController.roots) {
-        selectedNodes[root.id] = true;
+        if (root.id[0] != "*") {
+          selectedNodes[root.id] = true;
+        }
         for (var descendant in root.descendants) {
           selectedNodes[descendant.id] = true;
         }
@@ -132,7 +134,9 @@ class TreeAppController with ChangeNotifier {
   }
 
   void toggleAllFrom(TreeNode node) {
-    toggleSelection(node.id);
+    if (node.id[0] != "*") {
+      toggleSelection(node.id);
+    }
     for (var descendant in node.descendants) {
       toggleSelection(descendant.id);
     }
