@@ -11,7 +11,7 @@ void main() {
     await tester.pumpWidget(LocalizationsInjApp(
       child: ResultsPage(
           dateRange: "",
-          selectedAttrs: const [],
+          selectedAttrs: [],
           selectedObjects: kDataSample["sitePI"]!,
           namespace: Namespace.Test.name),
     ));
@@ -25,7 +25,7 @@ void main() {
     await tester.pumpWidget(LocalizationsInjApp(
       child: ResultsPage(
           dateRange: "",
-          selectedAttrs: const [],
+          selectedAttrs: [],
           selectedObjects: kDataSample["siteNO"]!,
           namespace: Namespace.Test.name),
     ));

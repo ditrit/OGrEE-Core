@@ -9,7 +9,7 @@ import 'common.dart';
 void main() {
   testWidgets('SelectObjects expands and collapses tree', (tester) async {
     await tester.binding.setSurfaceSize(const Size(1000, 1000));
-    await tester.pumpWidget(const LocalizationsInjApp(
+    await tester.pumpWidget(LocalizationsInjApp(
         child: SelectObjects(
       dateRange: "",
       load: true,
@@ -34,7 +34,7 @@ void main() {
   });
 
   testWidgets('SelectObjects toogles tree selection', (tester) async {
-    await tester.pumpWidget(const LocalizationsInjApp(
+    await tester.pumpWidget(LocalizationsInjApp(
         child: SelectObjects(
       dateRange: "",
       load: true,
@@ -61,7 +61,7 @@ void main() {
   });
 
   testWidgets('SelectObjects can find an object', (tester) async {
-    await tester.pumpWidget(const LocalizationsInjApp(
+    await tester.pumpWidget(LocalizationsInjApp(
         child: Scaffold(
       body: SelectObjects(
         dateRange: "",
@@ -88,7 +88,7 @@ void main() {
   testWidgets('SelectObjects can filter objects', (tester) async {
     return;
     await tester.binding.setSurfaceSize(const Size(1000, 1000));
-    await tester.pumpWidget(const LocalizationsInjApp(
+    await tester.pumpWidget(LocalizationsInjApp(
         child: SelectObjects(
       dateRange: "",
       load: true,
