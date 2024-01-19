@@ -66,7 +66,7 @@ class _TagsPopupState extends State<TagsPopup> with TickerProviderStateMixin {
     return Center(
       child: Container(
         width: 500,
-        constraints: const BoxConstraints(maxHeight: 400),
+        constraints: const BoxConstraints(maxHeight: 380),
         margin: const EdgeInsets.symmetric(horizontal: 20),
         decoration: PopupDecoration,
         child: Padding(
@@ -89,7 +89,7 @@ class _TagsPopupState extends State<TagsPopup> with TickerProviderStateMixin {
                 ),
                 const SizedBox(height: 10),
                 SizedBox(
-                  height: 270,
+                  height: 250,
                   child: Padding(
                     padding: const EdgeInsets.only(top: 16.0),
                     child: TagForm(key: _tagFormKey, tag: tag),

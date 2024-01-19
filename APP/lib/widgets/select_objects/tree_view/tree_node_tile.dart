@@ -108,7 +108,7 @@ class _TreeNodeTileState extends State<TreeNodeTile> {
                     )
                   : Row(
                       children: [
-                        widget.entry.node.id[0] == "*"
+                        widget.entry.node.id[0] == starSymbol
                             ? Container()
                             : Padding(
                                 padding:

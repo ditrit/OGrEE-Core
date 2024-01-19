@@ -144,9 +144,9 @@ class _ObjectPopupState extends State<ObjectPopup> {
                                 child: Text(
                                   _isEdit
                                       ? (_objCategory.contains("template")
-                                          ? "Visualiser template"
-                                          : "Modifier l'objet")
-                                      : "Créer un nouveau objet",
+                                          ? localeMsg.viewTemplate
+                                          : localeMsg.modifyObj)
+                                      : localeMsg.createObj,
                                   style: Theme.of(context)
                                       .textTheme
                                       .headlineMedium,
@@ -156,7 +156,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Text("Type d'objet :"),
+                                  Text(localeMsg.objType),
                                   const SizedBox(width: 20),
                                   SizedBox(
                                     height: 35,
@@ -412,8 +412,9 @@ class _ObjectPopupState extends State<ObjectPopup> {
           return TextFormField(
             controller: textEditingController,
             focusNode: focusNode,
-            decoration:
-                GetFormInputDecoration(false, "Domain", icon: Icons.edit),
+            decoration: GetFormInputDecoration(
+                false, AppLocalizations.of(context)!.domain,
+                icon: Icons.edit),
             onFieldSubmitted: (String value) {
               objData["domain"] = value;
               onFieldSubmitted();
@@ -476,13 +477,13 @@ class _ObjectPopupState extends State<ObjectPopup> {
                 flex: 5,
                 child: getFormField(
                     save: (newValue) => attrName = newValue,
-                    label: "Attribute",
+                    label: AppLocalizations.of(context)!.attribute,
                     icon: Icons.tag_sharp,
                     isCompact: true,
                     initial: givenAttrName),
               ),
               Padding(
-                padding: EdgeInsets.only(right: 6),
+                padding: const EdgeInsets.only(right: 6),
                 child: Icon(
                   Icons.arrow_forward,
                   color: Colors.blue.shade600,
@@ -533,6 +534,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
 
   getObjectForm() {
     List<String> attributes = categoryAttrs[_objCategory]!;
+    final localeMsg = AppLocalizations.of(context)!;
     return ListView(
       padding: EdgeInsets.zero,
       children: [
@@ -549,14 +551,14 @@ class _ObjectPopupState extends State<ObjectPopup> {
             : Container(),
         getFormField(
             save: (newValue) => objData["name"] = newValue,
-            label: "Name",
+            label: localeMsg.name,
             icon: Icons.edit,
             initial: objData["name"]),
         _objCategory != OrgCategories.domain.name
             ? (domainList.isEmpty
                 ? getFormField(
                     save: (newValue) => objData["domain"] = newValue,
-                    label: "Domain",
+                    label: localeMsg.domain,
                     icon: Icons.edit,
                     initial: objData["domain"])
                 : domainAutoFillField())
@@ -587,34 +589,34 @@ class _ObjectPopupState extends State<ObjectPopup> {
             : Container(),
         Padding(
           padding: const EdgeInsets.only(top: 4.0, left: 6, bottom: 6),
-          child: Text("Attributes:"),
+          child: Text(localeMsg.attributes),
         ),
         SizedBox(
           height: (attributes.length ~/ 2 + attributes.length % 2) * 60,
           child: GridView.count(
-            physics: NeverScrollableScrollPhysics(),
+            physics: const NeverScrollableScrollPhysics(),
             childAspectRatio: 3.5,
             shrinkWrap: true,
-            padding: EdgeInsets.only(left: 4),
+            padding: const EdgeInsets.only(left: 4),
             // Create a grid with 2 columns
             crossAxisCount: 2,
             children: List.generate(attributes.length, (index) {
               return getFormField(
                   tipStr: examplesAttrs[_objCategory]
-                          ?[attributes[index].replaceFirst("*", "")] ??
+                          ?[attributes[index].replaceFirst(starSymbol, "")] ??
                       "",
                   save: (newValue) {
                     if (newValue != null && newValue.isNotEmpty) {
-                      objDataAttrs[attributes[index].replaceFirst("*", "")] =
-                          newValue;
+                      objDataAttrs[attributes[index]
+                          .replaceFirst(starSymbol, "")] = newValue;
                     }
                   },
                   label: attributes[index],
                   icon: Icons.tag_sharp,
                   isCompact: true,
-                  shouldValidate: attributes[index].contains("*"),
-                  initial:
-                      objDataAttrs[attributes[index].replaceFirst("*", "")]);
+                  shouldValidate: attributes[index].contains(starSymbol),
+                  initial: objDataAttrs[
+                      attributes[index].replaceFirst(starSymbol, "")]);
             }),
           ),
         ),
@@ -632,7 +634,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
                           .add(addCustomAttrRow(customAttributesRows.length));
                     }),
                 icon: const Icon(Icons.add),
-                label: Text("Attribute")),
+                label: Text(localeMsg.attribute)),
           ),
         ),
       ],
@@ -640,20 +642,21 @@ class _ObjectPopupState extends State<ObjectPopup> {
   }
 
   getLayerForm() {
+    final localeMsg = AppLocalizations.of(context)!;
     return ListView(padding: EdgeInsets.zero, children: [
       getFormField(
           save: (newValue) => objData["slug"] = newValue,
-          label: "Name",
+          label: localeMsg.name,
           icon: Icons.edit,
           initial: objData["slug"]),
       getFormField(
           save: (newValue) => objData["applicability"] = newValue,
-          label: "Applicability",
+          label: localeMsg.applicability,
           icon: Icons.edit,
           initial: objData["applicability"]),
       Padding(
           padding: const EdgeInsets.only(top: 4.0, left: 6, bottom: 6),
-          child: Text("Filters:")),
+          child: Text(localeMsg.filtersTwo)),
       Padding(
         padding: const EdgeInsets.only(left: 4),
         child: Column(children: customAttributesRows),
@@ -668,7 +671,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
                         .add(addCustomAttrRow(customAttributesRows.length));
                   }),
               icon: const Icon(Icons.add),
-              label: Text("Filter")),
+              label: Text(localeMsg.filter)),
         ),
       ),
     ]);
@@ -778,7 +781,6 @@ class _ObjectPopupState extends State<ObjectPopup> {
         objData["category"] = _objCategory;
         objData["attributes"] = objDataAttrs;
       }
-      print(objData);
 
       final messenger = ScaffoldMessenger.of(context);
       final errorMessenger = ScaffoldMessenger.of(popupContext);
@@ -809,7 +811,6 @@ class _ObjectPopupState extends State<ObjectPopup> {
       objData.remove("lastUpdated");
       objData.remove("createdDate");
       objData.remove("id");
-      print(objData);
 
       final messenger = ScaffoldMessenger.of(popupContext);
       final result = await updateObject(_objId, _objCategory, objData);
@@ -855,7 +856,9 @@ class _ObjectPopupState extends State<ObjectPopup> {
     return Padding(
       padding: FormInputPadding,
       child: Tooltip(
-        message: tipStr != "" ? "Example: $tipStr" : "",
+        message: tipStr != ""
+            ? "${AppLocalizations.of(context)!.example} $tipStr"
+            : "",
         child: TextFormField(
           initialValue: initial,
           onSaved: (newValue) => save(newValue),

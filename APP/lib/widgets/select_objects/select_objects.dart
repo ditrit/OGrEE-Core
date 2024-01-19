@@ -162,22 +162,16 @@ class _ResponsiveBody extends StatelessWidget {
                 child: IconButton(
                   padding: EdgeInsets.all(0.0),
                   iconSize: 24,
-                  // splashRadius: 20,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue.shade600,
                     foregroundColor: Colors.white,
                   ),
                   onPressed: () => showCustomPopup(
                       context,
-                      namespace == Namespace.Logical
-                          ? ObjectPopup(
-                              parentCallback: callback, namespace: namespace)
-                          : ObjectPopup(
-                              parentCallback: callback, namespace: namespace),
+                      ObjectPopup(
+                          parentCallback: callback, namespace: namespace),
                       isDismissible: true),
                   icon: const Icon(Icons.add),
-                  // label: Text(
-                  //     "${AppLocalizations.of(context)!.create} ${AppLocalizations.of(context)!.domain}"),
                 ),
               ),
             ),

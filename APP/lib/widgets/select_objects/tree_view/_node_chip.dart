@@ -27,13 +27,13 @@ class _NodeActionsChipState extends State<_NodeActionsChip> {
         ),
       )
     ];
-    if (namespace != Namespace.Logical || widget.node.id[0] != "*") {
+    if (namespace != Namespace.Logical || widget.node.id[0] != starSymbol) {
       menuEntries.add(
         PopupMenuItem(
           value: 2,
           child: ListTile(
             dense: true,
-            title: Text("View and edit this node"),
+            title: Text(AppLocalizations.of(context)!.viewEditNode),
             contentPadding: const EdgeInsets.symmetric(horizontal: 4),
             leading: const Icon(Icons.edit, color: _kDarkBlue),
           ),
@@ -51,25 +51,12 @@ class _NodeActionsChipState extends State<_NodeActionsChip> {
         } else {
           showCustomPopup(
               context,
-              namespace == Namespace.Logical
-                  ? ObjectPopup(
-                      parentCallback: () => TreeAppController.of(context).init(
-                          {},
-                          argNamespace: namespace,
-                          reload: true,
-                          isTenantMode: true),
-                      namespace: namespace,
-                      objId: widget.node.id,
-                    )
-                  : ObjectPopup(
-                      namespace: namespace,
-                      parentCallback: () => TreeAppController.of(context).init(
-                          {},
-                          argNamespace: namespace,
-                          reload: true,
-                          isTenantMode: true),
-                      objId: widget.node.id,
-                    ),
+              ObjectPopup(
+                namespace: namespace,
+                parentCallback: () => TreeAppController.of(context).init({},
+                    argNamespace: namespace, reload: true, isTenantMode: true),
+                objId: widget.node.id,
+              ),
               isDismissible: true);
         }
       },

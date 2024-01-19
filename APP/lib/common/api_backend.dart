@@ -85,7 +85,8 @@ Future<Result<List<String>, Exception>> loginAPI(String email, String password,
     if (response.statusCode == 200) {
       data = (Map<String, dynamic>.from(data["account"]));
       token = data["token"]!;
-      if (data["isTenant"] == null && data["roles"]["*"] == "manager") {
+      if (data["isTenant"] == null &&
+          data["roles"][allDomainsTag] == "manager") {
         // Not tenant mode, but tenant admin
         isTenantAdmin = true;
         tenantUrl = apiUrl;
