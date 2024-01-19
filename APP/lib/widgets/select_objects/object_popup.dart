@@ -547,7 +547,8 @@ class _ObjectPopupState extends State<ObjectPopup> {
                 },
                 label: "Parent ID",
                 icon: Icons.family_restroom,
-                initial: objData["parentId"])
+                initial: objData["parentId"],
+                shouldValidate: widget.namespace != Namespace.Organisational)
             : Container(),
         getFormField(
             save: (newValue) => objData["name"] = newValue,
@@ -812,7 +813,8 @@ class _ObjectPopupState extends State<ObjectPopup> {
       objData.remove("createdDate");
       objData.remove("id");
 
-      final messenger = ScaffoldMessenger.of(popupContext);
+      final messenger = ScaffoldMessenger.of(context);
+      final errorMessenger = ScaffoldMessenger.of(popupContext);
       final result = await updateObject(_objId, _objCategory, objData);
 
       switch (result) {
@@ -821,7 +823,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
           showSnackBar(messenger, localeMsg.modifyOK, isSuccess: true);
           if (context.mounted) Navigator.of(context).pop();
         case Failure(exception: final exception):
-          showSnackBar(messenger, exception.toString(), isError: true);
+          showSnackBar(errorMessenger, exception.toString(), isError: true);
       }
     }
   }
