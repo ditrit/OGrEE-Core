@@ -45,14 +45,14 @@ jobs:
         - name: 🆕 Create Branch release
           uses: peterjgrainger/action-create-branch@v2.4.0
           env:
-            GITHUB_TOKEN: ${{ secrets.SVC_GITHUB_TOKEN }}
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           with:
             branch: ${{ env.BRANCH_RELEASE }}
             sha: "${{ env.RELEASE_CANDIDATE_SHA }}"
   
         - uses: actions/checkout@v4
           with:
-            token: ${{ secrets.SVC_GITHUB_TOKEN }}
+            token: ${{ secrets.GITHUB_TOKEN }}
             ref: ${{ env.BRANCH_RELEASE }}
             clean: true
             fetch-depth: "0"
@@ -65,7 +65,7 @@ jobs:
           uses: ./.github/actions/utils/wait-job
           with:
             BRANCH: ${{ env.BRANCH_RELEASE }}
-            GITHUB_TOKEN: ${{ secrets.SVC_GITHUB_TOKEN }}
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
         - name: 🗑️ Delete Release Candidate branch
           continue-on-error: true
