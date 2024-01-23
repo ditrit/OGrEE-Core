@@ -142,6 +142,13 @@ func TestLabelColorOk(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestLabelBackgroundOk(t *testing.T) {
+	controller, _, _ := interactLabelTestSetup(t)
+
+	err := controller.InteractObject("/Physical/BASIC/A/R1/A01", "labelBackground", "C0FFEE", false)
+	assert.Nil(t, err)
+}
+
 func TestContentOk(t *testing.T) {
 	controller, _, _ := interactLabelTestSetup(t)
 	err := controller.InteractObject("/Physical/BASIC/A/R1/A01", "content", true, false)

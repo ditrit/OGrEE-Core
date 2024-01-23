@@ -510,6 +510,17 @@ func setLabelFont(path string, values []any) (map[string]any, error) {
 	}
 }
 
+func setLabelBackground(path string, values []any) (map[string]any, error) {
+	if len(values) != 1 {
+		return nil, fmt.Errorf("only 1 value expected")
+	}
+	c, ok := utils.ValToColor(values[0])
+	if !ok {
+		return nil, fmt.Errorf("please provide a valid 6 length hex value for the color")
+	}
+	return nil, cmd.C.InteractObject(path, "labelBackground", c, false)
+}
+
 func addToStringMap[T any](stringMap string, key string, val T) (string, bool) {
 	m := map[string]T{}
 	if stringMap != "" {
@@ -744,6 +755,8 @@ func (n *updateObjNode) execute() (interface{}, error) {
 				_, err = setLabel(path, values, n.hasSharpe)
 			case "labelFont":
 				_, err = setLabelFont(path, values)
+			case "labelBackground":
+				_, err = setLabelBackground(path, values)
 			case "separators+":
 				_, err = addRoomSeparator(path, values)
 			case "pillars+":
