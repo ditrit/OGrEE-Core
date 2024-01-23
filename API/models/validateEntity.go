@@ -2,7 +2,10 @@ package models
 
 import (
 	"embed"
+	"encoding/json"
 	"fmt"
+	"io"
+	"os"
 	"p3/repository"
 	u "p3/utils"
 	"strings"
@@ -175,7 +178,31 @@ func validateJsonSchema(entity int, t map[string]interface{}) (bool, *u.Error) {
 			println(v.GoString())
 			// Format errors array
 			errSlice := []string{}
+			// Open and unmarshall types.json
+			typesJson, err := os.Open("models/schemas/refs/types.json")
+			if err != nil {
+				return false, &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
+			}
+			defer typesJson.Close()
+			typesBytes, _ := io.ReadAll(typesJson)
+			var types map[string]any
+			json.Unmarshal(typesBytes, &types)
+			// Remove types that do not have a "pattern" attribute
+			definitions := types["definitions"].(map[string]any)
+			for key, definition := range definitions {
+				if _, ok := definition.(map[string]any)["pattern"]; !ok {
+					delete(definitions, key)
+				}
+			}
 			for _, schErr := range v.BasicOutput().Errors {
+				// Check all remaining types
+				for _, definition := range definitions {
+					// If the pattern is in the error message
+					if strings.Contains(schErr.Error, definition.(map[string]any)["pattern"].(string)) {
+						// Substitute it for the more user-friendly description
+						schErr.Error = "should be " + definition.(map[string]any)["description"].(string)
+					}
+				}
 				if len(schErr.Error) > 0 && !strings.Contains(schErr.Error, "doesn't validate with") {
 					if len(schErr.InstanceLocation) > 0 {
 						errSlice = append(errSlice, schErr.InstanceLocation+" "+schErr.Error)
