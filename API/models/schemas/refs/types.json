@@ -5,6 +5,10 @@
             "pattern": "^[0-9a-fA-F]{6}$",
             "description": "a 6 length hex value (e.g. 'C0FFEE')"
         },
+        "colorTemplate": {
+            "pattern": "(^[0-9a-fA-F]{6}$)|(^@[a-zA-Z0-9-]+$)|(^$)",
+            "description": "a 6 length hex value or '@[color name]' (e.g. 'C0FFEE', '@blue')"
+        },
         "metricImperialUnit": {
             "enum": ["mm", "cm", "m", "f"],
             "description": "'mm', 'cm', 'm' or 'f'"
@@ -14,20 +18,20 @@
             "description": "'mm', 'cm', 'm', 'f', 'U' or 'OU'"
         },
         "vector2": {
-            "pattern": "^\\s*{\\s*\"x\"\\s*:\\s*([-|+]?[0-9]*[.]?)?[0-9]+\\s*,\\s*\"y\"\\s*:\\s*([-|+]?[0-9]*[.]?)?[0-9]+\\s*}\\s*$",
-            "description": "a vector2 (e.g. '{\"x\": 0.1, \"y\": 2.3}', '{\"x\": +.1, \"y\": -2}', '{\"x\": |3, \"y\": .4}')"
+            "pattern": "^\\s*{\\s*\"x\"\\s*:\\s*((-|\\+)?[0-9]*[.]?)?[0-9]+\\s*,\\s*\"y\"\\s*:\\s*((-|\\+)?[0-9]*[.]?)?[0-9]+\\s*}\\s*$",
+            "description": "a vector2 (e.g. '{\"x\": 2.5, \"y\": 3}', '{\"x\": -3.5, \"y\": -3}')"
         },
         "vector3": {
-            "pattern": "^\\s*{\\s*\"x\"\\s*:\\s*([-|+]?[0-9]*[.]?)?[0-9]+\\s*,\\s*\"y\"\\s*:\\s*([-|+]?[0-9]*[.]?)?[0-9]+\\s*,\\s*\"z\"\\s*:\\s*([-|+]?[0-9]*[.]?)?[0-9]+\\s*}\\s*$",
-            "description": "a vector3 (e.g. '{\"x\": 0.1, \"y\": 2, \"z\": .3}', '{\"x\": |1, \"y\": +2, \"z\": -3}')"
+            "pattern": "^\\s*{\\s*\"x\"\\s*:\\s*((-|\\+)?[0-9]*[.]?)?[0-9]+\\s*,\\s*\"y\"\\s*:\\s*((-|\\+)?[0-9]*[.]?)?[0-9]+\\s*,\\s*\"z\"\\s*:\\s*((-|\\+)?[0-9]*[.]?)?[0-9]+\\s*}\\s*$",
+            "description": "a vector3 (e.g. '{\"x\": 2, \"y\": 2.5, \"z\": 3.33}', '{\"x\": 2, \"y\": -4, \"z\": -3.5}')"
         },
         "float": {
             "pattern": "^[-]?([0-9]*[.])?[0-9]+$",
-            "description": "a floating point number (e.g. '3.14', '1', '.2')"
+            "description": "a floating point number (e.g. '3.14', '-2.72', '1', '-2')"
         },
         "clearanceVector": {
             "pattern": "^\\[(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:,\\s*(?:\\d+(?:\\.\\d*)?|\\.\\d+)){5}\\]$",
-            "description": "six floating point numbers inside square brackets (e.g. '[0, .1, 0.2, 3, .4, 5.6]'"
+            "description": "six floating point numbers inside square brackets (e.g. '[2, 2.72, 3, 3.14, 4, 4.5]'"
         },
         "slug": {
             "pattern": "^[a-z0-9-_]+$",
