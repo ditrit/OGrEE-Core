@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -126,6 +127,8 @@ func ValTo3dRotation(val any) ([]float64, error) {
 		front, rear, left, right, top, bottom`)
 }
 
+var ErrShouldBeAString = errors.New("should be a string")
+
 func ValToString(val any, name string) (string, error) {
 	intVal, isInt := val.(int)
 	if isInt {
@@ -133,7 +136,7 @@ func ValToString(val any, name string) (string, error) {
 	}
 	stringVal, ok := val.(string)
 	if !ok {
-		return "", fmt.Errorf("%s should be a string", name)
+		return "", fmt.Errorf("%s %w", name, ErrShouldBeAString)
 	}
 	return stringVal, nil
 }
@@ -163,10 +166,6 @@ func ValToColor(color interface{}) (string, bool) {
 
 		if IsFloat(color) {
 			colorStr = strconv.FormatFloat(color.(float64), 'f', -1, 64)
-		}
-
-		for len(colorStr) < 6 {
-			colorStr = "0" + colorStr
 		}
 
 		if len(colorStr) != 6 {

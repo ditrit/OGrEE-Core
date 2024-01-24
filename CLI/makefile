@@ -22,11 +22,17 @@ DOCKER_PREFIX=docker run --rm -v $(shell pwd):/workdir -w /workdir golang:1.19.6
 .PHONY: main mac win
 
 main:
+	eval $(BUILD_COMMAND)
+linux:
 	eval $(LINUX_COMMAND)
 mac: 
 	eval $(MAC_COMMAND)
 win: 
 	eval $(WIN_COMMAND)
+allos: 
+	eval $(MAC_COMMAND)
+	eval $(WIN_COMMAND)
+	eval $(LINUX_COMMAND)
 
 docker:
 	$(DOCKER_PREFIX) "$(LINUX_COMMAND)"

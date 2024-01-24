@@ -112,6 +112,10 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 	router.HandleFunc("/api/{entity}s/{id}",
 		controllers.GetEntity).Methods("GET", "HEAD", "OPTIONS")
 
+	//GET LAYER
+	router.HandleFunc("/api/layers/{slug}/objects",
+		controllers.GetLayerObjects).Methods("GET", "HEAD", "OPTIONS")
+
 	// GET ALL ENTITY
 	router.HandleFunc("/api/{entity}s",
 		controllers.GetAllEntities).Methods("HEAD", "GET")

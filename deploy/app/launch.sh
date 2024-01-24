@@ -1,14 +1,16 @@
 #!/bin/bash
 
 portWeb=8080
-portBack=8082
+portBack=8081
 forceStop=false
-while getopts w:b:f flag
+isMac=false
+while getopts w:b:fm flag
 do
     case "$flag" in
         w) portWeb=${OPTARG};;
         b) portBack=${OPTARG};;
         f) forceStop=true;;
+        m) isMac=true;;
     esac
 done
 
@@ -38,6 +40,11 @@ echo "Launch $containername container"
 docker run --restart always --name $containername -p $portWeb:80 -v $assetsDir:/usr/share/nginx/html/assets/assets/custom -d ogree-app:latest
 
 # compile and run back
-cd ../BACK/docker-backend
-docker run --rm -v $(pwd):/workdir -w /workdir golang go build -o ogree_app_backend
+cd ../BACK/app
+if $isMac; then
+    echo "Compiling backend for macOS"
+    docker run --rm -v $(pwd):/workdir -w /workdir -e GOOS=darwin golang go build -o ogree_app_backend
+else
+    docker run --rm -v $(pwd):/workdir -w /workdir -e GOOS=linux golang go build -o ogree_app_backend
+fi
 ./ogree_app_backend -port $portBack

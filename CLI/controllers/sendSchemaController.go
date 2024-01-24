@@ -12,10 +12,18 @@ import (
 	"strings"
 )
 
+func serialiseVector(attributes map[string]interface{}, attributeName string) {
+	if _, isString := attributes[attributeName].(string); isString {
+		attributes[attributeName] = serialiseStringVector(attributes, attributeName)
+	} else {
+		attributes[attributeName] = serialiseFloatVector(attributes, attributeName)
+	}
+}
+
 // Serialising size & posXY is inefficient but
 // the team wants it for now
 // "size":"[25,29.4,0]" -> "size": "{\"x\":25,\"y\":29.4,\"z\":0}"
-func serialiseAttr(attr map[string]interface{}, want string) string {
+func serialiseStringVector(attr map[string]interface{}, want string) string {
 	var newSize string
 	if size, ok := attr[want].(string); ok {
 		left := strings.Index(size, "[")
@@ -51,7 +59,15 @@ func serialiseAttr(attr map[string]interface{}, want string) string {
 			newSize = "{" + newSize + "}"
 
 			if len(nums) == 3 && want == "size" {
-				attr["height"] = nums[2]
+				if attr["shape"] == "sphere" || attr["shape"] == "cylinder" {
+					attr["diameter"] = nums[2]
+					if attr["shape"] == "cylinder" {
+						attr["height"] = nums[1]
+					}
+					return ""
+				} else {
+					attr["height"] = nums[2]
+				}
 			}
 		}
 	}
@@ -60,7 +76,7 @@ func serialiseAttr(attr map[string]interface{}, want string) string {
 
 // Same utility func as above but we have an arbitrary array
 // and want to cast it to -> "size": "{\"x\":25,\"y\":29.4,\"z\":0}"
-func serialiseAttr2(attr map[string]interface{}, want string) string {
+func serialiseFloatVector(attr map[string]interface{}, want string) string {
 	var newSize string
 	if items, ok := attr[want].([]float64); ok {
 		coords := []string{"x", "y", "z"}
@@ -93,7 +109,15 @@ func serialiseAttr2(attr map[string]interface{}, want string) string {
 		newSize = "{" + newSize + "}"
 
 		if len(items) == 3 && want == "size" {
-			attr["height"] = strconv.FormatFloat(items[2], 'G', -1, 64)
+			if attr["shape"] == "sphere" || attr["shape"] == "cylinder" {
+				attr["diameter"] = strconv.FormatFloat(items[2], 'G', -1, 64)
+				if attr["shape"] == "cylinder" {
+					attr["height"] = strconv.FormatFloat(items[1], 'G', -1, 64)
+				}
+				return ""
+			} else {
+				attr["height"] = strconv.FormatFloat(items[2], 'G', -1, 64)
+			}
 		}
 	}
 	return newSize

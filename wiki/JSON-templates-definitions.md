@@ -1,4 +1,5 @@
-# Contents
+# Contents <!-- omit in toc -->
+
 - [Building template](#building-template)
 - [Room template](#room-template)
   - [Separators definition](#separators-definition)
@@ -10,6 +11,7 @@
 - [Colors definition](#colors-definition)
 
 # Building template
+
 **This template is still in progress.**
 ```json
 {
@@ -137,7 +139,7 @@ string | orientation | -
 {
   "slug"        : "",
   "description" : "",
-  "category"    : "rack|device",
+  "category"    : "rack|device|generic",
   "sizeWDHmm"   : [0,0,0],
   "fbxModel"    : "",
   "attributes"  : {
@@ -157,7 +159,7 @@ string                     | category    | "rack" or "device"
 float[3]                   | sizeWDHmm   | [width,depth,height] in mm.
 string                     | fbxModel    | Can be left blank. If completed, the client will download the 3D model with the TriLib plugin. The url has to be the direct link to a ".fbx" file.
 Dictrionary<string,string> | attributes  | Custom attributes used to define the object, in the `"key":"value"` format.  
-string                     | type        | **Only used for devices.** Complete *deviceType* attribute of a device.
+string                     | type        | **Not used for racks** Type of the device/generic object (type attribute).
 struct[]                   | colors      | Custom colors used only in the current json template. ([See below](#Colors-definition))
 struct[]                   | components  | Sub-parts of the object, with OgreeObject properties. ([See below](#Componentsslots-definition))
 struct[]                   | slots       | Slots to place devices. ([See below](#Componentsslots-definition))

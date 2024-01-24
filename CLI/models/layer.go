@@ -12,6 +12,7 @@ const (
 	LayerApplicability = "applicability"
 	LayerFilters       = "filters"
 	LayerFiltersRemove = LayerFilters + "-"
+	LayerFiltersAdd    = LayerFilters + "+"
 )
 
 var pluralizeClient = pluralize.NewClient()
@@ -51,12 +52,6 @@ func (layer UserDefinedLayer) Matches(path string) bool {
 		PhysicalIDToPath(layer.Applicability),
 		"/",
 	)
-
-	// special case different to the library used,
-	// path/to does not match path/to/**
-	if strings.HasSuffix(applicability, "/**") && strings.TrimSuffix(applicability, "/**") == path {
-		return false
-	}
 
 	match, err := doublestar.Match(applicability, path)
 
@@ -156,6 +151,10 @@ var (
 		name:       "#corridors",
 		apiFilters: map[string]string{"category": "corridor"},
 	}
+	GenericsLayer = AutomaticLayer{
+		name:       "#generics",
+		apiFilters: map[string]string{"category": "generic"},
+	}
 )
 
 var (
@@ -180,6 +179,14 @@ var LayersByEntity = map[int][]LayersFactory{
 		LayerByCategory{
 			layer:    RacksLayer,
 			category: "rack",
+		},
+		LayerByCategory{
+			layer:    GenericsLayer,
+			category: "generic",
+		},
+		LayerByAttribute{
+			category:  "generic",
+			attribute: "type",
 		},
 	},
 	RACK: {

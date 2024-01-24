@@ -1,4 +1,4 @@
-name: Publish docs to Wiki
+name: 📚 Publish docs to Wiki
 
 # Trigger this action only if there are changes pushed to the wiki/** directory under the main branch
 on:

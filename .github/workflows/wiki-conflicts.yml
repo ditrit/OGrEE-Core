@@ -1,4 +1,4 @@
-name: Verify conflicts in Wiki
+name: 📚 Verify conflicts in Wiki
 
 # Trigger this action only if there are changes pushed to the wiki/** directory in a pull request
 on:

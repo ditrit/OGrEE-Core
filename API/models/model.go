@@ -108,6 +108,14 @@ func updateOldObjWithPatch(old map[string]interface{}, patch map[string]interfac
 // Entity handlers
 
 func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
+	tags, tagsPresent := getTags(t)
+	if tagsPresent {
+		err := verifyTagList(tags)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	if err := prepareCreateEntity(entity, t, userRoles); err != nil {
 		return nil, err
 	}
@@ -115,14 +123,6 @@ func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]Rol
 	return WithTransaction(func(ctx mongo.SessionContext) (map[string]any, error) {
 		if entity == u.TAG {
 			err := createTagImage(ctx, t)
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		tags, tagsPresent := getTags(t)
-		if tagsPresent {
-			err := verifyTagList(ctx, tags)
 			if err != nil {
 				return nil, err
 			}
@@ -181,14 +181,11 @@ func GetHierarchyObjectById(hierarchyName string, filters u.RequestFilters, user
 }
 
 func GetObject(req bson.M, entityStr string, filters u.RequestFilters, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
-	objectAny, err := WithTransaction(func(ctx mongo.SessionContext) (any, error) {
-		return repository.GetObject(ctx, req, entityStr, filters)
-	})
+	object, err := repository.GetObject(req, entityStr, filters)
+
 	if err != nil {
 		return nil, err
 	}
-
-	object := objectAny.(map[string]any)
 
 	//Remove _id
 	object = fixID(object)
@@ -613,12 +610,9 @@ func DeleteHierarchicalObject(entity string, id string, userRoles map[string]Rol
 
 func DeleteNonHierarchicalObject(entity, slug string) *u.Error {
 	req := bson.M{"slug": slug}
-
-	_, err := WithTransaction(func(ctx mongo.SessionContext) (any, error) {
-		return nil, repository.DeleteObject(ctx, entity, req)
-	})
-
-	return err
+	ctx, cancel := u.Connect()
+	defer cancel()
+	return repository.DeleteObject(ctx, entity, req)
 }
 
 func prepareUpdateObject(ctx mongo.SessionContext, entity int, id string, updateData, oldObject map[string]any, userRoles map[string]Role) *u.Error {
@@ -630,7 +624,7 @@ func prepareUpdateObject(ctx mongo.SessionContext, entity int, id string, update
 	}
 
 	// tag list edition support
-	err := addAndRemoveFromTags(ctx, entity, id, updateData)
+	err := addAndRemoveFromTags(entity, id, updateData)
 	if err != nil {
 		return err
 	}
@@ -674,66 +668,66 @@ func UpdateObject(entityStr string, id string, updateData map[string]interface{}
 		idFilter = bson.M{"id": id}
 	}
 
-	result, err := WithTransaction(func(ctx mongo.SessionContext) (interface{}, error) {
-		//Update timestamp requires first obj retrieval
-		//there isn't any way for mongoDB to make a field
-		//immutable in a document
-		var oldObj map[string]any
-		var err *u.Error
-		if entityStr == u.HIERARCHYOBJS_ENT {
-			oldObj, err = GetHierarchyObjectById(id, u.RequestFilters{}, userRoles)
-			if err == nil {
-				entityStr = oldObj["category"].(string)
-			}
-		} else {
-			oldObj, err = GetObject(idFilter, entityStr, u.RequestFilters{}, userRoles)
+	//Update timestamp requires first obj retrieval
+	//there isn't any way for mongoDB to make a field
+	//immutable in a document
+	var oldObj map[string]any
+	var err *u.Error
+	if entityStr == u.HIERARCHYOBJS_ENT {
+		oldObj, err = GetHierarchyObjectById(id, u.RequestFilters{}, userRoles)
+		if err == nil {
+			entityStr = oldObj["category"].(string)
 		}
+	} else {
+		oldObj, err = GetObject(idFilter, entityStr, u.RequestFilters{}, userRoles)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	entity := u.EntityStrToInt(entityStr)
+
+	// Check if permission is only readonly
+	if u.IsEntityHierarchical(entity) && oldObj["description"] == nil {
+		// Description is always present, unless GetEntity was called with readonly permission
+		return nil, &u.Error{Type: u.ErrUnauthorized,
+			Message: "User does not have permission to change this object"}
+	}
+
+	tags, tagsPresent := getTags(updateData)
+
+	// Update old object data with patch data
+	if isPatch {
+		if tagsPresent {
+			return nil, &u.Error{
+				Type:    u.ErrBadFormat,
+				Message: "Tags cannot be modified in this way, use tags+ and tags-",
+			}
+		}
+
+		var formattedOldObj map[string]interface{}
+		// Convert primitive.A and similar types
+		bytes, _ := json.Marshal(oldObj)
+		json.Unmarshal(bytes, &formattedOldObj)
+		// Update old with new
+		err := updateOldObjWithPatch(formattedOldObj, updateData)
+		if err != nil {
+			return nil, &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
+		}
+
+		updateData = formattedOldObj
+		// Remove API set fields
+		delete(updateData, "id")
+		delete(updateData, "lastUpdated")
+		delete(updateData, "createdDate")
+	} else if tagsPresent {
+		err := verifyTagList(tags)
 		if err != nil {
 			return nil, err
 		}
+	}
 
-		entity := u.EntityStrToInt(entityStr)
-
-		// Check if permission is only readonly
-		if u.IsEntityHierarchical(entity) && oldObj["description"] == nil {
-			// Description is always present, unless GetEntity was called with readonly permission
-			return nil, &u.Error{Type: u.ErrUnauthorized,
-				Message: "User does not have permission to change this object"}
-		}
-
-		tags, tagsPresent := getTags(updateData)
-
-		// Update old object data with patch data
-		if isPatch {
-			if tagsPresent {
-				return nil, &u.Error{
-					Type:    u.ErrBadFormat,
-					Message: "Tags cannot be modified in this way, use tags+ and tags-",
-				}
-			}
-
-			var formattedOldObj map[string]interface{}
-			// Convert primitive.A and similar types
-			bytes, _ := json.Marshal(oldObj)
-			json.Unmarshal(bytes, &formattedOldObj)
-			// Update old with new
-			err := updateOldObjWithPatch(formattedOldObj, updateData)
-			if err != nil {
-				return nil, &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
-			}
-
-			updateData = formattedOldObj
-			// Remove API set fields
-			delete(updateData, "id")
-			delete(updateData, "lastUpdated")
-			delete(updateData, "createdDate")
-		} else if tagsPresent {
-			err := verifyTagList(ctx, tags)
-			if err != nil {
-				return nil, err
-			}
-		}
-
+	result, err := WithTransaction(func(ctx mongo.SessionContext) (interface{}, error) {
 		err = prepareUpdateObject(ctx, entity, id, updateData, oldObj, userRoles)
 		if err != nil {
 			return nil, err

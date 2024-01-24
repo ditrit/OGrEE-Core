@@ -10,6 +10,7 @@ const (
 	PWRPNL
 	CABINET
 	CORRIDOR
+	GENERIC
 	ROOMTMPL
 	OBJTMPL
 	BLDGTMPL
@@ -56,6 +57,8 @@ func EntityToString(entity int) string {
 		return "tag"
 	case LAYER:
 		return "layer"
+	case GENERIC:
+		return "generic"
 	default:
 		return "INVALID"
 	}
@@ -97,6 +100,8 @@ func EntityStrToInt(entity string) int {
 		return TAG
 	case "layer":
 		return LAYER
+	case "generic", "ge":
+		return GENERIC
 	default:
 		return -1
 	}
@@ -104,31 +109,11 @@ func EntityStrToInt(entity string) int {
 
 func GetParentOfEntity(ent int) int {
 	switch ent {
-	case SITE:
+	case SITE, BLDG, ROOM, DEVICE:
 		return ent - 1
-	case BLDG:
-		return ent - 1
-	case ROOM:
-		return ent - 1
-	case RACK:
-		return ent - 1
-	case DEVICE:
-		return ent - 1
-	case AC:
-		return ROOM
-	case PWRPNL:
-		return ROOM
-	case ROOMTMPL:
+	case ROOMTMPL, BLDGTMPL, OBJTMPL, GROUP:
 		return -1
-	case BLDGTMPL:
-		return -1
-	case OBJTMPL:
-		return -1
-	case CABINET:
-		return ROOM
-	case GROUP:
-		return -1
-	case CORRIDOR:
+	case RACK, AC, PWRPNL, CABINET, CORRIDOR, GENERIC:
 		return ROOM
 	default:
 		return -3
@@ -136,5 +121,5 @@ func GetParentOfEntity(ent int) int {
 }
 
 func EntityCreationMustBeInformed(entity int) bool {
-	return entity != TAG && entity != LAYER
+	return entity != TAG
 }

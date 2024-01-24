@@ -16,6 +16,7 @@ import (
 
 	"github.com/elliotchance/pie/v2"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 var BuildHash string
@@ -36,6 +37,7 @@ const (
 	AC
 	CABINET
 	CORRIDOR
+	GENERIC
 	PWRPNL
 	GROUP
 	// logical non hierarchical entities
@@ -73,6 +75,11 @@ type RequestFilters struct {
 	Limit        string    `schema:"limit"`
 	Namespace    Namespace `schema:"namespace"`
 	Id           string    `schema:"id"`
+}
+
+type LayerObjsFilters struct {
+	Root        string `schema:"root"`
+	IsRecursive bool   `schema:"recursive"`
 }
 
 type HierarchyFilters struct {
@@ -173,33 +180,37 @@ func FilteredReqFromQueryParams(link *url.URL) bson.M {
 	for key := range queryValues {
 		if key != "fieldOnly" && key != "startDate" && key != "endDate" &&
 			key != "limit" && key != "namespace" {
-			var keyValue interface{}
-			keyValue = queryValues.Get(key)
-
-			if key == "parentId" {
-				regex := applyWildcards(keyValue.(string)) + `\.(` + NAME_REGEX + ")"
-				bsonMap["id"] = regexToMongoFilter(regex)
-				continue
-			} else if key == "tag" {
-				// tag is in tags list
-				bsonMap["tags"] = bson.M{"$eq": keyValue}
-				continue
-			} else if strings.Contains(keyValue.(string), "*") {
-				regex := applyWildcards(keyValue.(string))
-				keyValue = regexToMongoFilter(regex)
-			}
-
-			switch key {
-			case "id", "name", "category",
-				"description", "domain",
-				"createdDate", "lastUpdated", "slug":
-				bsonMap[key] = keyValue
-			default:
-				bsonMap["attributes."+key] = keyValue
-			}
+			keyValue := queryValues.Get(key)
+			AddFilterToReq(bsonMap, key, keyValue)
 		}
 	}
 	return bsonMap
+}
+
+func AddFilterToReq(bsonMap primitive.M, key string, value string) {
+	var keyValue interface{}
+	keyValue = value
+	if key == "parentId" {
+		regex := applyWildcards(keyValue.(string)) + `\.(` + NAME_REGEX + ")"
+		bsonMap["id"] = regexToMongoFilter(regex)
+		return
+	} else if key == "tag" {
+		// tag is in tags list
+		bsonMap["tags"] = bson.M{"$eq": keyValue}
+		return
+	} else if strings.Contains(keyValue.(string), "*") {
+		regex := applyWildcards(keyValue.(string))
+		keyValue = regexToMongoFilter(regex)
+	}
+
+	switch key {
+	case "id", "name", "category",
+		"description", "domain",
+		"createdDate", "lastUpdated", "slug":
+		bsonMap[key] = keyValue
+	default:
+		bsonMap["attributes."+key] = keyValue
+	}
 }
 
 func ErrTypeToStatusCode(errType ErrType) int {
@@ -221,13 +232,15 @@ func ErrTypeToStatusCode(errType ErrType) int {
 var Entities = []int{
 	DOMAIN,
 	STRAYOBJ, SITE,
-	BLDG, ROOM, RACK, DEVICE, AC, CABINET, CORRIDOR, PWRPNL, GROUP,
+	BLDG, ROOM, RACK, DEVICE, AC, CABINET, CORRIDOR, GENERIC, PWRPNL, GROUP,
 	ROOMTMPL, OBJTMPL, BLDGTMPL, TAG, LAYER,
 }
 
 var EntitiesWithTags = []int{
-	STRAYOBJ, SITE, BLDG, ROOM, RACK, DEVICE, AC, CABINET, CORRIDOR, PWRPNL, GROUP,
+	STRAYOBJ, SITE, BLDG, ROOM, RACK, DEVICE, AC, CABINET, CORRIDOR, GENERIC, PWRPNL, GROUP,
 }
+
+var RoomChildren = []int{RACK, CORRIDOR, GENERIC}
 
 func EntityHasTags(entity int) bool {
 	return pie.Contains(EntitiesWithTags, entity)
@@ -273,6 +286,8 @@ func EntityToString(entity int) string {
 		return "group"
 	case CORRIDOR:
 		return "corridor"
+	case GENERIC:
+		return "generic"
 	case TAG:
 		return "tag"
 	case LAYER:
@@ -314,6 +329,8 @@ func EntityStrToInt(entity string) int {
 		return GROUP
 	case "corridor":
 		return CORRIDOR
+	case "generic":
+		return GENERIC
 	case "tag":
 		return TAG
 	case "layer":
@@ -409,7 +426,7 @@ func GetEntitiesByNamespace(namespace Namespace, hierarchyName string) []string 
 				case 2:
 					entities = append(entities, ROOM)
 				case 3:
-					entities = append(entities, RACK, AC, CORRIDOR, PWRPNL, CABINET, GROUP)
+					entities = append(entities, RACK, AC, CORRIDOR, PWRPNL, CABINET, GROUP, GENERIC)
 				case 4:
 					entities = append(entities, DEVICE, GROUP)
 				default:
@@ -431,7 +448,7 @@ func GetParentOfEntityByInt(entity int) int {
 	switch entity {
 	case DOMAIN:
 		return DOMAIN
-	case AC, PWRPNL, CABINET, CORRIDOR:
+	case AC, PWRPNL, CABINET, CORRIDOR, GENERIC:
 		return ROOM
 	case ROOMTMPL, OBJTMPL, BLDGTMPL, TAG, GROUP, STRAYOBJ, LAYER:
 		return -1

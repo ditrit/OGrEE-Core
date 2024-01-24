@@ -8,6 +8,8 @@ To quickly deploy a frontend and docker backend in SuperAdmin mode, just execute
 .\launch.ps1
 # Linux 
 ./launch.sh
+# MacOS 
+./launch.sh -m
 ```
 For more options, check the documentation under `deploy/`.
 

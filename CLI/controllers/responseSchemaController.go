@@ -14,7 +14,7 @@ import (
 )
 
 type Response struct {
-	status  int
+	Status  int
 	message string
 	Body    map[string]any
 }

@@ -6,7 +6,7 @@ on:
     paths:
     - CLI/**
 
-name: CLI Unit Tests
+name: 🕵️‍♂️ CLI Unit Tests
 
 jobs:
   cli-unit-test:

@@ -5,6 +5,7 @@ import (
 	"cli/models"
 	"cli/utils"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"strconv"
@@ -112,20 +113,6 @@ func evalNodeArr[elt comparable](arr *[]node, x []elt) ([]elt, error) {
 	return x, nil
 }
 
-func checkIfTemplate(name string, ent int) bool {
-	var location string
-	switch ent {
-	case models.BLDG:
-		location = models.BuildingTemplatesPath + name
-	case models.ROOM:
-		location = models.RoomTemplatesPath + name
-	default:
-		location = models.ObjectTemplatesPath + name
-	}
-	_, err := cmd.C.Tree(location, 0)
-	return err == nil
-}
-
 // errResponder helper func for specialUpdateNode
 // used for separator, pillar err msgs and parseAreas()
 func errorResponder(attr, numElts string, multi bool) error {
@@ -193,4 +180,42 @@ func stringToIntOr(value string, defaultValue int) (int, error) {
 	}
 
 	return defaultValue, nil
+}
+
+func addSizeOrTemplate(sizeOrTemplate node, attributes map[string]any, entity int) error {
+	size, err := nodeToSize(sizeOrTemplate)
+	if err == nil {
+		attributes["size"] = size
+		return nil
+	}
+
+	template, err := nodeToString(sizeOrTemplate, "template")
+	if err != nil {
+		if errors.Is(err, utils.ErrShouldBeAString) {
+			return errors.New("vector3 (size) or string (template) expected")
+		}
+
+		return err
+	}
+
+	attributes["template"] = template
+
+	return nil
+}
+
+func nodeToSize(sizeNode node) ([]float64, error) {
+	return nodeToVec(sizeNode, 3, "size")
+}
+
+func nodeToPosXYZ(positionNode node) ([]float64, error) {
+	position, err := nodeToVec(positionNode, -1, "position")
+	if err != nil {
+		return nil, err
+	}
+
+	if len(position) != 2 && len(position) != 3 {
+		return nil, fmt.Errorf("position should be a vector2 or a vector3")
+	}
+
+	return position, nil
 }

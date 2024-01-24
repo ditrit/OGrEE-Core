@@ -28,7 +28,7 @@ func (api *apiPortImpl) Request(method string, endpoint string, body map[string]
 	if err != nil {
 		return nil, fmt.Errorf("on %s %s : %s", method, endpoint, err.Error())
 	}
-	if response.status != expectedStatus {
+	if response.Status != expectedStatus {
 		msg := ""
 		if State.DebugLvl >= DEBUG {
 			msg += fmt.Sprintf("%s %s\n", method, URL)

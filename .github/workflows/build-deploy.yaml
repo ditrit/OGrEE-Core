@@ -1,0 +1,85 @@
+name: ⚙️ Build - Publish
+
+on:
+  push:
+    branches:
+      - "release/**"
+      - "release-candidate/**"
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  build-publish:
+    name: 🏗️📤 Build Multi-Platform - Publish
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v4
+        with:
+          clean: false
+          fetch-depth: "0"
+
+      - name: 🌍 Set environment
+        id: set-environment
+        run: |
+          if [[ "${{ github.ref_name }}" == "release/"* ]]; then
+          echo "ENVIRONMENT=Release" >> $GITHUB_ENV
+          else 
+          echo "ENVIRONMENT=Release Candidate" >> $GITHUB_ENV
+          fi
+
+      - name: 🏗️📤 Build Multi-Platform - Publish
+        id: build-deploy
+        if: contains("release",${{ github.ref_name }})
+        uses: ./.github/actions/build/multi-platform
+        with:
+          ENVIRONMENT: ${{ env.ENVIRONMENT }}
+          TEAM_DOCKER_URL: ${{ secrets.TEAM_DOCKER_URL }}
+          TEAM_USERNAME: ${{ secrets.TEAM_DOCKER_USERNAME }}
+          TEAM_PASSWORD: ${{ secrets.TEAM_DOCKER_PASSWORD }}
+          NEXT_CREDENTIALS: ${{ secrets.NEXT_CREDENTIALS }}
+  
+  build-app-windows:
+    name: 🏗️📤 Build Windows Installer - Publish
+    permissions: write-all
+    needs: build-publish
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          clean: false
+          fetch-depth: "0"
+      - name: ❔ Extract project version
+        shell: bash
+        run: |
+          VERSION=$( echo ${{ github.ref_name }} | sed -e "s/release.*\///g")
+          if [[ ${{ github.ref_name }} != "release/"* ]]; then
+            VERSION=${VERSION}.rc
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: 🏗️📤 Build WinAPP + WinInstaller - Publish
+        uses: ./.github/actions/build/windows
+        with:
+          VERSION: ${{ env.VERSION }}
+          NEXT_CREDENTIALS: ${{ secrets.NEXT_CREDENTIALS }}
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+
+      - name: 🏷️ Create release if release
+        if: ${{ !contains(env.VERSION, 'rc') }}
+        uses: softprops/action-gh-release@v1
+        with:
+            tag_name: ${{ env.VERSION }}
+            files: |
+              cli-build/cli.exe
+              cli-build/cli
+              cli-build/cli.mac
+              api-build/OGrEE_API_Linux_x64
+              api-build/OGrEE_API_OSX_x64
+              api-build/OGrEE_API_Win_x64
+              app-web-build/OGrEE_APP_Web.zip
+              app-win-build/ogree-app-installer.exe
+
+  

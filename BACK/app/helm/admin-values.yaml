@@ -1,0 +1,23 @@
+
+replicaCount: 1
+image:
+  repository: registry.ogree.ditrit.io/back-admin
+  pullPolicy: Always
+  tag: latest
+serviceAccountName: ogree-admin
+imagePullSecrets: 
+  - name: regcred
+fullnameOverride: admin-api
+env:
+  - name: HOST
+    value: localhost
+service:
+  type: NodePort
+  port: 8081
+ingress:
+  enabled: true
+  entryPoints:
+   - web
+  hosts:
+    - host: api.admin.localhost
+securityContext: {}
