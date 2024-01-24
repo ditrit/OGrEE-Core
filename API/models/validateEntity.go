@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"os"
 	"p3/repository"
 	u "p3/utils"
 	"strings"
@@ -179,7 +178,7 @@ func validateJsonSchema(entity int, t map[string]interface{}) (bool, *u.Error) {
 			// Format errors array
 			errSlice := []string{}
 			// Open and unmarshall types.json
-			typesJson, err := os.Open("models/schemas/refs/types.json")
+			typesJson, err := embeddfs.Open("schemas/refs/types.json")
 			if err != nil {
 				return false, &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
 			}
@@ -197,8 +196,9 @@ func validateJsonSchema(entity int, t map[string]interface{}) (bool, *u.Error) {
 			for _, schErr := range v.BasicOutput().Errors {
 				// Check all remaining types
 				for _, definition := range definitions {
+					pattern := definition.(map[string]any)["pattern"].(string)
 					// If the pattern is in the error message
-					if strings.Contains(schErr.Error, definition.(map[string]any)["pattern"].(string)) {
+					if strings.Contains(schErr.Error, "does not match pattern "+quote(pattern)) || strings.Contains(schErr.Error, "does not match pattern "+pattern) {
 						// Substitute it for the more user-friendly description
 						schErr.Error = "should be " + definition.(map[string]any)["description"].(string)
 					}
@@ -389,4 +389,12 @@ func ObjectsHaveAttribute(entities []int, attribute, value string) (bool, *u.Err
 	}
 
 	return false, nil
+}
+
+// Returns single-quoted string
+func quote(s string) string {
+	s = fmt.Sprintf("%q", s)
+	s = strings.ReplaceAll(s, `\"`, `"`)
+	s = strings.ReplaceAll(s, `'`, `\'`)
+	return "'" + s[1:len(s)-1] + "'"
 }
