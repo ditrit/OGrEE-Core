@@ -717,6 +717,7 @@ func Connect3D(url string) error {
 }
 
 func Disconnect3D() {
+	Ogree3D.InformOptional("Disconnect3d", -1, map[string]interface{}{"type": "logout", "data": ""})
 	Ogree3D.Disconnect()
 }
 
