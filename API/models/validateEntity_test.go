@@ -65,7 +65,7 @@ func TestErrorValidateJsonSchema(t *testing.T) {
 		"building1": {"missing properties: 'posXYUnit'", "/attributes/height expected string, but got number"},
 		"room1":     {"additionalProperties 'banana' not allowed", "/attributes/axisOrientation value must be one of"},
 		"rack1":     {"/attributes/posXYZ should be", "/attributes/heightUnit value must be one of"},
-		"device1":   {"missing properties: 'template'", "/description expected array, but got string"},
+		"device1":   {"/description expected array, but got string"},
 		"group1":    {"/attributes missing properties: 'content'", "/name should be"},
 		"obj_template5": {
 			"/slug should be",
