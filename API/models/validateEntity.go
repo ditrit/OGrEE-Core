@@ -1,6 +1,7 @@
 package models
 
 import (
+	"bytes"
 	"embed"
 	"encoding/json"
 	"fmt"
@@ -19,6 +20,7 @@ import (
 //go:embed schemas/refs/*.json
 var embeddfs embed.FS
 var c *jsonschema.Compiler
+var types map[string]any
 
 func init() {
 	// Load JSON schemas
@@ -41,8 +43,29 @@ func loadJsonSchemas(schemaPrefix string) {
 		if strings.HasSuffix(e.Name(), ".json") {
 			file, err := embeddfs.Open(schemaPath + schemaPrefix + e.Name())
 			if err == nil {
-				print(schemaPrefix + e.Name() + " ")
-				c.AddResource(schemaPrefix+e.Name(), file)
+				if e.Name() == "types.json" {
+					// Make two copies of the reader stream
+					var buf bytes.Buffer
+					tee := io.TeeReader(file, &buf)
+
+					print(schemaPrefix + e.Name() + " ")
+					c.AddResource(schemaPrefix+e.Name(), tee)
+
+					// Read and unmarshall types.json file
+					typesBytes, _ := io.ReadAll(&buf)
+					json.Unmarshal(typesBytes, &types)
+
+					// Remove types that do not have a "pattern" attribute
+					types = types["definitions"].(map[string]any)
+					for key, definition := range types {
+						if _, ok := definition.(map[string]any)["pattern"]; !ok {
+							delete(types, key)
+						}
+					}
+				} else {
+					print(schemaPrefix + e.Name() + " ")
+					c.AddResource(schemaPrefix+e.Name(), file)
+				}
 			}
 		}
 	}
@@ -177,25 +200,9 @@ func validateJsonSchema(entity int, t map[string]interface{}) (bool, *u.Error) {
 			println(v.GoString())
 			// Format errors array
 			errSlice := []string{}
-			// Open and unmarshall types.json
-			typesJson, err := embeddfs.Open("schemas/refs/types.json")
-			if err != nil {
-				return false, &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
-			}
-			defer typesJson.Close()
-			typesBytes, _ := io.ReadAll(typesJson)
-			var types map[string]any
-			json.Unmarshal(typesBytes, &types)
-			// Remove types that do not have a "pattern" attribute
-			definitions := types["definitions"].(map[string]any)
-			for key, definition := range definitions {
-				if _, ok := definition.(map[string]any)["pattern"]; !ok {
-					delete(definitions, key)
-				}
-			}
 			for _, schErr := range v.BasicOutput().Errors {
-				// Check all remaining types
-				for _, definition := range definitions {
+				// Check all types
+				for _, definition := range types {
 					pattern := definition.(map[string]any)["pattern"].(string)
 					// If the pattern is in the error message
 					if strings.Contains(schErr.Error, "does not match pattern "+quote(pattern)) || strings.Contains(schErr.Error, "does not match pattern "+pattern) {
