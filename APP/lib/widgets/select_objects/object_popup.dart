@@ -908,7 +908,10 @@ class _ObjectPopupState extends State<ObjectPopup> {
           showSnackBar(messenger, localeMsg.createOK, isSuccess: true);
           if (context.mounted) Navigator.of(context).pop();
         case Failure(exception: final exception):
-          showSnackBar(errorMessenger, exception.toString(), isError: true);
+          showSnackBar(errorMessenger, exception.toString(),
+              isError: true,
+              copyTextTap: exception.toString(),
+              duration: Duration(seconds: 30));
       }
     }
   }

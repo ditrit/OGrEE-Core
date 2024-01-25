@@ -413,6 +413,15 @@ Future<Result<void, Exception>> createObject(
       return const Success(null);
     } else {
       final Map<String, dynamic> data = json.decode(response.body);
+      if (data["errors"] != null) {
+        var errors = List<String>.from(data["errors"]);
+        print(errors.toString());
+        String errStr = "";
+        for (var err in errors) {
+          errStr = "$errStr\n$err";
+        }
+        return Failure(Exception(errStr));
+      }
       return Failure(Exception(data["message"].toString()));
     }
   } on Exception catch (e) {
@@ -454,6 +463,15 @@ Future<Result<void, Exception>> updateObject(
       return const Success(null);
     } else {
       var data = json.decode(response.body);
+      if (data["errors"] != null) {
+        var errors = List<String>.from(data["errors"]);
+        print(errors.toString());
+        String errStr = "";
+        for (var err in errors) {
+          errStr = "$errStr\n$err";
+        }
+        return Failure(Exception(errStr));
+      }
       return Failure(Exception("Error: ${data["message"]}"));
     }
   } on Exception catch (e) {
