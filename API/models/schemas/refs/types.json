@@ -10,12 +10,10 @@
             "description": "a 6 length hex value or '@[color name]' (e.g. 'C0FFEE', '@blue')"
         },
         "metricImperialUnit": {
-            "enum": ["mm", "cm", "m", "f"],
-            "description": "'mm', 'cm', 'm' or 'f'"
+            "enum": ["mm", "cm", "m", "f"]
         },
         "metricImperialUUnit": {
-            "enum": ["mm", "cm", "m", "f", "U", "OU"],
-            "description": "'mm', 'cm', 'm', 'f', 'U' or 'OU'"
+            "enum": ["mm", "cm", "m", "f", "U", "OU"]
         },
         "vector2": {
             "pattern": "^\\s*{\\s*\"x\"\\s*:\\s*((-|\\+)?[0-9]*[.]?)?[0-9]+\\s*,\\s*\"y\"\\s*:\\s*((-|\\+)?[0-9]*[.]?)?[0-9]+\\s*}\\s*$",
@@ -35,15 +33,15 @@
         },
         "slug": {
             "pattern": "^[a-z0-9-_]+$",
-            "description": "a pattern with lowercase letters, numbers, '-' and '_' (e.g. 'abc_xyz-0')"
+            "description": "composed only of lowercase letters, numbers, '-' or '_' (e.g. 'abc_xyz-0')"
         },
         "name": {
             "pattern": "^\\w(\\w|\\-)*$",
-            "description": "a pattern with letters, numbers, '-' and '_' (e.g. 'ABC_xyz-0')"
+            "description": "composed only of letters, numbers, '-' or '_' (e.g. 'ABC_xyz-0')"
         },
         "id": {
             "pattern": "^\\w(\\w|\\-)*(\\.\\w(\\w|\\-)*)*$",
-            "description": "a pattern with letters, numbers, '-', '_' and '.' (e.g. 'BASIC.abc_xyz-0')"
+            "description": "composed only of letters, numbers, '-', '_' or '.' (e.g. 'BASIC.abc_xyz-0')"
         }
     }
 }
