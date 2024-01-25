@@ -481,7 +481,7 @@ func setLabel(path string, values []any, hasSharpe bool) (map[string]any, error)
 	if err != nil {
 		return nil, err
 	}
-	return nil, cmd.InteractObject(path, "label", value, hasSharpe)
+	return nil, cmd.C.InteractObject(path, "label", value, hasSharpe)
 }
 
 func setLabelFont(path string, values []any) (map[string]any, error) {
@@ -495,7 +495,7 @@ func setLabelFont(path string, values []any) (map[string]any, error) {
 		if values[0] != "bold" && values[0] != "italic" {
 			return nil, fmt.Errorf(msg)
 		}
-		return nil, cmd.InteractObject(path, "labelFont", values[0], false)
+		return nil, cmd.C.InteractObject(path, "labelFont", values[0], false)
 	case 2:
 		if values[0] != "color" {
 			return nil, fmt.Errorf(msg)
@@ -504,7 +504,7 @@ func setLabelFont(path string, values []any) (map[string]any, error) {
 		if !ok {
 			return nil, fmt.Errorf("please provide a valid 6 length hex value for the color")
 		}
-		return nil, cmd.InteractObject(path, "labelFont", "color@"+c, false)
+		return nil, cmd.C.InteractObject(path, "labelFont", "color@"+c, false)
 	default:
 		return nil, fmt.Errorf(msg)
 	}
@@ -737,7 +737,7 @@ func (n *updateObjNode) execute() (interface{}, error) {
 				if err != nil {
 					return nil, err
 				}
-				err = cmd.InteractObject(path, n.attr, boolVal, n.hasSharpe)
+				err = cmd.C.InteractObject(path, n.attr, boolVal, n.hasSharpe)
 			case "areas":
 				_, err = setRoomAreas(path, values)
 			case "label":

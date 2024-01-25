@@ -5,7 +5,7 @@
     "properties": {
         "slug": {
             "type": "string",
-            "pattern": "^[a-zA-Z0-9-]+$"
+            "$ref": "refs/types.json#/definitions/slug"
         },
         "category": {
             "type": "string",

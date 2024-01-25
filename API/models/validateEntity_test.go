@@ -61,14 +61,14 @@ func TestValidateJsonSchema(t *testing.T) {
 func TestErrorValidateJsonSchema(t *testing.T) {
 	// Test test_data/KO json files
 	expectedErrors := map[string][]string{
-		"site1":     {"missing properties: 'domain'", "/attributes/reservedColor does not match pattern"},
+		"site1":     {"missing properties: 'domain'", "/attributes/reservedColor should be"},
 		"building1": {"missing properties: 'posXYUnit'", "/attributes/height expected string, but got number"},
 		"room1":     {"additionalProperties 'banana' not allowed", "/attributes/axisOrientation value must be one of"},
-		"rack1":     {"/attributes/posXYZ does not match pattern", "/attributes/heightUnit value must be one of"},
-		"device1":   {"/description expected array, but got string"},
-		"group1":    {"/attributes missing properties: 'content'", "/name does not match pattern"},
+		"rack1":     {"/attributes/posXYZ should be", "/attributes/heightUnit value must be one of"},
+		"device1":   {"missing properties: 'template'", "/description expected array, but got string"},
+		"group1":    {"/attributes missing properties: 'content'", "/name should be"},
 		"obj_template5": {
-			"/slug does not match pattern",
+			"/slug should be",
 			"/attributes/vendor expected string, but got number",
 			"/slots/0/elemOrient value must be one of ",
 			"/slots/1/elemPos maximum 3 items required, but found 4 items",
@@ -76,12 +76,12 @@ func TestErrorValidateJsonSchema(t *testing.T) {
 			"/slots/1/elemOrient value must be one of",
 			"/slots/2 missing properties: 'elemOrient'",
 			"/slots/2/labelPos value must be one of ",
-			"/slots/3/color does not match pattern",
+			"/slots/3/color should be",
 		},
 		"obj_template4": {
 			"/components/0/elemPos minimum 3 items required, but found 0 items",
 			`/components/1/elemOrient value must be one of "horizontal", "vertical", ""`,
-			"/components/1/color does not match pattern",
+			"/components/1/color should be",
 			"/components/3/labelPos value must be one of",
 			"/slots/0/elemOrient value must be one of",
 		},

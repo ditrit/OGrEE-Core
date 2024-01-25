@@ -33,6 +33,6 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # compile and run back
-cd ..\BACK\docker-backend
+cd ..\BACK\app
 docker run --rm -v ${PWD}:/workdir -w /workdir -e GOOS=windows golang go build -o ogree_app_backend.exe
 .\ogree_app_backend.exe -port $portBack

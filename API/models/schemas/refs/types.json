@@ -2,7 +2,12 @@
     "$id": "refs/types.json",
     "definitions": {
         "color": {
-            "pattern": "^[0-9a-fA-F]{6}$"
+            "pattern": "^[0-9a-fA-F]{6}$",
+            "description": "a 6 length hex value (e.g. 'C0FFEE')"
+        },
+        "colorTemplate": {
+            "pattern": "(^[0-9a-fA-F]{6}$)|(^@[a-zA-Z0-9-]+$)|(^$)",
+            "description": "a 6 length hex value or '@[color name]' (e.g. 'C0FFEE', '@blue')"
         },
         "metricImperialUnit": {
             "enum": ["mm", "cm", "m", "f"]
@@ -11,25 +16,32 @@
             "enum": ["mm", "cm", "m", "f", "U", "OU"]
         },
         "vector2": {
-            "pattern": "^\\s*{\\s*\"x\"\\s*:\\s*([-|+]?[0-9]*[.]?)?[0-9]+\\s*,\\s*\"y\"\\s*:\\s*([-|+]?[0-9]*[.]?)?[0-9]+\\s*}\\s*$"
+            "pattern": "^\\s*{\\s*\"x\"\\s*:\\s*((-|\\+)?[0-9]*[.]?)?[0-9]+\\s*,\\s*\"y\"\\s*:\\s*((-|\\+)?[0-9]*[.]?)?[0-9]+\\s*}\\s*$",
+            "description": "a vector2 (e.g. '{\"x\": 2.5, \"y\": 3}', '{\"x\": -3.5, \"y\": -3}')"
         },
         "vector3": {
-            "pattern": "^\\s*{\\s*\"x\"\\s*:\\s*([-|+]?[0-9]*[.]?)?[0-9]+\\s*,\\s*\"y\"\\s*:\\s*([-|+]?[0-9]*[.]?)?[0-9]+\\s*,\\s*\"z\"\\s*:\\s*([-|+]?[0-9]*[.]?)?[0-9]+\\s*}\\s*$"
+            "pattern": "^\\s*{\\s*\"x\"\\s*:\\s*((-|\\+)?[0-9]*[.]?)?[0-9]+\\s*,\\s*\"y\"\\s*:\\s*((-|\\+)?[0-9]*[.]?)?[0-9]+\\s*,\\s*\"z\"\\s*:\\s*((-|\\+)?[0-9]*[.]?)?[0-9]+\\s*}\\s*$",
+            "description": "a vector3 (e.g. '{\"x\": 2, \"y\": 2.5, \"z\": 3.33}', '{\"x\": 2, \"y\": -4, \"z\": -3.5}')"
         },
         "float": {
-            "pattern": "^[-]?([0-9]*[.])?[0-9]+$"
+            "pattern": "^[-]?([0-9]*[.])?[0-9]+$",
+            "description": "a floating point number (e.g. '3.14', '-2.72', '1', '-2')"
         },
         "clearanceVector": {
-            "pattern": "^\\[(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:,\\s*(?:\\d+(?:\\.\\d*)?|\\.\\d+)){5}\\]$"
+            "pattern": "^\\[(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:,\\s*(?:\\d+(?:\\.\\d*)?|\\.\\d+)){5}\\]$",
+            "description": "six floating point numbers inside square brackets (e.g. '[2, 2.72, 3, 3.14, 4, 4.5]'"
         },
         "slug": {
-            "pattern": "^[a-z0-9-_]+$"
+            "pattern": "^[a-z0-9-_]+$",
+            "description": "composed only of lowercase letters, numbers, '-' or '_' (e.g. 'abc_xyz-0')"
         },
         "name": {
-            "pattern": "^\\w(\\w|\\-)*$"
+            "pattern": "^\\w(\\w|\\-)*$",
+            "description": "composed only of letters, numbers, '-' or '_' (e.g. 'ABC_xyz-0')"
         },
         "id": {
-            "pattern": "^\\w(\\w|\\-)*(\\.\\w(\\w|\\-)*)*$"
+            "pattern": "^\\w(\\w|\\-)*(\\.\\w(\\w|\\-)*)*$",
+            "description": "composed only of letters, numbers, '-', '_' or '.' (e.g. 'BASIC.abc_xyz-0')"
         }
     }
 }
