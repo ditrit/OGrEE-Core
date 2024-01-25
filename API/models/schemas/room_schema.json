@@ -30,7 +30,7 @@
         },
         "rotation": {
           "type": "string",
-          "pattern": "^-?([0-9]*[.])?[0-9]+$"
+          "$ref": "refs/types.json#/definitions/float"
         },
         "posXY": {
           "type": "string",
