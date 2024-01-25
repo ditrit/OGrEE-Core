@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ogree_app/common/api_backend.dart';
@@ -9,7 +10,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/theme.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:ogree_app/models/tag.dart';
-import 'package:ogree_app/widgets/actionbtn_row.dart';
+import 'package:ogree_app/widgets/common/actionbtn_row.dart';
+import 'package:ogree_app/widgets/common/form_field.dart';
 
 class TagsPopup extends StatefulWidget {
   Function() parentCallback;
@@ -166,9 +168,10 @@ class TagFormState extends State<TagForm> {
   String? _tagSlug;
   String? _tagDescription;
   String? _tagColor;
-  Color? _localColor;
+  Color _localColor = Colors.grey;
   bool _isEdit = false;
   Tag? tag;
+  final colorTextController = TextEditingController();
 
   PlatformFile? _loadedImage;
 
@@ -181,7 +184,10 @@ class TagFormState extends State<TagForm> {
     if (widget.tag != null) {
       tag = widget.tag;
       _localColor = Color(int.parse("0xFF${tag!.color}"));
+      colorTextController.text = tag!.color;
       _isEdit = true;
+    } else {
+      colorTextController.text = "9e9e9e";
     }
   }
 
@@ -193,25 +199,27 @@ class TagFormState extends State<TagForm> {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          getFormField(
+          CustomFormField(
               save: (newValue) => _tagSlug = newValue,
               label: "Slug",
               icon: Icons.auto_awesome_mosaic,
               initialValue: _isEdit ? tag!.slug : null),
-          getFormField(
+          CustomFormField(
               save: (newValue) => _tagDescription = newValue,
               label: "Description",
               icon: Icons.auto_awesome_mosaic,
               initialValue: _isEdit ? tag!.description : null),
-          getFormField(
-              save: (newValue) => _tagColor = newValue,
-              label: localeMsg.color,
-              icon: Icons.circle,
-              formatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[0-9a-fA-F]'))
-              ],
-              isColor: true,
-              initialValue: _isEdit ? tag!.color : null),
+          CustomFormField(
+            save: (newValue) => _tagColor = newValue,
+            label: localeMsg.color,
+            icon: Icons.circle,
+            formatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9a-fA-F]'))
+            ],
+            isColor: true,
+            colorTextController: colorTextController,
+            // initialValue: _isEdit ? tag!.color : null
+          ),
           Padding(
             padding: const EdgeInsets.only(top: 8.0, bottom: 8),
             child: Wrap(
@@ -268,54 +276,6 @@ class TagFormState extends State<TagForm> {
             ),
           )
         ],
-      ),
-    );
-  }
-
-  getFormField(
-      {required Function(String?) save,
-      required String label,
-      required IconData icon,
-      List<TextInputFormatter>? formatters,
-      bool isColor = false,
-      String? initialValue,
-      bool noValidation = false}) {
-    final localeMsg = AppLocalizations.of(context)!;
-    return Padding(
-      padding: FormInputPadding,
-      child: TextFormField(
-        onChanged: isColor
-            ? (value) {
-                if (value.length == 6) {
-                  setState(() {
-                    _localColor = Color(int.parse("0xFF$value"));
-                  });
-                } else {
-                  setState(() {
-                    _localColor = null;
-                  });
-                }
-              }
-            : null,
-        onSaved: (newValue) => save(newValue),
-        validator: (text) {
-          if (noValidation) {
-            return null;
-          }
-          if (text == null || text.isEmpty) {
-            return AppLocalizations.of(context)!.mandatoryField;
-          }
-          if (isColor && text.length != 6) {
-            return localeMsg.shouldHaveXChars(6);
-          }
-          return null;
-        },
-        inputFormatters: formatters,
-        initialValue: initialValue,
-        decoration: GetFormInputDecoration(_isSmallDisplay, label,
-            icon: icon, iconColor: isColor ? _localColor : null),
-        cursorWidth: 1.3,
-        style: const TextStyle(fontSize: 14),
       ),
     );
   }

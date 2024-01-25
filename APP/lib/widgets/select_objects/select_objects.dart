@@ -5,6 +5,7 @@ import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/pages/select_page.dart';
 import 'package:ogree_app/widgets/select_objects/object_popup.dart';
 import 'package:ogree_app/widgets/select_objects/treeapp_controller.dart';
+import 'package:ogree_app/widgets/tenants/popups/domain_popup.dart';
 import 'settings_view/settings_view.dart';
 import 'tree_view/custom_tree_view.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -168,8 +169,12 @@ class _ResponsiveBody extends StatelessWidget {
                   ),
                   onPressed: () => showCustomPopup(
                       context,
-                      ObjectPopup(
-                          parentCallback: callback, namespace: namespace),
+                      namespace == Namespace.Organisational
+                          ? DomainPopup(
+                              parentCallback: callback,
+                            )
+                          : ObjectPopup(
+                              parentCallback: callback, namespace: namespace),
                       isDismissible: true),
                   icon: const Icon(Icons.add),
                 ),

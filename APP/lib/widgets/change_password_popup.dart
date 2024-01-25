@@ -4,6 +4,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/theme.dart';
+import 'package:ogree_app/widgets/common/form_field.dart';
 
 import '../common/snackbar.dart';
 
@@ -47,15 +48,15 @@ class _ChangePasswordPopupState extends State<ChangePasswordPopup> {
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
                   const SizedBox(height: 20),
-                  getFormField(
+                  CustomFormField(
                       save: (newValue) => _oldPassword = newValue,
                       label: localeMsg.currentPassword,
                       icon: Icons.lock_open_rounded),
-                  getFormField(
+                  CustomFormField(
                       save: (newValue) => _newPassword = newValue,
                       label: localeMsg.newPassword,
                       icon: Icons.lock_outline_rounded),
-                  getFormField(
+                  CustomFormField(
                       save: (newValue) => _confirmPass = newValue,
                       label: localeMsg.confirmPassword,
                       icon: Icons.lock_outline_rounded),
@@ -132,38 +133,6 @@ class _ChangePasswordPopupState extends State<ChangePasswordPopup> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  getFormField(
-      {required Function(String?) save,
-      required String label,
-      required IconData icon,
-      String? prefix,
-      String? suffix,
-      List<TextInputFormatter>? formatters,
-      String? initial,
-      bool isReadOnly = false,
-      bool obscure = true}) {
-    return Padding(
-      padding: FormInputPadding,
-      child: TextFormField(
-        obscureText: obscure,
-        initialValue: initial,
-        readOnly: isReadOnly,
-        onSaved: (newValue) => save(newValue),
-        validator: (text) {
-          if (text == null || text.isEmpty) {
-            return AppLocalizations.of(context)!.mandatoryField;
-          }
-          return null;
-        },
-        inputFormatters: formatters,
-        decoration: GetFormInputDecoration(_isSmallDisplay, label,
-            prefixText: prefix, suffixText: suffix, icon: icon),
-        cursorWidth: 1.3,
-        style: const TextStyle(fontSize: 14),
       ),
     );
   }

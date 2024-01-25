@@ -51,12 +51,24 @@ class _NodeActionsChipState extends State<_NodeActionsChip> {
         } else {
           showCustomPopup(
               context,
-              ObjectPopup(
-                namespace: namespace,
-                parentCallback: () => TreeAppController.of(context).init({},
-                    argNamespace: namespace, reload: true, isTenantMode: true),
-                objId: widget.node.id,
-              ),
+              namespace == Namespace.Organisational
+                  ? DomainPopup(
+                      parentCallback: () => TreeAppController.of(context).init(
+                          {},
+                          argNamespace: Namespace.Organisational,
+                          reload: true,
+                          isTenantMode: true),
+                      domainId: widget.node.id,
+                    )
+                  : ObjectPopup(
+                      namespace: namespace,
+                      parentCallback: () => TreeAppController.of(context).init(
+                          {},
+                          argNamespace: namespace,
+                          reload: true,
+                          isTenantMode: false),
+                      objId: widget.node.id,
+                    ),
               isDismissible: true);
         }
       },

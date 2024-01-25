@@ -3,7 +3,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/models/tenant.dart';
 import 'package:ogree_app/pages/tenant_page.dart';
-import 'package:ogree_app/widgets/delete_dialog_popup.dart';
+import 'package:ogree_app/widgets/common/delete_dialog_popup.dart';
 import 'package:ogree_app/widgets/tenants/popups/update_tenant_popup.dart';
 import 'package:url_launcher/url_launcher.dart';
 

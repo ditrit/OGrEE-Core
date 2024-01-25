@@ -2,14 +2,14 @@ import 'dart:convert';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/models/tag.dart';
-import 'package:ogree_app/widgets/actionbtn_row.dart';
+import 'package:ogree_app/widgets/common/actionbtn_row.dart';
+import 'package:ogree_app/widgets/common/form_field.dart';
 import 'package:ogree_app/widgets/tenants/popups/tags_popup.dart';
 
 class ObjectPopup extends StatefulWidget {
@@ -60,6 +60,9 @@ class _ObjectPopupState extends State<ObjectPopup> {
   Map<String, String> objDataAttrs = {};
   bool _isEdit = false;
 
+  // Physical
+  Map<String, TextEditingController> colorTextControllers = {};
+
   // Tags
   Tag? tag;
   final GlobalKey<TagFormState> _tagFormKey = GlobalKey();
@@ -67,6 +70,10 @@ class _ObjectPopupState extends State<ObjectPopup> {
   // Templates
   PlatformFile? _loadedFile;
   String? _loadFileResult;
+
+  //Layer
+  bool _applyDirectChild = false;
+  bool _applyAllChild = false;
 
   @override
   void initState() {
@@ -170,22 +177,20 @@ class _ObjectPopupState extends State<ObjectPopup> {
                                         icon: Icons.bookmark,
                                       ),
                                       value: _objCategory,
-                                      items: objsByNamespace[widget.namespace]!
-                                          .map<DropdownMenuItem<String>>(
-                                              (String value) {
-                                        return DropdownMenuItem<String>(
-                                          value: value,
-                                          child: Text(
-                                            value,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        );
-                                      }).toList(),
+                                      items: getCategoryMenuItems(),
                                       onChanged: _isEdit
                                           ? null
                                           : (String? value) {
                                               setState(() {
                                                 _objCategory = value!;
+                                                // clean the whole form
+                                                _formKey.currentState?.reset();
+                                                colorTextControllers.values
+                                                    .toList()
+                                                    .forEach((element) {
+                                                  element.clear();
+                                                });
+                                                colorTextControllers = {};
                                               });
                                             },
                                     ),
@@ -261,6 +266,33 @@ class _ObjectPopupState extends State<ObjectPopup> {
       // Logical, except group
       return 220;
     }
+  }
+
+  List<DropdownMenuItem<String>> getCategoryMenuItems() {
+    List<String> categories = objsByNamespace[widget.namespace]!;
+    if (widget.parentId != null && widget.namespace == Namespace.Physical) {
+      switch (".".allMatches(widget.parentId!).length) {
+        case 0:
+          categories = [PhyCategories.building.name];
+        case 1:
+          categories = [PhyCategories.room.name];
+        case 2:
+          categories = [PhyCategories.rack.name, PhyCategories.group.name];
+        case 3:
+          categories = [PhyCategories.device.name, PhyCategories.group.name];
+        default:
+          categories = [PhyCategories.device.name];
+      }
+    }
+    return categories.map<DropdownMenuItem<String>>((String value) {
+      return DropdownMenuItem<String>(
+        value: value,
+        child: Text(
+          value,
+          overflow: TextOverflow.ellipsis,
+        ),
+      );
+    }).toList();
   }
 
   getExternalAssets() async {
@@ -365,6 +397,18 @@ class _ObjectPopupState extends State<ObjectPopup> {
                       customAttributesRows.length,
                       givenAttrName: attr.key,
                       givenAttrValue: attr.value));
+                }
+                if (objData["applicability"].toString().endsWith(".**.*")) {
+                  objData["applicability"] = objData["applicability"]
+                      .toString()
+                      .replaceFirst(".**.*", "");
+                  _applyAllChild = true;
+                  _applyDirectChild = true;
+                } else if (objData["applicability"].toString().endsWith(".*")) {
+                  objData["applicability"] = objData["applicability"]
+                      .toString()
+                      .replaceFirst(".*", "");
+                  _applyDirectChild = true;
                 }
               } else if (value["category"] == null) {
                 // tags
@@ -475,12 +519,12 @@ class _ObjectPopupState extends State<ObjectPopup> {
             children: [
               Flexible(
                 flex: 5,
-                child: getFormField(
+                child: CustomFormField(
                     save: (newValue) => attrName = newValue,
                     label: AppLocalizations.of(context)!.attribute,
                     icon: Icons.tag_sharp,
                     isCompact: true,
-                    initial: givenAttrName),
+                    initialValue: givenAttrName),
               ),
               Padding(
                 padding: const EdgeInsets.only(right: 6),
@@ -491,12 +535,12 @@ class _ObjectPopupState extends State<ObjectPopup> {
               ),
               Flexible(
                 flex: 4,
-                child: getFormField(
+                child: CustomFormField(
                     save: (newValue) => objDataAttrs[attrName!] = newValue!,
                     label: "Value",
                     icon: Icons.tag_sharp,
                     isCompact: true,
-                    initial: givenAttrValue),
+                    initialValue: givenAttrValue),
               ),
               IconButton(
                   padding: const EdgeInsets.only(bottom: 6),
@@ -535,11 +579,19 @@ class _ObjectPopupState extends State<ObjectPopup> {
   getObjectForm() {
     List<String> attributes = categoryAttrs[_objCategory]!;
     final localeMsg = AppLocalizations.of(context)!;
+
+    for (var str in attributes) {
+      if (str.toLowerCase().contains("color")) {
+        var textEditingController = TextEditingController();
+        colorTextControllers.putIfAbsent(str, () => textEditingController);
+      }
+    }
+
     return ListView(
       padding: EdgeInsets.zero,
       children: [
         _objCategory != PhyCategories.site.name
-            ? getFormField(
+            ? CustomFormField(
                 save: (newValue) {
                   if (newValue != null && newValue.isNotEmpty) {
                     objData["parentId"] = newValue;
@@ -547,34 +599,34 @@ class _ObjectPopupState extends State<ObjectPopup> {
                 },
                 label: "Parent ID",
                 icon: Icons.family_restroom,
-                initial: objData["parentId"],
+                initialValue: objData["parentId"],
                 shouldValidate: widget.namespace != Namespace.Organisational)
             : Container(),
-        getFormField(
+        CustomFormField(
             save: (newValue) => objData["name"] = newValue,
             label: localeMsg.name,
             icon: Icons.edit,
-            initial: objData["name"]),
+            initialValue: objData["name"]),
         _objCategory != OrgCategories.domain.name
             ? (domainList.isEmpty
-                ? getFormField(
+                ? CustomFormField(
                     save: (newValue) => objData["domain"] = newValue,
                     label: localeMsg.domain,
                     icon: Icons.edit,
-                    initial: objData["domain"])
+                    initialValue: objData["domain"])
                 : domainAutoFillField())
             : Container(),
-        getFormField(
+        CustomFormField(
             save: (newValue) => objData["description"] = [newValue],
             label: "Description",
             icon: Icons.edit,
             shouldValidate: false,
-            initial: objData["description"] != null &&
+            initialValue: objData["description"] != null &&
                     List<String>.from(objData["description"]).isNotEmpty
                 ? objData["description"][0]
                 : null),
         _objCategory != OrgCategories.domain.name
-            ? getFormField(
+            ? CustomFormField(
                 save: (newValue) {
                   var tags = newValue!.replaceAll(" ", "").split(",");
                   if (!(tags.length == 1 && tags.first == "")) {
@@ -584,7 +636,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
                 label: "Tags",
                 icon: Icons.tag_sharp,
                 shouldValidate: false,
-                initial: objData["tags"]
+                initialValue: objData["tags"]
                     ?.toString()
                     .substring(1, objData["tags"].toString().length - 1))
             : Container(),
@@ -602,7 +654,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
             // Create a grid with 2 columns
             crossAxisCount: 2,
             children: List.generate(attributes.length, (index) {
-              return getFormField(
+              return CustomFormField(
                   tipStr: examplesAttrs[_objCategory]
                           ?[attributes[index].replaceFirst(starSymbol, "")] ??
                       "",
@@ -616,7 +668,9 @@ class _ObjectPopupState extends State<ObjectPopup> {
                   icon: Icons.tag_sharp,
                   isCompact: true,
                   shouldValidate: attributes[index].contains(starSymbol),
-                  initial: objDataAttrs[
+                  isColor: colorTextControllers[attributes[index]] != null,
+                  colorTextController: colorTextControllers[attributes[index]],
+                  initialValue: objDataAttrs[
                       attributes[index].replaceFirst(starSymbol, "")]);
             }),
           ),
@@ -645,18 +699,75 @@ class _ObjectPopupState extends State<ObjectPopup> {
   getLayerForm() {
     final localeMsg = AppLocalizations.of(context)!;
     return ListView(padding: EdgeInsets.zero, children: [
-      getFormField(
+      CustomFormField(
           save: (newValue) => objData["slug"] = newValue,
           label: localeMsg.name,
           icon: Icons.edit,
-          initial: objData["slug"]),
-      getFormField(
+          initialValue: objData["slug"]),
+      CustomFormField(
           save: (newValue) => objData["applicability"] = newValue,
           label: localeMsg.applicability,
           icon: Icons.edit,
-          initial: objData["applicability"]),
+          initialValue: objData["applicability"]),
+      Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+        Text(
+          localeMsg.applyAlso,
+          style: const TextStyle(
+            fontSize: 14,
+            color: Colors.black,
+          ),
+        ),
+        Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            SizedBox(
+              height: 24,
+              width: 24,
+              child: Checkbox(
+                value: _applyDirectChild,
+                onChanged: _applyAllChild
+                    ? null
+                    : (bool? value) =>
+                        setState(() => _applyDirectChild = value!),
+              ),
+            ),
+            const SizedBox(width: 3),
+            Text(
+              localeMsg.directChildren,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.black,
+              ),
+            ),
+          ],
+        ),
+        Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            SizedBox(
+              height: 24,
+              width: 24,
+              child: Checkbox(
+                value: _applyAllChild,
+                onChanged: (bool? value) => setState(() {
+                  _applyAllChild = value!;
+                  _applyDirectChild = value!;
+                }),
+              ),
+            ),
+            const SizedBox(width: 3),
+            Text(
+              localeMsg.allChildren,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.black,
+              ),
+            ),
+          ],
+        ),
+      ]),
       Padding(
-          padding: const EdgeInsets.only(top: 4.0, left: 6, bottom: 6),
+          padding: const EdgeInsets.only(top: 10.0, left: 6, bottom: 6),
           child: Text(localeMsg.filtersTwo)),
       Padding(
         padding: const EdgeInsets.only(left: 4),
@@ -778,6 +889,11 @@ class _ObjectPopupState extends State<ObjectPopup> {
 
       if (_objCategory == LogCategories.layer.name) {
         objData["filters"] = objDataAttrs;
+        if (_applyAllChild) {
+          objData["applicability"] = objData["applicability"] + ".**.*";
+        } else if (_applyDirectChild) {
+          objData["applicability"] = objData["applicability"] + ".*";
+        }
       } else {
         objData["category"] = _objCategory;
         objData["attributes"] = objDataAttrs;
@@ -804,6 +920,11 @@ class _ObjectPopupState extends State<ObjectPopup> {
 
       if (_objCategory == LogCategories.layer.name) {
         objData["filters"] = objDataAttrs;
+        if (_applyAllChild) {
+          objData["applicability"] = objData["applicability"] + ".**.*";
+        } else if (_applyDirectChild) {
+          objData["applicability"] = objData["applicability"] + ".*";
+        }
       } else {
         objData["category"] = _objCategory;
         objData["attributes"] = objDataAttrs;
@@ -842,44 +963,5 @@ class _ObjectPopupState extends State<ObjectPopup> {
       case Failure(exception: final exception):
         showSnackBar(errorMessenger, exception.toString(), isError: true);
     }
-  }
-
-  getFormField(
-      {required Function(String?) save,
-      required String label,
-      required IconData icon,
-      String? prefix,
-      String? suffix,
-      List<TextInputFormatter>? formatters,
-      String? initial,
-      bool shouldValidate = true,
-      bool isCompact = false,
-      String tipStr = ""}) {
-    return Padding(
-      padding: FormInputPadding,
-      child: Tooltip(
-        message: tipStr != ""
-            ? "${AppLocalizations.of(context)!.example} $tipStr"
-            : "",
-        child: TextFormField(
-          initialValue: initial,
-          onSaved: (newValue) => save(newValue),
-          validator: (text) {
-            if (shouldValidate) {
-              if (text == null || text.isEmpty) {
-                return AppLocalizations.of(context)!.mandatoryField;
-              }
-            }
-            return null;
-          },
-          inputFormatters: formatters,
-          decoration: GetFormInputDecoration(
-              _isSmallDisplay || isCompact, label,
-              prefixText: prefix, suffixText: suffix, icon: icon),
-          cursorWidth: 1.3,
-          style: const TextStyle(fontSize: 14),
-        ),
-      ),
-    );
   }
 }

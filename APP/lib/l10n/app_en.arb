@@ -157,9 +157,16 @@
   "objType": "Object's type:",
   "attributes": "Attributes:",
   "attribute": "Attribute",
-  "applicability": "Applicability",
+  "applicability": "Applicable object",
+  "applyAlso": "Apply also to:",
+  "directChildren": "Direct children",
+  "allChildren": "All children",
   "filtersTwo": "Filters:",
   "filter": "Filter",
   "example": "Example:",
-  "viewEditNode": "View and edit this node"
+  "viewEditNode": "View and edit this node",
+
+  "selectColor": "Select color",
+  "colorPrimary": "Primary",
+  "colorWheel": "Wheel"
 }

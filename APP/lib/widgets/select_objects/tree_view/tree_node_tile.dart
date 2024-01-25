@@ -125,20 +125,35 @@ class _TreeNodeTileState extends State<TreeNodeTile> {
                                     padding: const EdgeInsets.all(2),
                                     onPressed: () => showCustomPopup(
                                         context,
-                                        ObjectPopup(
-                                          namespace:
-                                              TreeAppController.of(context)
-                                                  .namespace,
-                                          parentCallback: () => appController
-                                              .init({},
-                                                  argNamespace:
-                                                      TreeAppController.of(
-                                                              context)
-                                                          .namespace,
-                                                  reload: true,
-                                                  isTenantMode: true),
-                                          parentId: widget.entry.node.id,
-                                        ),
+                                        TreeAppController.of(context)
+                                                    .namespace ==
+                                                Namespace.Organisational
+                                            ? DomainPopup(
+                                                parentCallback: () =>
+                                                    TreeAppController.of(
+                                                            context)
+                                                        .init(
+                                                            {},
+                                                            argNamespace: Namespace
+                                                                .Organisational,
+                                                            reload: true,
+                                                            isTenantMode: true),
+                                                parentId: widget.entry.node.id,
+                                              )
+                                            : ObjectPopup(
+                                                namespace: TreeAppController.of(
+                                                        context)
+                                                    .namespace,
+                                                parentCallback: () =>
+                                                    appController.init({},
+                                                        argNamespace:
+                                                            TreeAppController
+                                                                    .of(context)
+                                                                .namespace,
+                                                        reload: true,
+                                                        isTenantMode: true),
+                                                parentId: widget.entry.node.id,
+                                              ),
                                         isDismissible: true),
                                     icon: const Icon(
                                       Icons.add,

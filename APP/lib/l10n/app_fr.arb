@@ -195,9 +195,16 @@
   "objType": "Type d'objet :",
   "attributes": "Attributs :",
   "attribute": "Attribut",
-  "applicability": "Applicabilité",
-  "filtersTwo": "Filtres:",
+  "applicability": "Objet applicable",
+  "applyAlso": "Applicabilité :",
+  "directChildren": "Enfants directs",
+  "allChildren": "Tous les enfants",
+  "filtersTwo": "Filtres :",
   "filter": "Filtre",
   "example": "Exemple :",
-  "viewEditNode": "Visualiser et modifier ce noeud"
+  "viewEditNode": "Visualiser et modifier ce noeud",
+
+  "selectColor": "Choisir couleur",
+  "colorPrimary": "Palette",
+  "colorWheel": "Roue"
 }

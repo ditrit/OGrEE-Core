@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ogree_app/widgets/language_toggle.dart';
+import 'package:ogree_app/widgets/common/language_toggle.dart';
 import 'package:ogree_app/widgets/login_card.dart';
 import 'package:ogree_app/widgets/reset_card.dart';
 
