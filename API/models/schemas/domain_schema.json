@@ -17,7 +17,7 @@
       },
       "name": {
         "type": "string",
-        "pattern":"^\\w(\\w|\\-)*$"
+        "$ref": "refs/types.json#/definitions/name"
       },
       "attributes": {
         "type": "object",

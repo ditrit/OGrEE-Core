@@ -1,5 +1,5 @@
 {
-    "slug"        : "ERROR-example-123",
+    "slug"        : "error_example-123",
     "description" : "NeXtScale ns1200",
     "category"    : "device",
     "sizeWDHmm"   : [447, 914.5, 263.3],
