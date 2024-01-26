@@ -20,6 +20,9 @@ class CustomFormField extends StatefulWidget {
   String? suffix;
   bool isObscure;
   bool isReadOnly;
+  Function(String)? extraValidationFn;
+  TextEditingController? checkListController;
+  List<String>? checkListValues;
 
   CustomFormField(
       {super.key,
@@ -37,7 +40,10 @@ class CustomFormField extends StatefulWidget {
       this.prefix,
       this.suffix,
       this.isObscure = false,
-      this.isReadOnly = false});
+      this.isReadOnly = false,
+      this.extraValidationFn,
+      this.checkListController,
+      this.checkListValues});
 
   @override
   State<CustomFormField> createState() => _CustomFormFieldState();
@@ -47,12 +53,27 @@ class _CustomFormFieldState extends State<CustomFormField> {
   bool isSmallDisplay = false;
   Color? _localColor;
   final _defaultColor = Colors.grey.shade500;
+  List<String> selectedCheckListItems = [];
 
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
     isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
     Widget? iconWidget;
+    if (widget.checkListController != null) {
+      iconWidget = PopupMenuButton<String>(
+        tooltip: localeMsg.selectionOptions,
+        offset: const Offset(0, -32),
+        itemBuilder: (_) => checkListPopupItems(widget.checkListValues!),
+        onCanceled: () {
+          print('canceled ' + selectedCheckListItems.toString());
+          String content = selectedCheckListItems.toString();
+          widget.checkListController!.text =
+              content.substring(1, content.length - 1).replaceAll(" ", "");
+        },
+        icon: const Icon(Icons.add),
+      );
+    }
     if (widget.isColor) {
       print(widget.colorTextController!.text);
       if (widget.initialValue != null) {
@@ -73,15 +94,26 @@ class _CustomFormFieldState extends State<CustomFormField> {
           onSelect: () async {
             // Store current color before we open the dialog.
             final Color colorBeforeDialog = _localColor ?? _defaultColor;
+            final wasNull = _localColor == null;
             // Wait for the picker to close, if dialog was dismissed,
             // then restore the color we had before it was opened.
             if (!(await colorPickerDialog(
                 localeMsg, widget.colorTextController!))) {
               setState(() {
-                _localColor = colorBeforeDialog;
-                widget.colorTextController!.text =
-                    colorBeforeDialog.toString().substring(10, 16);
+                if (!wasNull) {
+                  _localColor = colorBeforeDialog;
+                  widget.colorTextController!.text =
+                      colorBeforeDialog.toString().substring(10, 16);
+                } else {
+                  _localColor = null;
+                  widget.colorTextController!.text = "";
+                }
               });
+            } else if (widget.colorTextController!.text == "") {
+              // color confirmed but not sent to controller
+              // means that it was colorBeforeDialog
+              widget.colorTextController!.text =
+                  colorBeforeDialog.toString().substring(10, 16);
             }
           },
         ),
@@ -90,13 +122,13 @@ class _CustomFormFieldState extends State<CustomFormField> {
     return Padding(
       padding: FormInputPadding,
       child: Tooltip(
-        message: widget.tipStr != ""
-            ? "${AppLocalizations.of(context)!.example} ${widget.tipStr}"
-            : "",
+        message: widget.tipStr,
         child: TextFormField(
           obscureText: widget.isObscure,
           readOnly: widget.isReadOnly,
-          controller: widget.isColor ? widget.colorTextController : null,
+          controller: widget.isColor
+              ? widget.colorTextController
+              : widget.checkListController,
           onChanged: widget.isColor
               ? (value) {
                   if (value.length == 6) {
@@ -119,6 +151,9 @@ class _CustomFormFieldState extends State<CustomFormField> {
               if (widget.isColor && text.length < 6) {
                 return localeMsg.shouldHaveXChars(6);
               }
+              if (widget.extraValidationFn != null) {
+                return widget.extraValidationFn!(text);
+              }
             }
             return null;
           },
@@ -131,7 +166,8 @@ class _CustomFormFieldState extends State<CustomFormField> {
               iconColor: widget.isColor ? _localColor : null,
               iconWidget: iconWidget,
               prefixText: widget.prefix,
-              suffixText: widget.suffix),
+              suffixText: widget.suffix,
+              isCompact: widget.isCompact),
           cursorWidth: 1.3,
           style: const TextStyle(fontSize: 14),
         ),
@@ -144,7 +180,6 @@ class _CustomFormFieldState extends State<CustomFormField> {
     return ColorPicker(
       color: _localColor ?? _defaultColor,
       onColorChanged: (Color color) => setState(() {
-        print(color.toString());
         colorTextController.text = color.toString().substring(10, 16);
         _localColor = color;
       }),
@@ -201,5 +236,33 @@ class _CustomFormFieldState extends State<CustomFormField> {
       constraints:
           const BoxConstraints(minHeight: 290, minWidth: 300, maxWidth: 320),
     );
+  }
+
+  List<PopupMenuEntry<String>> checkListPopupItems(List<String> allItems) {
+    return allItems.map((String key) {
+      return PopupMenuItem(
+        padding: EdgeInsets.zero,
+        height: 0,
+        value: key,
+        child: StatefulBuilder(builder: (context, localSetState) {
+          return CheckboxListTile(
+            controlAffinity: ListTileControlAffinity.leading,
+            title: Text(key),
+            value: selectedCheckListItems.contains(key),
+            dense: true,
+            onChanged: (bool? value) {
+              setState(() {
+                if (value!) {
+                  selectedCheckListItems.add(key);
+                } else {
+                  selectedCheckListItems.remove(key);
+                }
+              });
+              localSetState(() {});
+            },
+          );
+        }),
+      );
+    }).toList();
   }
 }

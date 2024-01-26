@@ -75,6 +75,10 @@ class _ObjectPopupState extends State<ObjectPopup> {
   bool _applyDirectChild = false;
   bool _applyAllChild = false;
 
+  //Group
+  TextEditingController checkListController = TextEditingController();
+  List<String> groupCheckListContent = [];
+
   @override
   void initState() {
     super.initState();
@@ -301,9 +305,45 @@ class _ObjectPopupState extends State<ObjectPopup> {
     if (_isEdit) {
       await getObject();
     }
+    if (widget.parentId != null && widget.namespace == Namespace.Physical) {
+      List<String> searchCategories = [];
+      if (".".allMatches(widget.parentId!).length == 2) {
+        //its a room
+        searchCategories = ["rack", "corridor"];
+      } else if (".".allMatches(widget.parentId!).length == 3) {
+        //its a rack
+        searchCategories = ["device"];
+      }
+      for (var category in searchCategories) {
+        var response = await getGroupContent(widget.parentId!, category);
+        if (response != null) {
+          groupCheckListContent.addAll(response);
+        }
+      }
+    }
   }
 
   readJsonAssets() async {
+    final localeMsg = AppLocalizations.of(context)!;
+    var language = AppLocalizations.of(context)!.localeName;
+    // Get JSON refs/types
+    String data = await DefaultAssetBundle.of(context)
+        .loadString("../API/models/schemas/refs/types.json");
+    final Map<String, dynamic> jsonResult = json.decode(data);
+    var defs = Map<String, dynamic>.from(jsonResult["definitions"]);
+    Map<String, String> types = {};
+
+    for (var def in defs.keys.toList()) {
+      if (defs[def]["description"] != null) {
+        types["refs/types.json#/definitions/$def"] =
+            "${localeMsg.shouldBe} ${defs[def]["description"][language]}";
+      } else if (defs[def]["enum"] != null) {
+        types["refs/types.json#/definitions/$def"] =
+            "${localeMsg.shouldBeOneOf} ${defs[def]["enum"]}";
+      }
+    }
+
+    // Define JSON schemas to read according to namespace
     List<String> objects = [LogCategories.group.name];
     if (widget.namespace == Namespace.Physical) {
       objects = objsByNamespace[widget.namespace]!;
@@ -320,7 +360,6 @@ class _ObjectPopupState extends State<ObjectPopup> {
         // Get all properties
         var attrs = Map<String, dynamic>.from(
             jsonResult["properties"]["attributes"]["properties"]);
-        print(attrs.keys);
         categoryAttrs[obj] = attrs.keys.toList();
         if (jsonResult["properties"]["attributes"]["required"] != null) {
           // Get required ones
@@ -329,15 +368,33 @@ class _ObjectPopupState extends State<ObjectPopup> {
           for (var i = 0; i < categoryAttrs[obj]!.length; i++) {
             var attr = categoryAttrs[obj]![i];
             if (requiredAttrs.contains(attr)) {
-              categoryAttrs[obj]![i] = "*$attr";
+              categoryAttrs[obj]![i] = "$starSymbol$attr";
             }
           }
         }
         categoryAttrs[obj]!.sort((a, b) => a.compareTo(b));
+
         // Get examples
         var examples = List<Map<String, dynamic>>.from(jsonResult["examples"]);
         examplesAttrs[obj] =
             Map<String, String>.from(examples[0]["attributes"]);
+        for (var attr in categoryAttrs[obj]!) {
+          attr = attr.replaceFirst(starSymbol, ""); // use original name
+          if (attrs[attr]["\$ref"] != null) {
+            if (types[attrs[attr]["\$ref"]] != null) {
+              examplesAttrs[obj]![attr] = types[attrs[attr]["\$ref"]]!;
+            }
+          } else if (attrs[attr]["enum"] != null) {
+            examplesAttrs[obj]![attr] =
+                "${localeMsg.shouldBeOneOf} ${attrs[attr]["enum"]}";
+          } else if (examplesAttrs[obj]![attr] == null ||
+              examplesAttrs[obj]![attr] == "") {
+            examplesAttrs[obj]![attr] = "Type: ${attrs[attr]["type"]}";
+          } else {
+            examplesAttrs[obj]![attr] =
+                "${localeMsg.example} ${examplesAttrs[obj]![attr]}";
+          }
+        }
       }
     }
   }
@@ -357,6 +414,16 @@ class _ObjectPopupState extends State<ObjectPopup> {
         showSnackBar(messenger, exception.toString(), isError: true);
         if (context.mounted) Navigator.pop(context);
         return;
+    }
+  }
+
+  Future<List<String>?> getGroupContent(String parentId, targetCategory) async {
+    var result = await fetchGroupContent(parentId, targetCategory);
+    switch (result) {
+      case Success(value: final value):
+        return value;
+      case Failure():
+        return null;
     }
   }
 
@@ -464,6 +531,12 @@ class _ObjectPopupState extends State<ObjectPopup> {
               onFieldSubmitted();
             },
             onSaved: (newValue) => objData["domain"] = newValue,
+            validator: (text) {
+              if (text == null || text.isEmpty) {
+                return AppLocalizations.of(context)!.mandatoryField;
+              }
+              return null;
+            },
           );
         },
         optionsViewBuilder: (BuildContext context,
@@ -600,12 +673,14 @@ class _ObjectPopupState extends State<ObjectPopup> {
                 label: "Parent ID",
                 icon: Icons.family_restroom,
                 initialValue: objData["parentId"],
+                tipStr: localeMsg.parentIdTip,
                 shouldValidate: widget.namespace != Namespace.Organisational)
             : Container(),
         CustomFormField(
             save: (newValue) => objData["name"] = newValue,
             label: localeMsg.name,
             icon: Icons.edit,
+            tipStr: localeMsg.nameTip,
             initialValue: objData["name"]),
         _objCategory != OrgCategories.domain.name
             ? (domainList.isEmpty
@@ -636,6 +711,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
                 label: "Tags",
                 icon: Icons.tag_sharp,
                 shouldValidate: false,
+                tipStr: localeMsg.tagTip,
                 initialValue: objData["tags"]
                     ?.toString()
                     .substring(1, objData["tags"].toString().length - 1))
@@ -670,6 +746,13 @@ class _ObjectPopupState extends State<ObjectPopup> {
                   shouldValidate: attributes[index].contains(starSymbol),
                   isColor: colorTextControllers[attributes[index]] != null,
                   colorTextController: colorTextControllers[attributes[index]],
+                  checkListController:
+                      _objCategory == PhyCategories.group.name &&
+                              attributes[index] == "*content" &&
+                              groupCheckListContent.isNotEmpty
+                          ? checkListController
+                          : null,
+                  checkListValues: groupCheckListContent,
                   initialValue: objDataAttrs[
                       attributes[index].replaceFirst(starSymbol, "")]);
             }),

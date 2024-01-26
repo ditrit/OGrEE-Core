@@ -14,6 +14,7 @@ GetFormInputDecoration(isSmallDisplay, String? labelText,
           right: 14.0,
         ),
         bool isEnabled = true,
+        bool isCompact = false,
         Widget? iconWidget}) =>
     InputDecoration(
       prefixIcon: iconWidget ??
@@ -35,6 +36,7 @@ GetFormInputDecoration(isSmallDisplay, String? labelText,
       labelStyle: const TextStyle(
         fontSize: 14.0,
       ),
+      errorStyle: isCompact ? TextStyle(fontSize: 9, height: 0.25) : null,
       filled: true,
       fillColor: const Color.fromARGB(255, 248, 247, 247),
       contentPadding: contentPadding,

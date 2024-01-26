@@ -186,8 +186,6 @@ class TagFormState extends State<TagForm> {
       _localColor = Color(int.parse("0xFF${tag!.color}"));
       colorTextController.text = tag!.color;
       _isEdit = true;
-    } else {
-      colorTextController.text = "9e9e9e";
     }
   }
 

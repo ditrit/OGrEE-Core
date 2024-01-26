@@ -5,7 +5,7 @@
             "pattern": "^[0-9a-fA-F]{6}$",
             "description": {
                 "en": "a 6 length hex value (e.g. C0FFEE)",
-                "fr": "une valeur hexadécimale de 6 caractères"
+                "fr": "une valeur hexadécimale de 6 caractères (e.g. C0FFEE)"
             }
         },
         "colorTemplate": {

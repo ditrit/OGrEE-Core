@@ -82,3 +82,4 @@ flutter:
     - lib/l10n/app_fr.arb
     - assets/custom/.env
     - ../API/models/schemas/
+    - ../API/models/schemas/refs/
