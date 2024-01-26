@@ -334,9 +334,9 @@ class _ObjectPopupState extends State<ObjectPopup> {
     Map<String, String> types = {};
 
     for (var def in defs.keys.toList()) {
-      if (defs[def]["description"] != null) {
+      if (defs[def]["descriptions"] != null) {
         types["refs/types.json#/definitions/$def"] =
-            "${localeMsg.shouldBe} ${defs[def]["description"][language]}";
+            "${localeMsg.shouldBe} ${defs[def]["descriptions"][language]}";
       } else if (defs[def]["enum"] != null) {
         types["refs/types.json#/definitions/$def"] =
             "${localeMsg.shouldBeOneOf} ${defs[def]["enum"]}";

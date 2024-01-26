@@ -3,14 +3,14 @@
     "definitions": {
         "color": {
             "pattern": "^[0-9a-fA-F]{6}$",
-            "description": {
+            "descriptions": {
                 "en": "a 6 length hex value (e.g. C0FFEE)",
                 "fr": "une valeur hexadécimale de 6 caractères (e.g. C0FFEE)"
             }
         },
         "colorTemplate": {
             "pattern": "(^[0-9a-fA-F]{6}$)|(^@[a-zA-Z0-9-]+$)|(^$)",
-            "description": {
+            "descriptions": {
                 "en": "a 6 length hex value or @[color name] (e.g. C0FFEE, @blue)",
                 "fr": "une valeur hexadécimale de 6 caractères ou @[nom de la couleur]"
             }
@@ -23,49 +23,49 @@
         },
         "vector2": {
             "pattern": "^\\s*{\\s*\"x\"\\s*:\\s*((-|\\+)?[0-9]*[.]?)?[0-9]+\\s*,\\s*\"y\"\\s*:\\s*((-|\\+)?[0-9]*[.]?)?[0-9]+\\s*}\\s*$",
-            "description": {
+            "descriptions": {
                 "en": "a vector2 (e.g. {\"x\": 2.5, \"y\": 3}, {\"x\": -3.5, \"y\": -3})",
                 "fr": "un vecteur2 (e.g. {\"x\": 2.5, \"y\": 3}, {\"x\": -3.5, \"y\": -3})"
             }
         },
         "vector3": {
             "pattern": "^\\s*{\\s*\"x\"\\s*:\\s*((-|\\+)?[0-9]*[.]?)?[0-9]+\\s*,\\s*\"y\"\\s*:\\s*((-|\\+)?[0-9]*[.]?)?[0-9]+\\s*,\\s*\"z\"\\s*:\\s*((-|\\+)?[0-9]*[.]?)?[0-9]+\\s*}\\s*$",
-            "description": {
+            "descriptions": {
                 "en": "a vector3 (e.g. {\"x\": 2, \"y\": 2.5, \"z\": 3.33}, {\"x\": 2, \"y\": -4, \"z\": -3.5})",
                 "fr": "un vecteur3 (e.g. {\"x\": 2, \"y\": 2.5, \"z\": 3.33}, {\"x\": 2, \"y\": -4, \"z\": -3.5})"
             }
         },
         "float": {
             "pattern": "^[-]?([0-9]*[.])?[0-9]+$",
-            "description": {
+            "descriptions": {
                 "en": "a floating point number (e.g. 3.14, -2.72, 1, -2)",
                 "fr": "un nombre flottant (e.g. 3.14, -2.72, 1, -2)"
             }
         },
         "clearanceVector": {
             "pattern": "^\\[(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:,\\s*(?:\\d+(?:\\.\\d*)?|\\.\\d+)){5}\\]$",
-            "description": {
+            "descriptions": {
                 "en": "six float numbers inside square brackets (e.g. [2, 2.72, 3, 3.14, 4, 4.5])",
                 "fr": "six nombres flottants entre crochets (e.g. [2, 2.72, 3, 3.14, 4, 4.5])"
             }
         },
         "slug": {
             "pattern": "^[a-z0-9-_]+$",
-            "description": {
+            "descriptions": {
                 "en": "only lowercase letters, numbers, '-' or '_' (e.g. abc_xyz-0)",
                 "fr": "que des lettres minuscules, des chiffres, '-' ou '_' (e.g. abc_xyz-0)"
             }
         },
         "name": {
             "pattern": "^\\w(\\w|\\-)*$",
-            "description": {
+            "descriptions": {
                 "en": "only letters, numbers, '-' or '_' (e.g. ABC_xyz-0)",
                 "fr": "que des lettres, des chiffres, '-' ou '_' (e.g. abc_xyz-0)"
             }
         },
         "id": {
             "pattern": "^\\w(\\w|\\-)*(\\.\\w(\\w|\\-)*)*$",
-            "description": {
+            "descriptions": {
                 "en": "only letters, numbers, '-', '_' or '.' (e.g. BASIC.abc_xyz-0)",
                 "fr": "que des lettres, des chiffres, '-', '_' ou '.' (e.g. abc_xyz-0)"
             }
