@@ -1423,6 +1423,13 @@ func (n *connect3DNode) execute() (interface{}, error) {
 	return nil, cmd.Connect3D(n.url)
 }
 
+type disconnect3DNode struct{}
+
+func (n *disconnect3DNode) execute() (interface{}, error) {
+	cmd.Disconnect3D()
+	return nil, nil
+}
+
 type uiDelayNode struct {
 	time float64
 }

@@ -421,8 +421,8 @@ func Help(entry string) {
 	entry = strings.TrimSpace(entry)
 	switch entry {
 	case "ls", "pwd", "print", "printf", "cd", "tree", "get", "clear",
-		"lsog", "for", "while", "if", "env",
-		"cmds", "var", "unset", "selection", commands.Connect3D, "camera", "ui", "hc", "drawable",
+		"lsog", "grep", "for", "while", "if", "env",
+		"cmds", "var", "unset", "selection", commands.Connect3D, commands.Disconnect3D, "camera", "ui", "hc", "drawable",
 		"link", "unlink", "draw", "getu", "getslot", "undraw",
 		"lsenterprise", commands.Cp:
 		path = "./other/man/" + entry + ".txt"
@@ -473,6 +473,11 @@ func Exit() {
 
 func Connect3D(url string) error {
 	return Ogree3D.Connect(url, *State.Terminal)
+}
+
+func Disconnect3D() {
+	Ogree3D.InformOptional("Disconnect3d", -1, map[string]interface{}{"type": "logout", "data": ""})
+	Ogree3D.Disconnect()
 }
 
 func UIDelay(time float64) error {
