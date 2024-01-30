@@ -85,7 +85,8 @@
                         "$ref": "#/$defs/attributes"
                     },
                     "color": {
-                        "$ref": "#/$defs/color"
+                        "type": "string",
+                        "$ref": "refs/types.json#/definitions/colorTemplate"
                     },
                     "elemOrient": {
                         "type": "string",
@@ -129,7 +130,7 @@
         },
         "slug": {
             "type": "string",
-            "pattern": "^[a-zA-Z0-9-]+$"
+            "$ref": "refs/types.json#/definitions/slug"
         },
         "slots": {
             "type": "array",
@@ -155,7 +156,8 @@
                         "$ref": "#/$defs/attributes"
                     },
                     "color": {
-                        "$ref": "#/$defs/color"
+                        "type": "string",
+                        "$ref": "refs/types.json#/definitions/colorTemplate"
                     },
                     
                     "elemPos": {
@@ -185,10 +187,6 @@
                     "type": "string"
                 }
             }
-        },
-        "color": {
-            "type": "string",
-            "pattern": "(^[0-9a-fA-F]{6}$)|(^@[a-zA-Z0-9-]+$)|(^$)"
         },
         "elemPos": {
             "type": "array",

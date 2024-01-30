@@ -78,7 +78,6 @@
   - [Loops](#loops)
   - [Aliases](#aliases)
 - [Examples](#examples)
->>>>>>> b24e621b (docs(cli): create generic and generic template)
 - [Glossary](#glossary)
 - [Comments](#comments)
 - [Variables](#variables)

@@ -1,8 +1,11 @@
 package models
 
 import (
+	"bytes"
 	"embed"
+	"encoding/json"
 	"fmt"
+	"io"
 	"p3/repository"
 	u "p3/utils"
 	"strings"
@@ -17,6 +20,7 @@ import (
 //go:embed schemas/refs/*.json
 var embeddfs embed.FS
 var c *jsonschema.Compiler
+var types map[string]any
 
 func init() {
 	// Load JSON schemas
@@ -39,8 +43,29 @@ func loadJsonSchemas(schemaPrefix string) {
 		if strings.HasSuffix(e.Name(), ".json") {
 			file, err := embeddfs.Open(schemaPath + schemaPrefix + e.Name())
 			if err == nil {
-				print(schemaPrefix + e.Name() + " ")
-				c.AddResource(schemaPrefix+e.Name(), file)
+				if e.Name() == "types.json" {
+					// Make two copies of the reader stream
+					var buf bytes.Buffer
+					tee := io.TeeReader(file, &buf)
+
+					print(schemaPrefix + e.Name() + " ")
+					c.AddResource(schemaPrefix+e.Name(), tee)
+
+					// Read and unmarshall types.json file
+					typesBytes, _ := io.ReadAll(&buf)
+					json.Unmarshal(typesBytes, &types)
+
+					// Remove types that do not have a "pattern" attribute
+					types = types["definitions"].(map[string]any)
+					for key, definition := range types {
+						if _, ok := definition.(map[string]any)["pattern"]; !ok {
+							delete(types, key)
+						}
+					}
+				} else {
+					print(schemaPrefix + e.Name() + " ")
+					c.AddResource(schemaPrefix+e.Name(), file)
+				}
 			}
 		}
 	}
@@ -176,6 +201,15 @@ func validateJsonSchema(entity int, t map[string]interface{}) (bool, *u.Error) {
 			// Format errors array
 			errSlice := []string{}
 			for _, schErr := range v.BasicOutput().Errors {
+				// Check all types
+				for _, definition := range types {
+					pattern := definition.(map[string]any)["pattern"].(string)
+					// If the pattern is in the error message
+					if strings.Contains(schErr.Error, "does not match pattern "+quote(pattern)) || strings.Contains(schErr.Error, "does not match pattern "+pattern) {
+						// Substitute it for the more user-friendly description
+						schErr.Error = "should be " + definition.(map[string]any)["description"].(string)
+					}
+				}
 				if len(schErr.Error) > 0 && !strings.Contains(schErr.Error, "doesn't validate with") {
 					if len(schErr.InstanceLocation) > 0 {
 						errSlice = append(errSlice, schErr.InstanceLocation+" "+schErr.Error)
@@ -362,4 +396,12 @@ func ObjectsHaveAttribute(entities []int, attribute, value string) (bool, *u.Err
 	}
 
 	return false, nil
+}
+
+// Returns single-quoted string
+func quote(s string) string {
+	s = fmt.Sprintf("%q", s)
+	s = strings.ReplaceAll(s, `\"`, `"`)
+	s = strings.ReplaceAll(s, `'`, `\'`)
+	return "'" + s[1:len(s)-1] + "'"
 }
