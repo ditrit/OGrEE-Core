@@ -211,9 +211,6 @@ class TagFormState extends State<TagForm> {
             save: (newValue) => _tagColor = newValue,
             label: localeMsg.color,
             icon: Icons.circle,
-            formatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'[0-9a-fA-F]'))
-            ],
             isColor: true,
             colorTextController: colorTextController,
             // initialValue: _isEdit ? tag!.color : null

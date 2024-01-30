@@ -321,9 +321,6 @@ class _DomainPopupState extends State<DomainPopup>
             save: (newValue) => _domainColor = newValue,
             label: localeMsg.color,
             icon: Icons.color_lens,
-            formatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'[0-9a-fA-F]'))
-            ],
             isColor: true,
             colorTextController: colorTextController,
             maxLength: 6),

@@ -56,6 +56,14 @@ class _CustomFormFieldState extends State<CustomFormField> {
   List<String> selectedCheckListItems = [];
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.initialValue != null && widget.isColor) {
+      widget.colorTextController!.text = widget.initialValue!;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
     isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
@@ -66,7 +74,6 @@ class _CustomFormFieldState extends State<CustomFormField> {
         offset: const Offset(0, -32),
         itemBuilder: (_) => checkListPopupItems(widget.checkListValues!),
         onCanceled: () {
-          print('canceled ' + selectedCheckListItems.toString());
           String content = selectedCheckListItems.toString();
           widget.checkListController!.text =
               content.substring(1, content.length - 1).replaceAll(" ", "");
@@ -76,9 +83,6 @@ class _CustomFormFieldState extends State<CustomFormField> {
     }
     if (widget.isColor) {
       print(widget.colorTextController!.text);
-      if (widget.initialValue != null) {
-        widget.colorTextController!.text = widget.initialValue!;
-      }
       if (widget.colorTextController!.text != "") {
         _localColor =
             Color(int.parse("0xFF${widget.colorTextController!.text}"));
@@ -158,7 +162,9 @@ class _CustomFormFieldState extends State<CustomFormField> {
             return null;
           },
           maxLength: widget.maxLength,
-          inputFormatters: widget.formatters,
+          inputFormatters: widget.isColor
+              ? [FilteringTextInputFormatter.allow(RegExp(r'[0-9a-fA-F]'))]
+              : widget.formatters,
           initialValue: widget.isColor ? null : widget.initialValue,
           decoration: GetFormInputDecoration(
               isSmallDisplay || widget.isCompact, widget.label,
