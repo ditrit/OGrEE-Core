@@ -33,6 +33,9 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 	router.HandleFunc("/api/version",
 		controllers.GetVersion).Methods("GET", "OPTIONS", "HEAD")
 
+	router.HandleFunc("/api/events",
+		controllers.CreateEventStream).Methods("GET", "OPTIONS", "HEAD")
+
 	// User and Authentication
 	router.HandleFunc("/api/login",
 		controllers.Authenticate).Methods("POST", "OPTIONS")
