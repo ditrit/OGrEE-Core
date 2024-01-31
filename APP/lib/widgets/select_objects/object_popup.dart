@@ -28,7 +28,7 @@ class ObjectPopup extends StatefulWidget {
   State<ObjectPopup> createState() => _ObjectPopupState();
 }
 
-enum PhyCategories { site, building, room, rack, device, group }
+enum PhyCategories { site, building, room, corridor, rack, device, group }
 
 enum OrgCategories { domain }
 
@@ -281,7 +281,11 @@ class _ObjectPopupState extends State<ObjectPopup> {
         case 1:
           categories = [PhyCategories.room.name];
         case 2:
-          categories = [PhyCategories.rack.name, PhyCategories.group.name];
+          categories = [
+            PhyCategories.rack.name,
+            PhyCategories.corridor.name,
+            PhyCategories.group.name
+          ];
         case 3:
           categories = [PhyCategories.device.name, PhyCategories.group.name];
         default:

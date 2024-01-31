@@ -169,8 +169,7 @@
   "selectColor": "Select color",
   "colorPrimary": "Primary",
   "colorWheel": "Wheel",
-  "shouldBe": "Should be",
-  "shouldBeOneOf": "Should be one of:",
+  "shouldBeOneOf": "One of:",
   "parentIdTip": "Accept only letters, numbers, '-', '_' or '.'",
   "nameTip": "Accept only letters, numbers, '-' or '_'",
   "tagTip": "A list of tags separated by ,"

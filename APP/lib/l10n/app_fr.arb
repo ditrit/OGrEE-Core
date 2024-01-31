@@ -207,7 +207,6 @@
   "selectColor": "Choisir couleur",
   "colorPrimary": "Palette",
   "colorWheel": "Roue",
-  "shouldBe": "Valeur acceptée :",
   "shouldBeOneOf": "Valeurs acceptées :",
   "parentIdTip": "Que des lettres, des chiffres, -, _ ou .",
   "nameTip": "Que des lettres, des chiffres, -, ou _",
