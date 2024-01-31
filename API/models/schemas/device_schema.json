@@ -63,8 +63,7 @@
           "heightUnit",
           "orientation",
           "size",
-          "sizeUnit",
-          "template"
+          "sizeUnit"
         ]
       }
     },
@@ -85,7 +84,7 @@
           "template": "huawei-xxxxxx",
           "type": "blade",
           "vendor": "Huawei",
-          "weightKg": 1.81
+          "weightKg": "1.81"
       },
       "category": "device",
       "description": [

@@ -7,7 +7,8 @@ void showSnackBar(
   Duration duration = const Duration(seconds: 6),
   bool isError = false,
   bool isSuccess = false,
-  String copyText = "",
+  String copyTextAction = "",
+  String copyTextTap = "",
 }) {
   var color = Colors.blueGrey.shade900;
   if (isError) color = Colors.red.shade900;
@@ -18,14 +19,21 @@ void showSnackBar(
       SnackBar(
         behavior: SnackBarBehavior.floating,
         backgroundColor: color,
-        content: Text(message),
+        content: copyTextTap != ""
+            ? InkWell(
+                child: Text(message),
+                onTap: () async {
+                  await Clipboard.setData(ClipboardData(text: copyTextTap));
+                },
+              )
+            : Text(message),
         duration: duration,
-        action: copyText == ""
+        action: copyTextAction == ""
             ? null
             : SnackBarAction(
                 label: "COPY",
                 onPressed: () =>
-                    Clipboard.setData(ClipboardData(text: copyText))),
+                    Clipboard.setData(ClipboardData(text: copyTextAction))),
         showCloseIcon: duration.inSeconds > 5,
       ),
     );

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../main.dart';
+import '../../main.dart';
 
 class LanguageToggle extends StatefulWidget {
+  const LanguageToggle({super.key});
+
   @override
   State<LanguageToggle> createState() => _LanguageToggleState();
 }

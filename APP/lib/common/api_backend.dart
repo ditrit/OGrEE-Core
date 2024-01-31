@@ -85,7 +85,8 @@ Future<Result<List<String>, Exception>> loginAPI(String email, String password,
     if (response.statusCode == 200) {
       data = (Map<String, dynamic>.from(data["account"]));
       token = data["token"]!;
-      if (data["isTenant"] == null && data["roles"]["*"] == "manager") {
+      if (data["isTenant"] == null &&
+          data["roles"][allDomainsTag] == "manager") {
         // Not tenant mode, but tenant admin
         isTenantAdmin = true;
         tenantUrl = apiUrl;
@@ -400,6 +401,153 @@ Future<Result<void, Exception>> createProject(Project project) async {
   }
 }
 
+Future<Result<void, Exception>> createObject(
+    Map<String, dynamic> object, String category) async {
+  print("API create Object");
+  try {
+    Uri url = Uri.parse('$apiUrl/api/${category}s');
+    final response = await http.post(url,
+        body: json.encode(object), headers: getHeader(token));
+    print(response);
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return const Success(null);
+    } else {
+      final Map<String, dynamic> data = json.decode(response.body);
+      if (data["errors"] != null) {
+        var errors = List<String>.from(data["errors"]);
+        print(errors.toString());
+        String errStr = "";
+        for (var err in errors) {
+          errStr = "$errStr\n$err";
+        }
+        return Failure(Exception(errStr));
+      }
+      return Failure(Exception(data["message"].toString()));
+    }
+  } on Exception catch (e) {
+    return Failure(e);
+  }
+}
+
+Future<Result<Map<String, dynamic>, Exception>> fetchObject(String id,
+    {String idKey = "id"}) async {
+  print("API fetch Object");
+  try {
+    Uri url = Uri.parse('$apiUrl/api/objects?$idKey=$id');
+    final response = await http.get(url, headers: getHeader(token));
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      Map<String, dynamic> data = json.decode(response.body);
+      var list = List<Map<String, dynamic>>.from(data["data"]);
+      if (list.isEmpty) {
+        return Failure(Exception("No object found for to this request"));
+      }
+      return Success(list.first);
+    } else {
+      final Map<String, dynamic> data = json.decode(response.body);
+      return Failure(Exception(data["message"].toString()));
+    }
+  } on Exception catch (e) {
+    return Failure(e);
+  }
+}
+
+Future<Result<void, Exception>> updateObject(
+    String objId, String category, Map<String, dynamic> object) async {
+  print("API update object");
+  try {
+    Uri url = Uri.parse('$apiUrl/api/${category}s/$objId');
+    final response = await http.put(url,
+        body: json.encode(object), headers: getHeader(token));
+    print(response.statusCode);
+    if (response.statusCode == 200) {
+      return const Success(null);
+    } else {
+      var data = json.decode(response.body);
+      if (data["errors"] != null) {
+        var errors = List<String>.from(data["errors"]);
+        print(errors.toString());
+        String errStr = "";
+        for (var err in errors) {
+          errStr = "$errStr\n$err";
+        }
+        return Failure(Exception(errStr));
+      }
+      return Failure(Exception("Error: ${data["message"]}"));
+    }
+  } on Exception catch (e) {
+    return Failure(e);
+  }
+}
+
+Future<Result<void, Exception>> deleteObject(String objId, String category,
+    {http.Client? client}) async {
+  print("API delete object $category");
+  client ??= http.Client();
+  try {
+    Uri url = Uri.parse('$apiUrl/api/${category}s/$objId');
+    final response = await client.delete(url, headers: getHeader(token));
+    print(response.statusCode);
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return const Success(null);
+    } else {
+      var data = json.decode(response.body);
+      return Failure(Exception("Error: ${data["message"]}"));
+    }
+  } on Exception catch (e) {
+    return Failure(e);
+  }
+}
+
+Future<Result<void, Exception>> createTemplate(
+    Uint8List file, String category) async {
+  print("API create template $category");
+  try {
+    Uri url = Uri.parse('$apiUrl/api/${category}s');
+    final response =
+        await http.post(url, body: file, headers: getHeader(token));
+    print(response.statusCode);
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return const Success(null);
+    } else {
+      final Map<String, dynamic> data = json.decode(response.body);
+      return Failure(Exception(data["message"].toString()));
+    }
+  } on Exception catch (e) {
+    return Failure(e);
+  }
+}
+
+Future<Result<List<String>, Exception>> fetchGroupContent(
+    String id, category) async {
+  print("API fetch GR content");
+  try {
+    Uri url = Uri.parse('$apiUrl/api/objects?id=$id.*&category=$category');
+    print('$apiUrl/api/objects?$id=$id.*&category=$category');
+    final response = await http.get(url, headers: getHeader(token));
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      Map<String, dynamic> data = json.decode(response.body);
+      var list = List<Map<String, dynamic>>.from(data["data"]);
+      print(list);
+      if (list.isEmpty) {
+        return Failure(Exception("No object found for to this request"));
+      } else {
+        List<String> content = [];
+        print("hey ya");
+        for (var item in list) {
+          content.add(item["name"].toString());
+        }
+        print(content);
+        return Success(content);
+      }
+    } else {
+      final Map<String, dynamic> data = json.decode(response.body);
+      return Failure(Exception(data["message"].toString()));
+    }
+  } on Exception catch (e) {
+    return Failure(e);
+  }
+}
+
 Future<Result<(List<Tenant>, List<DockerContainer>), Exception>>
     fetchApplications({http.Client? client}) async {
   print("API get Apps");
@@ -592,7 +740,7 @@ Future<Result<List<DockerContainer>, Exception>> fetchTenantDockerInfo(
   print("API get Tenant Docker Info");
   client ??= http.Client();
   try {
-    Uri url = Uri.parse('$apiUrl/api/tenants/${tenantName}');
+    Uri url = Uri.parse('$apiUrl/api/tenants/$tenantName');
     final response = await client.get(url, headers: getHeader(token));
     print(response.statusCode);
     if (response.statusCode == 200) {

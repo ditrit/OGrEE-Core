@@ -100,7 +100,7 @@ class ProjectCard extends StatelessWidget {
                     child: Text(localeMsg.author),
                   ),
                   Text(
-                    " ${project.authorLastUpdate}",
+                    "${project.authorLastUpdate}",
                     style: TextStyle(backgroundColor: Colors.grey.shade200),
                   ),
                 ],
@@ -113,7 +113,7 @@ class ProjectCard extends StatelessWidget {
                     child: Text(localeMsg.lastUpdate),
                   ),
                   Text(
-                    " ${project.lastUpdate}",
+                    "${project.lastUpdate}",
                     style: TextStyle(backgroundColor: Colors.grey.shade200),
                   ),
                 ],

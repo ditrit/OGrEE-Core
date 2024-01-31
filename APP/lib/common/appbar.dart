@@ -5,7 +5,7 @@ import 'package:ogree_app/pages/login_page.dart';
 import 'package:ogree_app/pages/projects_page.dart';
 import 'package:ogree_app/pages/tenant_page.dart';
 import 'package:ogree_app/widgets/change_password_popup.dart';
-import 'package:ogree_app/widgets/language_toggle.dart';
+import 'package:ogree_app/widgets/common/language_toggle.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../widgets/tenants/popups/create_server_popup.dart';
@@ -104,8 +104,8 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
                 ],
               ),
             ),
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 15),
+      const Padding(
+        padding: EdgeInsets.symmetric(vertical: 15),
         child: LanguageToggle(),
       ),
       const SizedBox(width: 20),
@@ -121,7 +121,7 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
                 builder: (context) => const TenantPage(userEmail: "admin"),
               ));
             } else {
-              showCustomPopup(context, ChangePasswordPopup());
+              showCustomPopup(context, const ChangePasswordPopup());
             }
           },
           itemBuilder: (_) => entries,

@@ -15,23 +15,62 @@ class _NodeActionsChipState extends State<_NodeActionsChip> {
 
   @override
   Widget build(BuildContext context) {
+    var namespace = TreeAppController.of(context).namespace;
+    var menuEntries = <PopupMenuEntry<int>>[
+      PopupMenuItem(
+        value: 1,
+        child: ListTile(
+          dense: true,
+          title: Text(AppLocalizations.of(context)!.toggleSelection),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+          leading: const Icon(Icons.account_tree_rounded, color: _kDarkBlue),
+        ),
+      )
+    ];
+    if (namespace != Namespace.Logical || widget.node.id[0] != starSymbol) {
+      menuEntries.add(
+        PopupMenuItem(
+          value: 2,
+          child: ListTile(
+            dense: true,
+            title: Text(AppLocalizations.of(context)!.viewEditNode),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+            leading: const Icon(Icons.edit, color: _kDarkBlue),
+          ),
+        ),
+      );
+    }
     return PopupMenuButton<int>(
       key: _popupMenuKey,
       tooltip: AppLocalizations.of(context)!.selectionOptions,
       offset: const Offset(0, 32),
-      itemBuilder: (_) => <PopupMenuEntry<int>>[
-        PopupMenuItem(
-          value: 1,
-          child: ListTile(
-            dense: true,
-            title: Text(AppLocalizations.of(context)!.toggleSelection),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 4),
-            leading: const Icon(Icons.account_tree_rounded, color: _kDarkBlue),
-          ),
-        ),
-      ],
+      itemBuilder: (_) => menuEntries,
       onSelected: (int selected) {
-        TreeAppController.of(context).toggleAllFrom(widget.node);
+        if (selected == 1) {
+          TreeAppController.of(context).toggleAllFrom(widget.node);
+        } else {
+          showCustomPopup(
+              context,
+              namespace == Namespace.Organisational
+                  ? DomainPopup(
+                      parentCallback: () => TreeAppController.of(context).init(
+                          {},
+                          argNamespace: Namespace.Organisational,
+                          reload: true,
+                          isTenantMode: true),
+                      domainId: widget.node.id,
+                    )
+                  : ObjectPopup(
+                      namespace: namespace,
+                      parentCallback: () => TreeAppController.of(context).init(
+                          {},
+                          argNamespace: namespace,
+                          reload: true,
+                          isTenantMode: false),
+                      objId: widget.node.id,
+                    ),
+              isDismissible: true);
+        }
       },
       child: RawChip(
         onPressed: () => _menu?.showButtonMenu(),

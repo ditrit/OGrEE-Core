@@ -133,9 +133,9 @@ class TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
         text: "${localeMsg.user}s",
         icon: const Icon(Icons.person),
       ),
-      Tab(
+      const Tab(
         text: "Tags",
-        icon: const Icon(Icons.turned_in),
+        icon: Icon(Icons.turned_in),
       ),
     ];
     if (widget.tenant != null) {
@@ -156,7 +156,7 @@ class TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
           : const ApiStatsView(),
       _isLocked && widget.tenant != null
           ? LockedView(tenant: widget.tenant!, parentCallback: unlockView)
-          : DomainView(),
+          : const DomainView(),
       _isLocked && widget.tenant != null
           ? LockedView(tenant: widget.tenant!, parentCallback: unlockView)
           : (_domainSearch.isEmpty
@@ -172,7 +172,7 @@ class TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
                 )),
       _isLocked && widget.tenant != null
           ? LockedView(tenant: widget.tenant!, parentCallback: unlockView)
-          : TagsView(),
+          : const TagsView(),
     ];
     if (_domainSearch.isNotEmpty) {
       // switch to domain page

@@ -39,6 +39,7 @@
     "examples": [
       {
         "attributes": {
+          "color": "00ED00"
         },
         "category": "domain",
         "description": [

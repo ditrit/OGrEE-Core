@@ -78,7 +78,9 @@ class _SelectedChipsState extends State<SelectedChips> {
           ),
         ));
       } else {
-        value.forEach((element) => nodes[element] = true);
+        for (var element in value) {
+          nodes[element] = true;
+        }
       }
     });
 

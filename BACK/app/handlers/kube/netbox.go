@@ -24,7 +24,7 @@ func CreateNetbox(c *gin.Context) {
 
 	host := "dcim." + os.Getenv("HOST")
 	command := "helm install netbox"
-	command += " --set image.tag=v3.5-2.6.1"
+	command += " --set image.tag=v3.7.1-2.8.0"
 	command += " --set superuser.name=" + newNetbox.Username
 	command += " --set superuser.password=" + newNetbox.Password
 	command += " --set postgresql.image.tag=15.4.0"

@@ -8,6 +8,7 @@ import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/models/user.dart';
+import 'package:ogree_app/widgets/common/form_field.dart';
 import 'package:ogree_app/widgets/select_objects/settings_view/tree_filter.dart';
 
 class UserPopup extends StatefulWidget {
@@ -187,8 +188,9 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
                                                     ? localeMsg.modifyOK
                                                     : localeMsg.createOK,
                                                 isSuccess: true);
-                                            if (context.mounted)
+                                            if (context.mounted) {
                                               Navigator.of(context).pop();
+                                            }
                                           case Failure(
                                               exception: final exception
                                             ):
@@ -281,23 +283,23 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
     return ListView(
       padding: EdgeInsets.zero,
       children: [
-        getFormField(
+        CustomFormField(
             save: (newValue) => _userName = newValue,
             label: "Name",
             icon: Icons.person,
-            initial: _isEdit ? widget.modifyUser!.name : null),
-        getFormField(
+            initialValue: _isEdit ? widget.modifyUser!.name : null),
+        CustomFormField(
             save: (newValue) => _userEmail = newValue,
             label: "Email",
             icon: Icons.alternate_email,
-            initial: _isEdit ? widget.modifyUser!.email : null,
+            initialValue: _isEdit ? widget.modifyUser!.email : null,
             isReadOnly: _isEdit),
-        getFormField(
+        CustomFormField(
             save: (newValue) => _userPassword = newValue,
             label: localeMsg.password,
             icon: Icons.lock,
-            initial: _isEdit ? widget.modifyUser!.password : null,
-            obscure: true,
+            initialValue: _isEdit ? widget.modifyUser!.password : null,
+            isObscure: true,
             isReadOnly: _isEdit),
         const Padding(
           padding: EdgeInsets.only(top: 8.0, bottom: 10, left: 12),
@@ -332,7 +334,7 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
                 child: ElevatedButton.icon(
                     onPressed: () async {
                       FilePickerResult? result =
-                          await FilePicker.platform.pickFiles();
+                          await FilePicker.platform.pickFiles(withData: true);
                       if (result != null) {
                         setState(() {
                           _loadedFile = result.files.single;
@@ -364,38 +366,6 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
               )
             : Container(),
       ]),
-    );
-  }
-
-  getFormField(
-      {required Function(String?) save,
-      required String label,
-      required IconData icon,
-      String? prefix,
-      String? suffix,
-      List<TextInputFormatter>? formatters,
-      String? initial,
-      bool isReadOnly = false,
-      bool obscure = false}) {
-    return Padding(
-      padding: FormInputPadding,
-      child: TextFormField(
-        obscureText: obscure,
-        initialValue: initial,
-        readOnly: isReadOnly,
-        onSaved: (newValue) => save(newValue),
-        validator: (text) {
-          if (text == null || text.isEmpty) {
-            return AppLocalizations.of(context)!.mandatoryField;
-          }
-          return null;
-        },
-        inputFormatters: formatters,
-        decoration: GetFormInputDecoration(_isSmallDisplay, label,
-            prefixText: prefix, suffixText: suffix, icon: icon),
-        cursorWidth: 1.3,
-        style: const TextStyle(fontSize: 14),
-      ),
     );
   }
 
