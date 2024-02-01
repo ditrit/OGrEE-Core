@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	u "p3/utils"
-	"time"
 )
 
 var eventNotifier chan string
@@ -27,11 +26,11 @@ func CreateEventStream(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Connection", "keep-alive")
 
 	// Simulate sending events (you can replace this with real data)
-	for i := 0; i < 1; i++ {
-		fmt.Fprintf(w, "data: %s\n\n", fmt.Sprintf("Event %d", i))
-		time.Sleep(3 * time.Second)
-		w.(http.Flusher).Flush()
-	}
+	// for i := 0; i < 1; i++ {
+	// 	fmt.Fprintf(w, "data: %s\n\n", fmt.Sprintf("Event %d", i))
+	// 	time.Sleep(3 * time.Second)
+	// 	w.(http.Flusher).Flush()
+	// }
 
 	// done := make(chan bool)
 
