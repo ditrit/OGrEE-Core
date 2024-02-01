@@ -1,15 +1,20 @@
 package controllers
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	u "p3/utils"
 	"time"
 )
 
 var eventNotifier chan string
+var broadcaster u.BroadcastServer
 
 func init() {
+	ctx, _ := context.WithCancel(context.Background())
 	eventNotifier = make(chan string)
+	broadcaster = u.NewBroadcastServer(ctx, eventNotifier)
 }
 
 func CreateEventStream(w http.ResponseWriter, r *http.Request) {
@@ -38,7 +43,8 @@ func CreateEventStream(w http.ResponseWriter, r *http.Request) {
 	// 	return false
 	// 	done <- true
 	// }()
-	for str := range eventNotifier {
+	listener := broadcaster.Subscribe()
+	for str := range listener {
 		println("GOT IT")
 		fmt.Println(str)
 		fmt.Fprintf(w, "data: %v\n", str)
