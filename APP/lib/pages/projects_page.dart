@@ -91,17 +91,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
                 builder: (context, _) {
                   if (!_gotData) {
                     return const Center(child: CircularProgressIndicator());
-                  } else if (_projects != null && _projects!.isNotEmpty) {
-                    return Expanded(
-                      child: SingleChildScrollView(
-                        child: Wrap(
-                          spacing: 5,
-                          children: getCards(context),
-                        ),
-                      ),
-                    );
-                  } else if ((_tenants != null && _tenants!.isNotEmpty) ||
-                      (_tools != null && _tools!.isNotEmpty)) {
+                  } else if (!widget.isTenantMode) {
                     return Expanded(
                       child: SingleChildScrollView(
                         child: Wrap(
@@ -111,8 +101,20 @@ class _ProjectsPageState extends State<ProjectsPage> {
                       ),
                     );
                   } else {
-                    // Empty messages
-                    return Text(localeMsg.noProjects);
+                    if ((_tenants != null && _tenants!.isNotEmpty) ||
+                        (_tools != null && _tools!.isNotEmpty)) {
+                      return Expanded(
+                        child: SingleChildScrollView(
+                          child: Wrap(
+                            spacing: 5,
+                            children: getCards(context),
+                          ),
+                        ),
+                      );
+                    } else {
+                      // Empty messages
+                      return Text(localeMsg.noProjects);
+                    }
                   }
                 }),
           ],

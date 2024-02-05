@@ -251,7 +251,7 @@ func addAppAssets(newTenant models.Tenant, assestsDit string) {
 
 	// Add default logo if none already present
 	userLogo := assestsDit + "/logo.png"
-	defaultLogo := "flutter-assets/logo.png"
+	defaultLogo := "handlers/docker/flutter-assets/logo.png"
 	if _, err := os.Stat(userLogo); err == nil {
 		println("Logo already exists")
 	} else {
