@@ -31,7 +31,11 @@
             "$ref": "refs/types.json#/definitions/metricImperialUnit"
           },
           "slot": {
-            "type": "string"
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
           },
           "template": {
             "type": "string"

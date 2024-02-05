@@ -11,6 +11,7 @@ import (
 	"github.com/elliotchance/pie/v2"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 //go:embed schemas/*.json
@@ -77,6 +78,10 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 			parent["parent"] = "rack"
 			parent["domain"] = x["domain"]
 			parent["id"] = x["id"]
+			if deviceSlots, ok := t["slot"].([]string); ok && len(deviceSlots) > 0 {
+				return nil, &u.Error{Type: u.ErrInvalidValue,
+					Message: "Invalid slot: device should not have slots if parent is a rack"}
+			}
 			return parent, nil
 		}
 
@@ -85,6 +90,24 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 			parent["parent"] = "device"
 			parent["domain"] = y["domain"]
 			parent["id"] = y["id"]
+			if deviceSlots, ok := t["slot"].([]string); ok {
+				// check if requested slots exist in parent device
+				countFound := 0
+				if templateSlug, ok := y["template"].(string); ok {
+					template, _ := GetObject(bson.M{"slug": templateSlug}, "device", u.RequestFilters{}, nil)
+					if parentSlots, ok := template["slots"].([]map[string]interface{}); ok {
+						for _, parentSlot := range parentSlots {
+							if pie.Contains(deviceSlots, parentSlot["location"].(string)) {
+								countFound = countFound + 1
+							}
+						}
+					}
+				}
+				if len(deviceSlots) != countFound {
+					return nil, &u.Error{Type: u.ErrInvalidValue,
+						Message: "Invalid slot: parent dos not have all of requested slots"}
+				}
+			}
 			return parent, nil
 		}
 
@@ -334,6 +357,25 @@ func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 				if len(entData) > 0 {
 					return &u.Error{Type: u.ErrBadFormat,
 						Message: "This group ID is not unique among " + entStr + "s"}
+				}
+			}
+		case u.DEVICE:
+			if parent["parent"].(string) == "device" {
+				if deviceSlots, ok := t["slots"].([]string); ok {
+					// check if all requested slots are free
+					andReq := bson.A{}
+					idPattern := primitive.Regex{Pattern: "^" + t["parentId"].(string) +
+						"(." + u.NAME_REGEX + "){1,1}$", Options: ""} // filter siblings
+					andReq = append(andReq, bson.M{"id": idPattern})
+					andReq = append(andReq, bson.M{"slot": bson.M{"$in": deviceSlots}}) // filter slots
+					count, err := repository.CountObjects(u.DEVICE, bson.M{"$and": andReq})
+					if err != nil {
+						return err
+					}
+					if count != 0 {
+						return &u.Error{Type: u.ErrBadFormat,
+							Message: "Invalid slot: one or more requested slots are already in user"}
+					}
 				}
 			}
 		}
