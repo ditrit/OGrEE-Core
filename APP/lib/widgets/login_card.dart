@@ -165,11 +165,15 @@ class _LoginCardState extends State<LoginCard> {
                                     SizedBox(
                                       height: 24,
                                       width: 24,
-                                      child: Checkbox(
-                                        value: _isChecked,
-                                        onChanged: (bool? value) =>
-                                            setState(() => _isChecked = value!),
-                                      ),
+                                      child: StatefulBuilder(
+                                          builder: (context, localSetState) {
+                                        return Checkbox(
+                                          value: _isChecked,
+                                          onChanged: (bool? value) =>
+                                              localSetState(
+                                                  () => _isChecked = value!),
+                                        );
+                                      }),
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
@@ -332,9 +336,9 @@ class BackendInput extends StatelessWidget {
               isDense: true,
               labelText: localeMsg.selectServer,
               labelStyle: const TextStyle(fontSize: 14)),
-          onTap: () {
-            textEditingController.clear();
-          },
+          // onTap: () {
+          //   textEditingController.clear();
+          // },
         );
       },
       optionsViewBuilder: (BuildContext context,
