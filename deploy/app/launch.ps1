@@ -5,9 +5,9 @@ param (
  )
 
  # build front container
-cd ..\..\APP
-docker build . -t ogree-app
-$assetsDir = "${PWD}\assets\custom"
+cd ..\..
+docker build . -f APP/Dockerfile -t ogree-app
+$assetsDir = "${PWD}\APP\assets\custom"
 $file = "${assetsDir}\.env"
 (Get-Content $file) -replace '8081', $portBack | Set-Content $file
 
@@ -33,6 +33,6 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # compile and run back
-cd ..\BACK\app
+cd BACK\app
 docker run --rm -v ${PWD}:/workdir -w /workdir -e GOOS=windows golang go build -o ogree_app_backend.exe
 .\ogree_app_backend.exe -port $portBack

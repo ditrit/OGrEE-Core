@@ -15,10 +15,10 @@ do
 done
 
 # build front container
-cd ../../APP
-assetsDir="$(pwd)/assets/custom"
+cd ../..
+assetsDir="$(pwd)/APP/assets/custom"
 file="$assetsDir/.env"
-docker build . -t ogree-app
+docker build . -f APP/Dockerfile -t ogree-app
 sed -i "s/8081/$portBack/g" $file
 
 # run container
@@ -40,7 +40,7 @@ echo "Launch $containername container"
 docker run --restart always --name $containername -p $portWeb:80 -v $assetsDir:/usr/share/nginx/html/assets/assets/custom -d ogree-app:latest
 
 # compile and run back
-cd ../BACK/app
+cd BACK/app
 if $isMac; then
     echo "Compiling backend for macOS"
     docker run --rm -v $(pwd):/workdir -w /workdir -e GOOS=darwin golang go build -o ogree_app_backend
