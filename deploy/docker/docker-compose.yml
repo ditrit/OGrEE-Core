@@ -54,7 +54,8 @@ services:
 
   ogree_webapp:
     build:
-      context: ${CORE_DIR}/${APP_BUILD_DIR}
+      context: ${CORE_DIR}
+      dockerfile: ${APP_BUILD_DIR}/Dockerfile
     image: ogree/webapp:${IMAGE_TAG}
     profiles: ["web"]
     container_name: ${COMPOSE_PROJECT_NAME}_webapp
