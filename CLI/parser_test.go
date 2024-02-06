@@ -245,7 +245,7 @@ func testCommand(buffer string, expected node, t *testing.T) bool {
 }
 
 func TestParseLs(t *testing.T) {
-	buffer := "lsbuilding -s height - f attr1:attr2 plouf.plaf attr1=a, attr2=b"
+	buffer := "lsbuilding -s height -a attr1:attr2 plouf.plaf attr1=a, attr2=b"
 	path := &pathNode{path: &valueNode{"plouf.plaf"}}
 	sort := "height"
 	attrList := []string{"attr1", "attr2"}
@@ -256,7 +256,7 @@ func TestParseLs(t *testing.T) {
 	}
 	expected := &lsNode{path: path, filters: filters, sortAttr: sort, attrList: attrList}
 	testCommand(buffer, expected, t)
-	buffer = "lsbuilding -s height - f \"attr1:attr2\" plouf.plaf attr1=a, attr2=b"
+	buffer = "lsbuilding -s height -a \"attr1:attr2\" plouf.plaf attr1=a, attr2=b"
 	testCommand(buffer, expected, t)
 }
 
@@ -276,6 +276,22 @@ func TestParseLsRecursive(t *testing.T) {
 
 	expected = &lsNode{path: path, filters: map[string]node{}, recursive: recursiveArgs{isRecursive: false, minDepth: "1", maxDepth: "2"}}
 	buffer = "ls -m 1 -M 2 #test"
+	testCommand(buffer, expected, t)
+}
+
+func TestParseLsComplexFilter(t *testing.T) {
+	path := &pathNode{path: &valueNode{"plouf.plaf"}}
+	buffer := "ls plouf.plaf -f category=building, attr1=a, attr2=b"
+	filters := map[string]node{
+		"complexFilter": &valueNode{"(category=building) & ((attr1=a) & (attr2=b))"},
+	}
+	expected := &lsNode{path: path, filters: filters}
+	testCommand(buffer, expected, t)
+	buffer = "ls plouf.plaf -f category=building & (attr1!=a | attr2>5)"
+	filters = map[string]node{
+		"complexFilter": &valueNode{"category=building & (attr1!=a | attr2>5) "},
+	}
+	expected = &lsNode{path: path, filters: filters}
 	testCommand(buffer, expected, t)
 }
 
@@ -303,10 +319,6 @@ var commandsMatching = map[string]node{
 	"ls":                                &lsNode{path: &pathNode{path: &valueNode{""}}, filters: map[string]node{}},
 	"cd":                                &cdNode{&pathNode{path: &valueNode{"/"}}},
 	"tree":                              &treeNode{&pathNode{path: &valueNode{"."}}, 1},
-	"get ${toto}/tata":                  &getObjectNode{path: testPath, filters: map[string]node{}},
-	"get -r ${toto}/tata":               &getObjectNode{path: testPath, filters: map[string]node{}, recursive: recursiveArgs{isRecursive: true}},
-	"get -r ${toto}/tata category=room": &getObjectNode{path: testPath, filters: map[string]node{"category": &valueNode{"room"}}, recursive: recursiveArgs{isRecursive: true}},
-	"getu rackA 42":                     &getUNode{&pathNode{path: &valueNode{"rackA"}}, &valueNode{42}},
 	"undraw":                            &undrawNode{nil},
 	"undraw ${toto}/tata":               &undrawNode{testPath},
 	"draw":                              &drawNode{&pathNode{path: &valueNode{""}}, 0, false},
@@ -327,6 +339,12 @@ var commandsMatching = map[string]node{
 	">${toto}/tata":                     &focusNode{testPath},
 	"+site:${toto}/tata":                &createSiteNode{testPath},
 	"+si:${toto}/tata":                  &createSiteNode{testPath},
+	"getu rackA 42":                     &getUNode{&pathNode{path: &valueNode{"rackA"}}, &valueNode{42}},
+	"get ${toto}/tata":                  &getObjectNode{path: testPath, filters: map[string]node{}},
+	"get -r ${toto}/tata":               &getObjectNode{path: testPath, filters: map[string]node{}, recursive: recursiveArgs{isRecursive: true}},
+	"get -r ${toto}/tata category=room": &getObjectNode{path: testPath, filters: map[string]node{"category": &valueNode{"room"}}, recursive: recursiveArgs{isRecursive: true}},
+	"get ${toto}/tata -f category=room, name=R1":                   &getObjectNode{path: testPath, filters: map[string]node{"complexFilter": &valueNode{"(category=room) & (name=R1)"}}},
+	"get ${toto}/tata -f category=room & (name!=R1 | height>5)":    &getObjectNode{path: testPath, filters: map[string]node{"complexFilter": &valueNode{"category=room & (name!=R1 | height>5) "}}},
 	"+building:${toto}/tata@[1., 2.]@3.@[.1, 2., 3.]":              &createBuildingNode{testPath, vec2(1., 2.), &valueNode{3.}, vec3(.1, 2., 3.)},
 	"+room:${toto}/tata@[1., 2.]@3.@[.1, 2., 3.]@+x-y":             &createRoomNode{testPath, vec2(1., 2.), &valueNode{3.}, vec3(.1, 2., 3.), &valueNode{"+x-y"}, nil, nil},
 	"+room:${toto}/tata@[1., 2.]@3.@[.1, 2., 3.]@+x-y@m":           &createRoomNode{testPath, vec2(1., 2.), &valueNode{3.}, vec3(.1, 2., 3.), &valueNode{"+x-y"}, &valueNode{"m"}, nil},
