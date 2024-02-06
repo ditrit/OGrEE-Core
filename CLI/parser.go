@@ -605,14 +605,22 @@ func (p *parser) parseIndexing() node {
 
 func (p *parser) parseLs(category string) node {
 	defer un(trace(p, "ls"))
-	args := p.parseArgs([]string{"s", "f", "M", "m"}, []string{"r"}, "ls")
+	args := p.parseArgs([]string{"s", "a", "M", "m"}, []string{"r", "f"}, "ls")
 	path := p.parsePath("")
 	var attrList []string
-	if formatArg, ok := args["f"]; ok {
+	if formatArg, ok := args["a"]; ok {
 		attrList = strings.Split(formatArg, ":")
 	}
 
-	filters := p.parseFilters()
+	p.skipWhiteSpaces()
+
+	var filters map[string]node
+	if _, isComplex := args["f"]; p.parseExact("-f") || isComplex {
+		filters = p.parseComplexFilters()
+	} else {
+		filters = p.parseFilters()
+	}
+
 	if category != "" {
 		filters["category"] = &valueNode{
 			models.EntityToString(models.EntityStrToInt(category)),
@@ -653,20 +661,64 @@ func (p *parser) parseFilters() map[string]node {
 	return filters
 }
 
+func (p *parser) parseComplexFilters() map[string]node {
+	filters := map[string]node{}
+	numArgs := 0
+
+	for !p.commandEnd() {
+		p.skipWhiteSpaces()
+		newComplexFilter := p.parseValue()
+		if p.parseExact(",") {
+			newFilterStr, _ := newComplexFilter.execute()
+			newComplexFilter = &valueNode{"(" + newFilterStr.(string) + ") & ("}
+			numArgs++
+		} else if p.parseExact(")") {
+			newFilterStr, _ := newComplexFilter.execute()
+			newComplexFilter = &valueNode{newFilterStr.(string) + ") "}
+		}
+
+		if complexFilter, ok := filters["complexFilter"]; ok {
+			oldFilterStr, _ := complexFilter.execute()
+			newFilterStr, _ := newComplexFilter.execute()
+			filters["complexFilter"] = &valueNode{oldFilterStr.(string) + newFilterStr.(string)}
+		} else {
+			filters["complexFilter"] = newComplexFilter
+		}
+	}
+
+	for i := 0; i < numArgs; i++ {
+		complexFilter := filters["complexFilter"]
+		oldFilterStr, _ := complexFilter.execute()
+		filters["complexFilter"] = &valueNode{oldFilterStr.(string) + ")"}
+	}
+
+	return filters
+}
+
 func (p *parser) parseGet() node {
 	defer un(trace(p, "get"))
-	args := p.parseArgs([]string{"m", "M"}, []string{"r"}, "get")
+	args := p.parseArgs([]string{"m", "M"}, []string{"r", "f"}, "get")
 	_, isRecursive := args["r"]
 
 	path := p.parsePath("")
+	p.skipWhiteSpaces()
 
-	filters := p.parseFilters()
+	var filters map[string]node
+	if _, isComplex := args["f"]; p.parseExact("-f") || isComplex {
+		filters = p.parseComplexFilters()
+	} else {
+		filters = p.parseFilters()
+	}
 
-	return &getObjectNode{path: path, filters: filters, recursive: recursiveArgs{
-		isRecursive: isRecursive,
-		minDepth:    args["m"],
-		maxDepth:    args["M"],
-	}}
+	return &getObjectNode{
+		path:    path,
+		filters: filters,
+		recursive: recursiveArgs{
+			isRecursive: isRecursive,
+			minDepth:    args["m"],
+			maxDepth:    args["M"],
+		},
+	}
 }
 
 func (p *parser) parseGetU() node {

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"cli/models"
+	"cli/utils"
 	"errors"
 	"fmt"
 	"net/http"
@@ -66,7 +67,17 @@ func (controller Controller) lsObjectsWithFilters(path string, filters map[strin
 		return nil, fmt.Errorf("cannot use filters at this location")
 	}
 
-	resp, err := controller.API.Request(http.MethodGet, url, nil, http.StatusOK)
+	var resp *Response
+	var method string
+	if complexFilter, ok := filters["complexFilter"]; ok {
+		body := utils.ComplexFilterToMap(complexFilter)
+		method = "POST"
+		resp, err = controller.API.Request(http.MethodPost, url, body, http.StatusOK)
+	} else {
+		method = "GET"
+		resp, err = controller.API.Request(http.MethodGet, url, nil, http.StatusOK)
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +88,7 @@ func (controller Controller) lsObjectsWithFilters(path string, filters map[strin
 	for _, objAny := range objectsAny {
 		obj, ok := objAny.(map[string]any)
 		if !ok {
-			return nil, fmt.Errorf("invalid response from API on GET %s", url)
+			return nil, fmt.Errorf("invalid response from API on %s %s", method, url)
 		}
 
 		objects = append(objects, obj)
