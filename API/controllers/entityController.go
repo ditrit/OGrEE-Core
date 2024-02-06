@@ -448,6 +448,7 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 	filters := getFiltersFromQueryParams(r)
 	req := u.FilteredReqFromQueryParams(r.URL)
 	entities := u.GetEntitiesByNamespace(filters.Namespace, filters.Id)
+
 	for _, entStr := range entities {
 		// Get objects
 		entData, err := models.GetManyObjects(entStr, req, filters, user.Roles)
@@ -506,7 +507,141 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 
 			return imageIDToUrl(u.EntityStrToInt(entityStr), object)
 		})
+		u.Respond(w, u.RespDataWrapper("successfully processed request", matchingObjects))
+	}
+}
 
+// swagger:operation POST /api/objects/search Objects GetGenericObject
+// Get all objects from any entity. Return as a list.
+// Wildcards can be used on any of the parameters present in query.
+//
+// | Special Terms | Meaning                                     |
+// |-------------  | --------------------------------------------|
+// | `*`           | matches any sequence of non-path-separators |
+// | `.**.`        | matches zero or more directories            |
+// | `.**{m,M}.`   | matches from m to M directories             |
+//
+// A doublestar (`**`) should appear surrounded by id separators such as `.**.`.
+// A mid-pattern doublestar (`**`) behaves like star: a pattern
+// such as `path.to.**` would return the same results as `path.to.*`. To apply recursion, the
+// id you're looking for is `path.to.**.*`.
+// Examples:
+// id=path.to.a* will return all the children of path.to which name starts with a.
+// id=path.to.`**`.a* will return all the descendant hierarchy of path.to which name starts with a.
+// id=path.to.`**`{1,3}.a* will return all the grandchildren to great-great-grandchildren of path.to which name starts with a.
+// ---
+// security:
+// - bearer: []
+// produces:
+// - application/json
+// parameters:
+//   - name: id
+//     in: path
+//     description: 'id of the object to obtain.
+//     If none provided, all objects of the namespace will be obtained'
+//   - name: namespace
+//     in: query
+//     description: 'One of the values: physical, physical.stray, physical.hierarchy,
+//     logical, logical.objtemplate, logical.bldgtemplate, logical.roomtemplate, logical.tag,
+//     organisational.
+//     If none provided, all namespaces are used by default.'
+//   - name: fieldOnly
+//     in: query
+//     description: 'specify which object field to show in response.
+//     Multiple fieldOnly can be added. An invalid field is simply ignored.'
+//   - name: startDate
+//     in: query
+//     description: 'filter objects by lastUpdated >= startDate.
+//     Format: yyyy-mm-dd'
+//   - name: endDate
+//     in: query
+//     description: 'filter objects by lastUpdated <= endDate.
+//     Format: yyyy-mm-dd'
+//   - name: limit
+//     in: query
+//     description: 'Get limit level of hierarchy for objects in the response.
+//     It must be specified alongside id.
+//     Example: ?limit=1&id=siteA.B.R1 will return the object R1 with its children nested.
+//     ?limit=2&id=siteA.B.R1.* will return all objects one level above R1 with
+//     its up to two levels children nested.'
+//     required: false
+//     type: string
+//   - name: attributes
+//     in: query
+//     description: 'Any other object attributes can be queried.
+//     Replace attributes here by the name of the attribute followed by its value.'
+//     required: false
+//     type: string
+//     default: domain=DemoDomain
+//     example: vendor=ibm ; name=siteA ; orientation=front
+// responses:
+//		'200':
+//		    description: 'Found. A response body will be returned with
+//	        a meaningful message.'
+//     '400':
+//         description: 'Bad request. Request has wrong format.'
+//		'500':
+//		    description: Internal Error. A system error stopped the request.
+
+func HandleComplexFilters(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION CALL: 	 HandleComplexFilters ")
+	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
+	var complexFilters map[string]interface{}
+	matchingObjects := []map[string]interface{}{}
+
+	// Get user roles for permissions
+	user := getUserFromToken(w, r)
+	if user == nil {
+		return
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&complexFilters)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message("Error while decoding request body"))
+		u.ErrLog("Error while decoding request body", "HANDLE COMPLEX FILTERS", "", r)
+		return
+	}
+
+	// Get objects
+	filters := getFiltersFromQueryParams(r)
+	req := u.FilteredReqFromQueryParams(r.URL)
+	entities := u.GetEntitiesByNamespace(filters.Namespace, filters.Id)
+
+	for _, entStr := range entities {
+		// Get objects
+		entData, err := models.GetManyObjectsComplex(entStr, req, filters, complexFilters, user.Roles)
+		if err != nil {
+			u.ErrLog("Error while looking for objects at "+entStr, "HandleComplexFilters", err.Message, r)
+			u.RespondWithError(w, err)
+			return
+		}
+
+		// Save entity to help delete and respond
+		for _, obj := range entData {
+			obj["entity"] = entStr
+		}
+
+		if nLimit, e := strconv.Atoi(filters.Limit); e == nil && nLimit > 0 && req["id"] != nil {
+			// Get children until limit level (only for GET)
+			for _, obj := range entData {
+				// Precisa mudar o GetHierarchyByName pra complexo também????????????????????????????????????
+				obj["children"], err = models.GetHierarchyByName(entStr, obj["id"].(string), nLimit, filters)
+				if err != nil {
+					u.ErrLog("Error while getting "+entStr, "GET "+entStr, err.Message, r)
+					u.RespondWithError(w, err)
+				}
+			}
+		}
+		matchingObjects = append(matchingObjects, entData...)
+	}
+
+	if r.Method == "OPTIONS" {
+		w.Header().Add("Content-Type", "application/json")
+		w.Header().Add("Allow", "POST, OPTIONS")
+	} else {
 		u.Respond(w, u.RespDataWrapper("successfully processed request", matchingObjects))
 	}
 }

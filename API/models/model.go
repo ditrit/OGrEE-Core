@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 	"p3/repository"
 	u "p3/utils"
@@ -274,6 +275,91 @@ func GetManyObjects(entityStr string, req bson.M, filters u.RequestFilters, user
 	}
 
 	return data, nil
+}
+
+func GetManyObjectsComplex(entityStr string, req bson.M, filters u.RequestFilters, complexFilters map[string]any, userRoles map[string]Role) ([]map[string]interface{}, *u.Error) {
+	ctx, cancel := u.Connect()
+	var err error
+	var c *mongo.Cursor
+
+	var opts *options.FindOptions
+	if len(filters.FieldsToShow) > 0 {
+		compoundIndex := bson.D{bson.E{Key: "domain", Value: 1}, bson.E{Key: "id", Value: 1}}
+		for _, field := range filters.FieldsToShow {
+			if field != "domain" && field != "id" {
+				compoundIndex = append(compoundIndex, bson.E{Key: field, Value: 1})
+			}
+		}
+		opts = options.Find().SetProjection(compoundIndex)
+	}
+	err = repository.GetDateFilters(req, filters.StartDate, filters.EndDate)
+	if err != nil {
+		return nil, &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
+	}
+	err = getDatesFromComplexFilters(complexFilters)
+	if err != nil {
+		return nil, &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
+	}
+
+	maps.Copy(req, complexFilters)
+
+	if opts != nil {
+		c, err = repository.GetDB().Collection(entityStr).Find(ctx, req, opts)
+	} else {
+		c, err = repository.GetDB().Collection(entityStr).Find(ctx, req)
+	}
+	if err != nil {
+		fmt.Println(err)
+		return nil, &u.Error{Type: u.ErrDBError, Message: err.Error()}
+	}
+	defer cancel()
+
+	entity := u.EntityStrToInt(entityStr)
+	data, e1 := ExtractCursor(c, ctx, entity, userRoles)
+	if e1 != nil {
+		fmt.Println(e1)
+		return nil, &u.Error{Type: u.ErrInternal, Message: e1.Error()}
+	}
+
+	//Remove underscore If the entity has '_'
+	if strings.Contains(entityStr, "_") {
+		for i := range data {
+			FixUnderScore(data[i])
+		}
+	}
+
+	if shouldFillTags(entity, filters) {
+		for i := range data {
+			fillTags(data[i])
+		}
+	}
+
+	return data, nil
+}
+
+func getDatesFromComplexFilters(req map[string]any) error {
+	for k, v := range req {
+		if k == "$and" || k == "$or" {
+			for _, complexFilter := range v.([]any) {
+				err := getDatesFromComplexFilters(complexFilter.(map[string]any))
+				if err != nil {
+					return err
+				}
+			}
+		} else if k == "lastUpdated" {
+			for op, date := range v.(map[string]any) {
+				parsedDate, err := time.Parse("2006-01-02", date.(string))
+				if err != nil {
+					return err
+				}
+				if op == "$lte" {
+					parsedDate = parsedDate.Add(time.Hour * 24)
+				}
+				req[k] = map[string]any{op: parsedDate}
+			}
+		}
+	}
+	return nil
 }
 
 // GetCompleteHierarchy: gets all objects in db using hierachyName and returns:
