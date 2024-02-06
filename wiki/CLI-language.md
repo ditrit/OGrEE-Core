@@ -428,6 +428,14 @@ By adding the filter tag=[tag_slug] to the ls, we can obtain the children that h
 ls [path] tag=[tag_slug]
 ```
 
+#### Complex filters
+
+Complex filters can be added to the ls command with the flag `-f`, composing complex boolean expressions with the operators `=`, `!=`, `<`, `<=`, `>`, `>=`, `&` and `|`.
+
+```
+ls [path] -f (attr1=a & attr2!=b) | attr3>c
+```
+
 #### Filter by category
 
 Several commands are provided for running ls with category filter without typing them by hand: `lssite`, `lsbuilding`, `lsroom`, `lsrack`, `lsdev`, `lsac`, `lspanel`, `lscabinet`, `lscorridor`.
