@@ -2,15 +2,13 @@
     "attributes": {
         "height": 5,
         "heightUnit": "m",
-        "posXY": "{\"x\":50 ,\"y\":0}",
-        "size": "{\"x\":49 ,\"y\":46.6}",
+        "posXY": "[50, 0]",
+        "size": "[49, 46.6]",
         "sizeUnit": "m",
         "rotation": "30.5"
     },
     "category": "building",
-    "description": [
-        "ERROR, NOT VALID JSON EXAMPLE"
-    ],
+    "description": "ERROR, NOT VALID JSON EXAMPLE",
     "domain": "DEMO",
     "name": "B1",
     "parentId": "xxxx592b1ac5f3b6f313xxxx"

@@ -4,10 +4,7 @@
     "type": "object",
     "properties": {
       "description": {
-        "type": "array",
-        "items": {
-          "type": "string"
-        }
+        "type": "string"
       },
       "category": {
         "type": "string"
@@ -39,16 +36,14 @@
       "examples": [{
         "name": "StrayDevice1",
         "category": "device",
-        "description": [
-            "-3/-5\\nA0-Z9"
-        ],
+        "description": "-3/-5\\nA0-Z9",
         "domain": "SomeDomain",
         "attributes": {
-            "posXY": "{\"x\":10.0,\"y\":0.0}",
+            "posXY": "[10.0, 0.0]",
             "posXYUnit": "tile",
-            "posZ": "{\"x\":10.0,\"y\":0.0}",
+            "posZ": "[10.0, 0.0]",
             "posZUnit": "tile",
-            "size": "{\"x\":60.0,\"y\":120.0}",
+            "size": "[60.0, 120.0]",
             "sizeUnit": "cm",
             "height": "42",
             "heightUnit": "U",

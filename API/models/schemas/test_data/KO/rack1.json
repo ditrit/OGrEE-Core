@@ -2,15 +2,15 @@
     "attributes": {
       "height": "47",
       "heightUnit": "u",
-      "rotation": "{\"x\":0 ,\"y\": 0, \"z\":0}",
+      "rotation": "[0, 0, 0]",
       "posXYUnit": "m",
-      "posXYZ": "{\"x\":4.6666666666667 ,\"y\": -2}",
-      "size": "{\"x\":80 ,\"y\":100.532442}",
+      "posXYZ": "[4.6666666666667, -2]",
+      "size": "[80, 100.532442]",
       "sizeUnit": "m",
       "template": ""
     },
     "category": "rack",
-    "description": ["ERROR, NOT VALID JSON EXAMPLE"],
+    "description": "ERROR, NOT VALID JSON EXAMPLE",
     "domain": "DEMO",
     "name": "RackA",
     "parentId": "xxxx5a101ac5f3b6f313xxxx"
