@@ -684,7 +684,7 @@ func updateDescription(path string, attr string, values []any) (map[string]any, 
 	}
 	data := map[string]any{}
 	if attr == "description" {
-		data["description"] = []any{newDesc}
+		data["description"] = newDesc
 	} else {
 		obj, err := cmd.C.GetObject(path)
 		if err != nil {

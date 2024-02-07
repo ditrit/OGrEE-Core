@@ -20,15 +20,11 @@ func serialiseVector(attributes map[string]interface{}, attributeName string) {
 	}
 }
 
-// Serialising size & posXY is inefficient but
-// the team wants it for now
-// "size":"[25,29.4,0]" -> "size": "{\"x\":25,\"y\":29.4,\"z\":0}"
 func serialiseStringVector(attr map[string]interface{}, want string) string {
 	var newSize string
 	if size, ok := attr[want].(string); ok {
 		left := strings.Index(size, "[")
 		right := strings.Index(size, "]")
-		coords := []string{"x", "y", "z"}
 
 		if left != -1 && right != -1 {
 			var length int
@@ -50,13 +46,13 @@ func serialiseStringVector(attr map[string]interface{}, want string) string {
 			}
 
 			for idx := 0; idx < length; idx++ {
-				newSize += "\"" + coords[idx] + "\":" + nums[idx]
+				newSize += nums[idx]
 
 				if idx < length-1 {
-					newSize += ","
+					newSize += ", "
 				}
 			}
-			newSize = "{" + newSize + "}"
+			newSize = "[" + newSize + "]"
 
 			if len(nums) == 3 && want == "size" {
 				if attr["shape"] == "sphere" || attr["shape"] == "cylinder" {
@@ -74,12 +70,9 @@ func serialiseStringVector(attr map[string]interface{}, want string) string {
 	return newSize
 }
 
-// Same utility func as above but we have an arbitrary array
-// and want to cast it to -> "size": "{\"x\":25,\"y\":29.4,\"z\":0}"
 func serialiseFloatVector(attr map[string]interface{}, want string) string {
 	var newSize string
 	if items, ok := attr[want].([]float64); ok {
-		coords := []string{"x", "y", "z"}
 		var length int
 
 		if isValid := arrayVerifier(&items, want); !isValid {
@@ -98,15 +91,16 @@ func serialiseFloatVector(attr map[string]interface{}, want string) string {
 
 		for idx := 0; idx < length; idx++ {
 			r := bytes.NewBufferString("")
-			fmt.Fprintf(r, "%v ", items[idx])
+			fmt.Fprintf(r, "%v", items[idx])
 			//itemStr :=
-			newSize += "\"" + coords[idx] + "\":" + r.String()
+			newSize += r.String()
 
 			if idx < length-1 {
-				newSize += ","
+				newSize += ", "
 			}
 		}
-		newSize = "{" + newSize + "}"
+		newSize = "[" + newSize + "]"
+		fmt.Println(newSize)
 
 		if len(items) == 3 && want == "size" {
 			if attr["shape"] == "sphere" || attr["shape"] == "cylinder" {

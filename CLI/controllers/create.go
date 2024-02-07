@@ -48,7 +48,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 
 	data["name"] = name
 	data["category"] = models.EntityToString(ent)
-	data["description"] = []any{}
+	data["description"] = ""
 
 	//Retrieve Parent
 	if ent != models.SITE && ent != models.STRAY_DEV {
@@ -244,7 +244,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 
 		//Restore the rotation overwritten
 		//by the helper func
-		attr["rotation"] = fmt.Sprintf("{\"x\":%v, \"y\":%v, \"z\":%v}", rotation[0], rotation[1], rotation[2])
+		attr["rotation"] = fmt.Sprintf("[%v, %v, %v]", rotation[0], rotation[1], rotation[2])
 
 		data["parentId"] = parent["id"]
 
@@ -309,7 +309,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			if slot != nil {
 				size := slot["elemSize"].([]any)
 				attr["size"] = fmt.Sprintf(
-					"{\"x\":%f, \"y\":%f}", size[0].(float64)/10., size[1].(float64)/10.)
+					"[%f, %f]", size[0].(float64)/10., size[1].(float64)/10.)
 			} else {
 				if parAttr, ok := parent["attributes"].(map[string]interface{}); ok {
 					if rackSize, ok := parAttr["size"]; ok {
