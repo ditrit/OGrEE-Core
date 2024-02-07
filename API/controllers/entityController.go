@@ -1043,6 +1043,12 @@ func UpdateEntity(w http.ResponseWriter, r *http.Request) {
 		} else {
 			u.Respond(w, u.RespDataWrapper("successfully updated "+entity, data))
 			println("send to eventnotifier")
+			if entity == "tag" || entity == "layer" {
+				data = map[string]any{
+					"old-slug": id,
+					entity:     data,
+				}
+			}
 			eventNotifier <- u.FormatNotifyData("modify", entity, data)
 			println("sent")
 		}
