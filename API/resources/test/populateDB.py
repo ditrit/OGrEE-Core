@@ -82,9 +82,7 @@ payload={
     "name": "ALPHA",
     "parentId": None,
     "category": "site",
-    "description": [
-        "This is a demo..."
-    ],
+    "description": "This is a demo...",
     "domain": "DEMO",
     "attributes": {
         "orientation": "NW",
@@ -121,16 +119,14 @@ payload={
     "name": "B",
     "parentId": None,
     "category": "building",
-    "description": [
-        "Building B"
-    ],
+    "description": "Building B",
     "domain": "DEMO",
     "attributes": {
-        "posXY": "{\"x\":-30.0,\"y\":0.0}",
+        "posXY": "[-30.0, 0.0]",
         "posXYUnit": "m",
         "posZ": "10",
         "posZUnit": "m",
-        "size": "{\"x\":25.0,\"y\":29.399999618530275}",
+        "size": "[25.0, 29.399999618530275]",
         "sizeUnit": "m",
         "height": "0",
         "heightUnit": "m",
@@ -160,19 +156,17 @@ payload={
     "name": "R1",
     "parentId": None,
     "category": "room",
-    "description": [
-        "First room"
-    ],
+    "description": "First room",
     "domain": "DEMO",
     "attributes": {
-        "posXY": "{\"x\":0.0,\"y\":0.0}",
+        "posXY": "[0.0, 0.0]",
         "posXYUnit": "m",
         "posZ": "0",
         "posZUnit": "m",
         "floorUnit":"f",
         "template": "demo.R1",
         "orientation": "+N+W",
-        "size": "{\"x\":22.799999237060548,\"y\":19.799999237060548}",
+        "size": "[22.799999237060548, 19.799999237060548]",
         "sizeUnit": "m",
         "height": "3",
         "heightUnit": "m"
@@ -200,9 +194,7 @@ payload={
     "id": None,
     "parentId": None,
     "category": "ac",
-    "description": [
-        "TCL"
-    ],
+    "description": "TCL",
     "domain": "AC DOMAIN",
     "attributes": {
     }
@@ -230,9 +222,7 @@ payload={
     "id": None,
     "parentId": None,
     "category": "powerpanel",
-    "description": [
-        "YINGLI"
-    ],
+    "description": "YINGLI",
     "domain": "Panel DOMAIN",
     "attributes": {
     }
@@ -334,16 +324,12 @@ payload={
     "name": "A01",
     "parentId": None,
     "category": "rack",
-    "description": [
-        "Rack A01",
-        "The original one",
-        "-3/-5\\nA0-Z9"
-    ],
+    "description": "Rack A01\\nThe original one\\n-3/-5\\nA0-Z9",
     "domain": "DEMO",
     "attributes": {
-        "posXY": "{\"x\":10.0,\"y\":0.0}",
+        "posXY": "[10.0, 0.0]",
         "posXYUnit": "tile",
-        "size": "{\"x\":60.0,\"y\":120.0}",
+        "size": "[60.0, 120.0]",
         "sizeUnit": "cm",
         "posZ": "Some position",
         "posZUnit": "cm",
@@ -407,18 +393,14 @@ payload={
     "name": "DeviceA",
     "parentId": None,
     "category": "device",
-    "description": [
-        "Rack A01",
-        "The original one",
-        "-3/-5\\nA0-Z9"
-    ],
+    "description": "Rack A01\\nThe original one\\n-3/-5\\nA0-Z9",
     "domain": "Device DOMAIN",
     "attributes": {
-        "posXY": "{\"x\":10.0,\"y\":0.0}",
+        "posXY": "[10.0, 0.0]",
         "posXYUnit": "tile",
-        "posZ": "{\"x\":10.0,\"y\":0.0}",
+        "posZ": "[10.0, 0.0]",
         "posZUnit": "tile",
-        "size": "{\"x\":60.0,\"y\":120.0}",
+        "size": "[60.0, 120.0]",
         "sizeUnit": "cm",
         "height": "42",
         "heightUnit": "U",
