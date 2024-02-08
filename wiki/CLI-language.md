@@ -22,13 +22,17 @@
   - [Select parent object](#select-parent-object)
   - [Get object/s](#get-objects)
     - [Wildcards](#wildcards)
+    - [Filters](#filters)
+      - [Simple filters](#simple-filters)
+      - [Complex filters](#complex-filters)
   - [Ls object](#ls-object)
     - [Layers](#layers)
       - [Room's automatic layers](#rooms-automatic-layers)
       - [Rack's automatic layers](#racks-automatic-layers)
       - [Device's automatic layers](#devices-automatic-layers)
-    - [Filters](#filters)
-      - [Filter by tag](#filter-by-tag)
+    - [Filters](#filters-1)
+      - [Simple filters](#simple-filters-1)
+      - [Complex filters](#complex-filters-1)
       - [Filter by category](#filter-by-category)
   - [Tree](#tree)
   - [Delete object](#delete-object)
@@ -365,9 +369,44 @@ To see all possible options run:
 man get
 ```
 
+### Filters
+
+Filters can be added to the `get` command to get only the objects that meet a certain characteristic.
+
+#### Simple filters
+
+Simple filters are the ones that use the egality operator (`=`). These filters can be used to get only objects that meet certain characteristics. Objects can be filtered by `name`, `slug`, `id`, `category`, `description`, `domain`, `tag` and by any other attributes, such as `size`, `height` and `rotation`.
+
+It is also possible to specify a `startDate` and an `endDate`, to filter objects last modified _since_ and _up to_, respectively, the `startDate` and the `endDate`. Dates should be defined with the format `yyyy-mm-dd`.
+
+Simple filters can be combined with commas (`,`), performing a logical `AND` operation.
+
+```
+get [path] tag=[tag_slug]
+get [path] category=[category]
+get [path] domain=[domain], height=[height]
+get [path] startDate=[yyyy-mm-dd], endDate=[yyyy-mm-dd]
+get [path] name=[name], category=[category], startDate=[yyyy-mm-dd]
+```
+
+#### Complex filters
+
+Complex filters are an extension of the simple ones, and the same functionalities are applied.
+
+Complex filters can be added to the `get` command with the flag `-f`, composing complex boolean expressions with the operators `=`, `!=`, `<`, `<=`, `>`, `>=`, `&` and `|`. Parenthesis can also be used to separate the expressions.
+
+```
+get [path] -f tag=[tag_slug]
+get [path] -f domain=[domain], height=[height]
+get [path] -f height=[height] & category=[category]
+get [path] -f (height>=[height]) | rotation!=[rotation]
+get [path] -f (name=[name] & rotation!=[rotation]) | size>[size]
+get [path] -f category!=[category] & ((height<=[height] & size<[size]) | id=[id])
+```
+
 ## Ls object
 
-To obtain the children of an object and facilitate navigation over the hierarchy, the ls command can be used:
+To obtain the children of an object and facilitate navigation over the hierarchy, the `ls` command can be used:
 
 ```
 ls [path]
@@ -418,29 +457,44 @@ get -r [layer_name]
 
 ### Filters
 
-Filters can be added to the ls command to get only the children that meet a certain characteristic.
+Filters can be added to the `ls` command to get only the children that meet a certain characteristic.
 
-#### Filter by tag
+#### Simple filters
 
-By adding the filter tag=[tag_slug] to the ls, we can obtain the children that have among their tag list the tag [tag_slug].
+Simple filters are the ones that use the egality operator (`=`). These filters can be used to get only children that meet certain characteristics. Objects can be filtered by `name`, `slug`, `id`, `category`, `description`, `domain`, `tag` and by any other attributes, such as `size`, `height` and `rotation`.
+
+It is also possible to specify a `startDate` and an `endDate`, to filter objects last modified _since_ and _up to_, respectively, the `startDate` and the `endDate`. Dates should be defined with the format `yyyy-mm-dd`.
+
+Simple filters can be combined with commas (`,`), performing a logical `AND` operation.
 
 ```
 ls [path] tag=[tag_slug]
+ls [path] category=[category]
+ls [path] domain=[domain], height=[height]
+ls [path] startDate=[yyyy-mm-dd], endDate=[yyyy-mm-dd]
+ls [path] name=[name], category=[category], startDate=[yyyy-mm-dd]
 ```
 
 #### Complex filters
 
-Complex filters can be added to the ls command with the flag `-f`, composing complex boolean expressions with the operators `=`, `!=`, `<`, `<=`, `>`, `>=`, `&` and `|`.
+Complex filters are an extension of the simple ones, and the same functionalities are applied.
+
+Complex filters can be added to the `ls` command with the flag `-f`, composing complex boolean expressions with the operators `=`, `!=`, `<`, `<=`, `>`, `>=`, `&` and `|`. Parenthesis can also be used to separate the expressions.
 
 ```
-ls [path] -f (attr1=a & attr2!=b) | attr3>c
+ls [path] -f tag=[tag_slug]
+ls [path] -f domain=[domain], height=[height]
+ls [path] -f height=[height] & category=[category]
+ls [path] -f (height>=[height]) | rotation!=[rotation]
+ls [path] -f (name=[name] & rotation!=[rotation]) | size>[size]
+ls [path] -f category!=[category] & ((height<=[height] & size<[size]) | id=[id])
 ```
 
 #### Filter by category
 
-Several commands are provided for running ls with category filter without typing them by hand: `lssite`, `lsbuilding`, `lsroom`, `lsrack`, `lsdev`, `lsac`, `lspanel`, `lscabinet`, `lscorridor`.
+Several commands are provided for running `ls` with category filter without typing them by hand: `lssite`, `lsbuilding`, `lsroom`, `lsrack`, `lsdev`, `lsac`, `lspanel`, `lscabinet`, `lscorridor`.
 
-In addition, each of these commands accepts all the options of the ls command and the addition of more filters.
+In addition, each of these commands accepts all the options of the `ls` command and the addition of more filters.
 
 ## Tree
 

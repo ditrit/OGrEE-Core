@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "226d0181-ea55-4a4a-a41e-811272535768",
+		"_postman_id": "4e69514d-eae4-4276-855d-50f702c1557c",
 		"name": "OGrEE-API",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "11072305"
+		"_exporter_id": "31641882"
 	},
 	"item": [
 		{
@@ -1368,7 +1368,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"A01\",\n    \"parentId\": \"{{RoomID}}\",\n    \"category\": \"rack\",\n    \"description\": [\n        \"Rack A01\",\n        \"The original one\"\n    ],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"posXYZ\": \"{\\\"x\\\":10.0,\\\"y\\\":0.0,\\\"z\\\":-2.0}\",\n        \"posXYUnit\": \"t\",\n        \"size\": \"{\\\"x\\\":60.0,\\\"y\\\":120.0}\",\n        \"sizeUnit\": \"cm\",\n        \"height\": \"42\",\n        \"heightUnit\": \"U\",\n        \"orientation\": \"front\",\n        \"template\": \"\"\n    }\n}",
+							"raw": "{\n    \"name\": \"A01\",\n    \"parentId\": \"{{RoomID}}\",\n    \"category\": \"rack\",\n    \"description\": [\n        \"Rack A01\",\n        \"The original one\"\n    ],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"posXYZ\": \"{\\\"x\\\":10.0,\\\"y\\\":0.0,\\\"z\\\":-2.0}\",\n        \"posXYUnit\": \"t\",\n        \"size\": \"{\\\"x\\\":60.0,\\\"y\\\":120.0}\",\n        \"sizeUnit\": \"cm\",\n        \"height\": \"42\",\n        \"heightUnit\": \"U\",\n        \"orientation\": \"front\",\n        \"template\": \"\",\n        \"rotation\": \"{\\\"x\\\":0,\\\"y\\\":0,\\\"z\\\":0}\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1488,7 +1488,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"CorridorA\",\n    \"parentId\" : \"{{RoomID}}\",\n    \"domain\": \"DEMO\",\n    \"category\": \"corridor\",\n    \"description\": [\"demo\"],\n    \"attributes\": {\"temperature\": \"warm\", \"content\": \"A01,A01\"}\n}",
+							"raw": "{\n    \"name\": \"CorridorA\",\n    \"parentId\" : \"{{RoomID}}\",\n    \"domain\": \"DEMO\",\n    \"category\": \"corridor\",\n    \"description\": [\"demo\"],\n    \"attributes\": { \"temperature\": \"warm\", \n                    \"content\": \"A01,A01\", \n                    \"height\": \"3\",\n                    \"heightUnit\": \"m\",\n                    \"rotation\": \"{\\\"x\\\":0,\\\"y\\\":0,\\\"z\\\":0}\",\n                    \"posXYZ\": \"{\\\"x\\\":10.0,\\\"y\\\":0.0,\\\"z\\\":-2.0}\",\n                    \"posXYUnit\": \"t\",\n                    \"size\": \"{\\\"x\\\":600.0,\\\"y\\\":1200.0}\",\n                    \"sizeUnit\": \"cm\"}\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1585,7 +1585,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"DeviceA\",\n    \"parentId\": \"{{RackID}}\",\n    \"category\": \"device\",\n    \"description\": [\"Device test\"],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"posXYZ\": \"{\\\"x\\\":10.0,\\\"y\\\":0.0,\\\"z\\\":0.0}\",\n        \"posXYUnit\": \"t\",\n        \"size\": \"{\\\"x\\\":60.0,\\\"y\\\":120.0}\",\n        \"sizeUnit\": \"cm\",\n        \"height\": \"42\",\n        \"heightUnit\": \"U\",\n        \"template\": \"Some template\",\n        \"orientation\": \"front\",\n        \"vendor\": \"someVendor\",\n        \"type\": \"someType\",\n        \"model\": \"someModel\",\n        \"serial\": \"someSerial\"\n    }\n}",
+							"raw": "{\n    \"name\": \"DeviceA\",\n    \"parentId\": \"{{RackID}}\",\n    \"category\": \"device\",\n    \"description\": [\"Device test\"],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"posXY\": \"{\\\"x\\\":10.0,\\\"y\\\":0.0}\",\n        \"posXYUnit\": \"tile\",\n        \"posZ\": \"{\\\"x\\\":10.0,\\\"y\\\":0.0}\",\n        \"posZUnit\": \"tile\",\n        \"size\": \"{\\\"x\\\":60.0,\\\"y\\\":120.0}\",\n        \"sizeUnit\": \"cm\",\n        \"height\": \"42\",\n        \"heightUnit\": \"U\",\n        \"template\": \"Some template\",\n        \"orientation\": \"front\",\n        \"vendor\": \"someVendor\",\n        \"type\": \"someType\",\n        \"model\": \"someModel\",\n        \"serial\": \"someSerial\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1803,7 +1803,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"slug\": \"small-room\",\n    \"category\": \"room\",\n    \"axisOrientation\": \"+x+y\",\n    \"sizeWDHm\": [\n        9.6,\n        22.8,\n        3\n    ],\n    \"floorUnit\": \"t\",\n    \"technicalArea\": [\n        5,\n        0,\n        0,\n        0\n    ],\n    \"reservedArea\": [\n        3,\n        1,\n        1,\n        3\n    ],\n    \"separators\": [\n        {\n            \"startPosXYm\": [\n                3,\n                0\n            ],\n            \"endPosXYm\": [\n                3,\n                12\n            ],\n            \"type\": \"wireframe\"\n        },\n        {\n            \"startPosXYm\": [\n                0,\n                12\n            ],\n            \"endPosXYm\": [\n                3,\n                12\n            ],\n            \"type\": \"plain\"\n        }\n    ],\n    \"pillars\": [\n        {\n            \"centerXY\": [\n                3,\n                12\n            ],\n            \"sizeXY\": [\n                0.3,\n                0.3\n            ],\n            \"rotation\": 45\n        },\n        {\n            \"centerXY\": [\n                7,\n                7\n            ],\n            \"sizeXY\": [\n                0.3,\n                0.3\n            ],\n            \"rotation\": 30\n        }\n    ],\n    \"colors\": [],\n    \"tiles\": [],\n    \"rows\": []\n}",
+							"raw": "{\n    \"slug\": \"small-room-t\",\n    \"category\": \"room\",\n    \"axisOrientation\": \"+x+y\",\n    \"sizeWDHm\": [\n        9.6,\n        22.8,\n        3\n    ],\n    \"floorUnit\": \"t\",\n    \"technicalArea\": [\n        5,\n        0,\n        0,\n        0\n    ],\n    \"reservedArea\": [\n        3,\n        1,\n        1,\n        3\n    ],\n    \"separators\": {},\n    \"pillars\": {},\n    \"colors\": [],\n    \"tiles\": [],\n    \"rows\": []\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1921,7 +1921,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"slug\"        : \"RACK1T\",\n  \"description\" : \"Rack Template 1\",\n  \"category\"    : \"rack\",\n  \"sizeWDHmm\"   : [1,2,3],\n  \"fbxModel\"    : \"1\",\n  \"attributes\"  : {\n    \"type\" : \"\"\n  },\n  \"colors\"      : [\n  ],\n  \"components\"  : [\n  ],\n  \"slots\"       : [\n  ]\n}",
+							"raw": "{\n  \"slug\"        : \"rack1t\",\n  \"description\" : \"Rack Template 1\",\n  \"category\"    : \"rack\",\n  \"sizeWDHmm\"   : [1,2,3],\n  \"fbxModel\"    : \"1\",\n  \"attributes\"  : {\n    \"type\" : \"\"\n  },\n  \"colors\"      : [\n  ],\n  \"components\"  : [\n  ],\n  \"slots\"       : [\n  ]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2039,7 +2039,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"slug\": \"ibm-example\",\n    \"description\": \"example\",\n    \"category\": \"device\",\n    \"sizeWDHmm\": [\n        216,\n        659,\n        41\n    ],\n    \"fbxModel\": \"\",\n    \"attributes\": {\n        \"type\": \"blade\",\n        \"vendor\": \"IBM\",\n        \"model\": \"HC1\",\n        \"ram order\": \"8,1,6, / 8,5,5,12,4,13\"\n    },\n    \"colors\": [],\n    \"components\": [\n        {\n            \"location\": \"eth2\",\n            \"type\": \"port\",\n            \"elemOrient\": \"\",\n            \"elemPos\": [\n                104,\n                649,\n                0\n            ],\n            \"elemSize\": [\n                14,\n                11,\n                11\n            ],\n            \"mandatory\": \"yes\",\n            \"labelPos\": \"front\",\n            \"color\": \"ffc0cb\",\n            \"attributes\": {\n                \"factor\": \"rj45\"\n            }\n        }\n    ],\n    \"slots\": [\n        {\n            \"location\": \"cpu1\",\n            \"type\": \"processor\",\n            \"elemOrient\": \"\",\n            \"elemPos\": [\n                68,\n                343,\n                0\n            ],\n            \"elemSize\": [\n                97,\n                97,\n                30\n            ],\n            \"mandatory\": \"yes\",\n            \"labelPos\": \"top\",\n            \"color\": \"ffff00\",\n            \"attributes\": {\n                \"factor\": \"XXXX-R\"\n            }\n        }\n    ]\n}",
+							"raw": "{\n    \"slug\": \"ibm-example\",\n    \"description\": \"example\",\n    \"category\": \"device\",\n    \"sizeWDHmm\": [\n        216,\n        659,\n        41\n    ],\n    \"fbxModel\": \"\",\n    \"attributes\": {\n        \"type\": \"blade\",\n        \"vendor\": \"IBM\",\n        \"model\": \"HC1\",\n        \"ram order\": \"8,1,6, / 8,5,5,12,4,13\"\n    },\n    \"colors\": [],\n    \"components\": [\n        {\n            \"location\": \"eth2\",\n            \"type\": \"port\",\n            \"elemOrient\": \"\",\n            \"elemPos\": [\n                104,\n                649,\n                0\n            ],\n            \"elemSize\": [\n                14,\n                11,\n                11\n            ],\n            \"mandatory\": \"yes\",\n            \"labelPos\": \"front\",\n            \"color\": \"ffc0cb\",\n            \"attributes\": {\n                \"factor\": \"rj45\"\n            }\n        }\n    ],\n    \"slots\": [\n        {\n            \"location\": \"cpu1\",\n            \"type\": \"processor\",\n            \"elemOrient\": \"horizontal\",\n            \"elemPos\": [\n                68,\n                343,\n                0\n            ],\n            \"elemSize\": [\n                97,\n                97,\n                30\n            ],\n            \"mandatory\": \"yes\",\n            \"labelPos\": \"top\",\n            \"color\": \"ffff00\",\n            \"attributes\": {\n                \"factor\": \"XXXX-R\"\n            }\n        }\n    ]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2155,7 +2155,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"slug\": \"DEMO\",\n    \"color\": \"5BDCFF\"\n}",
+							"raw": "{\n    \"slug\": \"demo\",\n    \"color\": \"5BDCFF\",\n    \"description\": \"demo tag\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2273,7 +2273,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"StrayDevice1\",\n    \"category\": \"device\",\n    \"description\": [\n        \"-3/-5\\\\nA0-Z9\"\n    ],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"posXYZ\": \"{\\\"x\\\":10.0,\\\"y\\\":0.0,\\\"z\\\":0.0}\",\n        \"posXYUnit\": \"t\",\n        \"size\": \"{\\\"x\\\":60.0,\\\"y\\\":120.0}\",\n        \"sizeUnit\": \"cm\",\n        \"height\": \"42\",\n        \"heightUnit\": \"U\",\n        \"heightU\": \"U\",\n        \"template\": \"Some template\",\n        \"orientation\": \"front\",\n        \"vendor\": \"someVendor\",\n        \"type\": \"someType\",\n        \"model\": \"someModel\",\n        \"serial\": \"someSerial\"\n    }\n}",
+							"raw": "{\n    \"name\": \"StrayDevice1\",\n    \"category\": \"device\",\n    \"description\": [\n        \"-3/-5\\\\nA0-Z9\"\n    ],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"posXY\": \"{\\\"x\\\":10.0,\\\"y\\\":0.0}\",\n        \"posXYUnit\": \"tile\",\n        \"posZ\": \"{\\\"x\\\":10.0,\\\"y\\\":0.0}\",\n        \"posZUnit\": \"tile\",\n        \"size\": \"{\\\"x\\\":60.0,\\\"y\\\":120.0}\",\n        \"sizeUnit\": \"cm\",\n        \"height\": \"42\",\n        \"heightUnit\": \"U\",\n        \"heightU\": \"U\",\n        \"template\": \"Some template\",\n        \"orientation\": \"front\",\n        \"vendor\": \"someVendor\",\n        \"type\": \"someType\",\n        \"model\": \"someModel\",\n        \"serial\": \"someSerial\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -5745,6 +5745,148 @@
 								"api",
 								"objects",
 								"{{ObjectHierarchyName}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Object With Simple Filter",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET\"] = responseCode.code === 200;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{AuthToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"warning": "This is a duplicate header and will be overridden by the Authorization header generated by Postman.",
+								"key": "Authorization",
+								"value": "{{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/objects?domain={{DomainID}}&id={{RoomID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"objects"
+							],
+							"query": [
+								{
+									"key": "domain",
+									"value": "{{DomainID}}"
+								},
+								{
+									"key": "id",
+									"value": "{{RoomID}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Object With Complex Filter Copy",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET\"] = responseCode.code === 200;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{AuthToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"warning": "This is a duplicate header and will be overridden by the Authorization header generated by Postman.",
+								"key": "Authorization",
+								"value": "{{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"$and\": [\n        {\n            \"domain\": {\n                \"$eq\": \"{{DomainID}}\"\n            }\n        },\n        {\n            \"id\": {\n                \"$eq\": \"{{RoomID}}\"\n            }\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/objects/search",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"objects",
+								"search"
 							]
 						}
 					},
