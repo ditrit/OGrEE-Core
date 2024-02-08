@@ -14,23 +14,16 @@ class Domain {
       'name': name,
       'attributes': <String, String>{'color': color},
       'category': 'domain',
-      'description': [description],
+      'description': description,
       'parentId': parent
     };
   }
 
   factory Domain.fromMap(Map<String, dynamic> map) {
-    String description = "";
-    if (map['description'] != null) {
-      var list = List<String>.from(map['description']);
-      if (list.isNotEmpty) {
-        description = list.first;
-      }
-    }
     return Domain(
       map['name'].toString(),
       map['attributes']['color'].toString(),
-      description,
+      map['description'].toString(),
       map['parentId'] == null ? "" : map['parentId'].toString(),
     );
   }

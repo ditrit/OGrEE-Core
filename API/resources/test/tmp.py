@@ -13,18 +13,14 @@ payload={
     "name": None,
     "parentId": "{{RackID}}",
     "category": "device",
-    "description": [
-        "Rack A01",
-        "The original one",
-        "-3/-5\\nA0-Z9"
-    ],
+    "description": "Rack A01\\nThe original one\\n-3/-5\\nA0-Z9",
     "domain": "Device DOMAIN",
     "attributes": {
-        "posXY": "{\"x\":10.0,\"y\":0.0}",
+        "posXY": "[10.0, 0.0]",
         "posXYUnit": "tile",
-        "posZ": "{\"x\":10.0,\"y\":0.0}",
+        "posZ": "[10.0, 0.0]",
         "posZUnit": "tile",
-        "size": "{\"x\":60.0,\"y\":120.0}",
+        "size": "[60.0, 120.0]",
         "sizeUnit": "cm",
         "height": "42",
         "heightUnit": "U",

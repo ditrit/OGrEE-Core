@@ -67,15 +67,15 @@
       "attributes": {
         "height": "47",
         "heightUnit": "U",
-        "rotation": "{\"x\":45 ,\"y\":45 ,\"z\":45}",
-        "posXYZ": "{\"x\":4.6666666666667 ,\"y\": -2 ,\"z\":0}",
+        "rotation": "[45, 45, 45]",
+        "posXYZ": "[4.6666666666667,  -2, 0]",
         "posXYUnit": "m",
-        "size": "{\"x\":80 ,\"y\":100.532442}",
+        "size": "[80, 100.532442]",
         "sizeUnit": "cm",
         "template": ""
       },
       "category": "rack",
-      "description": [],
+      "description": "rack",
       "domain": "domainTest",
       "name": "RackA",
       "parentId": "xxxx5a101ac5f3b6f313xxxx"

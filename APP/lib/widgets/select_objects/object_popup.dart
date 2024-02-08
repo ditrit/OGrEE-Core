@@ -700,10 +700,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
             label: "Description",
             icon: Icons.edit,
             shouldValidate: false,
-            initialValue: objData["description"] != null &&
-                    List<String>.from(objData["description"]).isNotEmpty
-                ? objData["description"][0]
-                : null),
+            initialValue: objData["description"]),
         _objCategory != OrgCategories.domain.name
             ? CustomFormField(
                 save: (newValue) {
