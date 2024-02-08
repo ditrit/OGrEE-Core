@@ -78,9 +78,8 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 			parent["parent"] = "rack"
 			parent["domain"] = x["domain"]
 			parent["id"] = x["id"]
-			if deviceSlots, ok := t["slot"].([]string); ok && len(deviceSlots) > 0 {
-				return nil, &u.Error{Type: u.ErrInvalidValue,
-					Message: "Invalid slot: device should not have slots if parent is a rack"}
+			if err := validateDeviceSlotExists(t, x); err != nil {
+				return nil, err
 			}
 			return parent, nil
 		}
@@ -90,23 +89,8 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 			parent["parent"] = "device"
 			parent["domain"] = y["domain"]
 			parent["id"] = y["id"]
-			if deviceSlots, ok := t["slot"].([]string); ok {
-				// check if requested slots exist in parent device
-				countFound := 0
-				if templateSlug, ok := y["template"].(string); ok {
-					template, _ := GetObject(bson.M{"slug": templateSlug}, "device", u.RequestFilters{}, nil)
-					if parentSlots, ok := template["slots"].([]map[string]interface{}); ok {
-						for _, parentSlot := range parentSlots {
-							if pie.Contains(deviceSlots, parentSlot["location"].(string)) {
-								countFound = countFound + 1
-							}
-						}
-					}
-				}
-				if len(deviceSlots) != countFound {
-					return nil, &u.Error{Type: u.ErrInvalidValue,
-						Message: "Invalid slot: parent dos not have all of requested slots"}
-				}
+			if err := validateDeviceSlotExists(t, y); err != nil {
+				return nil, err
 			}
 			return parent, nil
 		}
@@ -171,6 +155,28 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		}
 	}
 	return nil, nil
+}
+
+func validateDeviceSlotExists(deviceData map[string]interface{}, parentData map[string]interface{}) *u.Error {
+	if deviceSlots, ok := deviceData["slot"].([]string); ok {
+		// check if requested slots exist in parent device
+		countFound := 0
+		if templateSlug, ok := parentData["template"].(string); ok {
+			template, _ := GetObject(bson.M{"slug": templateSlug}, "obj_template", u.RequestFilters{}, nil)
+			if parentSlots, ok := template["slots"].([]map[string]interface{}); ok {
+				for _, parentSlot := range parentSlots {
+					if pie.Contains(deviceSlots, parentSlot["location"].(string)) {
+						countFound = countFound + 1
+					}
+				}
+			}
+		}
+		if len(deviceSlots) != countFound {
+			return &u.Error{Type: u.ErrInvalidValue,
+				Message: "Invalid slot: parent dos not have all the requested slots"}
+		}
+	}
+	return nil
 }
 
 func validateJsonSchema(entity int, t map[string]interface{}) (bool, *u.Error) {
