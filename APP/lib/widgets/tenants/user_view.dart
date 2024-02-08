@@ -6,7 +6,7 @@ import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/models/user.dart';
 import 'package:ogree_app/pages/results_page.dart';
-import 'package:ogree_app/widgets/delete_dialog_popup.dart';
+import 'package:ogree_app/widgets/common/delete_dialog_popup.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'popups/user_popup.dart';

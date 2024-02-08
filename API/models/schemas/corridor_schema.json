@@ -49,10 +49,6 @@
                     "type": "string",
                     "$ref": "refs/types.json#/definitions/metricImperialUnit"
                 },
-                "color": {
-                    "type": "string",
-                    "$ref": "refs/types.json#/definitions/color"
-                },
                 "temperature": {
                     "type": "string",
                     "enum": [
@@ -66,7 +62,6 @@
     "examples": [
         {
             "attributes": {
-                "color": "000099",
                 "content": "B11,C19",
                 "temperature": "cold",
                 "height": "47",

@@ -21,7 +21,7 @@ var manCommands = []string{
 	"get", "getu", "getslot",
 	"+", "-", "=", ">",
 	".cmds", ".template", ".var",
-	commands.Connect3D, "ui", "camera",
+	commands.Connect3D, commands.Disconnect3D, "ui", "camera",
 	"link", "unlink",
 	"lssite", commands.LsBuilding, "lsroom", "lsrack", "lsdev", "lsac",
 	"lspanel", "lscabinet", "lscorridor", "lsenterprise",
@@ -1075,10 +1075,14 @@ func (p *parser) parseCreateDevice() node {
 	p.expect("@")
 	sizeUOrTemplate := p.parseString("sizeUOrTemplate")
 	if !p.parseExact("@") {
-		return &createDeviceNode{path, posUOrSlot, sizeUOrTemplate, nil}
+		return &createDeviceNode{path, posUOrSlot, sizeUOrTemplate, false, nil}
+	}
+	invertOffset := p.parseBool()
+	if !p.parseExact("@") {
+		return &createDeviceNode{path, posUOrSlot, sizeUOrTemplate, invertOffset, nil}
 	}
 	side := p.parseString("side")
-	return &createDeviceNode{path, posUOrSlot, sizeUOrTemplate, side}
+	return &createDeviceNode{path, posUOrSlot, sizeUOrTemplate, invertOffset, side}
 }
 
 func (p *parser) parseCreateGroup() node {
@@ -1333,6 +1337,7 @@ func newParser(buffer string) *parser {
 		"pwd":          &pwdNode{},
 		"exit":         &exitNode{},
 		"changepw":     &changePasswordNode{},
+		"disconnect3d": &disconnect3DNode{},
 	}
 	for command := range p.commandDispatch {
 		p.commandKeywords = append(p.commandKeywords, command)

@@ -39,9 +39,9 @@ ADM_PASSWORD=adminHashedPassword
 DEPLOY_DIR=../../deploy/
 ```
 
-Only one user (admin) can login to the superadmin backend with the password that should be added *hashed* to the .env file. If DEPLOY_DIR is omitted, the default as given in the example will be set. Example of hashed password that translates to `Ogree@148`:
+Only one user (admin) can login to the superadmin backend with the password that should be added *hashed* to the .env file. If DEPLOY_DIR is omitted, the default as given in the example will be set. Example of hashed password that translates to `admin`:
 ```
-ADM_PASSWORD="\$2a\$10\$YlOHvFzIBKzfgSxLLQkT0.7PeMsMGv/LhlL0FzDS63XKIZCCDRvim"
+ADM_PASSWORD="\$2a\$12\$mgyVEGO1SZmCq1Bml8V5VePzcWLnC0hbGuHa/irKgbqoLVwEL6Vb2"
 ```
 
 A default .env is provided in the repo with the password above.

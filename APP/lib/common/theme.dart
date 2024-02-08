@@ -13,18 +13,21 @@ GetFormInputDecoration(isSmallDisplay, String? labelText,
           left: 20.0,
           right: 14.0,
         ),
-        bool isEnabled = true}) =>
+        bool isEnabled = true,
+        bool isCompact = false,
+        Widget? iconWidget}) =>
     InputDecoration(
-      prefixIcon: isSmallDisplay
-          ? null
-          : Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              child: Icon(
-                icon,
-                color: iconColor ?? Colors.grey.shade400,
-                // color: Colors.blue.shade600,
-              ),
-            ),
+      prefixIcon: iconWidget ??
+          (isSmallDisplay
+              ? null
+              : Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: Icon(
+                    icon,
+                    color: iconColor ?? Colors.grey.shade400,
+                    // color: Colors.blue.shade600,
+                  ),
+                )),
       prefixText: prefixText,
       suffixText: suffixText,
       labelText: labelText,
@@ -33,6 +36,7 @@ GetFormInputDecoration(isSmallDisplay, String? labelText,
       labelStyle: const TextStyle(
         fontSize: 14.0,
       ),
+      errorStyle: isCompact ? TextStyle(fontSize: 9, height: 0.25) : null,
       filled: true,
       fillColor: const Color.fromARGB(255, 248, 247, 247),
       contentPadding: contentPadding,

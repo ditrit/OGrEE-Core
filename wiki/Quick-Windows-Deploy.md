@@ -10,7 +10,7 @@ An OGrEE Windows Installer is available with each new version. With it, you can 
 Launch the installer and it will guide you through the installation. Once installed, launch the OGrEE Admin Backend and Admin UI. Your backend will by default run on `http://localhost:8081`. On the OGrEE Admin UI, choose that URL as the server then enter the login credentials, by default as it follows:
 * Server: `http://localhost:8081`
 * User: `admin`
-* Password: `Ogree@148`
+* Password: `admin`
 
 ## Deploy Tenant
 > Docker is a prerequisite to deploy tenants.

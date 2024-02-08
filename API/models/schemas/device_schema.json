@@ -54,6 +54,10 @@
           "color": {
             "type": "string",
             "$ref": "refs/types.json#/definitions/color"
+          },
+          "invertOffset": {
+            "type": "string",
+            "enum": ["true", "false"]
           }
         },
         "patternProperties": {
@@ -67,8 +71,7 @@
           "heightUnit",
           "orientation",
           "size",
-          "sizeUnit",
-          "template"
+          "sizeUnit"
         ]
       }
     },
@@ -89,7 +92,7 @@
           "template": "huawei-xxxxxx",
           "type": "blade",
           "vendor": "Huawei",
-          "weightKg": 1.81
+          "weightKg": "1.81"
       },
       "category": "device",
       "description": [

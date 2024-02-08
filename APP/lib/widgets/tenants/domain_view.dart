@@ -9,6 +9,8 @@ import 'package:ogree_app/widgets/tenants/popups/domain_popup.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class DomainView extends StatefulWidget {
+  const DomainView({super.key});
+
   @override
   State<DomainView> createState() => _DomainViewState();
 }
@@ -26,7 +28,7 @@ class _DomainViewState extends State<DomainView> {
         controller: appController,
         child: FutureBuilder<void>(
           future: appController.init({},
-              namespace: Namespace.Organisational,
+              argNamespace: Namespace.Organisational,
               reload: _reloadDomains,
               isTenantMode: true),
           builder: (_, __) {

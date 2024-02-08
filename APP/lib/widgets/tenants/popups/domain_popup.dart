@@ -8,11 +8,14 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/models/domain.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:ogree_app/widgets/common/form_field.dart';
 
 class DomainPopup extends StatefulWidget {
   Function() parentCallback;
   String? domainId;
-  DomainPopup({super.key, required this.parentCallback, this.domainId});
+  String? parentId;
+  DomainPopup(
+      {super.key, required this.parentCallback, this.domainId, this.parentId});
 
   @override
   State<DomainPopup> createState() => _DomainPopupState();
@@ -35,6 +38,7 @@ class _DomainPopupState extends State<DomainPopup>
   PlatformFile? _loadedFile;
   String? _loadFileResult;
   bool _isSmallDisplay = false;
+  final colorTextController = TextEditingController();
 
   @override
   void initState() {
@@ -70,6 +74,7 @@ class _DomainPopupState extends State<DomainPopup>
             ? domain!.name
             : "${domain!.parent}.${domain!.name}";
         _localColor = Color(int.parse("0xFF${domain!.color}"));
+        colorTextController.text = domain!.color;
       case Failure():
         showSnackBar(messenger, localeMsg.noDomain, isError: true);
         if (context.mounted) Navigator.of(context).pop();
@@ -155,33 +160,7 @@ class _DomainPopupState extends State<DomainPopup>
                           ? TextButton.icon(
                               style: OutlinedButton.styleFrom(
                                   foregroundColor: Colors.red.shade900),
-                              onPressed: () async {
-                                if (_formKey.currentState!.validate()) {
-                                  _formKey.currentState!.save();
-                                  setState(() {
-                                    _isLoadingDelete = true;
-                                  });
-                                  final messenger =
-                                      ScaffoldMessenger.of(context);
-                                  var result =
-                                      await removeObject(domainId!, "domains");
-                                  switch (result) {
-                                    case Success():
-                                      widget.parentCallback();
-                                      showSnackBar(
-                                          messenger, localeMsg.deleteOK);
-                                      if (context.mounted)
-                                        Navigator.of(context).pop();
-                                    case Failure(exception: final exception):
-                                      setState(() {
-                                        _isLoadingDelete = false;
-                                      });
-                                      showSnackBar(
-                                          messenger, exception.toString(),
-                                          isError: true);
-                                  }
-                                }
-                              },
+                              onPressed: () => removeDomain(localeMsg),
                               label:
                                   Text(_isSmallDisplay ? "" : localeMsg.delete),
                               icon: _isLoadingDelete
@@ -252,8 +231,9 @@ class _DomainPopupState extends State<DomainPopup>
                                   showSnackBar(messenger,
                                       "${_isEdit ? localeMsg.modifyOK : localeMsg.createOK} 🥳",
                                       isSuccess: true);
-                                  if (context.mounted)
+                                  if (context.mounted) {
                                     Navigator.of(context).pop();
+                                  }
                                 case Failure(exception: final exception):
                                   setState(() {
                                     _isLoading = false;
@@ -292,36 +272,58 @@ class _DomainPopupState extends State<DomainPopup>
     );
   }
 
+  removeDomain(AppLocalizations localeMsg) async {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+      setState(() {
+        _isLoadingDelete = true;
+      });
+      final messenger = ScaffoldMessenger.of(context);
+      var result = await removeObject(domainId!, "domains");
+      switch (result) {
+        case Success():
+          widget.parentCallback();
+          showSnackBar(messenger, localeMsg.deleteOK);
+          if (context.mounted) {
+            Navigator.of(context).pop();
+          }
+        case Failure(exception: final exception):
+          setState(() {
+            _isLoadingDelete = false;
+          });
+          showSnackBar(messenger, exception.toString(), isError: true);
+      }
+    }
+  }
+
   getDomainForm() {
     final localeMsg = AppLocalizations.of(context)!;
     return ListView(
       padding: EdgeInsets.zero,
       children: [
-        getFormField(
+        CustomFormField(
             save: (newValue) => _domainParent = newValue,
             label: localeMsg.parentDomain,
             icon: Icons.auto_awesome_mosaic,
-            initialValue: _isEdit ? domain!.parent : null,
-            noValidation: true),
-        getFormField(
+            initialValue: _isEdit ? domain!.parent : widget.parentId,
+            shouldValidate: false),
+        CustomFormField(
             save: (newValue) => _domainName = newValue,
             label: localeMsg.domainName,
             icon: Icons.auto_awesome_mosaic,
             initialValue: _isEdit ? domain!.name : null),
-        getFormField(
+        CustomFormField(
             save: (newValue) => _domainDescription = newValue,
             label: "Description",
             icon: Icons.message,
             initialValue: _isEdit ? domain!.description : null),
-        getFormField(
+        CustomFormField(
             save: (newValue) => _domainColor = newValue,
             label: localeMsg.color,
             icon: Icons.color_lens,
-            formatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'[0-9a-fA-F]'))
-            ],
             isColor: true,
-            initialValue: _isEdit ? domain!.color : null),
+            colorTextController: colorTextController,
+            maxLength: 6),
       ],
     );
   }
@@ -335,7 +337,7 @@ class _DomainPopupState extends State<DomainPopup>
                 child: ElevatedButton.icon(
                     onPressed: () async {
                       FilePickerResult? result =
-                          await FilePicker.platform.pickFiles();
+                          await FilePicker.platform.pickFiles(withData: true);
                       if (result != null) {
                         setState(() {
                           _loadedFile = result.files.single;
@@ -367,55 +369,6 @@ class _DomainPopupState extends State<DomainPopup>
               )
             : Container(),
       ]),
-    );
-  }
-
-  getFormField(
-      {required Function(String?) save,
-      required String label,
-      required IconData icon,
-      List<TextInputFormatter>? formatters,
-      bool isColor = false,
-      String? initialValue,
-      bool noValidation = false}) {
-    final localeMsg = AppLocalizations.of(context)!;
-    return Padding(
-      padding: FormInputPadding,
-      child: TextFormField(
-        onChanged: isColor
-            ? (value) {
-                if (value.length == 6) {
-                  setState(() {
-                    _localColor = Color(int.parse("0xFF$value"));
-                  });
-                } else {
-                  setState(() {
-                    _localColor = null;
-                  });
-                }
-              }
-            : null,
-        onSaved: (newValue) => save(newValue),
-        validator: (text) {
-          if (noValidation) {
-            return null;
-          }
-          if (text == null || text.isEmpty) {
-            return AppLocalizations.of(context)!.mandatoryField;
-          }
-          if (isColor && text.length < 6) {
-            return localeMsg.shouldHaveXChars(6);
-          }
-          return null;
-        },
-        maxLength: isColor ? 6 : null,
-        inputFormatters: formatters,
-        initialValue: initialValue,
-        decoration: GetFormInputDecoration(_isSmallDisplay, label,
-            icon: icon, iconColor: isColor ? _localColor : null),
-        cursorWidth: 1.3,
-        style: const TextStyle(fontSize: 14),
-      ),
     );
   }
 }

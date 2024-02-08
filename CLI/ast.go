@@ -481,7 +481,7 @@ func setLabel(path string, values []any, hasSharpe bool) (map[string]any, error)
 	if err != nil {
 		return nil, err
 	}
-	return nil, cmd.InteractObject(path, "label", value, hasSharpe)
+	return nil, cmd.C.InteractObject(path, "label", value, hasSharpe)
 }
 
 func setLabelFont(path string, values []any) (map[string]any, error) {
@@ -495,7 +495,7 @@ func setLabelFont(path string, values []any) (map[string]any, error) {
 		if values[0] != "bold" && values[0] != "italic" {
 			return nil, fmt.Errorf(msg)
 		}
-		return nil, cmd.InteractObject(path, "labelFont", values[0], false)
+		return nil, cmd.C.InteractObject(path, "labelFont", values[0], false)
 	case 2:
 		if values[0] != "color" {
 			return nil, fmt.Errorf(msg)
@@ -504,10 +504,21 @@ func setLabelFont(path string, values []any) (map[string]any, error) {
 		if !ok {
 			return nil, fmt.Errorf("please provide a valid 6 length hex value for the color")
 		}
-		return nil, cmd.InteractObject(path, "labelFont", "color@"+c, false)
+		return nil, cmd.C.InteractObject(path, "labelFont", "color@"+c, false)
 	default:
 		return nil, fmt.Errorf(msg)
 	}
+}
+
+func setLabelBackground(path string, values []any) (map[string]any, error) {
+	if len(values) != 1 {
+		return nil, fmt.Errorf("only 1 value expected")
+	}
+	c, ok := utils.ValToColor(values[0])
+	if !ok {
+		return nil, fmt.Errorf("please provide a valid 6 length hex value for the color")
+	}
+	return nil, cmd.C.InteractObject(path, "labelBackground", c, false)
 }
 
 func addToStringMap[T any](stringMap string, key string, val T) (string, bool) {
@@ -737,13 +748,15 @@ func (n *updateObjNode) execute() (interface{}, error) {
 				if err != nil {
 					return nil, err
 				}
-				err = cmd.InteractObject(path, n.attr, boolVal, n.hasSharpe)
+				err = cmd.C.InteractObject(path, n.attr, boolVal, n.hasSharpe)
 			case "areas":
 				_, err = setRoomAreas(path, values)
 			case "label":
 				_, err = setLabel(path, values, n.hasSharpe)
 			case "labelFont":
 				_, err = setLabelFont(path, values)
+			case "labelBackground":
+				_, err = setLabelBackground(path, values)
 			case "separators+":
 				_, err = addRoomSeparator(path, values)
 			case "pillars+":
@@ -1173,6 +1186,7 @@ type createDeviceNode struct {
 	path            node
 	posUOrSlot      node
 	sizeUOrTemplate node
+	invertOffset    bool
 	side            node
 }
 
@@ -1202,6 +1216,12 @@ func (n *createDeviceNode) execute() (interface{}, error) {
 		}
 
 		attributes["template"] = template
+	}
+
+	if n.invertOffset {
+		attributes["invertOffset"] = "true"
+	} else {
+		attributes["invertOffset"] = "false"
 	}
 
 	if n.side != nil {
@@ -1408,6 +1428,13 @@ type connect3DNode struct {
 
 func (n *connect3DNode) execute() (interface{}, error) {
 	return nil, cmd.Connect3D(n.url)
+}
+
+type disconnect3DNode struct{}
+
+func (n *disconnect3DNode) execute() (interface{}, error) {
+	cmd.Disconnect3D()
+	return nil, nil
 }
 
 type uiDelayNode struct {
