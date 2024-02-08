@@ -183,14 +183,15 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 }
 
 func validateDeviceSlotExists(deviceData map[string]interface{}, parentData map[string]interface{}) *u.Error {
-	if deviceSlots, ok := deviceData["slot"].([]string); ok {
+	if deviceSlots, ok := deviceData["attributes"].(map[string]any)["slot"].([]any); ok {
 		// check if requested slots exist in parent device
 		countFound := 0
-		if templateSlug, ok := parentData["template"].(string); ok {
+		if templateSlug, ok := parentData["attributes"].(map[string]any)["template"].(string); ok {
 			template, _ := GetObject(bson.M{"slug": templateSlug}, "obj_template", u.RequestFilters{}, nil)
-			if parentSlots, ok := template["slots"].([]map[string]interface{}); ok {
+			if ps, ok := template["slots"].(primitive.A); ok {
+				parentSlots := []interface{}(ps)
 				for _, parentSlot := range parentSlots {
-					if pie.Contains(deviceSlots, parentSlot["location"].(string)) {
+					if pie.Contains(deviceSlots, parentSlot.(map[string]any)["location"]) {
 						countFound = countFound + 1
 					}
 				}
@@ -259,12 +260,6 @@ func validateJsonSchema(entity int, t map[string]interface{}) (bool, *u.Error) {
 }
 
 func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
-	/*
-		TODO:
-		Need to capture device if it is a parent
-		and check that the device parent has a slot
-		attribute
-	*/
 	if shouldFillTags(entity, u.RequestFilters{}) {
 		t = fillTags(t)
 	}
@@ -304,7 +299,7 @@ func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 	}
 
 	// Check attributes
-	if entity == u.RACK || entity == u.GROUP || entity == u.CORRIDOR || entity == u.GENERIC {
+	if entity == u.RACK || entity == u.GROUP || entity == u.CORRIDOR || entity == u.GENERIC || entity == u.DEVICE {
 		attributes := t["attributes"].(map[string]any)
 
 		if pie.Contains(u.RoomChildren, entity) {
@@ -400,22 +395,18 @@ func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 				}
 			}
 		case u.DEVICE:
-			if parent["parent"].(string) == "device" {
-				if deviceSlots, ok := t["slots"].([]string); ok {
-					// check if all requested slots are free
-					andReq := bson.A{}
-					idPattern := primitive.Regex{Pattern: "^" + t["parentId"].(string) +
-						"(." + u.NAME_REGEX + "){1,1}$", Options: ""} // filter siblings
-					andReq = append(andReq, bson.M{"id": idPattern})
-					andReq = append(andReq, bson.M{"slot": bson.M{"$in": deviceSlots}}) // filter slots
-					count, err := repository.CountObjects(u.DEVICE, bson.M{"$and": andReq})
-					if err != nil {
-						return err
-					}
-					if count != 0 {
-						return &u.Error{Type: u.ErrBadFormat,
-							Message: "Invalid slot: one or more requested slots are already in user"}
-					}
+			if deviceSlots, ok := attributes["slot"].([]any); ok {
+				// check if all requested slots are free
+				andReq := bson.A{}
+				idPattern := primitive.Regex{Pattern: "^" + t["parentId"].(string) +
+					"(." + u.NAME_REGEX + "){1,1}$", Options: ""} // filter siblings
+				andReq = append(andReq, bson.M{"id": idPattern})
+				andReq = append(andReq, bson.M{"attributes.slot": bson.M{"$in": deviceSlots}}) // filter slots
+				if count, err := repository.CountObjects(u.DEVICE, bson.M{"$and": andReq}); err != nil {
+					return err
+				} else if count != 0 {
+					return &u.Error{Type: u.ErrBadFormat,
+						Message: "Invalid slot: one or more requested slots are already in use"}
 				}
 			}
 		}
