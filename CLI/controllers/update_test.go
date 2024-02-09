@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestUpdateTagColorSendsTagTo3DWithSameOldSlugAsSlug(t *testing.T) {
-	controller, mockAPI, mockOgree3D, _ := newControllerWithMocks(t)
+func TestUpdateTagColor(t *testing.T) {
+	controller, mockAPI, _, _ := newControllerWithMocks(t)
 
 	oldSlug := "slug"
 	path := models.TagsPath + oldSlug
@@ -31,22 +31,14 @@ func TestUpdateTagColorSendsTagTo3DWithSameOldSlugAsSlug(t *testing.T) {
 
 	mockUpdateObject(mockAPI, dataUpdate, dataUpdated)
 
-	mockOgree3D.On("InformOptional", "UpdateObj", models.TAG, map[string]any{
-		"type": "modify-tag",
-		"data": map[string]any{
-			"old-slug": oldSlug,
-			"tag":      dataUpdated,
-		},
-	}).Return(nil)
-
 	controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
 
 	_, err := controller.UpdateObj(path, dataUpdate)
 	assert.Nil(t, err)
 }
 
-func TestUpdateTagSlugSendsTagTo3DWithNewSlug(t *testing.T) {
-	controller, mockAPI, mockOgree3D, _ := newControllerWithMocks(t)
+func TestUpdateTagSlug(t *testing.T) {
+	controller, mockAPI, _, _ := newControllerWithMocks(t)
 
 	oldSlug := "slug"
 	newSlug := "new-slug"
@@ -69,14 +61,6 @@ func TestUpdateTagSlugSendsTagTo3DWithNewSlug(t *testing.T) {
 	}
 
 	mockUpdateObject(mockAPI, dataUpdate, dataUpdated)
-
-	mockOgree3D.On("InformOptional", "UpdateObj", models.TAG, map[string]any{
-		"type": "modify-tag",
-		"data": map[string]any{
-			"old-slug": oldSlug,
-			"tag":      dataUpdated,
-		},
-	}).Return(nil)
 
 	controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
 

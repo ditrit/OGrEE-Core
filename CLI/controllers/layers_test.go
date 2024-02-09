@@ -680,22 +680,13 @@ func TestSelectNestedLayerSelectsAll(t *testing.T) {
 }
 
 func TestRemoveLayerRemovesAllObjectsOfTheLayer(t *testing.T) {
-	controller, mockAPI, mockOgree3D := layersSetup(t)
+	controller, mockAPI, _ := layersSetup(t)
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
 	mockDeleteObjects(mockAPI, "category=rack&id=BASIC.A.R1.*&namespace=physical.hierarchy", []any{rack1, rack2})
 
 	controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
-
-	mockOgree3D.On(
-		"InformOptional", "DeleteObj",
-		-1, map[string]any{"data": "BASIC.A.R1.A01", "type": "delete"},
-	).Return(nil)
-	mockOgree3D.On(
-		"InformOptional", "DeleteObj",
-		-1, map[string]any{"data": "BASIC.A.R1.B01", "type": "delete"},
-	).Return(nil)
 
 	_, err := controller.DeleteObj("/Physical/BASIC/A/R1/#racks")
 	assert.Nil(t, err)
@@ -1222,7 +1213,7 @@ func TestLsReturnsLayerCreatedAfterLastUpdate(t *testing.T) {
 }
 
 func TestLsReturnsLayerCreatedAndUpdatedAfterLastUpdate(t *testing.T) {
-	controller, mockAPI, mockOgree3D := layersSetup(t)
+	controller, mockAPI, _ := layersSetup(t)
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
 
@@ -1248,13 +1239,7 @@ func TestLsReturnsLayerCreatedAndUpdatedAfterLastUpdate(t *testing.T) {
 		models.LayerFilters:       map[string]any{"category": "device"},
 		models.LayerApplicability: "BASIC.A.R1",
 	})
-	mockOgree3D.On(
-		"InformOptional", "UpdateObj",
-		models.LAYER, map[string]any{"data": map[string]interface{}{
-			"layer": map[string]interface{}{
-				"applicability": "BASIC.A.R1", "filters": map[string]interface{}{"category": "device"},
-				"slug": "test"}, "old-slug": "test"}, "type": "modify-layer"},
-	).Return(nil)
+
 	err = controller.UpdateLayer("/Logical/Layers/test", models.LayerFiltersAdd, "category=device")
 	assert.Nil(t, err)
 
@@ -1272,7 +1257,7 @@ func TestLsReturnsLayerCreatedAndUpdatedAfterLastUpdate(t *testing.T) {
 }
 
 func TestLsOnLayerUpdatedAfterLastUpdateDoesUpdatedFilter(t *testing.T) {
-	controller, mockAPI, mockOgree3D := layersSetup(t)
+	controller, mockAPI, _ := layersSetup(t)
 
 	testLayer := map[string]any{
 		"slug": "test",
@@ -1298,13 +1283,7 @@ func TestLsOnLayerUpdatedAfterLastUpdateDoesUpdatedFilter(t *testing.T) {
 		models.LayerFilters:       map[string]any{"category": "device"},
 		models.LayerApplicability: "BASIC.A.R1",
 	})
-	mockOgree3D.On(
-		"InformOptional", "UpdateObj",
-		models.LAYER, map[string]any{"data": map[string]interface{}{
-			"layer": map[string]interface{}{
-				"applicability": "BASIC.A.R1", "filters": map[string]interface{}{"category": "device"},
-				"slug": "test"}, "old-slug": "test"}, "type": "modify-layer"},
-	).Return(nil)
+
 	err = controller.UpdateLayer("/Logical/Layers/test", models.LayerFiltersAdd, "category=device")
 	assert.Nil(t, err)
 
