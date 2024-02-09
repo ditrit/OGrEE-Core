@@ -281,20 +281,21 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 		}
 		//}
 
-		var slot map[string]any
 		//Process the posU/slot attribute
 		if x, ok := attr["posU/slot"]; ok {
 			delete(attr, "posU/slot")
-			if _, err := strconv.Atoi(x.(string)); err == nil {
+			if _, err := strconv.Atoi(x.([]string)[0]); err == nil {
 				attr["posU"] = x
-				attr["slot"] = ""
 			} else {
-				attr["slot"] = x
+				print("my slot: ")
+				fmt.Println(x)
+				if slots, ok := x.([]string); !ok {
+					return fmt.Errorf("Invalid device syntax: slots must be in a square brackets vector []")
+				} else {
+					attr["slot"] = slots
+				}
 			}
-			slot, err = GetSlot(parent, x.(string))
-			if err != nil {
-				return err
-			}
+
 		}
 
 		//If user provided templates, get the JSON
@@ -305,7 +306,17 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 				return err
 			}
 		} else {
-			attr["template"] = ""
+			var slot map[string]any
+			if attr["slot"] != nil {
+				slots := attr["slot"].([]string)
+				if len(slots) != 1 {
+					return fmt.Errorf("Invalid device syntax: one single slot should be provided if no template")
+				}
+				slot, err = GetSlot(parent, slots[0])
+				if err != nil {
+					return err
+				}
+			}
 			if slot != nil {
 				size := slot["elemSize"].([]any)
 				attr["size"] = fmt.Sprintf(
@@ -351,10 +362,15 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 
 	//Stringify the attributes if not already
 	for i := range attr {
-		attr[i] = Stringify(attr[i])
+		if i == "slot" {
+			attr[i] = "[" + strings.Join(attr[i].([]string), ",") + "]"
+		} else {
+			attr[i] = Stringify(attr[i])
+		}
 	}
 
 	data["attributes"] = attr
+	fmt.Println(attr)
 
 	//Because we already stored the string conversion in category
 	//we can do the conversion for templates here

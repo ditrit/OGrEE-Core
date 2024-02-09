@@ -284,12 +284,14 @@ func (p *parser) parseBool() bool {
 }
 
 func (p *parser) parseText(lexFunc func() token, trim bool) node {
+	println("parseText")
 	defer un(trace(p, ""))
 	s := ""
 	subExpr := []node{}
 loop:
 	for {
 		tok := lexFunc()
+		fmt.Println(tok.t.String())
 		switch tok.t {
 		case tokText:
 			s += tok.str
@@ -308,11 +310,51 @@ loop:
 	}
 	if trim {
 		s = strings.Trim(s, " \n")
+		println(s)
 	}
 	if len(subExpr) == 0 {
+		println("subexpr")
 		return &valueNode{s}
 	}
+	println("format")
 	return &formatStringNode{&valueNode{s}, subExpr}
+}
+
+func (p *parser) parseSimpleText(lexFunc func() token) node {
+	println("parseText")
+	defer un(trace(p, ""))
+	s := ""
+	// subExpr := []node{}
+loop:
+	for {
+		tok := lexFunc()
+		fmt.Println(tok.t.String())
+		switch tok.t {
+		case tokText:
+			s += tok.str
+		case tokEOF:
+			break loop
+		case tokRightBrac:
+			p.backward(1)
+			break loop
+		default:
+			p.error("unexpected token")
+		}
+	}
+	// if trim {
+	// 	s = strings.Trim(s, " \n")
+	println(s)
+	if s[len(s)-1] == ']' {
+		s = s[:len(s)-1]
+		p.backward(1)
+	}
+	// }
+	// if len(subExpr) == 0 {
+	// println("subexpr")
+	return &valueNode{s}
+	// }
+	// println("format")
+	// return &formatStringNode{&valueNode{s}, subExpr}
 }
 
 func (p *parser) parsePathOrSelection(name string) node {
@@ -428,6 +470,7 @@ func (p *parser) parsePrimaryExpr() node {
 		if p.tok.t != tokRightBrac {
 			p.error("']' expected")
 		}
+		println("HERE")
 		return &arrNode{exprList}
 	case tokFormat:
 		p.parseExprToken()
@@ -533,6 +576,41 @@ func (p *parser) parseStringOrVec(name string) node {
 		return p.parseExpr("")
 	}
 	return p.parseString("")
+}
+
+func (p *parser) parseStringOrVecStr(name string) []node {
+	println("parseStrorVecStr")
+	defer un(trace(p, name))
+	p.skipWhiteSpaces()
+	if p.parseExact("[") {
+
+		listnodes := []node{}
+		// count := 0
+		for {
+			p.skipWhiteSpaces()
+			n := p.parseSimpleText(p.parseUnquotedStringToken)
+			println("got a node")
+			listnodes = append(listnodes, n)
+			//break
+			//p.skipWhiteSpaces()
+			if p.parseExact(",") {
+				continue
+			}
+			if p.parseExact("]") {
+				break
+			}
+			// count++
+			// if count > 5 {
+			// 	break
+			// }
+
+		}
+		p.skipWhiteSpaces()
+		return listnodes
+		// p.backward(1)
+		// return p.parseString("")
+	}
+	return []node{p.parseString("")}
 }
 
 func (p *parser) parseArgValue() string {
@@ -1071,7 +1149,8 @@ func (p *parser) parseCreateDevice() node {
 	defer un(trace(p, "create device"))
 	path := p.parsePath("")
 	p.expect("@")
-	posUOrSlot := p.parseString("posUOrSlot")
+	posUOrSlot := p.parseStringOrVecStr("posUOrSlot")
+	println("FINISH")
 	p.expect("@")
 	sizeUOrTemplate := p.parseString("sizeUOrTemplate")
 	if !p.parseExact("@") {

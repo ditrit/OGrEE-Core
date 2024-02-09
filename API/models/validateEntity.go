@@ -183,7 +183,14 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 }
 
 func validateDeviceSlotExists(deviceData map[string]interface{}, parentData map[string]interface{}) *u.Error {
-	if deviceSlots, ok := deviceData["attributes"].(map[string]any)["slot"].([]any); ok {
+	fmt.Println(deviceData["attributes"].(map[string]any)["slot"])
+	if slotStr, ok := deviceData["attributes"].(map[string]any)["slot"].(string); ok {
+		if len(slotStr) < 3 {
+			return &u.Error{Type: u.ErrInvalidValue,
+				Message: "Invalid slot: must be a vector [] with at least one element"}
+		}
+		deviceSlots := strings.Split(slotStr[1:len(slotStr)-1], ",")
+		fmt.Println(deviceSlots)
 		// check if requested slots exist in parent device
 		countFound := 0
 		if templateSlug, ok := parentData["attributes"].(map[string]any)["template"].(string); ok {
@@ -191,7 +198,7 @@ func validateDeviceSlotExists(deviceData map[string]interface{}, parentData map[
 			if ps, ok := template["slots"].(primitive.A); ok {
 				parentSlots := []interface{}(ps)
 				for _, parentSlot := range parentSlots {
-					if pie.Contains(deviceSlots, parentSlot.(map[string]any)["location"]) {
+					if pie.Contains(deviceSlots, parentSlot.(map[string]any)["location"].(string)) {
 						countFound = countFound + 1
 					}
 				}
@@ -199,7 +206,7 @@ func validateDeviceSlotExists(deviceData map[string]interface{}, parentData map[
 		}
 		if len(deviceSlots) != countFound {
 			return &u.Error{Type: u.ErrInvalidValue,
-				Message: "Invalid slot: parent dos not have all the requested slots"}
+				Message: "Invalid slot: parent does not have all the requested slots"}
 		}
 	}
 	return nil
@@ -395,7 +402,8 @@ func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 				}
 			}
 		case u.DEVICE:
-			if deviceSlots, ok := attributes["slot"].([]any); ok {
+			if slotStr, ok := attributes["slot"].(string); ok && len(slotStr) > 3 {
+				deviceSlots := strings.Split(slotStr[1:len(slotStr)-1], ",")
 				// check if all requested slots are free
 				andReq := bson.A{}
 				idPattern := primitive.Regex{Pattern: "^" + t["parentId"].(string) +

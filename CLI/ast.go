@@ -1184,7 +1184,7 @@ func (n *createGenericNode) execute() (interface{}, error) {
 
 type createDeviceNode struct {
 	path            node
-	posUOrSlot      node
+	posUOrSlot      []node
 	sizeUOrTemplate node
 	invertOffset    bool
 	side            node
@@ -1195,9 +1195,13 @@ func (n *createDeviceNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	posUOrSlot, err := nodeToString(n.posUOrSlot, "posU/slot")
-	if err != nil {
-		return nil, err
+	posUOrSlot := []string{}
+	for _, node := range n.posUOrSlot {
+		str, err := nodeToString(node, "posU/slot")
+		posUOrSlot = append(posUOrSlot, str)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	attributes := map[string]any{"posU/slot": posUOrSlot}
