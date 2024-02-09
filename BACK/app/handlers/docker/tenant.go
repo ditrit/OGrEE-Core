@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -124,7 +123,7 @@ func GetContainerLogs(c *gin.Context) {
 }
 
 func AddTenant(c *gin.Context) {
-	data, e := ioutil.ReadFile("tenants.json")
+	data, e := os.ReadFile("tenants.json")
 	if e != nil {
 		panic(e.Error())
 	}
@@ -146,7 +145,7 @@ func AddTenant(c *gin.Context) {
 		// newTenant.CustomerPassword = ""
 		listTenants = append(listTenants, newTenant)
 		data, _ := json.MarshalIndent(listTenants, "", "  ")
-		_ = ioutil.WriteFile("tenants.json", data, 0755)
+		_ = os.WriteFile("tenants.json", data, 0755)
 		c.String(http.StatusOK, "Tenant created!")
 	}
 
@@ -251,7 +250,7 @@ func addAppAssets(newTenant models.Tenant, assestsDit string) {
 
 	// Add default logo if none already present
 	userLogo := assestsDit + "/logo.png"
-	defaultLogo := "flutter-assets/logo.png"
+	defaultLogo := "handlers/docker/flutter-assets/logo.png"
 	if _, err := os.Stat(userLogo); err == nil {
 		println("Logo already exists")
 	} else {
@@ -315,7 +314,7 @@ func RemoveTenant(c *gin.Context) {
 	os.Remove(DOCKER_DIR + tenantName + ".env")
 
 	// Update local file
-	data, e := ioutil.ReadFile("tenants.json")
+	data, e := os.ReadFile("tenants.json")
 	if e != nil {
 		panic(e.Error())
 	}
@@ -327,7 +326,7 @@ func RemoveTenant(c *gin.Context) {
 		}
 	}
 	data, _ = json.MarshalIndent(listTenants, "", "  ")
-	_ = ioutil.WriteFile("tenants.json", data, 0755)
+	_ = os.WriteFile("tenants.json", data, 0755)
 	c.IndentedJSON(http.StatusOK, "all good")
 }
 
@@ -372,7 +371,7 @@ func UpdateTenant(c *gin.Context) {
 			listTenants[i] = newTenant
 			println(listTenants)
 			data, _ := json.MarshalIndent(listTenants, "", "  ")
-			_ = ioutil.WriteFile("tenants.json", data, 0755)
+			_ = os.WriteFile("tenants.json", data, 0755)
 			break
 		}
 	}

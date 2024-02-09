@@ -60,7 +60,7 @@ String wrapResponseMsg(http.Response response, {String? message}) {
 
 // API calls
 Future<Result<List<String>, Exception>> loginAPI(String email, String password,
-    {String userUrl = ""}) async {
+    {String userUrl = "", bool stayLoggedIn = false}) async {
   // Make sure it is clean
   tenantUrl = "";
   isTenantAdmin = false;
@@ -77,8 +77,11 @@ Future<Result<List<String>, Exception>> loginAPI(String email, String password,
   try {
     Uri url = Uri.parse('$apiUrl/api/login');
     final response = await http.post(url,
-        body: json
-            .encode(<String, String>{'email': email, 'password': password}));
+        body: json.encode(<String, dynamic>{
+          'email': email,
+          'password': password,
+          'stayLoggedIn': stayLoggedIn
+        }));
 
     // Handle response
     Map<String, dynamic> data = json.decode(response.body);

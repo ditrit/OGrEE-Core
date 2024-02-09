@@ -11,12 +11,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GenerateToken(user_id string) (string, error) {
+func GenerateToken(user_id string, stayLogged bool) (string, error) {
 
 	token_lifespan, err := strconv.Atoi(os.Getenv("TOKEN_HOUR_LIFESPAN"))
-
-	if err != nil {
-		return "", err
+	if stayLogged {
+		token_lifespan = 48 // 48h token for stay logged in
+	} else if err != nil {
+		token_lifespan = 1 // 1h as default
 	}
 
 	claims := jwt.MapClaims{}

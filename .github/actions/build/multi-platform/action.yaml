@@ -71,7 +71,8 @@ runs:
       uses: ./.github/actions/build/docker
       with:
         IMAGE_NAME: "ogree-app"
-        FOLDER_NAME: "./APP"
+        FOLDER_NAME: "."
+        DOCKERFILE: "APP/Dockerfile"
         VERSION: ${{ env.VERSION }}
         TEAM_DOCKER_URL: ${{ inputs.TEAM_DOCKER_URL }}
         TEAM_USERNAME: ${{ inputs.TEAM_USERNAME }}

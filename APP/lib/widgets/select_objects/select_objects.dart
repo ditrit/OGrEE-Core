@@ -48,21 +48,31 @@ class _SelectObjectsState extends State<SelectObjects> {
               child: Card(
                 margin: const EdgeInsets.all(0.1),
                 child: appController.treeController.roots.isEmpty
-                    ? Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.warning_rounded,
-                            size: 50,
-                            color: Colors.grey.shade600,
+                    ? Stack(children: [
+                        Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.warning_rounded,
+                                size: 50,
+                                color: Colors.grey.shade600,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 16),
+                                child: Text(
+                                    "${AppLocalizations.of(context)!.noObjectsFound} :("),
+                              ),
+                            ],
                           ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 16),
-                            child: Text(
-                                "${AppLocalizations.of(context)!.noObjectsFound} :("),
-                          ),
-                        ],
-                      )
+                        ),
+                        addObjectButton(
+                            context,
+                            widget.namespace,
+                            () => setState(() {
+                                  widget.load = true;
+                                })),
+                      ])
                     : _ResponsiveBody(
                         namespace: widget.namespace,
                         noFilters: widget.namespace != Namespace.Physical,
@@ -153,38 +163,42 @@ class _ResponsiveBody extends StatelessWidget {
                       SettingsView(isTenantMode: false, noFilters: noFilters)),
             ],
           ),
-          Padding(
-            padding: const EdgeInsets.only(left: 6, bottom: 6),
-            child: Align(
-              alignment: Alignment.bottomLeft,
-              child: SizedBox(
-                height: 34,
-                width: 34,
-                child: IconButton(
-                  padding: EdgeInsets.all(0.0),
-                  iconSize: 24,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue.shade600,
-                    foregroundColor: Colors.white,
-                  ),
-                  onPressed: () => showCustomPopup(
-                      context,
-                      namespace == Namespace.Organisational
-                          ? DomainPopup(
-                              parentCallback: callback,
-                            )
-                          : ObjectPopup(
-                              parentCallback: callback, namespace: namespace),
-                      isDismissible: true),
-                  icon: const Icon(Icons.add),
-                ),
-              ),
-            ),
-          ),
+          addObjectButton(context, namespace, callback),
         ],
       ),
     );
   }
+}
+
+addObjectButton(
+    BuildContext context, Namespace namespace, Function() callback) {
+  return Padding(
+    padding: const EdgeInsets.only(left: 6, bottom: 6),
+    child: Align(
+      alignment: Alignment.bottomLeft,
+      child: SizedBox(
+        height: 34,
+        width: 34,
+        child: IconButton(
+          padding: EdgeInsets.all(0.0),
+          iconSize: 24,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue.shade600,
+            foregroundColor: Colors.white,
+          ),
+          onPressed: () => showCustomPopup(
+              context,
+              namespace == Namespace.Organisational
+                  ? DomainPopup(
+                      parentCallback: callback,
+                    )
+                  : ObjectPopup(parentCallback: callback, namespace: namespace),
+              isDismissible: true),
+          icon: const Icon(Icons.add),
+        ),
+      ),
+    ),
+  );
 }
 
 class SettingsViewPopup extends StatelessWidget {

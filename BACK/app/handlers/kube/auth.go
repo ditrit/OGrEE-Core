@@ -50,7 +50,7 @@ func Login(c *gin.Context) {
 
 		println("Generate")
 		// Generate token
-		token, err := auth.GenerateToken(userIn.Email)
+		token, err := auth.GenerateToken(userIn.Email, userIn.StayLoggedIn)
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
 			return
