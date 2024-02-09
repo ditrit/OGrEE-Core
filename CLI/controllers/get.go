@@ -22,7 +22,7 @@ func (controller Controller) GetObjectsWildcard(pathStr string, filters map[stri
 
 	var resp *Response
 	var method string
-	if complexFilter, ok := filters["complexFilter"]; ok {
+	if complexFilter, ok := filters["filter"]; ok {
 		body := utils.ComplexFilterToMap(complexFilter)
 		method = "POST "
 		resp, err = controller.API.Request(http.MethodPost, url, body, http.StatusOK)

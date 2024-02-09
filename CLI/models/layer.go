@@ -60,6 +60,11 @@ func (layer UserDefinedLayer) Matches(path string) bool {
 
 func (layer UserDefinedLayer) ApplyFilters(filters map[string]string) {
 	for key, value := range layer.Filters {
+		if key == "filter" {
+			if complexFilter, ok := filters["filter"]; ok {
+				value = "(" + complexFilter + ") & (" + value + ") "
+			}
+		}
 		filters[key] = value
 	}
 }

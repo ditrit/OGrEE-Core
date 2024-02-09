@@ -677,19 +677,19 @@ func (p *parser) parseComplexFilters() map[string]node {
 			newComplexFilter = &valueNode{newFilterStr.(string) + ") "}
 		}
 
-		if complexFilter, ok := filters["complexFilter"]; ok {
+		if complexFilter, ok := filters["filter"]; ok {
 			oldFilterStr, _ := complexFilter.execute()
 			newFilterStr, _ := newComplexFilter.execute()
-			filters["complexFilter"] = &valueNode{oldFilterStr.(string) + newFilterStr.(string)}
+			filters["filter"] = &valueNode{oldFilterStr.(string) + newFilterStr.(string)}
 		} else {
-			filters["complexFilter"] = newComplexFilter
+			filters["filter"] = newComplexFilter
 		}
 	}
 
 	for i := 0; i < numArgs; i++ {
-		complexFilter := filters["complexFilter"]
+		complexFilter := filters["filter"]
 		oldFilterStr, _ := complexFilter.execute()
-		filters["complexFilter"] = &valueNode{oldFilterStr.(string) + ")"}
+		filters["filter"] = &valueNode{oldFilterStr.(string) + ")"}
 	}
 
 	return filters
@@ -1156,13 +1156,9 @@ func (p *parser) parseCreateLayer() node {
 	p.expect("@")
 	applicability := p.parsePath(models.LayerApplicability)
 	p.expect("@")
-	filterName := p.parseSimpleWord("filterName")
-	p.skipWhiteSpaces()
-	p.expect("=")
-	p.skipWhiteSpaces()
-	filterValue := p.parseString("filterValue")
+	filters := p.parseComplexFilters()["filter"]
 
-	return &createLayerNode{slug, applicability, filterName, filterValue}
+	return &createLayerNode{slug, applicability, "filter", filters}
 }
 
 func (p *parser) parseCreateCorridor() node {
@@ -1229,8 +1225,13 @@ func (p *parser) parseUpdate() node {
 	values := []node{}
 	moreValues := true
 	for moreValues {
-		value := p.parseValue()
-		values = append(values, value)
+		if attr == models.LayerFiltersAdd {
+			filters := p.parseComplexFilters()["filter"]
+			values = append(values, filters)
+		} else {
+			value := p.parseValue()
+			values = append(values, value)
+		}
 		moreValues = p.parseExact("@")
 	}
 	return &updateObjNode{path, attr, values, sharpe}

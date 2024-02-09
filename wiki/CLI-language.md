@@ -697,10 +697,27 @@ Layers are identified by a slug. In addition, they have an applicability and the
 
 The applicability is the path in which the layer should be added when doing ls. Patterns can be used in the applicability (see [Applicability Patterns](#applicability-patterns)).
 
-A first filter in the format `field=value` should be given to create the layer. To add more filters, edit the layer using the following syntax:
+Layers can have simple filters in the format `field=value` or complex ones, composed of boolean expressions with the operators `=`, `!=`, `<`, `<=`, `>`, `>=`, `&` and `|`; parenthesis can also be used to separate the complex expressions. A first filter should be given to to create the layer.
 
 ```
-[layer_path]:filters+=[filter_name]=[filter_value]
++layer:[slug]@[applicability]@name=[name]
++layer:[slug]@[applicability]@height=[height]
++layer:[slug]@[applicability]@category=[category] & name!=[name]
++layer:[slug]@[applicability]@(name=[name] & height<[height]) | domain=[domain]
+```
+
+To add more filters, simple or complex ones, edit the layer using the following syntax:
+
+```
+[layer_path]:filters+=[filter]
+```
+
+Examples:
+```
+[layer_path]:filters+=name=[name]
+[layer_path]:filters+=height=[height]
+[layer_path]:filters+=category=[category] & name!=[name]
+[layer_path]:filters+=(name=[name] & height<[height]) | domain=[domain]
 ```
 
 Where [layer_path] is `/Logical/Layers/[slug]` (or only `[slug]` if the current path is /Logical/Layers).
@@ -713,6 +730,12 @@ A filter can also be removed, using the syntax:
 
 ```
 [layer_path]:filters-=[filter_name]
+```
+
+To remove a complex filter, use the syntax:
+
+```
+[layer_path]:filters-=filter
 ```
 
 After the layer is created, it can be seen in /Logical/Layers. The command `get /Logical/Layers/[slug]` can be used to get the layer information.

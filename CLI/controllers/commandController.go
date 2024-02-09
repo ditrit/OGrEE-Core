@@ -136,21 +136,20 @@ func (controller Controller) ObjectUrlGeneric(pathStr string, depth int, filters
 		params.Add("limit", strconv.Itoa(depth))
 	}
 
-	if _, ok := filters["complexFilter"]; ok {
-		url, _ := url.Parse("/api/objects/search")
-		url.RawQuery = params.Encode()
-
-		return url.String(), nil
-	} else {
-		for key, value := range filters {
+	endpoint := "/api/objects"
+	for key, value := range filters {
+		fmt.Println("k, v", key, value)
+		if key != "filter" {
 			params.Set(key, value)
+		} else {
+			endpoint = "/api/objects/search"
 		}
-
-		url, _ := url.Parse("/api/objects")
-		url.RawQuery = params.Encode()
-
-		return url.String(), nil
 	}
+
+	url, _ := url.Parse(endpoint)
+	url.RawQuery = params.Encode()
+
+	return url.String(), nil
 }
 
 func GetSlot(rack map[string]any, location string) (map[string]any, error) {

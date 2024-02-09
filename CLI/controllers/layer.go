@@ -3,6 +3,7 @@ package controllers
 import (
 	"cli/models"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/bmatcuk/doublestar/v4"
@@ -167,11 +168,16 @@ func (controller Controller) UpdateLayer(path string, attributeName string, valu
 	case models.LayerFiltersRemove:
 		_, err = controller.UpdateObj(path, map[string]any{attributeName: value})
 	case models.LayerFiltersAdd:
-		values := strings.Split(value.(string), "=")
-		if len(values) != 2 || len(values[0]) == 0 || len(values[0]) == 0 {
-			return fmt.Errorf("invalid filter format")
+		var filters map[string]any
+		reg := regexp.MustCompile(`^(\w(\w|\-)*)=[^!<>=&|]+$`)
+		if strings.HasPrefix(value.(string), "filter=") {
+			filters = map[string]any{"filter": value.(string)[7:]}
+		} else if reg.MatchString(value.(string)) {
+			values := strings.Split(value.(string), "=")
+			filters = map[string]any{values[0]: values[1]}
+		} else {
+			filters = map[string]any{"filter": value.(string)}
 		}
-		filters := map[string]any{values[0]: values[1]}
 		_, err = controller.UpdateObj(path, map[string]any{models.LayerFilters: filters})
 	default:
 		_, err = controller.UpdateObj(path, map[string]any{attributeName: value})

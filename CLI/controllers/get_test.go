@@ -67,7 +67,7 @@ func TestGetWithComplexFilters(t *testing.T) {
 	)
 
 	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1", map[string]string{
-		"complexFilter": "(category=room) & (name=R1 | height>3) ",
+		"filter": "(category=room) & (name=R1 | height>3) ",
 	}, nil)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)

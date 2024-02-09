@@ -120,7 +120,7 @@ func TestLsWithComplexFilters(t *testing.T) {
 	)
 
 	objects, err := controller.Ls("/Physical/BASIC/A/R1", map[string]string{
-		"complexFilter": "(category=corridor) | (category=rack & name!=A01) ",
+		"filter": "(category=corridor) | (category=rack & name!=A01) ",
 	}, nil)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 2)
