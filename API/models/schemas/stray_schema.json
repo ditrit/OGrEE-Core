@@ -36,7 +36,7 @@
       "examples": [{
         "name": "StrayDevice1",
         "category": "device",
-        "description": "-3/-5\\nA0-Z9",
+        "description": "-3/-5\nA0-Z9",
         "domain": "SomeDomain",
         "attributes": {
             "posXY": "[10.0, 0.0]",
