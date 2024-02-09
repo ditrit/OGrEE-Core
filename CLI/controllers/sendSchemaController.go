@@ -100,7 +100,6 @@ func serialiseFloatVector(attr map[string]interface{}, want string) string {
 			}
 		}
 		newSize = "[" + newSize + "]"
-		fmt.Println(newSize)
 
 		if len(items) == 3 && want == "size" {
 			if attr["shape"] == "sphere" || attr["shape"] == "cylinder" {
@@ -244,9 +243,9 @@ func parseReservedTech(x map[string]interface{}) map[string]interface{} {
 				fmt.Fprintf(t2, "%v", tech[1].(float64))
 				t1 := bytes.NewBufferString("")
 				fmt.Fprintf(t1, "%v", tech[0].(float64))
-
-				reservedStr = "{\"left\":" + r4.String() + ",\"right\":" + r3.String() + ",\"top\":" + r1.String() + ",\"bottom\":" + r2.String() + "}"
-				techStr = "{\"left\":" + t4.String() + ",\"right\":" + t3.String() + ",\"top\":" + t1.String() + ",\"bottom\":" + t2.String() + "}"
+				// [front/top, back/bottom, right, left]
+				reservedStr = "[" + r1.String() + ", " + r2.String() + " " + r3.String() + ", " + r4.String() + "]"
+				techStr = "[" + t1.String() + ", " + t2.String() + " " + t3.String() + ", " + t4.String() + "]"
 				x["reserved"] = reservedStr
 				x["technical"] = techStr
 			}
