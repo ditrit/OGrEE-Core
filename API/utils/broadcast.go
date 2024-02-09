@@ -2,6 +2,10 @@ package utils
 
 import "context"
 
+// BroadcastServer attaches to a channel and notify all listeners
+// every time new data arrives from the channel
+// Used for the SSE stream
+
 type BroadcastServer interface {
 	Subscribe() <-chan string
 	CancelSubscription(<-chan string)
@@ -69,7 +73,6 @@ func (s *broadcastServer) serve(ctx context.Context) {
 					case <-ctx.Done():
 						return
 					}
-
 				}
 			}
 		}

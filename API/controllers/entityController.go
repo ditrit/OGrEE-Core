@@ -178,9 +178,7 @@ func CreateEntity(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusCreated)
 		u.Respond(w, u.RespDataWrapper("successfully created "+entStr, resp))
 		if entInt == u.LAYER {
-			println("send to eventnotifier")
 			eventNotifier <- u.FormatNotifyData("create", entStr, resp)
-			println("sent")
 		}
 	}
 }
@@ -499,9 +497,7 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 				u.RespondWithError(w, modelErr)
 				return
 			}
-			println("send to eventnotifier")
 			eventNotifier <- u.FormatNotifyData("delete", entStr, objStr)
-			println("sent")
 		}
 		u.Respond(w, u.RespDataWrapper("successfully deleted objects", matchingObjects))
 	} else if r.Method == "OPTIONS" {
@@ -903,9 +899,7 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 		} else {
 			w.WriteHeader(http.StatusNoContent)
 			u.Respond(w, u.Message("successfully deleted"))
-			println("send to eventnotifier")
 			eventNotifier <- u.FormatNotifyData("delete", entityStr, id)
-			println("sent")
 		}
 	}
 }
@@ -1042,7 +1036,6 @@ func UpdateEntity(w http.ResponseWriter, r *http.Request) {
 			u.RespondWithError(w, modelErr)
 		} else {
 			u.Respond(w, u.RespDataWrapper("successfully updated "+entity, data))
-			println("send to eventnotifier")
 			if entity == "tag" || entity == "layer" {
 				data = map[string]any{
 					"old-slug": id,
@@ -1050,7 +1043,6 @@ func UpdateEntity(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 			eventNotifier <- u.FormatNotifyData("modify", entity, data)
-			println("sent")
 		}
 	}
 }

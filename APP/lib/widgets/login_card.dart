@@ -337,9 +337,6 @@ class BackendInput extends StatelessWidget {
               isDense: true,
               labelText: localeMsg.selectServer,
               labelStyle: const TextStyle(fontSize: 14)),
-          // onTap: () {
-          //   textEditingController.clear();
-          // },
         );
       },
       optionsViewBuilder: (BuildContext context,
