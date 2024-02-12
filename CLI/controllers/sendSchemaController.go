@@ -22,97 +22,84 @@ func serialiseVector(attributes map[string]interface{}, attributeName string) {
 
 func serialiseStringVector(attr map[string]interface{}, want string) string {
 	var newSize string
-	if size, ok := attr[want].(string); ok {
-		left := strings.Index(size, "[")
-		right := strings.Index(size, "]")
 
-		if left != -1 && right != -1 {
-			var length int
-			subStr := size[left+1 : right]
-			nums := stringSplitter(subStr, ",", want)
-			if nums == nil { //Error!
-				return ""
+	size, ok := attr[want].(string)
+	if !ok {
+		return ""
+	}
+
+	left := strings.Index(size, "[")
+	right := strings.Index(size, "]")
+	if left == -1 || right == -1 {
+		return ""
+	}
+
+	nums := stringSplitter(size[left+1:right], ",", want)
+	if nums == nil {
+		return ""
+	}
+	//nums := strings.Split(subStr, ",")
+
+	length := len(nums)
+	if length == 3 && want == "size" {
+		length = 2
+	} else if want == "posXYZ" && length == 2 {
+		nums = append(nums, "0")
+		length++
+	}
+
+	newSize = "[" + strings.Join(nums[:length], ", ") + "]"
+
+	if len(nums) == 3 && want == "size" {
+		if attr["shape"] == "sphere" || attr["shape"] == "cylinder" {
+			attr["diameter"] = nums[2]
+			if attr["shape"] == "cylinder" {
+				attr["height"] = nums[1]
 			}
-			//nums := strings.Split(subStr, ",")
-
-			if len(nums) == 3 && want == "size" {
-				length = 2
-			} else {
-				//Make posXYZ length 3 for racks
-				if want == "posXYZ" && len(nums) == 2 {
-					nums = append(nums, "0")
-				}
-				length = len(nums)
-			}
-
-			for idx := 0; idx < length; idx++ {
-				newSize += nums[idx]
-
-				if idx < length-1 {
-					newSize += ", "
-				}
-			}
-			newSize = "[" + newSize + "]"
-
-			if len(nums) == 3 && want == "size" {
-				if attr["shape"] == "sphere" || attr["shape"] == "cylinder" {
-					attr["diameter"] = nums[2]
-					if attr["shape"] == "cylinder" {
-						attr["height"] = nums[1]
-					}
-					return ""
-				} else {
-					attr["height"] = nums[2]
-				}
-			}
+			return ""
+		} else {
+			attr["height"] = nums[2]
 		}
 	}
+
 	return newSize
 }
 
 func serialiseFloatVector(attr map[string]interface{}, want string) string {
 	var newSize string
-	if items, ok := attr[want].([]float64); ok {
-		var length int
 
-		if isValid := arrayVerifier(&items, want); !isValid {
+	items, ok := attr[want].([]float64)
+	if !ok || !arrayVerifier(&items, want) {
+		return ""
+	}
+
+	length := len(items)
+	if length == 3 && want == "size" {
+		length = 2
+	} else if want == "posXYZ" && length == 2 {
+		items = append(items, 0)
+		length++
+	}
+
+	var itemStrs []string
+	for idx := 0; idx < len(items); idx++ {
+		itemStrs = append(itemStrs, strconv.FormatFloat(items[idx], 'G', -1, 64))
+	}
+
+	newSize = "[" + strings.Join(itemStrs[:length], ", ") + "]"
+
+	if len(items) == 3 && want == "size" {
+		if attr["shape"] == "sphere" || attr["shape"] == "cylinder" {
+			attr["diameter"] = itemStrs[2]
+			if attr["shape"] == "cylinder" {
+				attr["height"] = itemStrs[1]
+			}
 			return ""
-		}
-
-		if len(items) == 3 && want == "size" {
-			length = 2
 		} else {
-			//Make posXYZ length 3 for racks
-			if want == "posXYZ" && len(items) == 2 {
-				items = append(items, 0)
-			}
-			length = len(items)
-		}
-
-		for idx := 0; idx < length; idx++ {
-			r := bytes.NewBufferString("")
-			fmt.Fprintf(r, "%v", items[idx])
-			//itemStr :=
-			newSize += r.String()
-
-			if idx < length-1 {
-				newSize += ", "
-			}
-		}
-		newSize = "[" + newSize + "]"
-
-		if len(items) == 3 && want == "size" {
-			if attr["shape"] == "sphere" || attr["shape"] == "cylinder" {
-				attr["diameter"] = strconv.FormatFloat(items[2], 'G', -1, 64)
-				if attr["shape"] == "cylinder" {
-					attr["height"] = strconv.FormatFloat(items[1], 'G', -1, 64)
-				}
-				return ""
-			} else {
-				attr["height"] = strconv.FormatFloat(items[2], 'G', -1, 64)
-			}
+			attr["height"] = itemStrs[2]
 		}
 	}
+
 	return newSize
 }
 
@@ -244,8 +231,8 @@ func parseReservedTech(x map[string]interface{}) map[string]interface{} {
 				t1 := bytes.NewBufferString("")
 				fmt.Fprintf(t1, "%v", tech[0].(float64))
 				// [front/top, back/bottom, right, left]
-				reservedStr = "[" + r1.String() + ", " + r2.String() + " " + r3.String() + ", " + r4.String() + "]"
-				techStr = "[" + t1.String() + ", " + t2.String() + " " + t3.String() + ", " + t4.String() + "]"
+				reservedStr = "[" + r1.String() + ", " + r2.String() + ", " + r3.String() + ", " + r4.String() + "]"
+				techStr = "[" + t1.String() + ", " + t2.String() + ", " + t3.String() + ", " + t4.String() + "]"
 				x["reserved"] = reservedStr
 				x["technical"] = techStr
 			}
