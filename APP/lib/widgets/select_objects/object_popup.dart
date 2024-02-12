@@ -466,7 +466,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
                 objDataAttrs = Map<String, String>.from(objData["filters"]);
                 for (var attr in objDataAttrs.entries) {
                   // add filters
-                  customAttributesRows.add(addCustomAttrRow(
+                  customAttributesRows.add(CustomAttrRow(
                       customAttributesRows.length,
                       givenAttrName: attr.key,
                       givenAttrValue: attr.value));
@@ -500,9 +500,11 @@ class _ObjectPopupState extends State<ObjectPopup> {
             objDataAttrs = Map<String, String>.from(objData["attributes"]);
             _objCategory = value["category"];
             for (var attr in objDataAttrs.entries) {
-              if (!categoryAttrs[_objCategory]!.contains(attr.key)) {
+              if (!categoryAttrs[_objCategory]!.contains(attr.key) &&
+                  !categoryAttrs[_objCategory]!
+                      .contains(starSymbol + attr.key)) {
                 // add custom attribute
-                customAttributesRows.add(addCustomAttrRow(
+                customAttributesRows.add(CustomAttrRow(
                     customAttributesRows.length,
                     givenAttrName: attr.key,
                     givenAttrValue: attr.value));
@@ -589,7 +591,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
     );
   }
 
-  addCustomAttrRow(int rowIdx,
+  CustomAttrRow(int rowIdx,
       {bool useDefaultValue = true,
       String? givenAttrName,
       String? givenAttrValue}) {
@@ -790,7 +792,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
             child: TextButton.icon(
                 onPressed: () => setState(() {
                       customAttributesRows
-                          .add(addCustomAttrRow(customAttributesRows.length));
+                          .add(CustomAttrRow(customAttributesRows.length));
                     }),
                 icon: const Icon(Icons.add),
                 label: Text(localeMsg.attribute)),
@@ -884,7 +886,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
           child: TextButton.icon(
               onPressed: () => setState(() {
                     customAttributesRows
-                        .add(addCustomAttrRow(customAttributesRows.length));
+                        .add(CustomAttrRow(customAttributesRows.length));
                   }),
               icon: const Icon(Icons.add),
               label: Text(localeMsg.filter)),
