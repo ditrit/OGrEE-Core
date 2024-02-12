@@ -12,45 +12,38 @@ import (
 	"strings"
 )
 
-func serialiseVector(attributes map[string]interface{}, attributeName string) {
-	if _, isString := attributes[attributeName].(string); isString {
-		attributes[attributeName] = serialiseStringVector(attributes, attributeName)
-	} else {
-		attributes[attributeName] = serialiseFloatVector(attributes, attributeName)
-	}
-}
+func serialiseVector(attr map[string]interface{}, want string) string {
+	var vector, newVector string
 
-func serialiseStringVector(attr map[string]interface{}, want string) string {
-	var newSize string
-
-	size, ok := attr[want].(string)
-	if !ok {
+	if vec, ok := attr[want]; !ok {
 		return ""
+	} else {
+		vector = Stringify(vec)
 	}
 
-	left := strings.Index(size, "[")
-	right := strings.Index(size, "]")
+	left := strings.Index(vector, "[")
+	right := strings.Index(vector, "]")
 	if left == -1 || right == -1 {
 		return ""
 	}
 
-	nums := stringSplitter(size[left+1:right], ",", want)
+	nums := stringSplitter(vector[left+1:right], ",", want)
 	if nums == nil {
 		return ""
 	}
 	//nums := strings.Split(subStr, ",")
 
 	length := len(nums)
-	if length == 3 && want == "size" {
+	if want == "size" {
 		length = 2
 	} else if want == "posXYZ" && length == 2 {
 		nums = append(nums, "0")
 		length++
 	}
 
-	newSize = "[" + strings.Join(nums[:length], ", ") + "]"
+	newVector = "[" + strings.Join(nums[:length], ", ") + "]"
 
-	if len(nums) == 3 && want == "size" {
+	if want == "size" {
 		if attr["shape"] == "sphere" || attr["shape"] == "cylinder" {
 			attr["diameter"] = nums[2]
 			if attr["shape"] == "cylinder" {
@@ -62,60 +55,7 @@ func serialiseStringVector(attr map[string]interface{}, want string) string {
 		}
 	}
 
-	return newSize
-}
-
-func serialiseFloatVector(attr map[string]interface{}, want string) string {
-	var newSize string
-
-	items, ok := attr[want].([]float64)
-	if !ok || !arrayVerifier(&items, want) {
-		return ""
-	}
-
-	length := len(items)
-	if length == 3 && want == "size" {
-		length = 2
-	} else if want == "posXYZ" && length == 2 {
-		items = append(items, 0)
-		length++
-	}
-
-	var itemStrs []string
-	for idx := 0; idx < len(items); idx++ {
-		itemStrs = append(itemStrs, strconv.FormatFloat(items[idx], 'G', -1, 64))
-	}
-
-	newSize = "[" + strings.Join(itemStrs[:length], ", ") + "]"
-
-	if len(items) == 3 && want == "size" {
-		if attr["shape"] == "sphere" || attr["shape"] == "cylinder" {
-			attr["diameter"] = itemStrs[2]
-			if attr["shape"] == "cylinder" {
-				attr["height"] = itemStrs[1]
-			}
-			return ""
-		} else {
-			attr["height"] = itemStrs[2]
-		}
-	}
-
-	return newSize
-}
-
-// Auxillary function for serialiseAttr2
-// to help ensure that the arbitrary arrays
-// ([]interface{}) are valid before they get serialised
-func arrayVerifier(x *[]float64, attribute string) bool {
-	switch attribute {
-	case "size":
-		return len(*x) == 3
-	case "posXY":
-		return len(*x) == 2
-	case "posXYZ":
-		return len(*x) == 2 || len(*x) == 3
-	}
-	return false
+	return newVector
 }
 
 // Auxillary function for serialiseAttr

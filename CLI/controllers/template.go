@@ -266,7 +266,7 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 			attr["template"] = ""
 		}
 		//Serialise size and posXY if given
-		serialiseVector(attr, "size")
+		attr["size"] = serialiseVector(attr, "size")
 	}
 
 	return nil
