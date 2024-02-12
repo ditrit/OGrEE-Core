@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestDeleteTagSendsDeleteTo3DWithSlug(t *testing.T) {
-	controller, mockAPI, mockOgree3D, _ := newControllerWithMocks(t)
+func TestDeleteTag(t *testing.T) {
+	controller, mockAPI, _, _ := newControllerWithMocks(t)
 
 	slug := "slug"
 	path := models.TagsPath + slug
@@ -21,11 +21,6 @@ func TestDeleteTagSendsDeleteTo3DWithSlug(t *testing.T) {
 			"color":       "aaaaaa",
 		},
 	})
-
-	mockOgree3D.On("InformOptional", "DeleteObj", -1, map[string]any{
-		"type": "delete-tag",
-		"data": slug},
-	).Return(nil)
 
 	controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
 

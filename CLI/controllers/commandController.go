@@ -261,24 +261,14 @@ func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
 		obj[attr] = arr
 	}
 
-	entity := obj["category"].(string)
 	URL, err := C.ObjectUrl(Path, 0)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := API.Request("PUT", URL, obj, http.StatusOK)
+	_, err = API.Request("PUT", URL, obj, http.StatusOK)
 	if err != nil {
 		return nil, err
-	}
-
-	message := map[string]interface{}{
-		"type": "modify", "data": resp.Body["data"]}
-
-	//Update and inform unity
-	if models.IsPhysical(Path) && IsInObjForUnity(entity) {
-		entInt := models.EntityStrToInt(entity)
-		Ogree3D.InformOptional("UpdateObj", entInt, message)
 	}
 
 	return nil, nil

@@ -16,12 +16,9 @@ func (controller Controller) PostObj(ent int, entity string, data map[string]any
 		return err
 	}
 
-	if models.EntityCreationMustBeInformed(ent) && IsInObjForUnity(entity) {
-		entInt := models.EntityStrToInt(entity)
+	if entInt := models.EntityStrToInt(entity); models.EntityCreationMustBeInformed(ent) &&
+		IsInObjForUnity(entity) && entInt != models.LAYER {
 		createType := "create"
-		if entInt == models.LAYER {
-			createType = "create-layer"
-		}
 		Ogree3D.InformOptional("PostObj", entInt, map[string]any{"type": createType, "data": resp.Body["data"]})
 	}
 

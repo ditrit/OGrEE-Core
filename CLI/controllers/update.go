@@ -93,31 +93,8 @@ func (controller Controller) UpdateObj(pathStr string, data map[string]any) (map
 			"param": "content",
 			"value": data["content"],
 		}
-	} else if entityType == models.TAG {
-		path, err := controller.SplitPath(pathStr)
-		if err != nil {
-			return nil, err
-		}
-
-		message["type"] = "modify-tag"
-		message["data"] = map[string]any{
-			"old-slug": path.ObjectID,
-			"tag":      resp.Body["data"],
-		}
-	} else if entityType == models.LAYER {
-		path, err := controller.SplitPath(pathStr)
-		if err != nil {
-			return nil, err
-		}
-
-		message["type"] = "modify-layer"
-		message["data"] = map[string]any{
-			"old-slug": path.ObjectID,
-			"layer":    resp.Body["data"],
-		}
 	} else {
-		message["type"] = "modify"
-		message["data"] = resp.Body["data"]
+		return resp.Body, nil
 	}
 
 	if IsEntityTypeForOGrEE3D(entityType) {
