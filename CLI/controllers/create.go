@@ -282,18 +282,12 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 		//}
 
 		//Process the posU/slot attribute
-		if x, ok := attr["posU/slot"]; ok {
+		if x, ok := attr["posU/slot"].([]string); ok && len(x) > 0 {
 			delete(attr, "posU/slot")
-			if _, err := strconv.Atoi(x.([]string)[0]); err == nil {
-				attr["posU"] = x
+			if _, err := strconv.Atoi(x[0]); len(x) == 1 && err == nil {
+				attr["posU"] = x[0]
 			} else {
-				print("my slot: ")
-				fmt.Println(x)
-				if slots, ok := x.([]string); !ok {
-					return fmt.Errorf("Invalid device syntax: slots must be in a square brackets vector []")
-				} else {
-					attr["slot"] = slots
-				}
+				attr["slot"] = x
 			}
 
 		}
@@ -310,7 +304,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			if attr["slot"] != nil {
 				slots := attr["slot"].([]string)
 				if len(slots) != 1 {
-					return fmt.Errorf("Invalid device syntax: one single slot should be provided if no template")
+					return fmt.Errorf("Invalid device syntax: only one slot can be provided if no template")
 				}
 				slot, err = GetSlot(parent, slots[0])
 				if err != nil {
@@ -330,6 +324,10 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			}
 		}
 		//End of device special routine
+
+		if attr["slot"] != nil {
+			attr["slot"] = "[" + strings.Join(attr["slot"].([]string), ",") + "]"
+		}
 
 		baseAttrs := map[string]interface{}{
 			"orientation": "front",
@@ -362,15 +360,10 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 
 	//Stringify the attributes if not already
 	for i := range attr {
-		if i == "slot" {
-			attr[i] = "[" + strings.Join(attr[i].([]string), ",") + "]"
-		} else {
-			attr[i] = Stringify(attr[i])
-		}
+		attr[i] = Stringify(attr[i])
 	}
 
 	data["attributes"] = attr
-	fmt.Println(attr)
 
 	//Because we already stored the string conversion in category
 	//we can do the conversion for templates here

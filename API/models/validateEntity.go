@@ -184,13 +184,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 
 func validateDeviceSlotExists(deviceData map[string]interface{}, parentData map[string]interface{}) *u.Error {
 	fmt.Println(deviceData["attributes"].(map[string]any)["slot"])
-	if slotStr, ok := deviceData["attributes"].(map[string]any)["slot"].(string); ok {
-		if len(slotStr) < 3 {
-			return &u.Error{Type: u.ErrInvalidValue,
-				Message: "Invalid slot: must be a vector [] with at least one element"}
-		}
-		deviceSlots := strings.Split(slotStr[1:len(slotStr)-1], ",")
-		fmt.Println(deviceSlots)
+	if deviceSlots, err := slotStrToSlice(deviceData["attributes"].(map[string]any)); err == nil && len(deviceSlots) > 0 {
 		// check if requested slots exist in parent device
 		countFound := 0
 		if templateSlug, ok := parentData["attributes"].(map[string]any)["template"].(string); ok {
@@ -208,6 +202,8 @@ func validateDeviceSlotExists(deviceData map[string]interface{}, parentData map[
 			return &u.Error{Type: u.ErrInvalidValue,
 				Message: "Invalid slot: parent does not have all the requested slots"}
 		}
+	} else if err != nil {
+		return err
 	}
 	return nil
 }
@@ -402,20 +398,28 @@ func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 				}
 			}
 		case u.DEVICE:
-			if slotStr, ok := attributes["slot"].(string); ok && len(slotStr) > 3 {
-				deviceSlots := strings.Split(slotStr[1:len(slotStr)-1], ",")
+			if deviceSlots, err := slotStrToSlice(attributes); err == nil && len(deviceSlots) > 0 {
 				// check if all requested slots are free
-				andReq := bson.A{}
 				idPattern := primitive.Regex{Pattern: "^" + t["parentId"].(string) +
-					"(." + u.NAME_REGEX + "){1,1}$", Options: ""} // filter siblings
-				andReq = append(andReq, bson.M{"id": idPattern})
-				andReq = append(andReq, bson.M{"attributes.slot": bson.M{"$in": deviceSlots}}) // filter slots
-				if count, err := repository.CountObjects(u.DEVICE, bson.M{"$and": andReq}); err != nil {
+					"(." + u.NAME_REGEX + "){1}$", Options: ""} // find siblings
+				if siblings, err := GetManyObjects(u.EntityToString(u.DEVICE), bson.M{"id": idPattern},
+					u.RequestFilters{}, nil); err != nil {
 					return err
-				} else if count != 0 {
-					return &u.Error{Type: u.ErrBadFormat,
-						Message: "Invalid slot: one or more requested slots are already in use"}
+				} else {
+					for _, obj := range siblings {
+						if siblingSlots, err := slotStrToSlice(obj["attributes"].(map[string]any)); err == nil &&
+							len(siblingSlots) > 0 {
+							for _, requestedSlot := range deviceSlots {
+								if pie.Contains(siblingSlots, requestedSlot) {
+									return &u.Error{Type: u.ErrBadFormat,
+										Message: "Invalid slot: one or more requested slots are already in use"}
+								}
+							}
+						}
+					}
 				}
+			} else if err != nil {
+				return err
 			}
 		}
 	} else if entity == u.LAYER && !doublestar.ValidatePattern(t["applicability"].(string)) {
@@ -443,6 +447,18 @@ func ObjectsHaveAttribute(entities []int, attribute, value string) (bool, *u.Err
 	}
 
 	return false, nil
+}
+
+func slotStrToSlice(attributes map[string]any) ([]string, *u.Error) {
+	if slotStr, ok := attributes["slot"].(string); ok {
+		if len(slotStr) < 3 || string(slotStr[0]) != "[" || string(slotStr[len(slotStr)-1]) != "]" {
+			return []string{}, &u.Error{Type: u.ErrInvalidValue,
+				Message: "Invalid slot: must be a vector [] with at least one element"}
+		}
+		deviceSlots := strings.Split(slotStr[1:len(slotStr)-1], ",")
+		return deviceSlots, nil
+	}
+	return []string{}, nil
 }
 
 // Returns single-quoted string
