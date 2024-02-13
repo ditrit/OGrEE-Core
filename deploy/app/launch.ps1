@@ -15,14 +15,20 @@ $file = "${assetsDir}\.env"
 $basename = "ogree-superadmin"
 $containername = $basename
 $index = 1
-While ($null -ne (docker ps --all --format "{{json .}}" --filter "name=$containername"))
+$result = @(docker ps --all --format "{{json .}}" --filter "name=$containername")
+While ($null -ne $result)
 {
+    if ($result -Match "failed") {
+        Write-Host "Unable to check running containers! Try default name only"
+        break
+    }
     Write-Host "Container $containername already exists"
     if ($f.IsPresent) {
         Write-Host "Stopping it if running"
         docker stop $containername
     }
     $containername = "$basename-$index"
+    $result = @(docker ps --all --format "{{json .}}" --filter "name=$containername")
     $index++
 }
 
