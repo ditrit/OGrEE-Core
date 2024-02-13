@@ -5,9 +5,9 @@ param (
  )
 
  # build front container
-cd ..\..\APP
-docker build . -t ogree-app
-$assetsDir = "${PWD}\assets\custom"
+cd ..\..
+docker build . -f APP/Dockerfile -t ogree-app
+$assetsDir = "${PWD}\APP\assets\custom"
 $file = "${assetsDir}\.env"
 (Get-Content $file) -replace '8081', $portBack | Set-Content $file
 
@@ -15,14 +15,20 @@ $file = "${assetsDir}\.env"
 $basename = "ogree-superadmin"
 $containername = $basename
 $index = 1
-While ($null -ne (docker ps --all --format "{{json .}}" --filter "name=$containername"))
+$result = @(docker ps --all --format "{{json .}}" --filter "name=$containername")
+While ($null -ne $result)
 {
+    if ($result -Match "failed") {
+        Write-Host "Unable to check running containers! Try default name only"
+        break
+    }
     Write-Host "Container $containername already exists"
     if ($f.IsPresent) {
         Write-Host "Stopping it if running"
         docker stop $containername
     }
     $containername = "$basename-$index"
+    $result = @(docker ps --all --format "{{json .}}" --filter "name=$containername")
     $index++
 }
 
@@ -33,6 +39,6 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # compile and run back
-cd ..\BACK\app
+cd BACK\app
 docker run --rm -v ${PWD}:/workdir -w /workdir -e GOOS=windows golang go build -o ogree_app_backend.exe
 .\ogree_app_backend.exe -port $portBack

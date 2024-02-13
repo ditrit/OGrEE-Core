@@ -52,7 +52,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
   bool _isSmallDisplay = false;
   String _objCategory = LogCategories.group.name;
   String _objId = "";
-  List<Widget> customAttributesRows = [];
+  List<StatefulBuilder> customAttributesRows = [];
   Map<String, List<String>> categoryAttrs = {};
   Map<String, Map<String, String>> examplesAttrs = {};
   List<String> domainList = [];
@@ -185,17 +185,19 @@ class _ObjectPopupState extends State<ObjectPopup> {
                                       onChanged: _isEdit
                                           ? null
                                           : (String? value) {
-                                              setState(() {
-                                                _objCategory = value!;
+                                              if (_objCategory != value) {
                                                 // clean the whole form
                                                 _formKey.currentState?.reset();
-                                                colorTextControllers.values
-                                                    .toList()
-                                                    .forEach((element) {
-                                                  element.clear();
+                                                setState(() {
+                                                  _objCategory = value!;
+                                                  colorTextControllers.values
+                                                      .toList()
+                                                      .forEach((element) {
+                                                    element.clear();
+                                                  });
+                                                  colorTextControllers = {};
                                                 });
-                                                colorTextControllers = {};
-                                              });
+                                              }
                                             },
                                     ),
                                   ),
@@ -464,7 +466,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
                 objDataAttrs = Map<String, String>.from(objData["filters"]);
                 for (var attr in objDataAttrs.entries) {
                   // add filters
-                  customAttributesRows.add(addCustomAttrRow(
+                  customAttributesRows.add(CustomAttrRow(
                       customAttributesRows.length,
                       givenAttrName: attr.key,
                       givenAttrValue: attr.value));
@@ -497,6 +499,17 @@ class _ObjectPopupState extends State<ObjectPopup> {
             objData = value;
             objDataAttrs = Map<String, String>.from(objData["attributes"]);
             _objCategory = value["category"];
+            for (var attr in objDataAttrs.entries) {
+              if (!categoryAttrs[_objCategory]!.contains(attr.key) &&
+                  !categoryAttrs[_objCategory]!
+                      .contains(starSymbol + attr.key)) {
+                // add custom attribute
+                customAttributesRows.add(CustomAttrRow(
+                    customAttributesRows.length,
+                    givenAttrName: attr.key,
+                    givenAttrValue: attr.value));
+              }
+            }
           }
 
           return;
@@ -578,64 +591,70 @@ class _ObjectPopupState extends State<ObjectPopup> {
     );
   }
 
-  addCustomAttrRow(int rowIdx,
+  CustomAttrRow(int rowIdx,
       {bool useDefaultValue = true,
       String? givenAttrName,
       String? givenAttrValue}) {
-    return StatefulBuilder(builder: (context, localSetState) {
-      String? attrName;
-      if (givenAttrName != null) {
-        attrName = givenAttrName;
-      }
-      return Padding(
-        padding: const EdgeInsets.only(top: 2.0),
-        child: SizedBox(
-          height: 60,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Flexible(
-                flex: 5,
-                child: CustomFormField(
-                    save: (newValue) => attrName = newValue,
-                    label: AppLocalizations.of(context)!.attribute,
-                    icon: Icons.tag_sharp,
-                    isCompact: true,
-                    initialValue: givenAttrName),
+    UniqueKey key = UniqueKey();
+    return StatefulBuilder(
+        key: key,
+        builder: (context, localSetState) {
+          String? attrName;
+          if (givenAttrName != null) {
+            attrName = givenAttrName;
+          }
+          return Padding(
+            padding: const EdgeInsets.only(top: 2.0),
+            child: SizedBox(
+              height: 60,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Flexible(
+                    flex: 5,
+                    child: CustomFormField(
+                        save: (newValue) => attrName = newValue,
+                        label: AppLocalizations.of(context)!.attribute,
+                        icon: Icons.tag_sharp,
+                        isCompact: true,
+                        initialValue: givenAttrName),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 6),
+                    child: Icon(
+                      Icons.arrow_forward,
+                      color: Colors.blue.shade600,
+                    ),
+                  ),
+                  Flexible(
+                    flex: 4,
+                    child: CustomFormField(
+                        save: (newValue) => objDataAttrs[attrName!] = newValue!,
+                        label: "Value",
+                        icon: Icons.tag_sharp,
+                        isCompact: true,
+                        initialValue: givenAttrValue),
+                  ),
+                  IconButton(
+                      padding: const EdgeInsets.only(bottom: 6, right: 3),
+                      constraints: const BoxConstraints(),
+                      iconSize: 18,
+                      onPressed: () {
+                        setState(
+                            () => customAttributesRows.removeWhere((element) {
+                                  return element.key == key;
+                                }));
+                        objDataAttrs.remove(attrName);
+                      },
+                      icon: Icon(
+                        Icons.delete,
+                        color: Colors.red.shade400,
+                      )),
+                ],
               ),
-              Padding(
-                padding: const EdgeInsets.only(right: 6),
-                child: Icon(
-                  Icons.arrow_forward,
-                  color: Colors.blue.shade600,
-                ),
-              ),
-              Flexible(
-                flex: 4,
-                child: CustomFormField(
-                    save: (newValue) => objDataAttrs[attrName!] = newValue!,
-                    label: "Value",
-                    icon: Icons.tag_sharp,
-                    isCompact: true,
-                    initialValue: givenAttrValue),
-              ),
-              IconButton(
-                  padding: const EdgeInsets.only(bottom: 6),
-                  constraints: const BoxConstraints(),
-                  iconSize: 14,
-                  onPressed: () {
-                    setState(() => customAttributesRows.removeAt(rowIdx));
-                    objDataAttrs.remove(attrName);
-                  },
-                  icon: Icon(
-                    Icons.delete,
-                    color: Colors.red.shade400,
-                  )),
-            ],
-          ),
-        ),
-      );
-    });
+            ),
+          );
+        });
   }
 
   getFormByCategory(String category, AppLocalizations localeMsg) {
@@ -770,7 +789,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
             child: TextButton.icon(
                 onPressed: () => setState(() {
                       customAttributesRows
-                          .add(addCustomAttrRow(customAttributesRows.length));
+                          .add(CustomAttrRow(customAttributesRows.length));
                     }),
                 icon: const Icon(Icons.add),
                 label: Text(localeMsg.attribute)),
@@ -864,7 +883,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
           child: TextButton.icon(
               onPressed: () => setState(() {
                     customAttributesRows
-                        .add(addCustomAttrRow(customAttributesRows.length));
+                        .add(CustomAttrRow(customAttributesRows.length));
                   }),
               icon: const Icon(Icons.add),
               label: Text(localeMsg.filter)),

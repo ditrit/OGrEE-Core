@@ -17,7 +17,7 @@ class LoginCard extends StatefulWidget {
 
 class _LoginCardState extends State<LoginCard> {
   final _formKey = GlobalKey<FormState>();
-  bool _isChecked = false;
+  bool _stayLoggedIn = false;
   String? _email;
   String? _password;
   String _apiUrl = "";
@@ -165,11 +165,15 @@ class _LoginCardState extends State<LoginCard> {
                                     SizedBox(
                                       height: 24,
                                       width: 24,
-                                      child: Checkbox(
-                                        value: _isChecked,
-                                        onChanged: (bool? value) =>
-                                            setState(() => _isChecked = value!),
-                                      ),
+                                      child: StatefulBuilder(
+                                          builder: (context, localSetState) {
+                                        return Checkbox(
+                                          value: _stayLoggedIn,
+                                          onChanged: (bool? value) =>
+                                              localSetState(
+                                                  () => _stayLoggedIn = value!),
+                                        );
+                                      }),
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
@@ -245,7 +249,8 @@ class _LoginCardState extends State<LoginCard> {
   tryLogin(AppLocalizations localeMsg, ScaffoldMessengerState messenger) async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      final result = await loginAPI(_email!, _password!, userUrl: _apiUrl);
+      final result = await loginAPI(_email!, _password!,
+          userUrl: _apiUrl, stayLoggedIn: _stayLoggedIn);
       switch (result) {
         case Success(value: final loginData):
           if (apiType == BackendType.tenant) {
@@ -332,9 +337,6 @@ class BackendInput extends StatelessWidget {
               isDense: true,
               labelText: localeMsg.selectServer,
               labelStyle: const TextStyle(fontSize: 14)),
-          onTap: () {
-            textEditingController.clear();
-          },
         );
       },
       optionsViewBuilder: (BuildContext context,

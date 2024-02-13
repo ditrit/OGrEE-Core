@@ -14,22 +14,12 @@ func (controller Controller) DeleteObj(path string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	objs, paths, err := controller.ParseWildcardResponse(resp, path, "DELETE "+url)
+	_, paths, err := controller.ParseWildcardResponse(resp, path, "DELETE "+url)
 	if err != nil {
 		return nil, err
 	}
-	for _, obj := range objs {
-		if models.IsPhysical(path) && IsInObjForUnity(obj["category"].(string)) {
-			controller.Ogree3D.InformOptional("DeleteObj", -1, map[string]any{"type": "delete", "data": obj["id"].(string)})
-		} else if models.IsTag(path) && IsEntityTypeForOGrEE3D(models.TAG) {
-			controller.Ogree3D.InformOptional("DeleteObj", -1, map[string]any{"type": "delete-tag", "data": obj["slug"].(string)})
-		}
-		if models.IsLayer(path) {
-			State.Hierarchy.Children["Logical"].Children["Layers"].IsCached = false
-			if IsEntityTypeForOGrEE3D(models.LAYER) {
-				controller.Ogree3D.InformOptional("DeleteObj", -1, map[string]any{"type": "delete-layer", "data": obj["slug"].(string)})
-			}
-		}
+	if models.IsLayer(path) {
+		State.Hierarchy.Children["Logical"].Children["Layers"].IsCached = false
 	}
 	if path == State.CurrPath {
 		controller.CD(TranslatePath("..", false))
