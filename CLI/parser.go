@@ -1205,8 +1205,12 @@ func (p *parser) parseUpdate() node {
 	values := []node{}
 	moreValues := true
 	for moreValues {
-		value := p.parseValue()
-		values = append(values, value)
+		if attr == "slot" {
+			values = p.parseStringOrVecStr("slot")
+		} else {
+			value := p.parseValue()
+			values = append(values, value)
+		}
 		moreValues = p.parseExact("@")
 	}
 	return &updateObjNode{path, attr, values, sharpe}

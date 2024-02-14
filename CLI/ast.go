@@ -789,11 +789,20 @@ func (n *updateObjNode) execute() (interface{}, error) {
 }
 
 func updateAttributes(path, attributeName string, values []any) (map[string]any, error) {
-	if len(values) > 1 {
-		return nil, fmt.Errorf("attributes can only be assigned a single value")
+	var attributes map[string]any
+	if attributeName == "slot" {
+		slots := []string{}
+		for _, value := range values {
+			slots = append(slots, value.(string))
+		}
+		value := "[" + strings.Join(slots, ",") + "]"
+		attributes = map[string]any{attributeName: value}
+	} else {
+		if len(values) > 1 {
+			return nil, fmt.Errorf("attributes can only be assigned a single value")
+		}
+		attributes = map[string]any{attributeName: values[0]}
 	}
-
-	attributes := map[string]any{attributeName: values[0]}
 
 	return cmd.C.UpdateObj(path, map[string]any{"attributes": attributes})
 }
