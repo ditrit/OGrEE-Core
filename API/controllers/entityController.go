@@ -1663,11 +1663,7 @@ func LinkEntity(w http.ResponseWriter, r *http.Request) {
 		entityStr = data["category"].(string)
 		destSlot, bodyHasSlot := body["slot"]
 		if entityStr == "device" && bodyHasSlot {
-			if _, err := strconv.Atoi(destSlot); err == nil {
-				data["posU"] = destSlot
-			} else {
-				data["slot"] = destSlot
-			}
+			data["slot"] = destSlot
 		}
 	}
 	if newName != "" {

@@ -817,7 +817,7 @@ func (p *parser) parseLink() node {
 	p.expect("@")
 	destPath := p.parsePath("destination path")
 	if p.parseExact("@") {
-		slot := p.parseString("slot name")
+		slot := p.parseStringOrVecStr("posUOrSlot")
 		return &linkObjectNode{sourcePath, destPath, slot}
 	}
 	return &linkObjectNode{sourcePath, destPath, nil}

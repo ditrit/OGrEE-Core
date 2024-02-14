@@ -573,7 +573,7 @@ func FocusUI(path string) error {
 	return nil
 }
 
-func LinkObject(source string, destination string, posUOrSlot string) error {
+func LinkObject(source string, destination string, slot []string) error {
 	sourceUrl, err := C.ObjectUrl(source, 0)
 	if err != nil {
 		return err
@@ -586,8 +586,8 @@ func LinkObject(source string, destination string, posUOrSlot string) error {
 		return fmt.Errorf("only stray objects can be linked")
 	}
 	payload := map[string]any{"parentId": destPath.ObjectID}
-	if posUOrSlot != "" {
-		payload["slot"] = posUOrSlot
+	if slot != nil {
+		payload["slot"] = "[" + strings.Join(slot, ",") + "]"
 	}
 	_, err = API.Request("PATCH", sourceUrl+"/link", payload, http.StatusOK)
 	if err != nil {
