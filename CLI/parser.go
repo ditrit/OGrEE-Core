@@ -5,6 +5,7 @@ import (
 	c "cli/controllers"
 	"cli/models"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/elliotchance/pie/v2"
@@ -610,6 +611,17 @@ func (p *parser) parseLs(category string) node {
 	var attrList []string
 	if formatArg, ok := args["a"]; ok {
 		attrList = strings.Split(formatArg, ":")
+	}
+
+	re := regexp.MustCompile(`^([\w-.]+)\s*(<=|>=|<|>|!=|=)\s*([\w-.]+)$`)
+	pathString, err := path.Path()
+
+	if err != nil || re.MatchString(pathString) {
+		p.cursor = 2
+		p.error("path expected")
+	} else if idx := strings.Index(pathString, "*"); idx != -1 {
+		p.cursor = strings.Index(p.buf, pathString) + idx - 1
+		p.error("unexpected character in path: '*'")
 	}
 
 	p.skipWhiteSpaces()
