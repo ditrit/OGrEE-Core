@@ -114,12 +114,22 @@ class TenantCard extends StatelessWidget {
                     padding: EdgeInsets.only(bottom: 2.0),
                     child: Text("Web URL:"),
                   ),
-                  Text(
-                    tenant.webUrl.isEmpty && tenant.webPort.isEmpty
-                        ? localeMsg.notCreated
-                        : "${tenant.webUrl}:${tenant.webPort}",
-                    style: TextStyle(backgroundColor: Colors.grey.shade200),
-                  ),
+                  tenant.webUrl.isEmpty && tenant.webPort.isEmpty
+                      ? Text(localeMsg.notCreated,
+                          style:
+                              TextStyle(backgroundColor: Colors.grey.shade200))
+                      : InkWell(
+                          child: Text(
+                            "${tenant.webUrl}:${tenant.webPort}",
+                            style: TextStyle(
+                                backgroundColor: Colors.grey.shade200,
+                                color: Colors.blue,
+                                decoration: TextDecoration.underline,
+                                decorationColor: Colors.blue),
+                          ),
+                          onTap: () => launchUrl(
+                              Uri.parse("${tenant.webUrl}:${tenant.webPort}")),
+                        ),
                 ],
               ),
               const SizedBox(height: 2),
@@ -146,13 +156,42 @@ class TenantCard extends StatelessWidget {
                           color: Colors.red.shade900,
                         )),
                   ),
-                  TextButton.icon(
-                      onPressed: () {
-                        launchUrl(
-                            Uri.parse("${tenant.webUrl}:${tenant.webPort}"));
-                      },
-                      icon: const Icon(Icons.play_circle),
-                      label: Text(localeMsg.launch)),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          constraints: BoxConstraints(),
+                          padding: EdgeInsets.zero,
+                          onPressed: () {
+                            launchUrl(Uri.parse(
+                                "${tenant.webUrl}:${tenant.webPort}"));
+                          },
+                          icon: Icon(
+                            Icons.stop_circle_sharp,
+                            color: Colors.orange.shade800,
+                            size: 28,
+                          ),
+                          // label: Text(localeMsg.launch)
+                        ),
+                        const SizedBox(width: 4),
+                        IconButton(
+                          constraints: BoxConstraints(),
+                          padding: EdgeInsets.zero,
+                          onPressed: () {
+                            launchUrl(Uri.parse(
+                                "${tenant.webUrl}:${tenant.webPort}"));
+                          },
+                          icon: Icon(
+                            Icons.play_circle,
+                            color: Colors.blue.shade700,
+                            size: 28,
+                          ),
+                          // label: Text(localeMsg.launch)
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               )
             ],
