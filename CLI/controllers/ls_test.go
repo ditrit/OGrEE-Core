@@ -109,10 +109,10 @@ func TestLsWithComplexFilters(t *testing.T) {
 		"id=BASIC.A.R1.%2A&namespace=physical.hierarchy",
 		map[string]any{
 			"$or": []map[string]any{
-				{"category": map[string]any{"$eq": "corridor"}},
+				{"category": "corridor"},
 				{"$and": []map[string]any{
-					{"category": map[string]any{"$eq": "rack"}},
-					{"name": map[string]any{"$ne": "A01"}},
+					{"category": "rack"},
+					{"name": map[string]any{"$not": "A01"}},
 				}},
 			},
 		},

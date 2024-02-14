@@ -56,9 +56,9 @@ func TestGetWithComplexFilters(t *testing.T) {
 		"id=BASIC.A.R1&namespace=physical.hierarchy",
 		map[string]any{
 			"$and": []map[string]any{
-				{"category": map[string]any{"$eq": "room"}},
+				{"category": "room"},
 				{"$or": []map[string]any{
-					{"name": map[string]any{"$eq": "R1"}},
+					{"name": "R1"},
 					{"attributes.height": map[string]any{"$gt": "3"}},
 				}},
 			},

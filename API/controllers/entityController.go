@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"p3/models"
+	"p3/utils"
 	u "p3/utils"
 	"strconv"
 	"strings"
@@ -511,9 +512,9 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// swagger:operation POST /api/objects/search Objects GetGenericObject
-// Get all objects from any entity. Return as a list.
-// Wildcards can be used on any of the parameters present in query.
+// swagger:operation POST /api/objects/search Objects HandleComplexFilters
+// Get all objects from any entity that match the complex filter. Return as a list.
+// Wildcards can be used on any of the parameters present in query with equality and inequality operations.
 //
 // | Special Terms | Meaning                                     |
 // |-------------  | --------------------------------------------|
@@ -528,7 +529,6 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 // Examples:
 // id=path.to.a* will return all the children of path.to which name starts with a.
 // id=path.to.`**`.a* will return all the descendant hierarchy of path.to which name starts with a.
-// id=path.to.`**`{1,3}.a* will return all the grandchildren to great-great-grandchildren of path.to which name starts with a.
 // ---
 // security:
 // - bearer: []
@@ -557,15 +557,6 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 //     in: query
 //     description: 'filter objects by lastUpdated <= endDate.
 //     Format: yyyy-mm-dd'
-//   - name: limit
-//     in: query
-//     description: 'Get limit level of hierarchy for objects in the response.
-//     It must be specified alongside id.
-//     Example: ?limit=1&id=siteA.B.R1 will return the object R1 with its children nested.
-//     ?limit=2&id=siteA.B.R1.* will return all objects one level above R1 with
-//     its up to two levels children nested.'
-//     required: false
-//     type: string
 //   - name: attributes
 //     in: query
 //     description: 'Any other object attributes can be queried.
@@ -574,6 +565,15 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 //     type: string
 //     default: domain=DemoDomain
 //     example: vendor=ibm ; name=siteA ; orientation=front
+//   - name: filter
+//     in: body
+//     description: A JSON containing a mongoDB query to select and filter the desired objects.
+//     Operators can be `$not`, `$lt`, `$lte`, `$gt`, `$gte`, `$and` and `$or`.
+//     For equality, the syntax is: `[field]: value`.
+//     Objects can be filtered by any of their properties and attributes.'
+//     required: true
+//     type: JSON
+//     example: {"$and": [{"domain": "DemoDomain"}, {"attributes.height": {"$lt": "3"}}]}
 // responses:
 //		'200':
 //		    description: 'Found. A response body will be returned with
@@ -604,6 +604,7 @@ func HandleComplexFilters(w http.ResponseWriter, r *http.Request) {
 		u.ErrLog("Error while decoding request body", "HANDLE COMPLEX FILTERS", "", r)
 		return
 	}
+	utils.ApplyWildcardsOnComplexFilter(complexFilters)
 
 	// Get objects
 	filters := getFiltersFromQueryParams(r)
@@ -624,17 +625,6 @@ func HandleComplexFilters(w http.ResponseWriter, r *http.Request) {
 			obj["entity"] = entStr
 		}
 
-		if nLimit, e := strconv.Atoi(filters.Limit); e == nil && nLimit > 0 && req["id"] != nil {
-			// Get children until limit level (only for GET)
-			for _, obj := range entData {
-				// Precisa mudar o GetHierarchyByName pra complexo também????????????????????????????????????
-				obj["children"], err = models.GetHierarchyByName(entStr, obj["id"].(string), nLimit, filters)
-				if err != nil {
-					u.ErrLog("Error while getting "+entStr, "GET "+entStr, err.Message, r)
-					u.RespondWithError(w, err)
-				}
-			}
-		}
 		matchingObjects = append(matchingObjects, entData...)
 	}
 

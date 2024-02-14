@@ -138,7 +138,6 @@ func (controller Controller) ObjectUrlGeneric(pathStr string, depth int, filters
 
 	endpoint := "/api/objects"
 	for key, value := range filters {
-		fmt.Println("k, v", key, value)
 		if key != "filter" {
 			params.Set(key, value)
 		} else {

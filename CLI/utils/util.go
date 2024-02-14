@@ -310,9 +310,9 @@ func complexExpressionToMap(expressions []string) map[string]any {
 	}
 
 	// Base case: single filter expression
-	re := regexp.MustCompile(`^([\w-.]+)\s*(<=|>=|<|>|!=|=)\s*([\w-.]+)$`)
+	re := regexp.MustCompile(`^([\w-.]+)\s*(<=|>=|<|>|!=|=)\s*([\w-.*]+)$`)
 
-	ops := map[string]string{"<=": "$lte", ">=": "$gte", "<": "$lt", ">": "$gt", "!=": "$ne", "=": "$eq"}
+	ops := map[string]string{"<=": "$lte", ">=": "$gte", "<": "$lt", ">": "$gt", "!=": "$not"}
 
 	if len(expressions) <= 3 {
 		expression := strings.Join(expressions[:], "")
@@ -320,33 +320,18 @@ func complexExpressionToMap(expressions []string) map[string]any {
 		if match := re.FindStringSubmatch(expression); match != nil {
 			switch match[1] {
 			case "startDate":
-				// if match[2] != "=" {
-				// 	fmt.Println("Error: Invalid filter expression")
-				// 	return map[string]any{"error": "invalid filter expression"}
-				// }
-				// startDate, e := time.Parse("2006-01-02", match[3])
-				// if e != nil {
-				// 	fmt.Println("Error:", e.Error())
-				// 	return map[string]any{"error": e.Error()}
-				// }
-				// return map[string]any{"lastUpdated": map[string]any{"$gte": primitive.NewDateTimeFromTime(startDate)}}
 				return map[string]any{"lastUpdated": map[string]any{"$gte": match[3]}}
 			case "endDate":
-				// if match[2] != "=" {
-				// 	fmt.Println("Error: Invalid filter expression")
-				// 	return map[string]any{"error": "invalid filter expression"}
-				// }
-				// endDate, e := time.Parse("2006-01-02", match[3])
-				// endDate = endDate.Add(time.Hour * 24)
-				// if e != nil {
-				// 	fmt.Println("Error:", e.Error())
-				// 	return map[string]any{"error": e.Error()}
-				// }
-				// return map[string]any{"lastUpdated": map[string]any{"$lte": primitive.NewDateTimeFromTime(endDate)}}
 				return map[string]any{"lastUpdated": map[string]any{"$lte": match[3]}}
 			case "id", "name", "category", "description", "domain", "createdDate", "lastUpdated", "slug":
+				if match[2] == "=" {
+					return map[string]any{match[1]: match[3]}
+				}
 				return map[string]any{match[1]: map[string]any{ops[match[2]]: match[3]}}
 			default:
+				if match[2] == "=" {
+					return map[string]any{"attributes." + match[1]: match[3]}
+				}
 				return map[string]any{"attributes." + match[1]: map[string]any{ops[match[2]]: match[3]}}
 			}
 		}
