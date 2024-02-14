@@ -289,7 +289,7 @@ func TestParseLsComplexFilter(t *testing.T) {
 	testCommand(buffer, expected, t)
 	buffer = "ls plouf.plaf -f category=building & (attr1!=a | attr2>5)"
 	filters = map[string]node{
-		"filter": &valueNode{"category=building & (attr1!=a | attr2>5) "},
+		"filter": &valueNode{"category=building & (attr1!=a | attr2>5)"},
 	}
 	expected = &lsNode{path: path, filters: filters}
 	testCommand(buffer, expected, t)
@@ -344,7 +344,7 @@ var commandsMatching = map[string]node{
 	"get -r ${toto}/tata":               &getObjectNode{path: testPath, filters: map[string]node{}, recursive: recursiveArgs{isRecursive: true}},
 	"get -r ${toto}/tata category=room": &getObjectNode{path: testPath, filters: map[string]node{"category": &valueNode{"room"}}, recursive: recursiveArgs{isRecursive: true}},
 	"get ${toto}/tata -f category=room, name=R1":                   &getObjectNode{path: testPath, filters: map[string]node{"filter": &valueNode{"(category=room) & (name=R1)"}}},
-	"get ${toto}/tata -f category=room & (name!=R1 | height>5)":    &getObjectNode{path: testPath, filters: map[string]node{"filter": &valueNode{"category=room & (name!=R1 | height>5) "}}},
+	"get ${toto}/tata -f category=room & (name!=R1 | height>5)":    &getObjectNode{path: testPath, filters: map[string]node{"filter": &valueNode{"category=room & (name!=R1 | height>5)"}}},
 	"+building:${toto}/tata@[1., 2.]@3.@[.1, 2., 3.]":              &createBuildingNode{testPath, vec2(1., 2.), &valueNode{3.}, vec3(.1, 2., 3.)},
 	"+room:${toto}/tata@[1., 2.]@3.@[.1, 2., 3.]@+x-y":             &createRoomNode{testPath, vec2(1., 2.), &valueNode{3.}, vec3(.1, 2., 3.), &valueNode{"+x-y"}, nil, nil},
 	"+room:${toto}/tata@[1., 2.]@3.@[.1, 2., 3.]@+x-y@m":           &createRoomNode{testPath, vec2(1., 2.), &valueNode{3.}, vec3(.1, 2., 3.), &valueNode{"+x-y"}, &valueNode{"m"}, nil},

@@ -684,9 +684,11 @@ func (p *parser) parseComplexFilters() map[string]node {
 			newFilterStr, _ := newComplexFilter.execute()
 			newComplexFilter = &valueNode{"(" + newFilterStr.(string) + ") & ("}
 			numArgs++
-		} else if p.parseExact(")") {
+		}
+
+		for p.parseExact(")") {
 			newFilterStr, _ := newComplexFilter.execute()
-			newComplexFilter = &valueNode{newFilterStr.(string) + ") "}
+			newComplexFilter = &valueNode{newFilterStr.(string) + ")"}
 		}
 
 		if complexFilter, ok := filters["filter"]; ok {
