@@ -298,7 +298,7 @@ func RemoveTenant(c *gin.Context) {
 
 	// Stop and remove containers
 	for _, str := range []string{"_webapp", "_api", "_db", "_doc"} {
-		cmd := exec.Command("docker", "rm", "--force", strings.ToLower(tenantName)+str)
+		cmd := exec.Command("docker", "rm", "-v", "--force", strings.ToLower(tenantName)+str)
 		cmd.Dir = DOCKER_DIR
 		var stderr bytes.Buffer
 		cmd.Stderr = &stderr
@@ -306,6 +306,16 @@ func RemoveTenant(c *gin.Context) {
 			fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
 			c.IndentedJSON(http.StatusInternalServerError, stderr.String())
 			return
+		} else if str == "_db" {
+			// Remove volume
+			cmd = exec.Command("docker", "volume", "rm", strings.ToLower(tenantName)+str)
+			cmd.Dir = DOCKER_DIR
+			cmd.Stderr = &stderr
+			if _, err := cmd.Output(); err != nil {
+				fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+				c.IndentedJSON(http.StatusInternalServerError, stderr.String())
+				return
+			}
 		}
 	}
 
