@@ -4,10 +4,7 @@
   "type": "object",
   "properties": {
     "description": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
+      "type": "string"
     },
     "category": {
       "type": "string"
@@ -59,9 +56,7 @@
         "usableColor": "5BDCFF"
       },
       "category": "site",
-      "description": [
-        "site"
-      ],
+      "description": "site",
       "domain": "domainTest",
       "name": "SITEA"
     }

@@ -73,14 +73,14 @@
         "heightUnit": "m",
         "axisOrientation": "+x+y",
         "rotation": "-90",
-        "posXY": "{\"x\":0,\"y\":0}",
+        "posXY": "[0, 0]",
         "posXYUnit": "m",
-        "size": "{\"x\": -13,\"y\":-2.9}",
+        "size": "[-13, -2.9]",
         "sizeUnit": "m",
         "template": ""
       },
       "category": "room",
-      "description": [],
+      "description": "room",
       "domain": "domainTest",
       "name": "RoomA",
       "parentId": "xxxx5a101ac5f3b6f313eebc"

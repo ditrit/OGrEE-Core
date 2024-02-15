@@ -82,7 +82,7 @@
           "model": "TNF2LTX",
           "orientation": "front",
           "partNumber": "0303XXXX",
-          "size": "{\"x\":388.4, \"y\":205.9}",
+          "size": "[388.4, 205.9]",
           "sizeUnit": "mm",
           "slot": "slot6",
           "template": "huawei-xxxxxx",
@@ -91,9 +91,7 @@
           "weightKg": "1.81"
       },
       "category": "device",
-      "description": [
-          "Optix XXX - Dual 9-Port Wavelength Selective Switching Board"
-      ],
+      "description": "Optix XXX - Dual 9-Port Wavelength Selective Switching Board",
       "domain": "domainTest",
       "name": "deviceName",
       "parentId": "xxxx5a111ac5f3b6f313xxxx"

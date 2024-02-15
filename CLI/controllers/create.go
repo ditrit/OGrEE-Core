@@ -45,7 +45,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 
 	data["name"] = name
 	data["category"] = models.EntityToString(ent)
-	data["description"] = []any{}
+	data["description"] = ""
 
 	//Retrieve Parent
 	if ent != models.SITE && ent != models.STRAY_DEV {
@@ -93,7 +93,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			}
 		} else {
 			//Serialise size and posXY manually instead
-			serialiseVector(attr, "size")
+			attr["size"] = serialiseVector(attr, "size")
 
 			//Since template was not provided, set it empty
 			attr["template"] = ""
@@ -112,7 +112,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			return nil
 		}
 
-		serialiseVector(attr, "posXY")
+		attr["posXY"] = serialiseVector(attr, "posXY")
 
 		if attr["posXY"] == "" {
 			if State.DebugLvl > 0 {
@@ -157,7 +157,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			return err
 		}
 
-		serialiseVector(attr, "posXY")
+		attr["posXY"] = serialiseVector(attr, "posXY")
 
 		if attr["posXY"] == "" {
 			if State.DebugLvl > 0 {
@@ -237,11 +237,11 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 		}
 
 		//Serialise posXY if given
-		serialiseVector(attr, "posXYZ")
+		attr["posXYZ"] = serialiseVector(attr, "posXYZ")
 
 		//Restore the rotation overwritten
 		//by the helper func
-		attr["rotation"] = fmt.Sprintf("{\"x\":%v, \"y\":%v, \"z\":%v}", rotation[0], rotation[1], rotation[2])
+		attr["rotation"] = fmt.Sprintf("[%v, %v, %v]", rotation[0], rotation[1], rotation[2])
 
 		data["parentId"] = parent["id"]
 
@@ -306,7 +306,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			if slot != nil {
 				size := slot["elemSize"].([]any)
 				attr["size"] = fmt.Sprintf(
-					"{\"x\":%f, \"y\":%f}", size[0].(float64)/10., size[1].(float64)/10.)
+					"[%f, %f]", size[0].(float64)/10., size[1].(float64)/10.)
 			} else {
 				if parAttr, ok := parent["attributes"].(map[string]interface{}); ok {
 					if rackSize, ok := parAttr["size"]; ok {

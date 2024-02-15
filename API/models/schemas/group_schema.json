@@ -27,7 +27,7 @@
             "content": "B11,B12,C11,C12"
         },
         "category": "group",
-        "description": [],
+        "description": "group",
         "domain": "DEMO",
         "name": "g_roup-3",
         "parentId": "xxxxdaf6618082206682xxxx"

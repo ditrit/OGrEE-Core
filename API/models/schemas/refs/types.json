@@ -4,14 +4,14 @@
         "color": {
             "pattern": "^[0-9a-fA-F]{6}$",
             "descriptions": {
-                "en": "a 6 length hex value (e.g. C0FFEE)",
+                "en": "a 6-character hexadecimal value (e.g. C0FFEE)",
                 "fr": "une valeur hexadécimale de 6 caractères (e.g. C0FFEE)"
             }
         },
         "colorTemplate": {
             "pattern": "(^[0-9a-fA-F]{6}$)|(^@[a-zA-Z0-9-]+$)|(^$)",
             "descriptions": {
-                "en": "a 6 length hex value or @[color name] (e.g. C0FFEE, @blue)",
+                "en": "a 6-character hexadecimal value or @[color name] (e.g. C0FFEE, @blue)",
                 "fr": "une valeur hexadécimale de 6 caractères ou @[nom de la couleur]"
             }
         },
@@ -22,17 +22,17 @@
             "enum": ["mm", "cm", "m", "f", "U", "OU"]
         },
         "vector2": {
-            "pattern": "^\\s*{\\s*\"x\"\\s*:\\s*((-|\\+)?[0-9]*[.]?)?[0-9]+\\s*,\\s*\"y\"\\s*:\\s*((-|\\+)?[0-9]*[.]?)?[0-9]+\\s*}\\s*$",
+            "pattern": "^\\[([+-]?([0-9]*[.])?[0-9]+),\\s*([+-]?([0-9]*[.])?[0-9]+)]$",
             "descriptions": {
-                "en": "a vector2 (e.g. {\"x\": 2.5, \"y\": 3}, {\"x\": -3.5, \"y\": -3})",
-                "fr": "un vecteur2 (e.g. {\"x\": 2.5, \"y\": 3}, {\"x\": -3.5, \"y\": -3})"
+                "en": "a vector2 ([x, y]) containing two floats (e.g. [2, 3.14])",
+                "fr": "un vector2 ([x, y]) contenant deux nombres flottants (e.g. [2, 3.14])"
             }
         },
         "vector3": {
-            "pattern": "^\\s*{\\s*\"x\"\\s*:\\s*((-|\\+)?[0-9]*[.]?)?[0-9]+\\s*,\\s*\"y\"\\s*:\\s*((-|\\+)?[0-9]*[.]?)?[0-9]+\\s*,\\s*\"z\"\\s*:\\s*((-|\\+)?[0-9]*[.]?)?[0-9]+\\s*}\\s*$",
+            "pattern": "^\\[([+-]?([0-9]*[.])?[0-9]+)(,\\s*([+-]?([0-9]*[.])?[0-9]+)){2}]$",
             "descriptions": {
-                "en": "a vector3 (e.g. {\"x\": 2, \"y\": 2.5, \"z\": 3.33}, {\"x\": 2, \"y\": -4, \"z\": -3.5})",
-                "fr": "un vecteur3 (e.g. {\"x\": 2, \"y\": 2.5, \"z\": 3.33}, {\"x\": 2, \"y\": -4, \"z\": -3.5})"
+                "en": "a vector3 ([x, y, z]) containing three floats (e.g. [2, 2.72, 3.14])",
+                "fr": "une vector3 ([x, y, z]) contenant trois nombres flottants (e.g. [2, 2.72, 3.14])"
             }
         },
         "float": {
@@ -43,10 +43,10 @@
             }
         },
         "clearanceVector": {
-            "pattern": "^\\[(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:,\\s*(?:\\d+(?:\\.\\d*)?|\\.\\d+)){5}\\]$",
+            "pattern": "^\\[(([0-9]*[.])?[0-9]+)(,\\s*(([0-9]*[.])?[0-9]+)){5}]$",
             "descriptions": {
-                "en": "six float numbers inside square brackets (e.g. [2, 2.72, 3, 3.14, 4, 4.5])",
-                "fr": "six nombres flottants entre crochets (e.g. [2, 2.72, 3, 3.14, 4, 4.5])"
+                "en": "a vector ([...]) containing six floats (e.g. [2, 2.72, 3, 3.14, 4, 4.5])",
+                "fr": "une vector ([...]) contenant six nombres flottants (e.g. [2, 2.72, 3, 3.14, 4, 4.5])"
             }
         },
         "slug": {

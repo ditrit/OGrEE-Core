@@ -15,7 +15,7 @@ func TestCreateRackWithoutAttributesReturnsError(t *testing.T) {
 		u.RACK,
 		map[string]any{
 			"category":    "rack",
-			"description": []any{"rack"},
+			"description": "rack",
 			"domain":      integration.TestDBName,
 			"name":        "create-object-1",
 			"tags":        []any{},

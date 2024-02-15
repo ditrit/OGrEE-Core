@@ -78,7 +78,7 @@ func createInitialData(db *mongo.Database, tenantName string) error {
 		"id":          tenantName,
 		"name":        tenantName,
 		"category":    "domain",
-		"description": []any{},
+		"description": "",
 		"attributes": map[string]any{
 			"color": "ffffff",
 		},

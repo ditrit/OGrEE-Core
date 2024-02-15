@@ -827,11 +827,10 @@ _:[attribute]=[value]
 [name]:domain=[value]@recursive
 ```
 
-- Object's description attribute is a list: you have to use an index to fill one.
+- Object's description attribute is a string. Use `\n` to represent line-breaks.
 
 ```
-[name]:description1=[value]
-[name]:description[N]=[value] where [N] is an index, starting at 1
+[name]:description=[value]
 ```
 
 - Object's clearance are vector6, they define how much gap (in mm) has to be left on each side of the object:
@@ -877,11 +876,19 @@ The default label is the object's name.
 ### Choose Label
 
 You can change the label by a string or with a chosen attribute:  
-*`#[attribute]` is one of the attribute of the object. If `description`, it will display all descriptions. To display a specific description, use `description[N]` where N is the index of the wanted description.*
+*`#[attribute]` is one of the attribute of the object.*
+*Use `\n` to insert line-breaks.* 
 
 ```
 [name]:label=#[attribute]
 [name]:label=[string]
+```
+
+Examples:
+```
+[name]:label=#id
+[name]:label=This is a rack
+[name]:label=My name is #name\nMy id is #id
 ```
 
 ### Modify label's font

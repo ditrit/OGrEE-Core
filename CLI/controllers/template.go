@@ -98,7 +98,7 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 					attr["height"] = yS
 				}
 			} else {
-				attr["size"] = "{\"x\":" + xS + ", \"y\":" + yS + "}"
+				attr["size"] = "[" + xS + ", " + yS + "]"
 				attr["height"] = zS
 			}
 
@@ -227,12 +227,15 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 			//Copy Description
 			if _, ok := tmpl["description"]; ok {
 				if descTable, ok := tmpl["description"].([]interface{}); ok {
-					data["description"] = descTable
+					data["description"] = descTable[0]
+					for _, desc := range descTable[1:] {
+						data["description"] = data["description"].(string) + "\n" + desc.(string)
+					}
 				} else {
-					data["description"] = []interface{}{tmpl["description"]}
+					data["description"] = tmpl["description"]
 				}
 			} else {
-				data["description"] = []string{}
+				data["description"] = ""
 			}
 
 			//fbxModel section
@@ -263,7 +266,7 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 			attr["template"] = ""
 		}
 		//Serialise size and posXY if given
-		serialiseVector(attr, "size")
+		attr["size"] = serialiseVector(attr, "size")
 	}
 
 	return nil
