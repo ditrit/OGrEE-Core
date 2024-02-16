@@ -53,13 +53,16 @@ class _ConfirmPopupState extends State<ConfirmPopup> {
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(localeMsg.areYouSure,
+                Text(
+                    widget.isStart
+                        ? localeMsg.startingTenant
+                        : localeMsg.areYouSure,
                     style: Theme.of(context).textTheme.headlineMedium),
                 widget.isStart
                     ? Container()
                     : Padding(
                         padding: const EdgeInsets.symmetric(vertical: 30),
-                        child: Text("This tenant will be completely stopped"),
+                        child: Text(localeMsg.stopTentantWarn),
                       ),
                 widget.isStart
                     ? Container()
@@ -85,8 +88,8 @@ class _ConfirmPopupState extends State<ConfirmPopup> {
                               label: Text("Stop"),
                               icon: _isLoading
                                   ? Container(
-                                      width: 24,
-                                      height: 24,
+                                      width: 22,
+                                      height: 22,
                                       padding: const EdgeInsets.all(2.0),
                                       child: const CircularProgressIndicator(
                                         color: Colors.white,
@@ -121,14 +124,17 @@ class _ConfirmPopupState extends State<ConfirmPopup> {
                       )
                     : Container(),
                 widget.isStart
-                    ? Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          ElevatedButton.icon(
-                              onPressed: () => Navigator.pop(context),
-                              label: Text("OK"),
-                              icon: const Icon(Icons.check_circle, size: 16))
-                        ],
+                    ? Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            ElevatedButton.icon(
+                                onPressed: () => Navigator.pop(context),
+                                label: Text("OK"),
+                                icon: const Icon(Icons.check_circle, size: 16))
+                          ],
+                        ),
                       )
                     : Container(),
               ],
@@ -143,6 +149,9 @@ class _ConfirmPopupState extends State<ConfirmPopup> {
       String tenantName) async {
     final messenger = ScaffoldMessenger.of(popupContext);
     Result<Stream<String>, Exception> result;
+    setState(() {
+      _isLoading = true;
+    });
     if (widget.isStart) {
       result = await startTenant(tenantName);
     } else {
@@ -184,8 +193,8 @@ class _ConfirmPopupState extends State<ConfirmPopup> {
             showSnackBar(
                 ScaffoldMessenger.of(context),
                 widget.isStart
-                    ? "Tenant successfully started 🥳"
-                    : "Tenant successfully stopped",
+                    ? "${localeMsg.startTenantOK} 🥳"
+                    : localeMsg.stopTenantOK,
                 isSuccess: true);
           }
           if (popupContext.mounted) Navigator.of(popupContext).pop();
