@@ -304,8 +304,7 @@
                 "type"    : "table"
             },
             "colors"      : [],
-            "components"  : [],
-            "slots"       : []
+            "shape"       : "cube"
         }
     ]
 }
