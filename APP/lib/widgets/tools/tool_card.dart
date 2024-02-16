@@ -89,7 +89,7 @@ class ToolCard extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
+                padding: const EdgeInsets.symmetric(vertical: 5),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [

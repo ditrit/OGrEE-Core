@@ -429,3 +429,24 @@ func BackupTenantDB(c *gin.Context) {
 		c.String(http.StatusOK, "Backup file created as "+outfile.Name()+" at "+dir)
 	}
 }
+
+func StopStartTentant(c *gin.Context) {
+	tenantName := strings.ToLower(c.Param("name"))
+	path := strings.Split(c.FullPath(), "/")
+	command := path[len(path)-1]
+	println(command)
+	println(tenantName)
+	// Docker compose stop/start
+	println("Docker current tenant")
+	args := []string{"compose", "-p", tenantName, command}
+	cmd := exec.Command("docker", args...)
+	cmd.Dir = DOCKER_DIR
+	if err := streamExecuteCmd(cmd, c); err != nil {
+		errStr := "Error running docker: " + err.Error()
+		println(errStr)
+		c.IndentedJSON(http.StatusInternalServerError, errStr)
+		return
+	}
+	println("Finished with docker")
+	c.String(http.StatusOK, "")
+}

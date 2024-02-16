@@ -604,6 +604,24 @@ Future<Result<Stream<String>, Exception>> updateTenant(Tenant tenant) async {
   }
 }
 
+Future<Result<Stream<String>, Exception>> stopTenant(String tenantName) async {
+  print("API stop Tenants");
+  try {
+    return connectStream('POST', '$apiUrl/api/tenants/$tenantName/stop', "");
+  } on Exception catch (e) {
+    return Failure(e);
+  }
+}
+
+Future<Result<Stream<String>, Exception>> startTenant(String tenantName) async {
+  print("API start Tenants");
+  try {
+    return connectStream('POST', '$apiUrl/api/tenants/$tenantName/start', "");
+  } on Exception catch (e) {
+    return Failure(e);
+  }
+}
+
 Future<Result<Stream<String>, Exception>> connectStream(
     String method, String urlStr, String body) async {
   if (kIsWeb) {

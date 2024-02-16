@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:ogree_app/common/api_backend.dart';
+import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
+import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/models/tenant.dart';
 import 'package:ogree_app/pages/tenant_page.dart';
 import 'package:ogree_app/widgets/common/delete_dialog_popup.dart';
+import 'package:ogree_app/widgets/tenants/popups/confirm_popup.dart';
 import 'package:ogree_app/widgets/tenants/popups/update_tenant_popup.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -163,10 +167,13 @@ class TenantCard extends StatelessWidget {
                         IconButton(
                           constraints: BoxConstraints(),
                           padding: EdgeInsets.zero,
-                          onPressed: () {
-                            launchUrl(Uri.parse(
-                                "${tenant.webUrl}:${tenant.webPort}"));
-                          },
+                          onPressed: () => showCustomPopup(
+                              context,
+                              ConfirmPopup(
+                                parentCallback: parentCallback,
+                                objName: tenant.name,
+                                isStart: false,
+                              )),
                           icon: Icon(
                             Icons.stop_circle_sharp,
                             color: Colors.orange.shade800,
@@ -178,10 +185,13 @@ class TenantCard extends StatelessWidget {
                         IconButton(
                           constraints: BoxConstraints(),
                           padding: EdgeInsets.zero,
-                          onPressed: () {
-                            launchUrl(Uri.parse(
-                                "${tenant.webUrl}:${tenant.webPort}"));
-                          },
+                          onPressed: () => showCustomPopup(
+                              context,
+                              ConfirmPopup(
+                                parentCallback: parentCallback,
+                                objName: tenant.name,
+                                isStart: true,
+                              )),
                           icon: Icon(
                             Icons.play_circle,
                             color: Colors.blue.shade700,
