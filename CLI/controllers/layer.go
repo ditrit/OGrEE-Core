@@ -3,7 +3,6 @@ package controllers
 import (
 	"cli/models"
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/bmatcuk/doublestar/v4"
@@ -141,7 +140,7 @@ func (controller Controller) GetLayer(id string) (string, models.Layer, error) {
 	return realID, layer, nil
 }
 
-func (controller Controller) CreateLayer(slug, applicability, filterName, filterValue string) error {
+func (controller Controller) CreateLayer(slug, applicability, filterValue string) error {
 	applicability, err := TranslateApplicability(applicability)
 	if err != nil {
 		return err
@@ -149,7 +148,7 @@ func (controller Controller) CreateLayer(slug, applicability, filterName, filter
 
 	return controller.PostObj(models.LAYER, models.EntityToString(models.LAYER), map[string]any{
 		"slug":                    slug,
-		models.LayerFilters:       map[string]any{filterName: filterValue},
+		models.LayerFilters:       filterValue,
 		models.LayerApplicability: applicability,
 	}, models.LayersPath+slug)
 }
@@ -165,20 +164,8 @@ func (controller Controller) UpdateLayer(path string, attributeName string, valu
 		}
 
 		_, err = controller.UpdateObj(path, map[string]any{attributeName: applicability})
-	case models.LayerFiltersRemove:
-		_, err = controller.UpdateObj(path, map[string]any{attributeName: value})
 	case models.LayerFiltersAdd:
-		var filters map[string]any
-		reg := regexp.MustCompile(`^(\w(\w|\-)*)=[^!<>=&|]+$`)
-		if strings.HasPrefix(value.(string), "filter=") {
-			filters = map[string]any{"filter": value.(string)[7:]}
-		} else if reg.MatchString(value.(string)) {
-			values := strings.Split(value.(string), "=")
-			filters = map[string]any{values[0]: values[1]}
-		} else {
-			filters = map[string]any{"filter": value.(string)}
-		}
-		_, err = controller.UpdateObj(path, map[string]any{models.LayerFilters: filters})
+		_, err = controller.UpdateObj(path, map[string]any{models.LayerFilters: "& (" + value.(string) + ")"})
 	default:
 		_, err = controller.UpdateObj(path, map[string]any{attributeName: value})
 		if attributeName == "slug" {

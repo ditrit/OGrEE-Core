@@ -94,7 +94,7 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 
 	// For get or ls wih complex filters
 	router.HandleFunc(GenericObjectsURL+"/search",
-		controllers.HandleComplexFilters).Methods("POST", "OPTIONS")
+		controllers.HandleComplexFilters).Methods("POST", "HEAD", "OPTIONS", "DELETE")
 
 	// GENERIC
 	router.HandleFunc(GenericObjectsURL,

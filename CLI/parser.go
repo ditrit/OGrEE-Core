@@ -1172,7 +1172,7 @@ func (p *parser) parseCreateLayer() node {
 	p.expect("@")
 	filters := p.parseComplexFilters()["filter"]
 
-	return &createLayerNode{slug, applicability, "filter", filters}
+	return &createLayerNode{slug, applicability, filters}
 }
 
 func (p *parser) parseCreateCorridor() node {
@@ -1239,7 +1239,7 @@ func (p *parser) parseUpdate() node {
 	values := []node{}
 	moreValues := true
 	for moreValues {
-		if attr == models.LayerFiltersAdd {
+		if attr == models.LayerFilters || attr == models.LayerFiltersAdd {
 			filters := p.parseComplexFilters()["filter"]
 			values = append(values, filters)
 		} else {

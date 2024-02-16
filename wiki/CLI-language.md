@@ -712,6 +712,8 @@ To add more filters, simple or complex ones, edit the layer using the following 
 [layer_path]:filters+=[filter]
 ```
 
+This action will add an `AND` operation between the new filter and the existing layer filter.
+
 Examples:
 ```
 [layer_path]:filters+=name=[name]
@@ -722,21 +724,22 @@ Examples:
 
 Where [layer_path] is `/Logical/Layers/[slug]` (or only `[slug]` if the current path is /Logical/Layers).
 
+To redefine the filter of a layer, editi using the following syntax:
+
+```
+[layer_path]:filters=[filter]
+```
+
+Examples:
+```
+[layer_path]:filters=name=[name]
+[layer_path]:filters=height=[height]
+[layer_path]:filters=category=[category] & name!=[name]
+[layer_path]:filters=(name=[name] & height<[height]) | domain=[domain]
+
 For the layer to filter the children whose category is device. When adding filters on different attributes, all must be fulfilled for a child to be part of the layer.
 
 Layers are not applied until their filters are defined.
-
-A filter can also be removed, using the syntax:
-
-```
-[layer_path]:filters-=[filter_name]
-```
-
-To remove a complex filter, use the syntax:
-
-```
-[layer_path]:filters-=filter
-```
 
 After the layer is created, it can be seen in /Logical/Layers. The command `get /Logical/Layers/[slug]` can be used to get the layer information.
 

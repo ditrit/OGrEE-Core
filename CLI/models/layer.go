@@ -10,8 +10,7 @@ import (
 
 const (
 	LayerApplicability = "applicability"
-	LayerFilters       = "filters"
-	LayerFiltersRemove = LayerFilters + "-"
+	LayerFilters       = "filter"
 	LayerFiltersAdd    = LayerFilters + "+"
 )
 
@@ -24,7 +23,7 @@ type Layer interface {
 
 type AutomaticLayer struct {
 	name       string
-	apiFilters map[string]string // filters that must be applied to the api request to get only the elements that are part of that layer
+	apiFilters string // filters that must be applied to the api request to get only the elements that are part of that layer
 }
 
 func (layer AutomaticLayer) Name() string {
@@ -32,15 +31,17 @@ func (layer AutomaticLayer) Name() string {
 }
 
 func (layer AutomaticLayer) ApplyFilters(filters map[string]string) {
-	for key, value := range layer.apiFilters {
-		filters[key] = value
+	if complexFilter, ok := filters["filter"]; ok {
+		filters["filter"] = "(" + complexFilter + ") & (" + layer.apiFilters + ")"
+	} else {
+		filters["filter"] = layer.apiFilters
 	}
 }
 
 type UserDefinedLayer struct {
 	Slug          string
 	Applicability string
-	Filters       map[string]string
+	Filter        string
 }
 
 func (layer UserDefinedLayer) Name() string {
@@ -59,13 +60,10 @@ func (layer UserDefinedLayer) Matches(path string) bool {
 }
 
 func (layer UserDefinedLayer) ApplyFilters(filters map[string]string) {
-	for key, value := range layer.Filters {
-		if key == "filter" {
-			if complexFilter, ok := filters["filter"]; ok {
-				value = "(" + complexFilter + ") & (" + value + ") "
-			}
-		}
-		filters[key] = value
+	if complexFilter, ok := filters["filter"]; ok {
+		filters["filter"] = "(" + complexFilter + ") & (" + layer.Filter + ")"
+	} else {
+		filters["filter"] = layer.Filter
 	}
 }
 
@@ -128,11 +126,8 @@ func (factory LayerByAttribute) FromObjects(objects []any) []AutomaticLayer {
 	for _, attribute := range attributes {
 		layerName := toLayerName(pluralizeClient.Plural(attribute))
 		layers = append(layers, AutomaticLayer{
-			name: layerName,
-			apiFilters: map[string]string{
-				"category":        factory.category,
-				factory.attribute: attribute,
-			},
+			name:       layerName,
+			apiFilters: "category=" + factory.category + "&" + factory.attribute + "=" + attribute,
 		})
 	}
 
@@ -146,19 +141,19 @@ func toLayerName(name string) string {
 var (
 	RacksLayer = AutomaticLayer{
 		name:       "#racks",
-		apiFilters: map[string]string{"category": "rack"},
+		apiFilters: "category=rack",
 	}
 	GroupsLayer = AutomaticLayer{
 		name:       "#groups",
-		apiFilters: map[string]string{"namespace": "logical", "category": "group"},
+		apiFilters: "category=group",
 	}
 	CorridorsLayer = AutomaticLayer{
 		name:       "#corridors",
-		apiFilters: map[string]string{"category": "corridor"},
+		apiFilters: "category=corridor",
 	}
 	GenericsLayer = AutomaticLayer{
 		name:       "#generics",
-		apiFilters: map[string]string{"category": "generic"},
+		apiFilters: "category=generic",
 	}
 )
 

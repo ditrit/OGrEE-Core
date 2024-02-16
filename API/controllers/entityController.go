@@ -515,20 +515,7 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 // swagger:operation POST /api/objects/search Objects HandleComplexFilters
 // Get all objects from any entity that match the complex filter. Return as a list.
 // Wildcards can be used on any of the parameters present in query with equality and inequality operations.
-//
-// | Special Terms | Meaning                                     |
-// |-------------  | --------------------------------------------|
-// | `*`           | matches any sequence of non-path-separators |
-// | `.**.`        | matches zero or more directories            |
-// | `.**{m,M}.`   | matches from m to M directories             |
-//
-// A doublestar (`**`) should appear surrounded by id separators such as `.**.`.
-// A mid-pattern doublestar (`**`) behaves like star: a pattern
-// such as `path.to.**` would return the same results as `path.to.*`. To apply recursion, the
-// id you're looking for is `path.to.**.*`.
-// Examples:
-// id=path.to.a* will return all the children of path.to which name starts with a.
-// id=path.to.`**`.a* will return all the descendant hierarchy of path.to which name starts with a.
+// Check endpoint `HandleGenericObjects` for more information on wildcards
 // ---
 // security:
 // - bearer: []
@@ -565,14 +552,14 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 //     type: string
 //     default: domain=DemoDomain
 //     example: vendor=ibm ; name=siteA ; orientation=front
-//   - name: filter
+//   - name: body
 //     in: body
 //     description: A JSON containing a mongoDB query to select and filter the desired objects.
 //     Operators can be `$not`, `$lt`, `$lte`, `$gt`, `$gte`, `$and` and `$or`.
 //     For equality, the syntax is: `[field]: value`.
 //     Objects can be filtered by any of their properties and attributes.'
 //     required: true
-//     type: JSON
+//     default: {}
 //     example: {"$and": [{"domain": "DemoDomain"}, {"attributes.height": {"$lt": "3"}}]}
 // responses:
 //		'200':
@@ -582,6 +569,60 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 //         description: 'Bad request. Request has wrong format.'
 //		'500':
 //		    description: Internal Error. A system error stopped the request.
+
+// swagger:operation DELETE /api/objects Objects HandleComplexFilters
+// Deletes an object that matches the complex filter in the system from any of the entities with no need to specify it.
+// Wildcards can be used on any of the parameters present in query.
+// Check endpoint `HandleGenericObjects` for more information on wildcards
+// ---
+// security:
+// - bearer: []
+// produces:
+// - application/json
+// parameters:
+//   - name: id
+//     in: path
+//     description: ID type hierarchyName of the object
+//     required: true
+//   - name: fieldOnly
+//     in: query
+//     description: 'specify which object field to show in response.
+//     Multiple fieldOnly can be added. An invalid field is simply ignored.'
+//   - name: startDate
+//     in: query
+//     description: 'filter objects by lastUpdated >= startDate.
+//     Format: yyyy-mm-dd'
+//   - name: endDate
+//     in: query
+//     description: 'filter objects by lastUpdated <= endDate.
+//     Format: yyyy-mm-dd'
+//   - name: namespace
+//     in: query
+//     description: 'One of the values: physical, physical.stray, physical.hierarchy,
+//     logical, logical.objtemplate, logical.bldgtemplate, logical.roomtemplate, logical.tag,
+//     organisational. If none provided, all namespaces are used by default.'
+//   - name: attributes
+//     in: query
+//     description: 'Any other object attributes can be queried.
+//     Replace attributes here by the name of the attribute followed by its value.'
+//     required: false
+//     type: string
+//     default: domain=DemoDomain
+//     example: vendor=ibm ; name=siteA ; orientation=front
+//   - name: body
+//     in: body
+//     description: A JSON containing a mongoDB query to select and filter the desired objects.
+//     Operators can be `$not`, `$lt`, `$lte`, `$gt`, `$gte`, `$and` and `$or`.
+//     For equality, the syntax is: `[field]: value`.
+//     Objects can be filtered by any of their properties and attributes.'
+//     required: true
+//     default: {}
+//     example: {"$and": [{"domain": "DemoDomain"}, {"attributes.height": {"$lt": "3"}}]}
+// responses:
+//		'204':
+//			description: Successfully deleted object
+//		'404':
+//			description: Not found. An error message will be returned
 
 func HandleComplexFilters(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
@@ -628,7 +669,27 @@ func HandleComplexFilters(w http.ResponseWriter, r *http.Request) {
 		matchingObjects = append(matchingObjects, entData...)
 	}
 
-	if r.Method == "OPTIONS" {
+	if r.Method == "DELETE" {
+		for _, obj := range matchingObjects {
+			entStr := obj["entity"].(string)
+
+			var objStr string
+
+			if u.IsEntityNonHierarchical(u.EntityStrToInt(entStr)) {
+				objStr = obj["slug"].(string)
+			} else {
+				objStr = obj["id"].(string)
+			}
+
+			modelErr := models.DeleteObject(entStr, objStr, user.Roles)
+			if modelErr != nil {
+				u.ErrLog("Error while deleting object: "+objStr, "DELETE GetGenericObjectById", modelErr.Message, r)
+				u.RespondWithError(w, modelErr)
+				return
+			}
+		}
+		u.Respond(w, u.RespDataWrapper("successfully deleted objects", matchingObjects))
+	} else if r.Method == "OPTIONS" {
 		w.Header().Add("Content-Type", "application/json")
 		w.Header().Add("Allow", "POST, OPTIONS")
 	} else {
@@ -811,9 +872,7 @@ func GetLayerObjects(w http.ResponseWriter, r *http.Request) {
 
 		// Apply layer to get objects request
 		req := bson.M{}
-		for filterName, filterValue := range data["filters"].(map[string]interface{}) {
-			u.AddFilterToReq(req, filterName, filterValue.(string))
-		}
+		u.AddFilterToReq(req, "filter", data["filter"].(string))
 		var searchId string
 		if filters.IsRecursive {
 			searchId = filters.Root + ".**.*"
@@ -1005,7 +1064,7 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 		if entityStr == u.HIERARCHYOBJS_ENT {
 			obj, err := models.GetHierarchyObjectById(id, u.RequestFilters{}, user.Roles)
 			if err != nil {
-				u.ErrLog("Error finding hierarchyobj to delete", "DELETE ENTITY", err.Message, r)
+				u.ErrLog("Error finding hierarchy obj to delete", "DELETE ENTITY", err.Message, r)
 				u.RespondWithError(w, err)
 				return
 			} else {

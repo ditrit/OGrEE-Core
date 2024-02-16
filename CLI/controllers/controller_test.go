@@ -171,6 +171,25 @@ func mockDeleteObjects(mockAPI *mocks.APIPort, queryParams string, result []any)
 	).Once()
 }
 
+func mockDeleteObjectsWithComplexFilters(mockAPI *mocks.APIPort, queryParams string, body map[string]any, result []any) {
+	params, err := url.ParseQuery(queryParams)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+
+	mockAPI.On(
+		"Request", http.MethodDelete,
+		"/api/objects/search?"+params.Encode(),
+		body, http.StatusOK,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"data": removeChildrenFromList(result),
+			},
+		}, nil,
+	).Once()
+}
+
 func mockGetObjectsByEntity(mockAPI *mocks.APIPort, entity string, objects []any) {
 	mockAPI.On(
 		"Request", http.MethodGet,

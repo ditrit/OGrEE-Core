@@ -99,6 +99,9 @@ func updateOldObjWithPatch(old map[string]interface{}, patch map[string]interfac
 				return errors.New("Wrong format for property " + k)
 			}
 		default:
+			if k == "filter" && strings.HasPrefix(v.(string), "&") {
+				v = "(" + old["filter"].(string) + ") " + v.(string)
+			}
 			old[k] = v
 		}
 	}
@@ -714,9 +717,6 @@ func prepareUpdateObject(ctx mongo.SessionContext, entity int, id string, update
 	if err != nil {
 		return err
 	}
-
-	// filters list edition support for layers
-	removeFromFilters(updateData)
 
 	// Ensure the update is valid
 	err = ValidateEntity(entity, updateData)

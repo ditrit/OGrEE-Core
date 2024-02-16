@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"cli/models"
 	"cli/utils"
 	"errors"
 	"fmt"
@@ -22,6 +23,19 @@ func (controller Controller) GetObjectsWildcard(pathStr string, filters map[stri
 
 	var resp *Response
 	var method string
+	if models.PathHasLayer(pathStr) {
+		if filters == nil {
+			filters = map[string]string{}
+		}
+		path, err := controller.SplitPath(pathStr)
+		if err != nil {
+			return nil, nil, err
+		}
+		if path.Layer != nil {
+			path.Layer.ApplyFilters(filters)
+		}
+	}
+
 	if complexFilter, ok := filters["filter"]; ok {
 		body := utils.ComplexFilterToMap(complexFilter)
 		method = "POST "
