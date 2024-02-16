@@ -455,7 +455,7 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 
 	for _, entStr := range entities {
 		// Get objects
-		entData, err := models.GetManyObjects(entStr, req, filters, user.Roles)
+		entData, err := models.GetManyObjects(entStr, req, filters, nil, user.Roles)
 		if err != nil {
 			u.ErrLog("Error while looking for objects at  "+entStr, "HandleGenericObjects", err.Message, r)
 			u.RespondWithError(w, err)
@@ -658,7 +658,7 @@ func HandleComplexFilters(w http.ResponseWriter, r *http.Request) {
 
 	for _, entStr := range entities {
 		// Get objects
-		entData, err := models.GetManyObjectsComplex(entStr, req, filters, complexFilters, user.Roles)
+		entData, err := models.GetManyObjects(entStr, req, filters, complexFilters, user.Roles)
 		if err != nil {
 			u.ErrLog("Error while looking for objects at "+entStr, "HandleComplexFilters", err.Message, r)
 			u.RespondWithError(w, err)
@@ -889,7 +889,7 @@ func GetLayerObjects(w http.ResponseWriter, r *http.Request) {
 		matchingObjects := []map[string]interface{}{}
 		entities := u.GetEntitiesByNamespace(u.Any, searchId)
 		for _, entStr := range entities {
-			entData, err := models.GetManyObjects(entStr, req, u.RequestFilters{}, user.Roles)
+			entData, err := models.GetManyObjects(entStr, req, u.RequestFilters{}, nil, user.Roles)
 			if err != nil {
 				u.RespondWithError(w, err)
 				return
@@ -980,7 +980,7 @@ func GetAllEntities(w http.ResponseWriter, r *http.Request) {
 
 	// Get entities
 	req := bson.M{}
-	data, e := models.GetManyObjects(entStr, req, u.RequestFilters{}, user.Roles)
+	data, e := models.GetManyObjects(entStr, req, u.RequestFilters{}, nil, user.Roles)
 
 	// Respond
 	if e != nil {
@@ -1328,7 +1328,7 @@ func GetEntityByQuery(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	data, modelErr = models.GetManyObjects(entStr, bsonMap, filters, user.Roles)
+	data, modelErr = models.GetManyObjects(entStr, bsonMap, filters, nil, user.Roles)
 
 	if modelErr != nil {
 		u.ErrLog("Error while getting "+entStr, "GET ENTITYQUERY", modelErr.Message, r)

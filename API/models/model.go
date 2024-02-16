@@ -226,7 +226,7 @@ func GetObject(req bson.M, entityStr string, filters u.RequestFilters, userRoles
 	return object, nil
 }
 
-func GetManyObjects(entityStr string, req bson.M, filters u.RequestFilters, userRoles map[string]Role) ([]map[string]interface{}, *u.Error) {
+func GetManyObjects(entityStr string, req bson.M, filters u.RequestFilters, complexFilters map[string]any, userRoles map[string]Role) ([]map[string]interface{}, *u.Error) {
 	ctx, cancel := u.Connect()
 	var err error
 	var c *mongo.Cursor
@@ -246,65 +246,13 @@ func GetManyObjects(entityStr string, req bson.M, filters u.RequestFilters, user
 		return nil, &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
 	}
 
-	if opts != nil {
-		c, err = repository.GetDB().Collection(entityStr).Find(ctx, req, opts)
-	} else {
-		c, err = repository.GetDB().Collection(entityStr).Find(ctx, req)
-	}
-	if err != nil {
-		fmt.Println(err)
-		return nil, &u.Error{Type: u.ErrDBError, Message: err.Error()}
-	}
-	defer cancel()
-
-	entity := u.EntityStrToInt(entityStr)
-	data, e1 := ExtractCursor(c, ctx, entity, userRoles)
-	if e1 != nil {
-		fmt.Println(e1)
-		return nil, &u.Error{Type: u.ErrInternal, Message: e1.Error()}
-	}
-
-	//Remove underscore If the entity has '_'
-	if strings.Contains(entityStr, "_") {
-		for i := range data {
-			FixUnderScore(data[i])
+	if complexFilters != nil {
+		err = getDatesFromComplexFilters(complexFilters)
+		if err != nil {
+			return nil, &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
 		}
+		maps.Copy(req, complexFilters)
 	}
-
-	if shouldFillTags(entity, filters) {
-		for i := range data {
-			fillTags(data[i])
-		}
-	}
-
-	return data, nil
-}
-
-func GetManyObjectsComplex(entityStr string, req bson.M, filters u.RequestFilters, complexFilters map[string]any, userRoles map[string]Role) ([]map[string]interface{}, *u.Error) {
-	ctx, cancel := u.Connect()
-	var err error
-	var c *mongo.Cursor
-
-	var opts *options.FindOptions
-	if len(filters.FieldsToShow) > 0 {
-		compoundIndex := bson.D{bson.E{Key: "domain", Value: 1}, bson.E{Key: "id", Value: 1}}
-		for _, field := range filters.FieldsToShow {
-			if field != "domain" && field != "id" {
-				compoundIndex = append(compoundIndex, bson.E{Key: field, Value: 1})
-			}
-		}
-		opts = options.Find().SetProjection(compoundIndex)
-	}
-	err = repository.GetDateFilters(req, filters.StartDate, filters.EndDate)
-	if err != nil {
-		return nil, &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
-	}
-	err = getDatesFromComplexFilters(complexFilters)
-	if err != nil {
-		return nil, &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
-	}
-
-	maps.Copy(req, complexFilters)
 
 	if opts != nil {
 		c, err = repository.GetDB().Collection(entityStr).Find(ctx, req, opts)
@@ -887,7 +835,7 @@ func getChildren(entity, hierarchyName string, limit int, filters u.RequestFilte
 		// Obj should include parentName and not surpass limit range
 		pattern := primitive.Regex{Pattern: "^" + hierarchyName +
 			"(." + u.NAME_REGEX + "){1," + strconv.Itoa(limit) + "}$", Options: ""}
-		children, e1 := GetManyObjects(checkEntName, bson.M{"id": pattern}, filters, nil)
+		children, e1 := GetManyObjects(checkEntName, bson.M{"id": pattern}, filters, nil, nil)
 		if e1 != nil {
 			println("SUBENT: ", checkEntName)
 			println("ERR: ", e1.Message)
@@ -929,7 +877,7 @@ func GetEntitiesOfAncestor(id string, entStr, wantedEnt string, userRoles map[st
 	// Get sub entity objects
 	pattern := primitive.Regex{Pattern: "^" + id + u.HN_DELIMETER, Options: ""}
 	req = bson.M{"id": pattern}
-	sub, e1 := GetManyObjects(wantedEnt, req, u.RequestFilters{}, userRoles)
+	sub, e1 := GetManyObjects(wantedEnt, req, u.RequestFilters{}, nil, userRoles)
 	if e1 != nil {
 		return nil, e1
 	}
