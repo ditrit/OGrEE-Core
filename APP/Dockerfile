@@ -10,7 +10,7 @@ RUN apt-get install -y curl git wget unzip libgconf-2-4 gdb libstdc++6 libglu1-m
 RUN apt-get clean
 
 # Download Flutter SDK from Github repo
-RUN git clone --depth 1 --branch 3.13.6 https://github.com/flutter/flutter.git /usr/local/flutter
+RUN git clone --depth 1 --branch 3.16.9 https://github.com/flutter/flutter.git /usr/local/flutter
 
 # Set flutter environment path
 ENV PATH="/usr/local/flutter/bin:/usr/local/flutter/bin/cache/dart-sdk/bin:${PATH}"
@@ -19,7 +19,8 @@ ENV PATH="/usr/local/flutter/bin:/usr/local/flutter/bin/cache/dart-sdk/bin:${PAT
 RUN flutter doctor
 
 # Copy files to container and build
-COPY . /app/
+COPY APP/ /app/
+COPY API/models/schemas/ /API/models/schemas/
 WORKDIR /app/
 RUN flutter pub get
 RUN flutter build web 

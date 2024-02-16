@@ -4,6 +4,7 @@ package utils
 //returns json response
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"log"
@@ -455,6 +456,22 @@ func GetParentOfEntityByInt(entity int) int {
 	default:
 		return entity - 1
 	}
+}
+
+func FormatNotifyData(msgType, entityStr string, data any) string {
+	if entityStr == "tag" {
+		msgType = msgType + "-tag"
+	} else if entityStr == "layer" {
+		msgType = msgType + "-layer"
+	}
+	//convert to json then string
+	buff := bytes.NewBuffer([]byte{})
+	encoder := json.NewEncoder(buff)
+	err := encoder.Encode(map[string]any{"type": msgType, "data": data})
+	if err != nil {
+		println("Error notifying 3D client: unable to encode json data")
+	}
+	return buff.String()
 }
 
 // Helper functions

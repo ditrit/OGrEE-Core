@@ -11,6 +11,7 @@ bool isSmallDisplay = false;
 class TreeAppController with ChangeNotifier {
   bool _isInitialized = false;
   bool get isInitialized => _isInitialized;
+  Namespace namespace = Namespace.Physical;
 
   Map<String, List<String>> fetchedData = {};
   Map<String, List<String>> fetchedCategories = {};
@@ -29,7 +30,7 @@ class TreeAppController with ChangeNotifier {
   }
 
   Future<void> init(Map<String, bool> nodes,
-      {Namespace namespace = Namespace.Physical,
+      {Namespace argNamespace = Namespace.Physical,
       bool reload = false,
       String dateRange = "",
       bool isTenantMode = false}) async {
@@ -37,13 +38,14 @@ class TreeAppController with ChangeNotifier {
     final rootNode = TreeNode(id: kRootId);
 
     // Fetch data for the tree
-    if (namespace == Namespace.Test) {
+    if (argNamespace == Namespace.Test) {
       fetchedData = kDataSample;
       fetchedCategories = kDataSampleCategories;
     } else {
+      namespace = argNamespace;
       var result = await fetchObjectsTree(
           dateRange: dateRange,
-          namespace: namespace,
+          namespace: argNamespace,
           isTenantMode: isTenantMode);
 
       switch (result) {
@@ -112,28 +114,32 @@ class TreeAppController with ChangeNotifier {
   void selectAll([bool select = true]) {
     //treeController.expandAll();
     if (select) {
-      treeController.roots.forEach((root) {
-        selectedNodes[root.id] = true;
-        root.descendants.forEach(
-          (descendant) => selectedNodes[descendant.id] = true,
-        );
-      });
+      for (var root in treeController.roots) {
+        if (root.id[0] != starSymbol) {
+          selectedNodes[root.id] = true;
+        }
+        for (var descendant in root.descendants) {
+          selectedNodes[descendant.id] = true;
+        }
+      }
     } else {
-      treeController.roots.forEach((root) {
+      for (var root in treeController.roots) {
         selectedNodes.remove(root.id);
-        root.descendants.forEach(
-          (descendant) => selectedNodes.remove(descendant.id),
-        );
-      });
+        for (var descendant in root.descendants) {
+          selectedNodes.remove(descendant.id);
+        }
+      }
     }
     notifyListeners();
   }
 
   void toggleAllFrom(TreeNode node) {
-    toggleSelection(node.id);
-    node.descendants.forEach(
-      (descendant) => toggleSelection(descendant.id),
-    );
+    if (node.id[0] != starSymbol) {
+      toggleSelection(node.id);
+    }
+    for (var descendant in node.descendants) {
+      toggleSelection(descendant.id);
+    }
     notifyListeners();
   }
 

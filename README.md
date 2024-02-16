@@ -163,4 +163,5 @@ If the build workflow is triggered by a release branch, the workflow will tag OG
 - TEAM_DOCKER_URL: Url of the docker registry
 - TEAM_DOCKER_PASSWORD: password of the docker registry
 - TEAM_DOCKER_USERNAME: username of the docker registry
+- PAT_GITHUB_TOKEN: a personal access github token (required to trigger build workflows)
 - GITHUB_TOKEN: an admin github automatic token

@@ -21,7 +21,7 @@ const List<String> datasetOptions = [
 
 class _SelectDateState extends State<SelectDate> with TickerProviderStateMixin {
   late TabController _tabController;
-  String? _dataset = datasetOptions.first;
+  final String _dataset = datasetOptions.first;
   late FocusNode myFocusNode;
 
   @override

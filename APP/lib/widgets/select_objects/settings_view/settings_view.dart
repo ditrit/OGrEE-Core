@@ -58,7 +58,7 @@ class SettingsView extends StatelessWidget {
             SettingsHeader(text: localeMsg.searchById),
             const _FindNodeField(),
             const SizedBox(height: 8),
-            noFilters ? Container() : TreeFilter(),
+            noFilters ? Container() : const TreeFilter(),
           ],
         ),
       );

@@ -178,6 +178,9 @@ func CreateEntity(w http.ResponseWriter, r *http.Request) {
 	} else {
 		w.WriteHeader(http.StatusCreated)
 		u.Respond(w, u.RespDataWrapper("successfully created "+entStr, resp))
+		if entInt == u.LAYER {
+			eventNotifier <- u.FormatNotifyData("create", entStr, resp)
+		}
 	}
 }
 
@@ -496,6 +499,7 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 				u.RespondWithError(w, modelErr)
 				return
 			}
+			eventNotifier <- u.FormatNotifyData("delete", entStr, objStr)
 		}
 		u.Respond(w, u.RespDataWrapper("successfully deleted objects", matchingObjects))
 	} else if r.Method == "OPTIONS" {
@@ -1079,6 +1083,7 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 		} else {
 			w.WriteHeader(http.StatusNoContent)
 			u.Respond(w, u.Message("successfully deleted"))
+			eventNotifier <- u.FormatNotifyData("delete", entityStr, id)
 		}
 	}
 }
@@ -1215,6 +1220,13 @@ func UpdateEntity(w http.ResponseWriter, r *http.Request) {
 			u.RespondWithError(w, modelErr)
 		} else {
 			u.Respond(w, u.RespDataWrapper("successfully updated "+entity, data))
+			if entity == "tag" || entity == "layer" {
+				data = map[string]any{
+					"old-slug": id,
+					entity:     data,
+				}
+			}
+			eventNotifier <- u.FormatNotifyData("modify", entity, data)
 		}
 	}
 }

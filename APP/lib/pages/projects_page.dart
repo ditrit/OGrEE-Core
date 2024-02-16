@@ -10,6 +10,7 @@ import 'package:ogree_app/models/project.dart';
 import 'package:ogree_app/models/tenant.dart';
 import 'package:ogree_app/pages/select_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:ogree_app/widgets/projects/autoproject_card.dart';
 import 'package:ogree_app/widgets/tenants/popups/create_tenant_popup.dart';
 import 'package:ogree_app/widgets/projects/project_card.dart';
 import 'package:ogree_app/widgets/tenants/tenant_card.dart';
@@ -90,17 +91,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
                 builder: (context, _) {
                   if (!_gotData) {
                     return const Center(child: CircularProgressIndicator());
-                  } else if (_projects != null && _projects!.isNotEmpty) {
-                    return Expanded(
-                      child: SingleChildScrollView(
-                        child: Wrap(
-                          spacing: 5,
-                          children: getCards(context),
-                        ),
-                      ),
-                    );
-                  } else if ((_tenants != null && _tenants!.isNotEmpty) ||
-                      (_tools != null && _tools!.isNotEmpty)) {
+                  } else if (!widget.isTenantMode) {
                     return Expanded(
                       child: SingleChildScrollView(
                         child: Wrap(
@@ -110,8 +101,20 @@ class _ProjectsPageState extends State<ProjectsPage> {
                       ),
                     );
                   } else {
-                    // Empty messages
-                    return Text(localeMsg.noProjects);
+                    if ((_tenants != null && _tenants!.isNotEmpty) ||
+                        (_tools != null && _tools!.isNotEmpty)) {
+                      return Expanded(
+                        child: SingleChildScrollView(
+                          child: Wrap(
+                            spacing: 5,
+                            children: getCards(context),
+                          ),
+                        ),
+                      );
+                    } else {
+                      // Empty messages
+                      return Text(localeMsg.noProjects);
+                    }
                   }
                 }),
           ],
@@ -262,7 +265,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
               }
               break;
             case Tools.cli:
-              showCustomPopup(context, DownloadCliPopup());
+              showCustomPopup(context, const DownloadCliPopup());
               break;
           }
         },
@@ -312,6 +315,15 @@ class _ProjectsPageState extends State<ProjectsPage> {
         }
       }
     } else {
+      for (var namespace in Namespace.values) {
+        if (namespace != Namespace.Test) {
+          cards.add(AutoProjectCard(
+            namespace: namespace,
+            userEmail: widget.userEmail,
+            parentCallback: refreshFromChildren,
+          ));
+        }
+      }
       for (var project in _projects!) {
         cards.add(ProjectCard(
           project: project,

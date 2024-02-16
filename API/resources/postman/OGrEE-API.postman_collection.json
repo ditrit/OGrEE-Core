@@ -567,7 +567,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"DEMO\",\n    \"category\": \"domain\",\n    \"description\": [\n        \"This is a demo...\"\n    ],\n    \"attributes\": {\n        \"color\": \"5BDCFF\"\n    }\n}",
+							"raw": "{\n    \"name\": \"DEMO\",\n    \"category\": \"domain\",\n    \"description\": \"This is a demo...\",\n    \"attributes\": {\n        \"color\": \"5BDCFF\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -683,7 +683,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"siteA\",\n    \"category\": \"site\",\n    \"description\": [\n        \"This is a demo...\"\n    ],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"usableColor\": \"5BDCFF\",\n        \"reservedColor\": \"AAAAAA\",\n        \"technicalColor\": \"D0FF78\"\n    }\n}",
+							"raw": "{\n    \"name\": \"siteA\",\n    \"category\": \"site\",\n    \"description\": \"This is a demo...\",\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"usableColor\": \"5BDCFF\",\n        \"reservedColor\": \"AAAAAA\",\n        \"technicalColor\": \"D0FF78\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -799,7 +799,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"B\",\n    \"parentId\": \"{{SiteID}}\",\n    \"category\": \"building\",\n    \"description\": [\n        \"Building B\"\n    ],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"posXY\": \"{\\\"x\\\":-30.0,\\\"y\\\":0.0}\",\n        \"posXYUnit\": \"m\",\n        \"size\": \"{\\\"x\\\":25.0,\\\"y\\\":29.399999618530275}\",\n        \"sizeUnit\": \"m\",\n        \"height\": \"0\",\n        \"heightUnit\": \"m\",\n        \"rotation\": \"30.5\"\n    }\n}",
+							"raw": "{\n    \"name\": \"B\",\n    \"parentId\": \"{{SiteID}}\",\n    \"category\": \"building\",\n    \"description\": \"Building B\",\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"posXY\": \"[-30.0, 0.0]\",\n        \"posXYUnit\": \"m\",\n        \"size\": \"[25.0, 29.399999618530275]\",\n        \"sizeUnit\": \"m\",\n        \"height\": \"0\",\n        \"heightUnit\": \"m\",\n        \"rotation\": \"30.5\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -915,7 +915,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"R1\",\n    \"parentId\": \"{{BuildingID}}\",\n    \"category\": \"room\",\n    \"description\": [\n        \"First room\"\n    ],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"posXY\": \"{\\\"x\\\":0.0,\\\"y\\\":0.0}\",\n        \"posXYUnit\": \"m\",\n        \"floorUnit\":\"f\",\n        \"orientation\": \"+N+W\",\n        \"size\": \"{\\\"x\\\":22.799999237060548,\\\"y\\\":19.799999237060548}\",\n        \"sizeUnit\": \"m\",\n        \"height\": \"3\",\n        \"heightUnit\": \"m\",\n        \"axisOrientation\": \"+x+y\",\n        \"rotation\": \"-90\"\n    }\n}",
+							"raw": "{\n    \"name\": \"R1\",\n    \"parentId\": \"{{BuildingID}}\",\n    \"category\": \"room\",\n    \"description\": \"First room\",\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"posXY\": \"[0.0, 0.0]\",\n        \"posXYUnit\": \"m\",\n        \"floorUnit\":\"f\",\n        \"orientation\": \"+N+W\",\n        \"size\": \"[22.799999237060548, 19.799999237060548]\",\n        \"sizeUnit\": \"m\",\n        \"height\": \"3\",\n        \"heightUnit\": \"m\",\n        \"axisOrientation\": \"+x+y\",\n        \"rotation\": \"-90\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1034,7 +1034,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"TCL2021\",\n    \"parentId\": \"{{RoomID}}\",\n    \"category\": \"ac\",\n    \"description\": [\n        \"TCL\"\n    ],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n    }\n}",
+							"raw": "{\n    \"name\": \"TCL2021\",\n    \"parentId\": \"{{RoomID}}\",\n    \"category\": \"ac\",\n    \"description\": \"TCL\",\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1152,7 +1152,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"PanelA\",\n    \"parentId\": \"{{RoomID}}\",\n    \"category\": \"panel\",\n    \"description\": [\n        \"YINGLI\"\n    ],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n    }\n}",
+							"raw": "{\n    \"name\": \"PanelA\",\n    \"parentId\": \"{{RoomID}}\",\n    \"category\": \"panel\",\n    \"description\": \"YINGLI\",\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1271,7 +1271,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"CabinetA\",\n    \"domain\": \"DEMO\",\n    \"category\": \"cabinet\",\n    \"parentId\" : \"{{RoomID}}\",\n    \"description\": [\"demo\"],\n    \"attributes\": {}\n}",
+							"raw": "{\n    \"name\": \"CabinetA\",\n    \"domain\": \"DEMO\",\n    \"category\": \"cabinet\",\n    \"parentId\" : \"{{RoomID}}\",\n    \"description\": \"demo\",\n    \"attributes\": {}\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1704,7 +1704,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"GroupA\",\n    \"category\": \"group\",\n    \"parentId\":\"{{RackID}}\",\n    \"description\":  [\"test\"],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\"content\": \"DeviceA\"}\n}",
+							"raw": "{\n    \"name\": \"GroupA\",\n    \"category\": \"group\",\n    \"parentId\":\"{{RackID}}\",\n    \"description\": \"test\",\n    \"domain\": \"DEMO\",\n    \"attributes\": {\"content\": \"DeviceA\"}\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2491,7 +2491,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"SiteA\",\n    \"category\": \"site\",\n    \"description\": [\n        \"guess whos back\"\n    ],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"orientation\": \"NW\",\n        \"usableColor\": \"999999\",\n        \"reservedColor\": \"999999\",\n        \"technicalColor\": \"999999\",\n        \"address\": \"99\",\n        \"zipcode\": \"99\",\n        \"city\": \"99\",\n        \"country\": \"99\",\n        \"gps\": \"99\"\n    }\n}",
+							"raw": "{\n    \"name\": \"UpdatedSiteA\",\n    \"category\": \"site\",\n    \"description\": \"guess whos back\",\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"orientation\": \"NW\",\n        \"usableColor\": \"999999\",\n        \"reservedColor\": \"999999\",\n        \"technicalColor\": \"999999\",\n        \"address\": \"99\",\n        \"zipcode\": \"99\",\n        \"city\": \"99\",\n        \"country\": \"99\",\n        \"gps\": \"99\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2606,7 +2606,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"UpdatedBuilding\",\n    \"parentId\": \"{{SiteID}}\",\n    \"category\": \"building\",\n    \"description\": [\n        \"Building B\"\n    ],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"posXY\": \"{\\\"x\\\":30.0,\\\"y\\\":0}\",\n        \"posXYUnit\": \"m\",\n        \"size\": \"{\\\"x\\\":-25.0,\\\"y\\\":-29.399999618530275}\",\n        \"sizeUnit\": \"m\",\n        \"height\": \"0\",\n        \"heightUnit\": \"m\",\n        \"rotation\": \"30\"\n    }\n}",
+							"raw": "{\n    \"name\": \"UpdatedBuilding\",\n    \"parentId\": \"{{SiteID}}\",\n    \"category\": \"building\",\n    \"description\": \"Building B\",\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"posXY\": \"[30.0, 0]\",\n        \"posXYUnit\": \"m\",\n        \"size\": \"[-25.0, -29.399999618530275]\",\n        \"sizeUnit\": \"m\",\n        \"height\": \"0\",\n        \"heightUnit\": \"m\",\n        \"rotation\": \"30\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2722,7 +2722,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"UpdatedR1\",\n    \"parentId\": \"{{BuildingID}}\",\n    \"category\": \"room\",\n    \"description\": [\n        \"First room\"\n    ],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"posXY\": \"{\\\"x\\\":0,\\\"y\\\":10.0}\",\n        \"posXYUnit\": \"m\",\n        \"floorUnit\":\"f\",\n        \"size\": \"{\\\"x\\\":-22.799999237060548,\\\"y\\\":19}\",\n        \"sizeUnit\": \"m\",\n        \"height\": \"3\",\n        \"heightUnit\": \"m\",\n        \"axisOrientation\": \"+x-y\",\n        \"rotation\": \"-90\"\n    }\n}",
+							"raw": "{\n    \"name\": \"UpdatedR1\",\n    \"parentId\": \"{{BuildingID}}\",\n    \"category\": \"room\",\n    \"description\": \"First room\",\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"posXY\": \"[0, 10.0]\",\n        \"posXYUnit\": \"m\",\n        \"floorUnit\":\"f\",\n        \"size\": \"[-22.799999237060548, 19]\",\n        \"sizeUnit\": \"m\",\n        \"height\": \"3\",\n        \"heightUnit\": \"m\",\n        \"axisOrientation\": \"+x-y\",\n        \"rotation\": \"-90\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2843,7 +2843,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"UpdatedA01\",\n    \"parentId\": \"{{RoomID}}\",\n    \"category\": \"rack\",\n    \"description\": [\n        \"Rack A01 new\"\n    ],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"posXYZ\": \"{\\\"x\\\":10.0,\\\"y\\\":0.0,\\\"z\\\":-2.0}\",\n        \"posXYUnit\": \"m\",\n        \"size\": \"{\\\"x\\\":60.0,\\\"y\\\":120.0}\",\n        \"sizeUnit\": \"m\",\n        \"height\": \"100\",\n        \"heightUnit\": \"U\",\n        \"orientation\": \"rear\",\n        \"template\": \"\"\n    }\n}",
+							"raw": "{\n    \"name\": \"UpdatedA01\",\n    \"parentId\": \"{{RoomID}}\",\n    \"category\": \"rack\",\n    \"description\": \"Rack A01 new\",\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"posXYZ\": \"[10.0, 0.0, -2.0]\",\n        \"posXYUnit\": \"m\",\n        \"size\": \"[60.0, 120.0]\",\n        \"sizeUnit\": \"m\",\n        \"height\": \"100\",\n        \"heightUnit\": \"U\",\n        \"orientation\": \"rear\",\n        \"template\": \"\",\n        \"rotation\": \"[0, 0, 0]\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2964,7 +2964,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"UpdatedDeviceA\",\n    \"parentId\": \"{{RackID}}\",\n    \"category\": \"device\",\n    \"description\": [\"Device test\"],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"size\": \"{\\\"x\\\":60.0,\\\"y\\\":120.0}\",\n        \"sizeUnit\": \"cm\",\n        \"height\": \"42\",\n        \"heightUnit\": \"U\",\n        \"template\": \"Some template\",\n        \"orientation\": \"front\"\n    }\n}",
+							"raw": "{\n    \"name\": \"UpdatedDeviceA\",\n    \"parentId\": \"{{RackID}}\",\n    \"category\": \"device\",\n    \"description\": \"Device test\",\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"size\": \"[60.0, 120.0]\",\n        \"sizeUnit\": \"cm\",\n        \"height\": \"42\",\n        \"heightUnit\": \"U\",\n        \"template\": \"Some template\",\n        \"orientation\": \"front\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -3085,7 +3085,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"AquaSky01\",\n    \"id\": \"12353\",\n    \"parentId\": \"{{RoomID}}\",\n    \"category\": \"ac\",\n    \"description\": [\n        \"SPEED\"\n    ],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"new\": \"IDX\"\n    }\n}",
+							"raw": "{\n    \"name\": \"AquaSky01\",\n    \"parentId\": \"{{RoomID}}\",\n    \"category\": \"ac\",\n    \"description\": \"SPEED\",\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"new\": \"IDX\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -3206,7 +3206,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Power_Panel_99\",\n    \"category\": \"SOLARpanel\",\n    \"parentId\": \"{{RoomID}}\",\n    \"description\": [\n        \"GRENOBLE DERELICT\"\n    ],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"new\": \"IDX\"\n    }\n}",
+							"raw": "{\n    \"name\": \"Power_Panel_99\",\n    \"category\": \"SOLARpanel\",\n    \"parentId\": \"{{RoomID}}\",\n    \"description\": \"GRENOBLE DERELICT\",\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"new\": \"IDX\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -3327,7 +3327,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"UpdatedGroupA\",\n    \"category\": \"group\",\n    \"parentId\":\"{{RackID}}\",\n    \"description\":  [\"new\"],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\"content\": \"UpdatedDeviceA\"}\n}",
+							"raw": "{\n    \"name\": \"UpdatedGroupA\",\n    \"category\": \"group\",\n    \"parentId\":\"{{RackID}}\",\n    \"description\":  \"new\",\n    \"domain\": \"DEMO\",\n    \"attributes\": {\"content\": \"UpdatedDeviceA\"}\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -3448,7 +3448,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"UpdatedCorridorA\",\n    \"parentId\" : \"{{RoomID}}\",\n    \"domain\": \"DEMO\",\n    \"category\": \"corridor\",\n    \"description\": [\"demo\"],\n    \"attributes\": {\"temperature\": \"cold\", \"content\": \"UpdatedA01,UpdatedA01\"}\n}",
+							"raw": "{\n    \"name\": \"UpdatedCorridorA\",\n    \"parentId\" : \"{{RoomID}}\",\n    \"domain\": \"DEMO\",\n    \"category\": \"corridor\",\n    \"description\": \"demo\",\n    \"attributes\": {\n        \"temperature\": \"cold\", \n        \"content\": \"UpdatedA01,UpdatedA01\",\n        \"height\": \"3\",\n        \"heightUnit\": \"m\",\n        \"rotation\": \"[0, 0, 0]\",\n        \"posXYZ\": \"[10.0, 0.0, -2.0]\",\n        \"posXYUnit\": \"t\",\n        \"size\": \"[600.0, 1200.0]\",\n        \"sizeUnit\": \"cm\"}\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -5828,7 +5828,7 @@
 					"response": []
 				},
 				{
-					"name": "Get Object With Complex Filter",
+					"name": "Get Object With Complex Filter Copy",
 					"event": [
 						{
 							"listen": "prerequest",

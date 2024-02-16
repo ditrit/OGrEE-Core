@@ -25,7 +25,7 @@ Our dockerfile is multi-stage: the first image install flutter and its dependenc
 
 From the root of OGrEE-Core, run the following to build the Docker image:
 ```console
-OGrEE-Core$ docker build APP -t ogree-app
+OGrEE-Core$ docker build . -f APP/Dockerfile -t ogree-app
 ```
 
 To run a container with the built image and expose the app in the local port 8080:

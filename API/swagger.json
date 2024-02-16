@@ -58,6 +58,28 @@
         }
       }
     },
+    "/api/events": {
+      "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "Get real-time notifications (SSE stream)\nOpens a SSE stream with the caller where the API will send a new event (message in JSON format)\nevery time a modify or delete of any object succeeds. Also applies to create layer.",
+        "produces": [
+          "text/event-stream"
+        ],
+        "tags": [
+          "Events"
+        ],
+        "operationId": "CreateEventStream",
+        "responses": {
+          "200": {
+            "description": "Successfully established stream, keep it open."
+          }
+        }
+      }
+    },
     "/api/hierarchy": {
       "get": {
         "security": [

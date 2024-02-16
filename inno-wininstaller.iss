@@ -53,7 +53,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 [Files]
 Source: "BACK\*"; DestDir: "{app}\back"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: back
 Source: "deploy\*"; DestDir: "{app}\deploy"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: back
-Source: "APP\build\windows\runner\Release\*"; DestDir: "{app}\front"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: front
+Source: "APP\build\windows\x64\runner\Release\*"; DestDir: "{app}\front"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: front
 Source: "ogree-icon.ico"; DestDir: "{app}"; DestName: "ogree-icon.ico"; Flags: ignoreversion; Components: back front
 Source: "config-example.toml"; DestDir: "{app}"; DestName: "config.toml"; Flags: ignoreversion; Components: cli
 Source: "CLI\other\man\*"; DestDir: "{app}\cli\other\man"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: cli

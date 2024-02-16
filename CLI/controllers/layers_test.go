@@ -690,22 +690,13 @@ func TestSelectNestedLayerSelectsAll(t *testing.T) {
 }
 
 func TestRemoveLayerRemovesAllObjectsOfTheLayer(t *testing.T) {
-	controller, mockAPI, mockOgree3D := layersSetup(t)
+	controller, mockAPI, _ := layersSetup(t)
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
 	mockDeleteObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"category": "rack"}, []any{rack1, rack2})
 
 	controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
-
-	mockOgree3D.On(
-		"InformOptional", "DeleteObj",
-		-1, map[string]any{"data": "BASIC.A.R1.A01", "type": "delete"},
-	).Return(nil)
-	mockOgree3D.On(
-		"InformOptional", "DeleteObj",
-		-1, map[string]any{"data": "BASIC.A.R1.B01", "type": "delete"},
-	).Return(nil)
 
 	_, err := controller.DeleteObj("/Physical/BASIC/A/R1/#racks")
 	assert.Nil(t, err)

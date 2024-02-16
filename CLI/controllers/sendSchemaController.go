@@ -12,130 +12,50 @@ import (
 	"strings"
 )
 
-func serialiseVector(attributes map[string]interface{}, attributeName string) {
-	if _, isString := attributes[attributeName].(string); isString {
-		attributes[attributeName] = serialiseStringVector(attributes, attributeName)
+func serialiseVector(attr map[string]interface{}, want string) string {
+	var vector, newVector string
+
+	if vec, ok := attr[want]; !ok {
+		return ""
 	} else {
-		attributes[attributeName] = serialiseFloatVector(attributes, attributeName)
+		vector = Stringify(vec)
 	}
-}
 
-// Serialising size & posXY is inefficient but
-// the team wants it for now
-// "size":"[25,29.4,0]" -> "size": "{\"x\":25,\"y\":29.4,\"z\":0}"
-func serialiseStringVector(attr map[string]interface{}, want string) string {
-	var newSize string
-	if size, ok := attr[want].(string); ok {
-		left := strings.Index(size, "[")
-		right := strings.Index(size, "]")
-		coords := []string{"x", "y", "z"}
-
-		if left != -1 && right != -1 {
-			var length int
-			subStr := size[left+1 : right]
-			nums := stringSplitter(subStr, ",", want)
-			if nums == nil { //Error!
-				return ""
-			}
-			//nums := strings.Split(subStr, ",")
-
-			if len(nums) == 3 && want == "size" {
-				length = 2
-			} else {
-				//Make posXYZ length 3 for racks
-				if want == "posXYZ" && len(nums) == 2 {
-					nums = append(nums, "0")
-				}
-				length = len(nums)
-			}
-
-			for idx := 0; idx < length; idx++ {
-				newSize += "\"" + coords[idx] + "\":" + nums[idx]
-
-				if idx < length-1 {
-					newSize += ","
-				}
-			}
-			newSize = "{" + newSize + "}"
-
-			if len(nums) == 3 && want == "size" {
-				if attr["shape"] == "sphere" || attr["shape"] == "cylinder" {
-					attr["diameter"] = nums[2]
-					if attr["shape"] == "cylinder" {
-						attr["height"] = nums[1]
-					}
-					return ""
-				} else {
-					attr["height"] = nums[2]
-				}
-			}
-		}
+	left := strings.Index(vector, "[")
+	right := strings.Index(vector, "]")
+	if left == -1 || right == -1 {
+		return ""
 	}
-	return newSize
-}
 
-// Same utility func as above but we have an arbitrary array
-// and want to cast it to -> "size": "{\"x\":25,\"y\":29.4,\"z\":0}"
-func serialiseFloatVector(attr map[string]interface{}, want string) string {
-	var newSize string
-	if items, ok := attr[want].([]float64); ok {
-		coords := []string{"x", "y", "z"}
-		var length int
+	nums := stringSplitter(vector[left+1:right], ",", want)
+	if nums == nil {
+		return ""
+	}
+	//nums := strings.Split(subStr, ",")
 
-		if isValid := arrayVerifier(&items, want); !isValid {
+	length := len(nums)
+	if want == "size" {
+		length = 2
+	} else if want == "posXYZ" && length == 2 {
+		nums = append(nums, "0")
+		length++
+	}
+
+	newVector = "[" + strings.Join(nums[:length], ", ") + "]"
+
+	if want == "size" {
+		if attr["shape"] == "sphere" || attr["shape"] == "cylinder" {
+			attr["diameter"] = nums[2]
+			if attr["shape"] == "cylinder" {
+				attr["height"] = nums[1]
+			}
 			return ""
-		}
-
-		if len(items) == 3 && want == "size" {
-			length = 2
 		} else {
-			//Make posXYZ length 3 for racks
-			if want == "posXYZ" && len(items) == 2 {
-				items = append(items, 0)
-			}
-			length = len(items)
-		}
-
-		for idx := 0; idx < length; idx++ {
-			r := bytes.NewBufferString("")
-			fmt.Fprintf(r, "%v ", items[idx])
-			//itemStr :=
-			newSize += "\"" + coords[idx] + "\":" + r.String()
-
-			if idx < length-1 {
-				newSize += ","
-			}
-		}
-		newSize = "{" + newSize + "}"
-
-		if len(items) == 3 && want == "size" {
-			if attr["shape"] == "sphere" || attr["shape"] == "cylinder" {
-				attr["diameter"] = strconv.FormatFloat(items[2], 'G', -1, 64)
-				if attr["shape"] == "cylinder" {
-					attr["height"] = strconv.FormatFloat(items[1], 'G', -1, 64)
-				}
-				return ""
-			} else {
-				attr["height"] = strconv.FormatFloat(items[2], 'G', -1, 64)
-			}
+			attr["height"] = nums[2]
 		}
 	}
-	return newSize
-}
 
-// Auxillary function for serialiseAttr2
-// to help ensure that the arbitrary arrays
-// ([]interface{}) are valid before they get serialised
-func arrayVerifier(x *[]float64, attribute string) bool {
-	switch attribute {
-	case "size":
-		return len(*x) == 3
-	case "posXY":
-		return len(*x) == 2
-	case "posXYZ":
-		return len(*x) == 2 || len(*x) == 3
-	}
-	return false
+	return newVector
 }
 
 // Auxillary function for serialiseAttr
@@ -250,9 +170,9 @@ func parseReservedTech(x map[string]interface{}) map[string]interface{} {
 				fmt.Fprintf(t2, "%v", tech[1].(float64))
 				t1 := bytes.NewBufferString("")
 				fmt.Fprintf(t1, "%v", tech[0].(float64))
-
-				reservedStr = "{\"left\":" + r4.String() + ",\"right\":" + r3.String() + ",\"top\":" + r1.String() + ",\"bottom\":" + r2.String() + "}"
-				techStr = "{\"left\":" + t4.String() + ",\"right\":" + t3.String() + ",\"top\":" + t1.String() + ",\"bottom\":" + t2.String() + "}"
+				// [front/top, back/bottom, right, left]
+				reservedStr = "[" + r1.String() + ", " + r2.String() + ", " + r3.String() + ", " + r4.String() + "]"
+				techStr = "[" + t1.String() + ", " + t2.String() + ", " + t3.String() + ", " + t4.String() + "]"
 				x["reserved"] = reservedStr
 				x["technical"] = techStr
 			}

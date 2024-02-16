@@ -8,7 +8,7 @@ import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/models/container.dart';
 import 'package:ogree_app/models/netbox.dart';
-import 'package:ogree_app/widgets/delete_dialog_popup.dart';
+import 'package:ogree_app/widgets/common/delete_dialog_popup.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ToolCard extends StatelessWidget {

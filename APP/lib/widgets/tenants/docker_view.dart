@@ -58,7 +58,7 @@ class DockerView extends StatelessWidget {
                           context, BackupPopup(tenantName: tName),
                           isDismissible: true),
                       icon: const Icon(Icons.history),
-                      label: Text("Backup"),
+                      label: const Text("Backup"),
                     ),
                   ),
                 ),
@@ -198,7 +198,7 @@ class _DataSource extends DataTableSource {
     } else {
       return Text(
         value,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w400,
         ),

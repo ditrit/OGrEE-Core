@@ -207,7 +207,7 @@ func validateJsonSchema(entity int, t map[string]interface{}) (bool, *u.Error) {
 					// If the pattern is in the error message
 					if strings.Contains(schErr.Error, "does not match pattern "+quote(pattern)) || strings.Contains(schErr.Error, "does not match pattern "+pattern) {
 						// Substitute it for the more user-friendly description
-						schErr.Error = "should be " + definition.(map[string]any)["description"].(string)
+						schErr.Error = "should be " + definition.(map[string]any)["descriptions"].(map[string]any)["en"].(string)
 					}
 				}
 				if len(schErr.Error) > 0 && !strings.Contains(schErr.Error, "doesn't validate with") {

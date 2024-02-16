@@ -5,6 +5,7 @@ import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/theme.dart';
+import 'package:ogree_app/widgets/common/form_field.dart';
 
 class CreateOpenDcimPopup extends StatefulWidget {
   Function() parentCallback;
@@ -52,20 +53,20 @@ class _CreateOpenDcimPopupState extends State<CreateOpenDcimPopup> {
                               )),
                               // const Divider(height: 35),
                               const SizedBox(height: 20),
-                              getFormField(
+                              CustomFormField(
                                 save: (newValue) => _dcimPort = newValue,
                                 label: "OpenDCIM port",
-                                initial: _dcimPort,
+                                initialValue: _dcimPort,
                                 icon: Icons.numbers,
                                 formatters: <TextInputFormatter>[
                                   FilteringTextInputFormatter.digitsOnly,
                                   LengthLimitingTextInputFormatter(4),
                                 ],
                               ),
-                              getFormField(
+                              CustomFormField(
                                 save: (newValue) => _adminerPort = newValue,
                                 label: "Adminer port",
-                                initial: _adminerPort,
+                                initialValue: _adminerPort,
                                 icon: Icons.numbers,
                                 formatters: <TextInputFormatter>[
                                   FilteringTextInputFormatter.digitsOnly,
@@ -137,43 +138,5 @@ class _CreateOpenDcimPopupState extends State<CreateOpenDcimPopup> {
           showSnackBar(messenger, exception.toString(), isError: true);
       }
     }
-  }
-
-  getFormField(
-      {required Function(String?) save,
-      required String label,
-      required IconData icon,
-      String? prefix,
-      String? suffix,
-      List<TextInputFormatter>? formatters,
-      String? initial,
-      bool isUrl = false}) {
-    return Padding(
-      padding: FormInputPadding,
-      child: TextFormField(
-        initialValue: initial,
-        onSaved: (newValue) => save(newValue),
-        validator: (text) {
-          if (text == null || text.isEmpty) {
-            return AppLocalizations.of(context)!.mandatoryField;
-          }
-          if (isUrl) {
-            var splitted = text.split(":");
-            if (splitted.length != 2) {
-              return AppLocalizations.of(context)!.wrongFormatUrl;
-            }
-            if (int.tryParse(splitted[1]) == null) {
-              return AppLocalizations.of(context)!.wrongFormatPort;
-            }
-          }
-          return null;
-        },
-        inputFormatters: formatters,
-        decoration: GetFormInputDecoration(_isSmallDisplay, label,
-            prefixText: prefix, suffixText: suffix, icon: icon),
-        cursorWidth: 1.3,
-        style: const TextStyle(fontSize: 14),
-      ),
-    );
   }
 }

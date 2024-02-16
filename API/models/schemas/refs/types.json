@@ -3,11 +3,17 @@
     "definitions": {
         "color": {
             "pattern": "^[0-9a-fA-F]{6}$",
-            "description": "a 6 length hex value (e.g. 'C0FFEE')"
+            "descriptions": {
+                "en": "a 6-character hexadecimal value (e.g. C0FFEE)",
+                "fr": "une valeur hexadécimale de 6 caractères (e.g. C0FFEE)"
+            }
         },
         "colorTemplate": {
             "pattern": "(^[0-9a-fA-F]{6}$)|(^@[a-zA-Z0-9-]+$)|(^$)",
-            "description": "a 6 length hex value or '@[color name]' (e.g. 'C0FFEE', '@blue')"
+            "descriptions": {
+                "en": "a 6-character hexadecimal value or @[color name] (e.g. C0FFEE, @blue)",
+                "fr": "une valeur hexadécimale de 6 caractères ou @[nom de la couleur]"
+            }
         },
         "metricImperialUnit": {
             "enum": ["mm", "cm", "m", "f"]
@@ -16,32 +22,53 @@
             "enum": ["mm", "cm", "m", "f", "U", "OU"]
         },
         "vector2": {
-            "pattern": "^\\s*{\\s*\"x\"\\s*:\\s*((-|\\+)?[0-9]*[.]?)?[0-9]+\\s*,\\s*\"y\"\\s*:\\s*((-|\\+)?[0-9]*[.]?)?[0-9]+\\s*}\\s*$",
-            "description": "a vector2 (e.g. '{\"x\": 2.5, \"y\": 3}', '{\"x\": -3.5, \"y\": -3}')"
+            "pattern": "^\\[([+-]?([0-9]*[.])?[0-9]+),\\s*([+-]?([0-9]*[.])?[0-9]+)]$",
+            "descriptions": {
+                "en": "a vector2 ([x, y]) containing two floats (e.g. [2, 3.14])",
+                "fr": "un vector2 ([x, y]) contenant deux nombres flottants (e.g. [2, 3.14])"
+            }
         },
         "vector3": {
-            "pattern": "^\\s*{\\s*\"x\"\\s*:\\s*((-|\\+)?[0-9]*[.]?)?[0-9]+\\s*,\\s*\"y\"\\s*:\\s*((-|\\+)?[0-9]*[.]?)?[0-9]+\\s*,\\s*\"z\"\\s*:\\s*((-|\\+)?[0-9]*[.]?)?[0-9]+\\s*}\\s*$",
-            "description": "a vector3 (e.g. '{\"x\": 2, \"y\": 2.5, \"z\": 3.33}', '{\"x\": 2, \"y\": -4, \"z\": -3.5}')"
+            "pattern": "^\\[([+-]?([0-9]*[.])?[0-9]+)(,\\s*([+-]?([0-9]*[.])?[0-9]+)){2}]$",
+            "descriptions": {
+                "en": "a vector3 ([x, y, z]) containing three floats (e.g. [2, 2.72, 3.14])",
+                "fr": "une vector3 ([x, y, z]) contenant trois nombres flottants (e.g. [2, 2.72, 3.14])"
+            }
         },
         "float": {
             "pattern": "^[-]?([0-9]*[.])?[0-9]+$",
-            "description": "a floating point number (e.g. '3.14', '-2.72', '1', '-2')"
+            "descriptions": {
+                "en": "a floating point number (e.g. 3.14, -2.72, 1, -2)",
+                "fr": "un nombre flottant (e.g. 3.14, -2.72, 1, -2)"
+            }
         },
         "clearanceVector": {
-            "pattern": "^\\[(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:,\\s*(?:\\d+(?:\\.\\d*)?|\\.\\d+)){5}\\]$",
-            "description": "six floating point numbers inside square brackets (e.g. '[2, 2.72, 3, 3.14, 4, 4.5]'"
+            "pattern": "^\\[(([0-9]*[.])?[0-9]+)(,\\s*(([0-9]*[.])?[0-9]+)){5}]$",
+            "descriptions": {
+                "en": "a vector ([...]) containing six floats (e.g. [2, 2.72, 3, 3.14, 4, 4.5])",
+                "fr": "une vector ([...]) contenant six nombres flottants (e.g. [2, 2.72, 3, 3.14, 4, 4.5])"
+            }
         },
         "slug": {
             "pattern": "^[a-z0-9-_]+$",
-            "description": "composed only of lowercase letters, numbers, '-' or '_' (e.g. 'abc_xyz-0')"
+            "descriptions": {
+                "en": "only lowercase letters, numbers, '-' or '_' (e.g. abc_xyz-0)",
+                "fr": "que des lettres minuscules, des chiffres, '-' ou '_' (e.g. abc_xyz-0)"
+            }
         },
         "name": {
             "pattern": "^\\w(\\w|\\-)*$",
-            "description": "composed only of letters, numbers, '-' or '_' (e.g. 'ABC_xyz-0')"
+            "descriptions": {
+                "en": "only letters, numbers, '-' or '_' (e.g. ABC_xyz-0)",
+                "fr": "que des lettres, des chiffres, '-' ou '_' (e.g. abc_xyz-0)"
+            }
         },
         "id": {
             "pattern": "^\\w(\\w|\\-)*(\\.\\w(\\w|\\-)*)*$",
-            "description": "composed only of letters, numbers, '-', '_' or '.' (e.g. 'BASIC.abc_xyz-0')"
+            "descriptions": {
+                "en": "only letters, numbers, '-', '_' or '.' (e.g. BASIC.abc_xyz-0)",
+                "fr": "que des lettres, des chiffres, '-', '_' ou '.' (e.g. abc_xyz-0)"
+            }
         }
     }
 }

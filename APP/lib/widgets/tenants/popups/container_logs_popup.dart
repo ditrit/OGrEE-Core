@@ -55,7 +55,8 @@ class _ContainerLogsPopupState extends State<ContainerLogsPopup> {
                         return const Center(child: CircularProgressIndicator());
                       } else if (logs != "") {
                         return Expanded(
-                          child: SingleChildScrollView(child: Text(logs!)),
+                          child: SingleChildScrollView(
+                              child: SelectableText(logs!)),
                         );
                       } else {
                         // Empty messages

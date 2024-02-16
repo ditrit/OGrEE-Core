@@ -615,6 +615,7 @@ A chassis is a *parent* device racked at a defined U position.
 `[sizeU]` is the height in U in a rack  
 `[slot]` is the name of the slot in which you want to place the device  
 `[template]` is the name of the device template  
+`[invertOffset]` is a boolean that tells the 3D client to invert the default offset for positioning the device in its slot (false by default, if not provided)  
 `[side]` is from which side you can see the device if not "fullsize". This value is for overriding the one defined in the template. It can be front | rear | frontflipped | rearflipped*  
 If the parent rack doesn't have slots:
 
@@ -628,15 +629,19 @@ If the parent rack has slots:
 ```
 +device:[name]@[slot]@[sizeU]
 +device:[name]@[slot]@[template]
++device:[name]@[slot]@[sizeU]@[invertOffset]
++device:[name]@[slot]@[template]@[invertOffset]
 ```  
 
 All other devices (blades / components like processor, memory, adapters, disks...) have to be declared with a parent's slot and a template.
 
 ```
 +device:[name]@[slot]@[template]
-+device:[name]@[slot]@[template]@[side]
++device:[name]@[slot]@[template]@[invertOffset]
++device:[name]@[slot]@[template]@[invertOffset]@[side]
 +dv:[name]@[slot]@[template]
-+dv:[name]@[slot]@[template]@[side]
++dv:[name]@[slot]@[template]@[invertOffset]
++dv:[name]@[slot]@[template]@[invertOffset]@[side]
 ```  
 
 ## Create a Group
@@ -910,11 +915,10 @@ _:[attribute]=[value]
 [name]:domain=[value]@recursive
 ```
 
-- Object's description attribute is a list: you have to use an index to fill one.
+- Object's description attribute is a string. Use `\n` to represent line-breaks.
 
 ```
-[name]:description1=[value]
-[name]:description[N]=[value] where [N] is an index, starting at 1
+[name]:description=[value]
 ```
 
 - Object's clearance are vector6, they define how much gap (in mm) has to be left on each side of the object:
@@ -960,11 +964,19 @@ The default label is the object's name.
 ### Choose Label
 
 You can change the label by a string or with a chosen attribute:  
-*`#[attribute]` is one of the attribute of the object. If `description`, it will display all descriptions. To display a specific description, use `description[N]` where N is the index of the wanted description.*
+*`#[attribute]` is one of the attribute of the object.*
+*Use `\n` to insert line-breaks.* 
 
 ```
 [name]:label=#[attribute]
 [name]:label=[string]
+```
+
+Examples:
+```
+[name]:label=#id
+[name]:label=This is a rack
+[name]:label=My name is #name\nMy id is #id
 ```
 
 ### Modify label's font

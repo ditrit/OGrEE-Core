@@ -165,7 +165,7 @@ class _DownloadCliPopupState extends State<DownloadCliPopup> {
         file.writeAsBytes(response.bodyBytes, flush: true).then((value) =>
             showSnackBar(ScaffoldMessenger.of(context),
                 "${localeMsg.fileSavedTo} $fileName",
-                copyText: fileName));
+                copyTextAction: fileName));
       } else {
         showSnackBar(messenger, localeMsg.unableDownload);
       }
