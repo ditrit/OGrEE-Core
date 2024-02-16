@@ -13,7 +13,7 @@ payload={
     "name": None,
     "parentId": "{{RackID}}",
     "category": "device",
-    "description": "Rack A01\\nThe original one\\n-3/-5\\nA0-Z9",
+    "description": "Rack A01\nThe original one\n-3/-5\nA0-Z9",
     "domain": "Device DOMAIN",
     "attributes": {
         "posXY": "[10.0, 0.0]",

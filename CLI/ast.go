@@ -1635,8 +1635,9 @@ func parseAreas(areas map[string]interface{}) (map[string]interface{}, error) {
 					t[i] = bytes.NewBufferString("")
 					fmt.Fprintf(t[i], "%v", tech[i])
 				}
-				reservedStr = "{\"left\":" + r[3].String() + ",\"right\":" + r[2].String() + ",\"top\":" + r[0].String() + ",\"bottom\":" + r[1].String() + "}"
-				techStr = "{\"left\":" + t[3].String() + ",\"right\":" + t[2].String() + ",\"top\":" + t[0].String() + ",\"bottom\":" + t[1].String() + "}"
+				// [front/top, back/bottom, right, left]
+				reservedStr = "[" + r[0].String() + ", " + r[1].String() + ", " + r[2].String() + ", " + r[3].String() + "]"
+				techStr = "[" + t[0].String() + ", " + t[1].String() + ", " + t[2].String() + ", " + t[3].String() + "]"
 				areas["reserved"] = reservedStr
 				areas["technical"] = techStr
 			} else {

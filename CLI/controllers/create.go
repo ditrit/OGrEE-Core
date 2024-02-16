@@ -93,7 +93,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			}
 		} else {
 			//Serialise size and posXY manually instead
-			serialiseVector(attr, "size")
+			attr["size"] = serialiseVector(attr, "size")
 
 			//Since template was not provided, set it empty
 			attr["template"] = ""
@@ -112,7 +112,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			return nil
 		}
 
-		serialiseVector(attr, "posXY")
+		attr["posXY"] = serialiseVector(attr, "posXY")
 
 		if attr["posXY"] == "" {
 			if State.DebugLvl > 0 {
@@ -157,7 +157,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			return err
 		}
 
-		serialiseVector(attr, "posXY")
+		attr["posXY"] = serialiseVector(attr, "posXY")
 
 		if attr["posXY"] == "" {
 			if State.DebugLvl > 0 {
@@ -237,7 +237,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 		}
 
 		//Serialise posXY if given
-		serialiseVector(attr, "posXYZ")
+		attr["posXYZ"] = serialiseVector(attr, "posXYZ")
 
 		//Restore the rotation overwritten
 		//by the helper func

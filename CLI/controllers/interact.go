@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 )
 
@@ -12,55 +11,14 @@ func valFromObj(obj map[string]any, val interface{}) (interface{}, error) {
 		innerMap := obj["attributes"].(map[string]interface{})
 
 		if _, ok := obj[value]; ok {
-			if value == "description" {
-				desc := obj["description"].([]interface{})
-				val = ""
-				//Combine entire the description array into a string
-				for i := 0; i < len(desc); i++ {
-					if i == 0 {
-						val = desc[i].(string)
-					} else {
-						val = val.(string) + "\n" + desc[i].(string)
-					}
-				}
-				return val, nil
-			} else {
-				val = obj[value]
-			}
+			val = obj[value]
 		} else if _, ok := innerMap[value]; ok {
 			val = innerMap[value]
 		} else {
-			if strings.Contains(value, "description") {
-				if desc, ok := obj["description"].([]interface{}); ok {
-					if len(value) > 11 { //descriptionX format
-						//split the number and description
-						numStr := strings.Split(value, "description")[1]
-						num, e := strconv.Atoi(numStr)
-						if e != nil {
-							return "", e
-						}
-
-						if num < 0 {
-							return "", fmt.Errorf("Description index must be positive")
-						}
-
-						if num >= len(desc) {
-							msg := "Description index is out of" +
-								" range. The length for this object is: " +
-								strconv.Itoa(len(desc))
-							return "", fmt.Errorf(msg)
-						}
-						val = desc[num]
-					} else {
-						val = innerMap[value]
-					}
-				}
-			} else {
-				msg := "The specified attribute '" + val.(string) + "' does not exist" +
-					" in the object. \nPlease view the object" +
-					" (ie. $> get) and try again"
-				return "", fmt.Errorf(msg)
-			}
+			msg := "The specified attribute '" + val.(string) + "' does not exist" +
+				" in the object. \nPlease view the object" +
+				" (ie. $> get) and try again"
+			return "", fmt.Errorf(msg)
 		}
 	} else {
 		return "", fmt.Errorf("The label value must be a string")
