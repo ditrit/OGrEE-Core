@@ -91,13 +91,7 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 			zS = attrSerialiser(sizeInf[2], "height", ent)
 
 			CopyAttr(attr, tmpl, "shape")
-			if ent == models.GENERIC && (attr["shape"] == "sphere" || attr["shape"] == "cylinder") {
-				attr["diameter"] = zS
-				attr["diameterUnit"] = "cm"
-				if attr["shape"] == "cylinder" {
-					attr["height"] = yS
-				}
-			} else {
+			if ent == models.GENERIC {
 				attr["size"] = "[" + xS + ", " + yS + "]"
 				attr["height"] = zS
 			}

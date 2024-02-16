@@ -726,13 +726,9 @@ Where:
   "right":  [0, -90, 0]  
   "top":    [90, 0, 0]  
   "bottom": [-90, 0, 0]  
-- `[size]` is a Vector3 whose interpretation varies according to the shape. All values are in cm.
-
-  if shape = `cube`: [width,length,height]  
-  if shape = `sphere`: [ignored,ignored,diameter]  
-  if shape = `cylinder`: [ignored,height,diameter]  
+- `[size]` is a Vector3 [width,length,height] . All values are in cm.
 - `[shape]` is a string defining the shape of the object. It can be: `cube`, `sphere` or `cylinder`.
-- `[type]` is a string defining the type shape. No predefined values.
+- `[type]` is a string defining the type of the object. No predefined values.
 - `[template]` is the name of the rack template
 
 # Set commands
