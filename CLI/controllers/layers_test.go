@@ -1258,6 +1258,7 @@ func TestLsReturnsLayerCreatedAndUpdatedAfterLastUpdate(t *testing.T) {
 		models.LayerFilters:       "(key = value) & (category = device)",
 		models.LayerApplicability: "BASIC.A.R1",
 	})
+
 	mockOgree3D.On(
 		"InformOptional", "UpdateObj",
 		models.LAYER, map[string]any{"data": map[string]interface{}{
@@ -1265,6 +1266,7 @@ func TestLsReturnsLayerCreatedAndUpdatedAfterLastUpdate(t *testing.T) {
 				"applicability": "BASIC.A.R1", "filter": "(key = value) & (category = device)",
 				"slug": "test"}, "old-slug": "test"}, "type": "modify-layer"},
 	).Return(nil)
+
 	err = controller.UpdateLayer("/Logical/Layers/test", models.LayerFiltersAdd, "category = device")
 	assert.Nil(t, err)
 
@@ -1306,6 +1308,7 @@ func TestLsOnLayerUpdatedAfterLastUpdateDoesUpdatedFilter(t *testing.T) {
 		models.LayerFilters:       "category = device",
 		models.LayerApplicability: "BASIC.A.R1",
 	})
+
 	mockOgree3D.On(
 		"InformOptional", "UpdateObj",
 		models.LAYER, map[string]any{"data": map[string]interface{}{
@@ -1313,6 +1316,7 @@ func TestLsOnLayerUpdatedAfterLastUpdateDoesUpdatedFilter(t *testing.T) {
 				"applicability": "BASIC.A.R1", "filter": "category = device",
 				"slug": "test"}, "old-slug": "test"}, "type": "modify-layer"},
 	).Return(nil)
+
 	err = controller.UpdateLayer("/Logical/Layers/test", models.LayerFiltersAdd, "category = device")
 	assert.Nil(t, err)
 
