@@ -174,7 +174,7 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
                               child: ListView(
                                 controller: _outputController,
                                 children: [
-                                  Text(
+                                  SelectableText(
                                     "Output:$_updateResult",
                                     style: const TextStyle(color: Colors.white),
                                   ),

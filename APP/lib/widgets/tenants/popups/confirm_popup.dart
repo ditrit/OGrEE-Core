@@ -113,7 +113,7 @@ class _ConfirmPopupState extends State<ConfirmPopup> {
                             child: ListView(
                               controller: _outputController,
                               children: [
-                                Text(
+                                SelectableText(
                                   "Output:$_updateResult",
                                   style: const TextStyle(color: Colors.white),
                                 ),
