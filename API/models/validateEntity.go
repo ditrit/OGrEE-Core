@@ -407,12 +407,14 @@ func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 					return err
 				} else {
 					for _, obj := range siblings {
-						if siblingSlots, err := slotStrToSlice(obj["attributes"].(map[string]any)); err == nil &&
-							len(siblingSlots) > 0 {
-							for _, requestedSlot := range deviceSlots {
-								if pie.Contains(siblingSlots, requestedSlot) {
-									return &u.Error{Type: u.ErrBadFormat,
-										Message: "Invalid slot: one or more requested slots are already in use"}
+						if obj["name"] != t["name"] { // do not check itself
+							if siblingSlots, err := slotStrToSlice(obj["attributes"].(map[string]any)); err == nil &&
+								len(siblingSlots) > 0 {
+								for _, requestedSlot := range deviceSlots {
+									if pie.Contains(siblingSlots, requestedSlot) {
+										return &u.Error{Type: u.ErrBadFormat,
+											Message: "Invalid slot: one or more requested slots are already in use"}
+									}
 								}
 							}
 						}
