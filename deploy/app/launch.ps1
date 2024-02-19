@@ -16,7 +16,7 @@ $basename = "ogree-superadmin"
 $containername = $basename
 $index = 1
 $result = @(docker ps --all --format "{{json .}}" --filter "name=$containername")
-While ($null -ne $result)
+While ($result)
 {
     if ($result -Match "failed") {
         Write-Host "Unable to check running containers! Try default name only"
