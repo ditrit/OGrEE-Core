@@ -88,36 +88,52 @@ class ToolCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 2),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  CircleAvatar(
-                    backgroundColor: Colors.red.shade100,
-                    radius: 13,
-                    child: IconButton(
-                        splashRadius: 18,
-                        iconSize: 14,
-                        padding: const EdgeInsets.all(2),
-                        onPressed: () => showCustomPopup(
-                            context,
-                            DeleteDialog(
-                              objName: [container.name],
-                              parentCallback: parentCallback,
-                              objType: type.name,
-                            ),
-                            isDismissible: true),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 5),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: Colors.red.shade100,
+                      radius: 13,
+                      child: IconButton(
+                          splashRadius: 18,
+                          iconSize: 14,
+                          padding: const EdgeInsets.all(2),
+                          onPressed: () => showCustomPopup(
+                              context,
+                              DeleteDialog(
+                                objName: [container.name],
+                                parentCallback: parentCallback,
+                                objType: type.name,
+                              ),
+                              isDismissible: true),
+                          icon: Icon(
+                            Icons.delete,
+                            color: Colors.red.shade900,
+                          )),
+                    ),
+                    SizedBox(
+                      height: 26,
+                      width: 26,
+                      child: IconButton.filled(
+                        style: IconButton.styleFrom(
+                            backgroundColor: Colors.blue.shade700),
+                        // splashColor: Colors.blue,
+                        padding: EdgeInsets.zero,
+                        onPressed: () {
+                          launchUrl(Uri.parse(container.ports));
+                        },
+                        iconSize: 16,
                         icon: Icon(
-                          Icons.delete,
-                          color: Colors.red.shade900,
-                        )),
-                  ),
-                  TextButton.icon(
-                      onPressed: () {
-                        launchUrl(Uri.parse(container.ports));
-                      },
-                      icon: const Icon(Icons.play_circle),
-                      label: Text(localeMsg.launch)),
-                ],
+                          Icons.open_in_new_rounded,
+                          // color: Colors.blue.shade800,
+                        ),
+                        // label: Text(localeMsg.launch)
+                      ),
+                    ),
+                  ],
+                ),
               )
             ],
           ),

@@ -32,7 +32,7 @@ class DockerView extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Theme(
-                    data: ThemeData(
+                    data: Theme.of(context).copyWith(
                       cardTheme: const CardTheme(
                           elevation: 0,
                           surfaceTintColor: Colors.white,
