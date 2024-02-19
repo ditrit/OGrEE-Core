@@ -94,9 +94,6 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 		} else {
 			//Serialise size and posXY manually instead
 			attr["size"] = serialiseVector(attr, "size")
-
-			//Since template was not provided, set it empty
-			attr["template"] = ""
 		}
 
 		if attr["size"] == "" {
@@ -346,8 +343,6 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			if err != nil {
 				return err
 			}
-		} else {
-			attr["template"] = ""
 		}
 
 	default:

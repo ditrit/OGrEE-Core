@@ -262,9 +262,6 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 			}
 		}
 	} else {
-		if ent != models.CORRIDOR {
-			attr["template"] = ""
-		}
 		//Serialise size and posXY if given
 		attr["size"] = serialiseVector(attr, "size")
 	}
