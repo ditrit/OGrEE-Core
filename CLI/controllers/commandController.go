@@ -46,7 +46,7 @@ func (controller Controller) ObjectUrl(pathStr string, depth int) (string, error
 
 	var baseUrl string
 	switch path.Prefix {
-	case models.StayPath:
+	case models.StrayPath:
 		baseUrl = "/api/stray-objects"
 	case models.PhysicalPath:
 		baseUrl = "/api/hierarchy-objects"
@@ -101,7 +101,7 @@ func (controller Controller) ObjectUrlGeneric(pathStr string, depth int, filters
 	}
 
 	switch path.Prefix {
-	case models.StayPath:
+	case models.StrayPath:
 		params.Add("namespace", "physical.stray")
 		params.Add("id", path.ObjectID)
 	case models.PhysicalPath:
@@ -136,11 +136,16 @@ func (controller Controller) ObjectUrlGeneric(pathStr string, depth int, filters
 		params.Add("limit", strconv.Itoa(depth))
 	}
 
+	endpoint := "/api/objects"
 	for key, value := range filters {
-		params.Set(key, value)
+		if key != "filter" {
+			params.Set(key, value)
+		} else {
+			endpoint = "/api/objects/search"
+		}
 	}
 
-	url, _ := url.Parse("/api/objects")
+	url, _ := url.Parse(endpoint)
 	url.RawQuery = params.Encode()
 
 	return url.String(), nil

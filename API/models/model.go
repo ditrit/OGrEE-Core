@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 	"p3/repository"
 	u "p3/utils"
@@ -98,6 +99,9 @@ func updateOldObjWithPatch(old map[string]interface{}, patch map[string]interfac
 				return errors.New("Wrong format for property " + k)
 			}
 		default:
+			if k == "filter" && strings.HasPrefix(v.(string), "&") {
+				v = "(" + old["filter"].(string) + ") " + v.(string)
+			}
 			old[k] = v
 		}
 	}
@@ -222,7 +226,7 @@ func GetObject(req bson.M, entityStr string, filters u.RequestFilters, userRoles
 	return object, nil
 }
 
-func GetManyObjects(entityStr string, req bson.M, filters u.RequestFilters, userRoles map[string]Role) ([]map[string]interface{}, *u.Error) {
+func GetManyObjects(entityStr string, req bson.M, filters u.RequestFilters, complexFilters map[string]any, userRoles map[string]Role) ([]map[string]interface{}, *u.Error) {
 	ctx, cancel := u.Connect()
 	var err error
 	var c *mongo.Cursor
@@ -240,6 +244,14 @@ func GetManyObjects(entityStr string, req bson.M, filters u.RequestFilters, user
 	err = repository.GetDateFilters(req, filters.StartDate, filters.EndDate)
 	if err != nil {
 		return nil, &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
+	}
+
+	if complexFilters != nil {
+		err = getDatesFromComplexFilters(complexFilters)
+		if err != nil {
+			return nil, &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
+		}
+		maps.Copy(req, complexFilters)
 	}
 
 	if opts != nil {
@@ -274,6 +286,31 @@ func GetManyObjects(entityStr string, req bson.M, filters u.RequestFilters, user
 	}
 
 	return data, nil
+}
+
+func getDatesFromComplexFilters(req map[string]any) error {
+	for k, v := range req {
+		if k == "$and" || k == "$or" {
+			for _, complexFilter := range v.([]any) {
+				err := getDatesFromComplexFilters(complexFilter.(map[string]any))
+				if err != nil {
+					return err
+				}
+			}
+		} else if k == "lastUpdated" {
+			for op, date := range v.(map[string]any) {
+				parsedDate, err := time.Parse("2006-01-02", date.(string))
+				if err != nil {
+					return err
+				}
+				if op == "$lte" {
+					parsedDate = parsedDate.Add(time.Hour * 24)
+				}
+				req[k] = map[string]any{op: parsedDate}
+			}
+		}
+	}
+	return nil
 }
 
 // GetCompleteHierarchy: gets all objects in db using hierachyName and returns:
@@ -629,9 +666,6 @@ func prepareUpdateObject(ctx mongo.SessionContext, entity int, id string, update
 		return err
 	}
 
-	// filters list edition support for layers
-	removeFromFilters(updateData)
-
 	// Ensure the update is valid
 	err = ValidateEntity(entity, updateData)
 	if err != nil {
@@ -801,7 +835,7 @@ func getChildren(entity, hierarchyName string, limit int, filters u.RequestFilte
 		// Obj should include parentName and not surpass limit range
 		pattern := primitive.Regex{Pattern: "^" + hierarchyName +
 			"(." + u.NAME_REGEX + "){1," + strconv.Itoa(limit) + "}$", Options: ""}
-		children, e1 := GetManyObjects(checkEntName, bson.M{"id": pattern}, filters, nil)
+		children, e1 := GetManyObjects(checkEntName, bson.M{"id": pattern}, filters, nil, nil)
 		if e1 != nil {
 			println("SUBENT: ", checkEntName)
 			println("ERR: ", e1.Message)
@@ -843,7 +877,7 @@ func GetEntitiesOfAncestor(id string, entStr, wantedEnt string, userRoles map[st
 	// Get sub entity objects
 	pattern := primitive.Regex{Pattern: "^" + id + u.HN_DELIMETER, Options: ""}
 	req = bson.M{"id": pattern}
-	sub, e1 := GetManyObjects(wantedEnt, req, u.RequestFilters{}, userRoles)
+	sub, e1 := GetManyObjects(wantedEnt, req, u.RequestFilters{}, nil, userRoles)
 	if e1 != nil {
 		return nil, e1
 	}

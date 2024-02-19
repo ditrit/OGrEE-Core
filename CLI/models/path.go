@@ -10,7 +10,7 @@ import (
 
 const (
 	PhysicalPath          = "/Physical/"
-	StayPath              = PhysicalPath + "Stray/"
+	StrayPath             = PhysicalPath + "Stray/"
 	LogicalPath           = "/Logical/"
 	ObjectTemplatesPath   = LogicalPath + "ObjectTemplates/"
 	RoomTemplatesPath     = LogicalPath + "RoomTemplates/"
@@ -23,7 +23,7 @@ const (
 )
 
 var PathPrefixes = []string{
-	StayPath,
+	StrayPath,
 	PhysicalPath,
 	ObjectTemplatesPath,
 	RoomTemplatesPath,
@@ -83,7 +83,7 @@ func IsPhysical(path string) bool {
 }
 
 func IsStray(path string) bool {
-	return pathIs(path, StayPath)
+	return pathIs(path, StrayPath)
 }
 
 func IsObjectTemplate(path string) bool {

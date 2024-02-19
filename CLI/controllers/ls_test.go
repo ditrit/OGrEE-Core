@@ -101,6 +101,33 @@ func TestLsWithFilters(t *testing.T) {
 	utils.ContainsObjectNamed(t, objects, "B01")
 }
 
+func TestLsWithComplexFilters(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+
+	mockGetObjectsWithComplexFilters(
+		mockAPI,
+		"id=BASIC.A.R1.%2A&namespace=physical.hierarchy",
+		map[string]any{
+			"$or": []map[string]any{
+				{"category": "corridor"},
+				{"$and": []map[string]any{
+					{"category": "rack"},
+					{"name": map[string]any{"$not": "A01"}},
+				}},
+			},
+		},
+		[]any{corridor, rack2},
+	)
+
+	objects, err := controller.Ls("/Physical/BASIC/A/R1", map[string]string{
+		"filter": "(category=corridor) | (category=rack & name!=A01) ",
+	}, nil)
+	assert.Nil(t, err)
+	assert.Len(t, objects, 2)
+	utils.ContainsObjectNamed(t, objects, "CO1")
+	utils.ContainsObjectNamed(t, objects, "B01")
+}
+
 func TestLsRecursiveReturnsError(t *testing.T) {
 	controller, _, _ := layersSetup(t)
 

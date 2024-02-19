@@ -1282,7 +1282,6 @@ func (n *createTagNode) execute() (interface{}, error) {
 type createLayerNode struct {
 	slug          node
 	applicability node
-	filterName    string
 	filterValue   node
 }
 
@@ -1302,7 +1301,7 @@ func (n *createLayerNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	return nil, cmd.C.CreateLayer(slug, applicability, n.filterName, filterValue)
+	return nil, cmd.C.CreateLayer(slug, applicability, filterValue)
 }
 
 type createCorridorNode struct {

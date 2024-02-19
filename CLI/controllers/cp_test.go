@@ -27,14 +27,14 @@ func TestCpLayerWithDestPathCopiesSource(t *testing.T) {
 	layer1 := map[string]any{
 		"slug":                    "layer1",
 		models.LayerApplicability: "BASIC.A.R1",
-		models.LayerFilters:       map[string]any{"category": "device"},
+		models.LayerFilters:       "category = device",
 	}
 
 	mockGetObjectByEntity(mockAPI, "layers", layer1)
 	mockCreateObject(mockAPI, "layer", map[string]any{
 		"slug":                    "layer2",
 		models.LayerApplicability: "BASIC.A.R1",
-		models.LayerFilters:       map[string]any{"category": "device"},
+		models.LayerFilters:       "category = device",
 	})
 
 	err := controller.Cp("/Logical/Layers/layer1", "/Logical/Layers/layer2")
@@ -47,14 +47,14 @@ func TestCpLayerWithDestSlugCopiesSource(t *testing.T) {
 	layer1 := map[string]any{
 		"slug":                    "layer1",
 		models.LayerApplicability: "BASIC.A.R1",
-		models.LayerFilters:       map[string]any{"category": "device"},
+		models.LayerFilters:       "category = device",
 	}
 
 	mockGetObjectByEntity(mockAPI, "layers", layer1)
 	mockCreateObject(mockAPI, "layer", map[string]any{
 		"slug":                    "layer2",
 		models.LayerApplicability: "BASIC.A.R1",
-		models.LayerFilters:       map[string]any{"category": "device"},
+		models.LayerFilters:       "category = device",
 	})
 
 	err := controller.Cp("/Logical/Layers/layer1", "layer2")
@@ -67,7 +67,7 @@ func TestCpLayerWhenSourceIsCachedCopiesSource(t *testing.T) {
 	layer1 := map[string]any{
 		"slug":                    "layer1",
 		models.LayerApplicability: "BASIC.A.R1",
-		models.LayerFilters:       map[string]any{"category": "device"},
+		models.LayerFilters:       "category = device",
 	}
 
 	now := time.Now()
@@ -83,7 +83,7 @@ func TestCpLayerWhenSourceIsCachedCopiesSource(t *testing.T) {
 	mockCreateObject(mockAPI, "layer", map[string]any{
 		"slug":                    "layer2",
 		models.LayerApplicability: "BASIC.A.R1",
-		models.LayerFilters:       map[string]any{"category": "device"},
+		models.LayerFilters:       "category = device",
 	})
 
 	err = controller.Cp("/Logical/Layers/layer1", "/Logical/Layers/layer2")

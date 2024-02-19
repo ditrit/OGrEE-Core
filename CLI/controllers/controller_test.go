@@ -95,6 +95,25 @@ func mockGetObjects(mockAPI *mocks.APIPort, queryParams string, result []any) {
 	).Once()
 }
 
+func mockGetObjectsWithComplexFilters(mockAPI *mocks.APIPort, queryParams string, body map[string]any, result []any) {
+	params, err := url.ParseQuery(queryParams)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+
+	mockAPI.On(
+		"Request", http.MethodPost,
+		"/api/objects/search?"+params.Encode(),
+		body, http.StatusOK,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"data": removeChildrenFromList(result),
+			},
+		}, nil,
+	).Once()
+}
+
 func removeChildrenFromList(objects []any) []any {
 	result := []any{}
 	for _, object := range objects {
@@ -143,6 +162,25 @@ func mockDeleteObjects(mockAPI *mocks.APIPort, queryParams string, result []any)
 		"Request", http.MethodDelete,
 		"/api/objects?"+params.Encode(),
 		mock.Anything, http.StatusOK,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"data": removeChildrenFromList(result),
+			},
+		}, nil,
+	).Once()
+}
+
+func mockDeleteObjectsWithComplexFilters(mockAPI *mocks.APIPort, queryParams string, body map[string]any, result []any) {
+	params, err := url.ParseQuery(queryParams)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+
+	mockAPI.On(
+		"Request", http.MethodDelete,
+		"/api/objects/search?"+params.Encode(),
+		body, http.StatusOK,
 	).Return(
 		&controllers.Response{
 			Body: map[string]any{

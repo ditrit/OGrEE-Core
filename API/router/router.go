@@ -95,6 +95,10 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 	router.HandleFunc("/api/projects/{id:[a-zA-Z0-9]{24}}",
 		controllers.DeleteProject).Methods("DELETE", "OPTIONS")
 
+	// For get or ls wih complex filters
+	router.HandleFunc(GenericObjectsURL+"/search",
+		controllers.HandleComplexFilters).Methods("POST", "HEAD", "OPTIONS", "DELETE")
+
 	// GENERIC
 	router.HandleFunc(GenericObjectsURL,
 		controllers.HandleGenericObjects).Methods("GET", "HEAD", "OPTIONS", "DELETE")

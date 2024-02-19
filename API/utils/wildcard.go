@@ -17,6 +17,25 @@ var doubleStarRegex = regexp.MustCompile(`\\\.\*\*\\\.`)                     // 
 var pointStar = ".*"
 var starRegex = regexp.MustCompile(`([^\)]|^)\*+`) // * with something different to ")" before to avoid replacing the * written in the previous steps
 
+func ApplyWildcardsOnComplexFilter(filter map[string]interface{}) {
+	for key, val := range filter {
+		switch v := val.(type) {
+		case string:
+			if key == "$not" || !strings.HasPrefix(key, "$") { // only for '=' and '!=' operators
+				filter[key] = regexToMongoFilter(applyWildcards(v))
+			}
+		case []interface{}:
+			for _, item := range v {
+				if m, ok := item.(map[string]interface{}); ok {
+					ApplyWildcardsOnComplexFilter(m)
+				}
+			}
+		case map[string]interface{}:
+			ApplyWildcardsOnComplexFilter(v)
+		}
+	}
+}
+
 func applyWildcards(value string) string {
 	value = strings.ReplaceAll(value, ".", `\.`)
 

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"cli/models"
+	"cli/utils"
 	"errors"
 	"fmt"
 	"net/http"
@@ -66,7 +67,14 @@ func (controller Controller) lsObjectsWithFilters(path string, filters map[strin
 		return nil, fmt.Errorf("cannot use filters at this location")
 	}
 
-	resp, err := controller.API.Request(http.MethodGet, url, nil, http.StatusOK)
+	var resp *Response
+	if complexFilter, ok := filters["filter"]; ok {
+		body := utils.ComplexFilterToMap(complexFilter)
+		resp, err = controller.API.Request(http.MethodPost, url, body, http.StatusOK)
+	} else {
+		resp, err = controller.API.Request(http.MethodGet, url, map[string]any{}, http.StatusOK)
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +85,7 @@ func (controller Controller) lsObjectsWithFilters(path string, filters map[strin
 	for _, objAny := range objectsAny {
 		obj, ok := objAny.(map[string]any)
 		if !ok {
-			return nil, fmt.Errorf("invalid response from API on GET %s", url)
+			return nil, fmt.Errorf("invalid response from API on POST %s", url)
 		}
 
 		objects = append(objects, obj)
@@ -115,7 +123,7 @@ func (controller Controller) addUserDefinedLayers(path string, rootNode *Hierarc
 
 		for _, layerNode := range layersNode.Children {
 			layer := layerNode.Obj.(models.UserDefinedLayer)
-			if layer.Matches(path) && len(layer.Filters) > 0 {
+			if layer.Matches(path) {
 				// layer in hierarchy has a pointer to the layer stored in /Logical/Layers
 				layerInHierarchyNode := NewLayerNode(layer.Name(), &layerNode.Obj)
 				rootNode.AddChild(layerInHierarchyNode)

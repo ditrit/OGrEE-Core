@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"cli/models"
 	"cli/utils"
 	"errors"
 	"fmt"
@@ -19,11 +20,35 @@ func (controller Controller) GetObjectsWildcard(pathStr string, filters map[stri
 	if err != nil {
 		return nil, nil, err
 	}
-	resp, err := controller.API.Request(http.MethodGet, url, nil, http.StatusOK)
+
+	var resp *Response
+	var method string
+	if models.PathHasLayer(pathStr) {
+		if filters == nil {
+			filters = map[string]string{}
+		}
+		path, err := controller.SplitPath(pathStr)
+		if err != nil {
+			return nil, nil, err
+		}
+		if path.Layer != nil {
+			path.Layer.ApplyFilters(filters)
+		}
+	}
+
+	if complexFilter, ok := filters["filter"]; ok {
+		body := utils.ComplexFilterToMap(complexFilter)
+		method = "POST "
+		resp, err = controller.API.Request(http.MethodPost, url, body, http.StatusOK)
+	} else {
+		method = "GET "
+		resp, err = controller.API.Request(http.MethodGet, url, nil, http.StatusOK)
+	}
+
 	if err != nil {
 		return nil, nil, err
 	}
-	return controller.ParseWildcardResponse(resp, pathStr, "GET "+url)
+	return controller.ParseWildcardResponse(resp, pathStr, method+url)
 }
 
 func (controller Controller) ParseWildcardResponse(resp *Response, pathStr string, route string) ([]map[string]any, []string, error) {
