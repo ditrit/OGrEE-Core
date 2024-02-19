@@ -89,12 +89,9 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 			xS = attrSerialiser(sizeInf[0], "x", ent)
 			yS = attrSerialiser(sizeInf[1], "y", ent)
 			zS = attrSerialiser(sizeInf[2], "height", ent)
-
+			attr["size"] = "[" + xS + ", " + yS + "]"
+			attr["height"] = zS
 			CopyAttr(attr, tmpl, "shape")
-			if ent == models.GENERIC {
-				attr["size"] = "[" + xS + ", " + yS + "]"
-				attr["height"] = zS
-			}
 
 			if ent == models.DEVICE {
 				attr["sizeUnit"] = "mm"
