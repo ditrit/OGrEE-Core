@@ -70,20 +70,19 @@ func TestErrorValidateJsonSchema(t *testing.T) {
 		"obj_template5": {
 			"/slug should be",
 			"/attributes/vendor expected string, but got number",
-			"/slots/0/elemOrient value must be one of ",
+			"/slots/0/elemOrient expected array",
 			"/slots/1/elemPos maximum 3 items required, but found 4 items",
 			"/slots/1/elemSize minimum 3 items required, but found 2 items",
-			"/slots/1/elemOrient value must be one of",
 			"/slots/2 missing properties: 'elemOrient'",
 			"/slots/2/labelPos value must be one of ",
 			"/slots/3/color should be",
 		},
 		"obj_template4": {
 			"/components/0/elemPos minimum 3 items required, but found 0 items",
-			`/components/1/elemOrient value must be one of "horizontal", "vertical", ""`,
+			"/slots/2/elemOrient expected array",
 			"/components/1/color should be",
+			"/components/1/elemOrient expected array",
 			"/components/3/labelPos value must be one of",
-			"/slots/0/elemOrient value must be one of",
 		},
 		"bldg_template2": {
 			"/sizeWDHm minimum 3 items required, but found 2 items",

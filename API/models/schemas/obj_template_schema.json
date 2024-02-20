@@ -89,18 +89,13 @@
                         "$ref": "refs/types.json#/definitions/colorTemplate"
                     },
                     "elemOrient": {
-                        "type": "string",
-                        "enum": [
-                            "horizontal",
-                            "vertical",
-                            ""
-                        ]
+                        "$ref": "#/$defs/elemVector"
                     },
                     "elemPos": {
-                        "$ref": "#/$defs/elemPos"
+                        "$ref": "#/$defs/elemVector"
                     },
                     "elemSize": {
-                        "$ref": "#/$defs/elemSize"
+                        "$ref": "#/$defs/elemVector"
                     },
                     "labelPos": {
                         "$ref": "#/$defs/labelPos"
@@ -146,11 +141,7 @@
                 ],
                 "properties": {
                     "elemOrient": {
-                        "type": "string",
-                        "enum": [
-                            "horizontal",
-                            "vertical"
-                        ]
+                        "$ref": "#/$defs/elemVector"
                     },
                     "attributes": {
                         "$ref": "#/$defs/attributes"
@@ -161,10 +152,10 @@
                     },
                     
                     "elemPos": {
-                        "$ref": "#/$defs/elemPos"
+                        "$ref": "#/$defs/elemVector"
                     },
                     "elemSize": {
-                        "$ref": "#/$defs/elemSize"
+                        "$ref": "#/$defs/elemVector"
                     },
                     "labelPos": {
                         "$ref": "#/$defs/labelPos"
@@ -188,15 +179,7 @@
                 }
             }
         },
-        "elemPos": {
-            "type": "array",
-            "items": {
-                "type": "number"
-            },
-            "minItems": 3,
-            "maxItems": 3
-        },
-        "elemSize": {
+        "elemVector": {
             "type": "array",
             "items": {
                 "type": "number"
@@ -235,7 +218,7 @@
                 {
                     "location": "eth2",
                     "type": "port",
-                    "elemOrient": "",
+                    "elemOrient": [1,2,3],
                     "elemPos": [104, 649, 0],
                     "elemSize": [14, 11, 11],
                     "mandatory": "yes",
@@ -250,7 +233,7 @@
                 {
                     "location": "cpu1",
                     "type": "processor",
-                    "elemOrient": "horizontal",
+                    "elemOrient": [0,0,0],
                     "elemPos": [68, 343, 0],
                     "elemSize": [97, 97, 30],
                     "mandatory": "yes",
@@ -278,7 +261,7 @@
                 {
                     "location": "u01",
                     "type": "u",
-                    "elemOrient": "horizontal",
+                    "elemOrient": [33.3,-44.4,107],
                     "elemPos": [58, 51, 44.45],
                     "elemSize": [482.6, 1138, 44.45],
                     "mandatory": "no",
