@@ -10,14 +10,6 @@
         "fbxModel": {
           "type": "string"
         },
-        "diameter": {
-          "type": "string",
-          "$ref": "refs/types.json#/definitions/float"
-        },
-        "diameterUnit": {
-          "type": "string",
-          "$ref": "refs/types.json#/definitions/metricImperialUnit"
-        },
         "height": {
           "type": "string",
           "$ref": "refs/types.json#/definitions/float"
@@ -73,55 +65,17 @@
           "$ref": "refs/types.json#/definitions/clearanceVector"
         }
       },
-      "if": {
-        "properties": {
-          "shape": { "const": "sphere" }
-        }
-      },
-      "then": { 
-        "required": [
-          "diameter",
-          "diameterUnit",
-          "rotation",
-          "posXYZ",
-          "posXYUnit",
-          "type",
-          "shape"
-        ]
-      }, 
-      "else": {
-        "if": {
-          "properties": {
-            "shape": { "const": "cylinder" }
-          }
-        },
-        "then": { 
-          "required": [
-            "diameter",
-            "diameterUnit",
-            "height",
-            "heightUnit",
-            "rotation",
-            "posXYZ",
-            "posXYUnit",
-            "type",
-            "shape"
-          ]
-        },
-        "else": { 
-          "required": [
-            "height",
-            "heightUnit",
-            "rotation",
-            "posXYZ",
-            "posXYUnit",
-            "size",
-            "sizeUnit",
-            "type",
-            "shape"
-          ]
-        }
-      }
+      "required": [
+        "height",
+        "heightUnit",
+        "rotation",
+        "posXYZ",
+        "posXYUnit",
+        "size",
+        "sizeUnit",
+        "type",
+        "shape"
+      ]
     }
   },
   "examples": [

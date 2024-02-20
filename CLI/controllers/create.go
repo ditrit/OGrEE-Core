@@ -207,7 +207,6 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 		}
 		if ent == models.CORRIDOR || ent == models.GENERIC {
 			baseAttrs["heightUnit"] = "cm"
-			baseAttrs["diameterUnit"] = "cm"
 		}
 
 		MergeMaps(attr, baseAttrs, false)
@@ -219,7 +218,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			return err
 		}
 
-		if attr["size"] == "" && (ent != models.GENERIC || (ent == models.GENERIC && attr["shape"] == "cube")) {
+		if attr["size"] == "" {
 			if State.DebugLvl > 0 {
 				l.GetErrorLogger().Println(
 					"User gave invalid size value for creating rack")

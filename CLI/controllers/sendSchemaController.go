@@ -44,15 +44,7 @@ func serialiseVector(attr map[string]interface{}, want string) string {
 	newVector = "[" + strings.Join(nums[:length], ", ") + "]"
 
 	if want == "size" {
-		if attr["shape"] == "sphere" || attr["shape"] == "cylinder" {
-			attr["diameter"] = nums[2]
-			if attr["shape"] == "cylinder" {
-				attr["height"] = nums[1]
-			}
-			return ""
-		} else {
-			attr["height"] = nums[2]
-		}
+		attr["height"] = nums[2]
 	}
 
 	return newVector
