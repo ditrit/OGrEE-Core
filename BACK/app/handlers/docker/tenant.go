@@ -88,6 +88,10 @@ func getDockerInfo(name string) ([]models.ContainerInfo, error) {
 				if strings.Contains(dc.Name, "opendcim-webapp") {
 					response = append(response, dc)
 				}
+			} else if name == "nautobot" {
+				if strings.Contains(dc.Name, "nautobot-1") {
+					response = append(response, dc)
+				}
 			} else if match, _ := regexp.MatchString("^"+name+"_", dc.Name); match {
 				response = append(response, dc)
 			}

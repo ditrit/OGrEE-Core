@@ -47,10 +47,12 @@ class ToolCard extends StatelessWidget {
                       backgroundColor: Colors.green.shade600,
                       label: type == Tools.opendcim
                           ? const Text(" OpenDCIM ")
-                          : const Text(" NETBOX "),
+                          : type == Tools.nautobot
+                              ? const Text(" NAUTOBOT ")
+                              : const Text(" NETBOX "),
                     ),
                   ),
-                  type == Tools.opendcim
+                  type != Tools.netbox
                       ? Container()
                       : CircleAvatar(
                           radius: 13,
@@ -82,7 +84,9 @@ class ToolCard extends StatelessWidget {
                     child: Text("URL:"),
                   ),
                   Text(
-                    container.ports,
+                    container.ports.isEmpty
+                        ? localeMsg.unavailable
+                        : container.ports,
                     style: TextStyle(backgroundColor: Colors.grey.shade200),
                   ),
                 ],

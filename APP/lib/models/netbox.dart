@@ -1,13 +1,14 @@
 import 'dart:convert';
 
-enum Tools { netbox, opendcim, cli }
+enum Tools { netbox, nautobot, opendcim, cli }
 
-class Netbox {
+// Nbox applies to both netbox and nautobot
+class Nbox {
   String userName;
   String userPassword;
   String port;
 
-  Netbox(this.userName, this.userPassword, this.port);
+  Nbox(this.userName, this.userPassword, this.port);
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
@@ -17,8 +18,8 @@ class Netbox {
     };
   }
 
-  factory Netbox.fromMap(Map<String, dynamic> map) {
-    return Netbox(
+  factory Nbox.fromMap(Map<String, dynamic> map) {
+    return Nbox(
       map['username'].toString(),
       map['password'].toString(),
       map['port'].toString(),
@@ -27,6 +28,6 @@ class Netbox {
 
   String toJson() => json.encode(toMap());
 
-  factory Netbox.fromJson(String source) =>
-      Netbox.fromMap(json.decode(source) as Map<String, dynamic>);
+  factory Nbox.fromJson(String source) =>
+      Nbox.fromMap(json.decode(source) as Map<String, dynamic>);
 }

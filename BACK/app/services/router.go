@@ -78,6 +78,8 @@ func InitRouter(isKube bool) *gin.Engine {
 		protected.POST("/tools/netbox/import", docker.ImportNetboxDump)
 		protected.POST("/tools/opendcim", docker.CreateOpenDcim)
 		protected.DELETE("/tools/opendcim", docker.RemoveOpenDcim)
+		protected.POST("/tools/nautobot", docker.CreateNautobot)
+		protected.DELETE("/tools/nautobot", docker.RemoveNautobot)
 	}
 
 	swagger := kube.SwaggerHandler()
