@@ -11,6 +11,12 @@ type OpenDCIM struct {
 	AdminerPort string `json:"adminerPort" binding:"required"`
 }
 
+type Nautobot struct {
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+	Port     string `json:"port"`
+}
+
 type BackendServer struct {
 	Host      string `json:"host" binding:"required"`
 	User      string `json:"user" binding:"required"`

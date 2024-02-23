@@ -11,6 +11,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// NETBOX
+
 var netboxDir string = "netbox-docker"
 
 func CreateNetbox(c *gin.Context) {
@@ -24,7 +26,6 @@ func CreateNetbox(c *gin.Context) {
 		newNetbox.Port = "8000"
 	}
 
-	netboxDir := "netbox-docker"
 	if _, err := os.Stat(netboxDir); os.IsNotExist(err) {
 		// Clone github repo
 		println("Cloning Netbox git repo...")
@@ -71,7 +72,6 @@ func CreateNetbox(c *gin.Context) {
 }
 
 func RemoveNetbox(c *gin.Context) {
-	netboxDir := "netbox-docker"
 	println("Run docker (may take a long time...)")
 	// Run docker
 	args := []string{"compose", "down", "-v"}
@@ -167,54 +167,4 @@ func ImportNetboxDump(c *gin.Context) {
 	if _, err := cmd.Output(); err != nil {
 		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
 	}
-}
-
-func CreateOpenDcim(c *gin.Context) {
-	var newDcim models.OpenDCIM
-	if err := c.BindJSON(&newDcim); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, err.Error())
-		return
-	}
-
-	// Create .env file
-	composeDir := "tools-assets"
-	file, _ := os.Create(composeDir + "/.env")
-	err := opendcimtmplt.Execute(file, newDcim)
-	if err != nil {
-		panic(err)
-	}
-	file.Close()
-
-	println("Run docker (may take a long time...)")
-	// Run docker
-	args := []string{"compose", "-f", "docker-compose-opendcim.yml", "-p", "opendcim", "up", "-d"}
-	cmd := exec.Command("docker", args...)
-	cmd.Dir = composeDir
-	var stderr bytes.Buffer
-	cmd.Stderr = &stderr
-	if _, err := cmd.Output(); err != nil {
-		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
-		c.IndentedJSON(http.StatusBadRequest, stderr.String())
-		return
-	}
-	println("Finished with docker")
-	c.IndentedJSON(http.StatusOK, "all good")
-}
-
-func RemoveOpenDcim(c *gin.Context) {
-	composeDir := "tools-assets"
-	println("Run docker (may take a long time...)")
-	// Run docker
-	args := []string{"compose", "-f", "docker-compose-opendcim.yml", "-p", "opendcim", "down", "-v"}
-	cmd := exec.Command("docker", args...)
-	cmd.Dir = composeDir
-	var stderr bytes.Buffer
-	cmd.Stderr = &stderr
-	if _, err := cmd.Output(); err != nil {
-		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
-		c.IndentedJSON(http.StatusBadRequest, stderr.String())
-		return
-	}
-	println("Finished with docker")
-	c.IndentedJSON(http.StatusOK, "all good")
 }

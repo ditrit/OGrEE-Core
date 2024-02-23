@@ -58,8 +58,9 @@ class _DeleteDialogState extends State<DeleteDialog> {
                           Result result;
                           if (widget.objType == "tenants") {
                             result = await deleteTenant(obj);
-                          } else if (widget.objType == Tools.netbox.name ||
-                              widget.objType == Tools.opendcim.name) {
+                          } else if (Tools.values
+                              .where((tool) => tool.name == widget.objType)
+                              .isNotEmpty) {
                             result = await deleteTool(widget.objType);
                           } else {
                             result = await removeObject(obj, widget.objType);

@@ -569,7 +569,8 @@ Future<Result<(List<Tenant>, List<DockerContainer>), Exception>>
       for (var tool in data["tools"]) {
         var container = DockerContainer.fromMap(tool);
         if (container.ports.isNotEmpty) {
-          container.ports = "http://${container.ports.split("-").first}";
+          container.ports =
+              "http://${container.ports.split(",").last.split("-").first.trim()}";
           container.ports =
               container.ports.replaceFirst("0.0.0.0", "localhost");
         }
@@ -801,7 +802,7 @@ Future<Result<String, Exception>> fetchContainerLogs(String name,
   }
 }
 
-Future<Result<void, Exception>> createNetbox(Netbox netbox) async {
+Future<Result<void, Exception>> createNetbox(Nbox netbox) async {
   print("API create Netbox");
   try {
     Uri url = Uri.parse('$apiUrl/api/tools/netbox');
@@ -814,6 +815,25 @@ Future<Result<void, Exception>> createNetbox(Netbox netbox) async {
       String data = json.decode(response.body);
       return Failure(Exception(
           wrapResponseMsg(response, message: "Error creating netbox $data")));
+    }
+  } on Exception catch (e) {
+    return Failure(e);
+  }
+}
+
+Future<Result<void, Exception>> createNautobot(Nbox nautobot) async {
+  print("API create nautobot");
+  try {
+    Uri url = Uri.parse('$apiUrl/api/tools/nautobot');
+    final response = await http.post(url,
+        body: nautobot.toJson(), headers: getHeader(token));
+    print(response);
+    if (response.statusCode == 200) {
+      return const Success(null);
+    } else {
+      String data = json.decode(response.body);
+      return Failure(Exception(
+          wrapResponseMsg(response, message: "Error creating nautobot $data")));
     }
   } on Exception catch (e) {
     return Failure(e);
@@ -845,7 +865,7 @@ Future<Result<void, Exception>> createOpenDcim(
 }
 
 Future<Result<void, Exception>> deleteTool(String tool) async {
-  print("API delete Netbox");
+  print("API delete Tool");
   try {
     Uri url = Uri.parse('$apiUrl/api/tools/$tool');
     final response = await http.delete(url, headers: getHeader(token));

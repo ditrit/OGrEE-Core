@@ -35,6 +35,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
   List<DockerContainer>? _tools;
   bool _isSmallDisplay = false;
   bool _hasNetbox = false;
+  bool _hasNautobot = false;
   bool _hasOpenDcim = false;
   bool _gotData = false;
 
@@ -227,6 +228,10 @@ class _ProjectsPageState extends State<ProjectsPage> {
         child: Text("${localeMsg.create} Netbox"),
       ),
       PopupMenuItem(
+        value: Tools.nautobot,
+        child: Text("${localeMsg.create} Nautobot"),
+      ),
+      PopupMenuItem(
         value: Tools.opendcim,
         child: Text("${localeMsg.create} OpenDCIM"),
       ),
@@ -251,8 +256,23 @@ class _ProjectsPageState extends State<ProjectsPage> {
                 showSnackBar(ScaffoldMessenger.of(context),
                     localeMsg.onlyOneTool("Netbox"));
               } else {
-                showCustomPopup(context,
-                    CreateNetboxPopup(parentCallback: refreshFromChildren));
+                showCustomPopup(
+                    context,
+                    CreateNboxPopup(
+                        parentCallback: refreshFromChildren,
+                        tool: Tools.netbox));
+              }
+              break;
+            case Tools.nautobot:
+              if (_hasNautobot) {
+                showSnackBar(ScaffoldMessenger.of(context),
+                    localeMsg.onlyOneTool("Nautobot"));
+              } else {
+                showCustomPopup(
+                    context,
+                    CreateNboxPopup(
+                        parentCallback: refreshFromChildren,
+                        tool: Tools.nautobot));
               }
               break;
             case Tools.opendcim:
@@ -299,11 +319,15 @@ class _ProjectsPageState extends State<ProjectsPage> {
       if (_tools != null && _tools!.isNotEmpty) {
         _hasOpenDcim = false;
         _hasNetbox = false;
+        _hasNautobot = false;
         for (var tool in _tools!) {
           var type = Tools.netbox;
           if (tool.name.contains(Tools.opendcim.name)) {
             type = Tools.opendcim;
             _hasOpenDcim = true;
+          } else if (tool.name.contains(Tools.nautobot.name)) {
+            type = Tools.nautobot;
+            _hasNautobot = true;
           } else {
             _hasNetbox = true;
           }
