@@ -48,6 +48,32 @@ func TestGetSomethingStarWithFilters(t *testing.T) {
 	assert.Contains(t, objects, removeChildren(rack1))
 }
 
+func TestGetWithComplexFilters(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+
+	mockGetObjectsWithComplexFilters(
+		mockAPI,
+		"id=BASIC.A.R1&namespace=physical.hierarchy",
+		map[string]any{
+			"$and": []map[string]any{
+				{"category": "room"},
+				{"$or": []map[string]any{
+					{"name": "R1"},
+					{"attributes.height": map[string]any{"$gt": "3"}},
+				}},
+			},
+		},
+		[]any{roomWithChildren},
+	)
+
+	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1", map[string]string{
+		"filter": "(category=room) & (name=R1 | height>3) ",
+	}, nil)
+	assert.Nil(t, err)
+	assert.Len(t, objects, 1)
+	assert.Contains(t, objects, removeChildren(roomWithChildren))
+}
+
 func TestGetRecursiveSearchAllChildrenCalledInThatWay(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 

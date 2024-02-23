@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"p3/models"
+	"p3/utils"
 	u "p3/utils"
 	"strconv"
 	"strings"
@@ -451,9 +452,10 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 	filters := getFiltersFromQueryParams(r)
 	req := u.FilteredReqFromQueryParams(r.URL)
 	entities := u.GetEntitiesByNamespace(filters.Namespace, filters.Id)
+
 	for _, entStr := range entities {
 		// Get objects
-		entData, err := models.GetManyObjects(entStr, req, filters, user.Roles)
+		entData, err := models.GetManyObjects(entStr, req, filters, nil, user.Roles)
 		if err != nil {
 			u.ErrLog("Error while looking for objects at  "+entStr, "HandleGenericObjects", err.Message, r)
 			u.RespondWithError(w, err)
@@ -510,7 +512,191 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 
 			return imageIDToUrl(u.EntityStrToInt(entityStr), object)
 		})
+		u.Respond(w, u.RespDataWrapper("successfully processed request", matchingObjects))
+	}
+}
 
+// swagger:operation POST /api/objects/search Objects HandleComplexFilters
+// Get all objects from any entity that match the complex filter. Return as a list.
+// Wildcards can be used on any of the parameters present in query with equality and inequality operations.
+// Check endpoint `HandleGenericObjects` for more information on wildcards
+// ---
+// security:
+// - bearer: []
+// produces:
+// - application/json
+// parameters:
+//   - name: id
+//     in: path
+//     description: 'id of the object to obtain.
+//     If none provided, all objects of the namespace will be obtained'
+//   - name: namespace
+//     in: query
+//     description: 'One of the values: physical, physical.stray, physical.hierarchy,
+//     logical, logical.objtemplate, logical.bldgtemplate, logical.roomtemplate, logical.tag,
+//     organisational.
+//     If none provided, all namespaces are used by default.'
+//   - name: fieldOnly
+//     in: query
+//     description: 'specify which object field to show in response.
+//     Multiple fieldOnly can be added. An invalid field is simply ignored.'
+//   - name: startDate
+//     in: query
+//     description: 'filter objects by lastUpdated >= startDate.
+//     Format: yyyy-mm-dd'
+//   - name: endDate
+//     in: query
+//     description: 'filter objects by lastUpdated <= endDate.
+//     Format: yyyy-mm-dd'
+//   - name: attributes
+//     in: query
+//     description: 'Any other object attributes can be queried.
+//     Replace attributes here by the name of the attribute followed by its value.'
+//     required: false
+//     type: string
+//     default: domain=DemoDomain
+//     example: vendor=ibm ; name=siteA ; orientation=front
+//   - name: body
+//     in: body
+//     description: A JSON containing a mongoDB query to select and filter the desired objects.
+//     Operators can be `$not`, `$lt`, `$lte`, `$gt`, `$gte`, `$and` and `$or`.
+//     For equality, the syntax is: `[field]: value`.
+//     Objects can be filtered by any of their properties and attributes.'
+//     required: true
+//     default: {}
+//     example: {"$and": [{"domain": "DemoDomain"}, {"attributes.height": {"$lt": "3"}}]}
+// responses:
+//		'200':
+//		    description: 'Found. A response body will be returned with
+//	        a meaningful message.'
+//     '400':
+//         description: 'Bad request. Request has wrong format.'
+//		'500':
+//		    description: Internal Error. A system error stopped the request.
+
+// swagger:operation DELETE /api/objects Objects HandleComplexFilters
+// Deletes an object that matches the complex filter in the system from any of the entities with no need to specify it.
+// Wildcards can be used on any of the parameters present in query.
+// Check endpoint `HandleGenericObjects` for more information on wildcards
+// ---
+// security:
+// - bearer: []
+// produces:
+// - application/json
+// parameters:
+//   - name: id
+//     in: path
+//     description: ID type hierarchyName of the object
+//     required: true
+//   - name: fieldOnly
+//     in: query
+//     description: 'specify which object field to show in response.
+//     Multiple fieldOnly can be added. An invalid field is simply ignored.'
+//   - name: startDate
+//     in: query
+//     description: 'filter objects by lastUpdated >= startDate.
+//     Format: yyyy-mm-dd'
+//   - name: endDate
+//     in: query
+//     description: 'filter objects by lastUpdated <= endDate.
+//     Format: yyyy-mm-dd'
+//   - name: namespace
+//     in: query
+//     description: 'One of the values: physical, physical.stray, physical.hierarchy,
+//     logical, logical.objtemplate, logical.bldgtemplate, logical.roomtemplate, logical.tag,
+//     organisational. If none provided, all namespaces are used by default.'
+//   - name: attributes
+//     in: query
+//     description: 'Any other object attributes can be queried.
+//     Replace attributes here by the name of the attribute followed by its value.'
+//     required: false
+//     type: string
+//     default: domain=DemoDomain
+//     example: vendor=ibm ; name=siteA ; orientation=front
+//   - name: body
+//     in: body
+//     description: A JSON containing a mongoDB query to select and filter the desired objects.
+//     Operators can be `$not`, `$lt`, `$lte`, `$gt`, `$gte`, `$and` and `$or`.
+//     For equality, the syntax is: `[field]: value`.
+//     Objects can be filtered by any of their properties and attributes.'
+//     required: true
+//     default: {}
+//     example: {"$and": [{"domain": "DemoDomain"}, {"attributes.height": {"$lt": "3"}}]}
+// responses:
+//		'204':
+//			description: Successfully deleted object
+//		'404':
+//			description: Not found. An error message will be returned
+
+func HandleComplexFilters(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION CALL: 	 HandleComplexFilters ")
+	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
+	var complexFilters map[string]interface{}
+	matchingObjects := []map[string]interface{}{}
+
+	// Get user roles for permissions
+	user := getUserFromToken(w, r)
+	if user == nil {
+		return
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&complexFilters)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message("Error while decoding request body"))
+		u.ErrLog("Error while decoding request body", "HANDLE COMPLEX FILTERS", "", r)
+		return
+	}
+	utils.ApplyWildcardsOnComplexFilter(complexFilters)
+
+	// Get objects
+	filters := getFiltersFromQueryParams(r)
+	req := u.FilteredReqFromQueryParams(r.URL)
+	entities := u.GetEntitiesByNamespace(filters.Namespace, filters.Id)
+
+	for _, entStr := range entities {
+		// Get objects
+		entData, err := models.GetManyObjects(entStr, req, filters, complexFilters, user.Roles)
+		if err != nil {
+			u.ErrLog("Error while looking for objects at "+entStr, "HandleComplexFilters", err.Message, r)
+			u.RespondWithError(w, err)
+			return
+		}
+
+		// Save entity to help delete and respond
+		for _, obj := range entData {
+			obj["entity"] = entStr
+		}
+
+		matchingObjects = append(matchingObjects, entData...)
+	}
+
+	if r.Method == "DELETE" {
+		for _, obj := range matchingObjects {
+			entStr := obj["entity"].(string)
+
+			var objStr string
+
+			if u.IsEntityNonHierarchical(u.EntityStrToInt(entStr)) {
+				objStr = obj["slug"].(string)
+			} else {
+				objStr = obj["id"].(string)
+			}
+
+			modelErr := models.DeleteObject(entStr, objStr, user.Roles)
+			if modelErr != nil {
+				u.ErrLog("Error while deleting object: "+objStr, "DELETE GetGenericObjectById", modelErr.Message, r)
+				u.RespondWithError(w, modelErr)
+				return
+			}
+		}
+		u.Respond(w, u.RespDataWrapper("successfully deleted objects", matchingObjects))
+	} else if r.Method == "OPTIONS" {
+		w.Header().Add("Content-Type", "application/json")
+		w.Header().Add("Allow", "POST, OPTIONS")
+	} else {
 		u.Respond(w, u.RespDataWrapper("successfully processed request", matchingObjects))
 	}
 }
@@ -690,9 +876,7 @@ func GetLayerObjects(w http.ResponseWriter, r *http.Request) {
 
 		// Apply layer to get objects request
 		req := bson.M{}
-		for filterName, filterValue := range data["filters"].(map[string]interface{}) {
-			u.AddFilterToReq(req, filterName, filterValue.(string))
-		}
+		u.AddFilterToReq(req, "filter", data["filter"].(string))
 		var searchId string
 		if filters.IsRecursive {
 			searchId = filters.Root + ".**.*"
@@ -705,7 +889,7 @@ func GetLayerObjects(w http.ResponseWriter, r *http.Request) {
 		matchingObjects := []map[string]interface{}{}
 		entities := u.GetEntitiesByNamespace(u.Any, searchId)
 		for _, entStr := range entities {
-			entData, err := models.GetManyObjects(entStr, req, u.RequestFilters{}, user.Roles)
+			entData, err := models.GetManyObjects(entStr, req, u.RequestFilters{}, nil, user.Roles)
 			if err != nil {
 				u.RespondWithError(w, err)
 				return
@@ -796,7 +980,7 @@ func GetAllEntities(w http.ResponseWriter, r *http.Request) {
 
 	// Get entities
 	req := bson.M{}
-	data, e := models.GetManyObjects(entStr, req, u.RequestFilters{}, user.Roles)
+	data, e := models.GetManyObjects(entStr, req, u.RequestFilters{}, nil, user.Roles)
 
 	// Respond
 	if e != nil {
@@ -884,7 +1068,7 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 		if entityStr == u.HIERARCHYOBJS_ENT {
 			obj, err := models.GetHierarchyObjectById(id, u.RequestFilters{}, user.Roles)
 			if err != nil {
-				u.ErrLog("Error finding hierarchyobj to delete", "DELETE ENTITY", err.Message, r)
+				u.ErrLog("Error finding hierarchy obj to delete", "DELETE ENTITY", err.Message, r)
 				u.RespondWithError(w, err)
 				return
 			} else {
@@ -1144,7 +1328,7 @@ func GetEntityByQuery(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	data, modelErr = models.GetManyObjects(entStr, bsonMap, filters, user.Roles)
+	data, modelErr = models.GetManyObjects(entStr, bsonMap, filters, nil, user.Roles)
 
 	if modelErr != nil {
 		u.ErrLog("Error while getting "+entStr, "GET ENTITYQUERY", modelErr.Message, r)

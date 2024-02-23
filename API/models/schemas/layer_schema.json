@@ -7,8 +7,8 @@
       "type": "string",
       "$ref": "refs/types.json#/definitions/slug"
     },
-    "filters": {
-      "type": "object"
+    "filter": {
+      "type": "string"
     },
     "applicability": {
       "type": "string"
@@ -17,38 +17,38 @@
   "additionalProperties": false,
   "required": [
     "slug",
-    "filters",
+    "filter",
     "applicability"
   ],
   "examples": [
     {
       "slug": "racks",
-      "filters": {"category": "rack"},
+      "filter": "category = rack",
       "applicability": ""
     },
     {
       "slug": "racks",
-      "filters": {"category": "rack"},
+      "filter": "category = rack",
       "applicability": "BASIC.A.R1"
     },
     {
       "slug": "racks",
-      "filters": {"category": "rack"},
+      "filter": "category = rack",
       "applicability": "BASIC.A.R1.*"
     },
     {
       "slug": "racks",
-      "filters": {"category": "rack"},
+      "filter": "category = rack",
       "applicability": "*"
     },
     {
       "slug": "racks",
-      "filters": {"category": "rack"},
+      "filter": "category = rack",
       "applicability": "BASIC.A.R*"
     },
     {
       "slug": "racks",
-      "filters": {"category": "rack"},
+      "filter": "category = rack",
       "applicability": "BASIC.A.**"
     }
   ]

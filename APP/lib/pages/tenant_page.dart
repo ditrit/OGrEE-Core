@@ -81,6 +81,7 @@ class TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         TabBar(
+                          tabAlignment: TabAlignment.start,
                           controller: _tabController,
                           dividerColor: Colors.white,
                           labelPadding:

@@ -387,7 +387,7 @@ func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 			entities := u.GetEntitiesByNamespace(u.Physical, t["id"].(string))
 			for _, entStr := range entities {
 				// Get objects
-				entData, err := GetManyObjects(entStr, bson.M{"id": t["id"]}, u.RequestFilters{}, nil)
+				entData, err := GetManyObjects(entStr, bson.M{"id": t["id"]}, u.RequestFilters{}, nil, nil)
 				if err != nil {
 					err.Message = "Error while check id unicity at " + entStr + ":" + err.Message
 					return err

@@ -18,6 +18,7 @@ func Object(path string, obj map[string]any) {
 func DisplayJson(jsonMap map[string]any) {
 	enc := json.NewEncoder(os.Stdout)
 	enc.SetIndent("", "    ")
+	enc.SetEscapeHTML(false)
 
 	if err := enc.Encode(jsonMap); err != nil {
 		log.Fatal(err)

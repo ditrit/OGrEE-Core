@@ -247,7 +247,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                           child: ListView(
                                             controller: _outputController,
                                             children: [
-                                              Text(
+                                              SelectableText(
                                                 "Output:$_createResult",
                                                 style: const TextStyle(
                                                     color: Colors.white),

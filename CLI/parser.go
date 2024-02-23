@@ -5,6 +5,7 @@ import (
 	c "cli/controllers"
 	"cli/models"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/elliotchance/pie/v2"
@@ -629,14 +630,33 @@ func (p *parser) parseIndexing() node {
 
 func (p *parser) parseLs(category string) node {
 	defer un(trace(p, "ls"))
-	args := p.parseArgs([]string{"s", "f", "M", "m"}, []string{"r"}, "ls")
+	args := p.parseArgs([]string{"s", "a", "M", "m"}, []string{"r", "f"}, "ls")
 	path := p.parsePath("")
 	var attrList []string
-	if formatArg, ok := args["f"]; ok {
+	if formatArg, ok := args["a"]; ok {
 		attrList = strings.Split(formatArg, ":")
 	}
 
-	filters := p.parseFilters()
+	re := regexp.MustCompile(`^([\w-.]+)\s*(<=|>=|<|>|!=|=)\s*([\w-.]+)$`)
+	pathString, err := path.Path()
+
+	if err != nil || re.MatchString(pathString) {
+		p.cursor = 2
+		p.error("path expected")
+	} else if idx := strings.Index(pathString, "*"); idx != -1 {
+		p.cursor = strings.Index(p.buf, pathString) + idx - 1
+		p.error("unexpected character in path: '*'")
+	}
+
+	p.skipWhiteSpaces()
+
+	var filters map[string]node
+	if _, isComplex := args["f"]; p.parseExact("-f") || isComplex {
+		filters = p.parseComplexFilters()
+	} else {
+		filters = p.parseFilters()
+	}
+
 	if category != "" {
 		filters["category"] = &valueNode{
 			models.EntityToString(models.EntityStrToInt(category)),
@@ -677,20 +697,66 @@ func (p *parser) parseFilters() map[string]node {
 	return filters
 }
 
+func (p *parser) parseComplexFilters() map[string]node {
+	filters := map[string]node{}
+	numArgs := 0
+
+	for !p.commandEnd() {
+		p.skipWhiteSpaces()
+		newComplexFilter := p.parseValue()
+		if p.parseExact(",") {
+			newFilterStr, _ := newComplexFilter.execute()
+			newComplexFilter = &valueNode{"(" + newFilterStr.(string) + ") & ("}
+			numArgs++
+		}
+
+		for p.parseExact(")") {
+			newFilterStr, _ := newComplexFilter.execute()
+			newComplexFilter = &valueNode{newFilterStr.(string) + ")"}
+		}
+
+		if complexFilter, ok := filters["filter"]; ok {
+			oldFilterStr, _ := complexFilter.execute()
+			newFilterStr, _ := newComplexFilter.execute()
+			filters["filter"] = &valueNode{oldFilterStr.(string) + newFilterStr.(string)}
+		} else {
+			filters["filter"] = newComplexFilter
+		}
+	}
+
+	for i := 0; i < numArgs; i++ {
+		complexFilter := filters["filter"]
+		oldFilterStr, _ := complexFilter.execute()
+		filters["filter"] = &valueNode{oldFilterStr.(string) + ")"}
+	}
+
+	return filters
+}
+
 func (p *parser) parseGet() node {
 	defer un(trace(p, "get"))
-	args := p.parseArgs([]string{"m", "M"}, []string{"r"}, "get")
+	args := p.parseArgs([]string{"m", "M"}, []string{"r", "f"}, "get")
 	_, isRecursive := args["r"]
 
 	path := p.parsePath("")
+	p.skipWhiteSpaces()
 
-	filters := p.parseFilters()
+	var filters map[string]node
+	if _, isComplex := args["f"]; p.parseExact("-f") || isComplex {
+		filters = p.parseComplexFilters()
+	} else {
+		filters = p.parseFilters()
+	}
 
-	return &getObjectNode{path: path, filters: filters, recursive: recursiveArgs{
-		isRecursive: isRecursive,
-		minDepth:    args["m"],
-		maxDepth:    args["M"],
-	}}
+	return &getObjectNode{
+		path:    path,
+		filters: filters,
+		recursive: recursiveArgs{
+			isRecursive: isRecursive,
+			minDepth:    args["m"],
+			maxDepth:    args["M"],
+		},
+	}
 }
 
 func (p *parser) parseGetU() node {
@@ -1132,13 +1198,9 @@ func (p *parser) parseCreateLayer() node {
 	p.expect("@")
 	applicability := p.parsePath(models.LayerApplicability)
 	p.expect("@")
-	filterName := p.parseSimpleWord("filterName")
-	p.skipWhiteSpaces()
-	p.expect("=")
-	p.skipWhiteSpaces()
-	filterValue := p.parseString("filterValue")
+	filters := p.parseComplexFilters()["filter"]
 
-	return &createLayerNode{slug, applicability, filterName, filterValue}
+	return &createLayerNode{slug, applicability, filters}
 }
 
 func (p *parser) parseCreateCorridor() node {
@@ -1207,6 +1269,9 @@ func (p *parser) parseUpdate() node {
 	for moreValues {
 		if attr == "slot" {
 			values = p.parseStringOrVecStr("slot")
+		} else if attr == models.LayerFilters || attr == models.LayerFiltersAdd {
+			filters := p.parseComplexFilters()["filter"]
+			values = append(values, filters)
 		} else {
 			value := p.parseValue()
 			values = append(values, value)

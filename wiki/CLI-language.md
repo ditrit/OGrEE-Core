@@ -22,13 +22,17 @@
   - [Select parent object](#select-parent-object)
   - [Get object/s](#get-objects)
     - [Wildcards](#wildcards)
+    - [Filters](#filters)
+      - [Simple filters](#simple-filters)
+      - [Complex filters](#complex-filters)
   - [Ls object](#ls-object)
     - [Layers](#layers)
       - [Room's automatic layers](#rooms-automatic-layers)
       - [Rack's automatic layers](#racks-automatic-layers)
       - [Device's automatic layers](#devices-automatic-layers)
-    - [Filters](#filters)
-      - [Filter by tag](#filter-by-tag)
+    - [Filters](#filters-1)
+      - [Simple filters](#simple-filters-1)
+      - [Complex filters](#complex-filters-1)
       - [Filter by category](#filter-by-category)
   - [Tree](#tree)
   - [Delete object](#delete-object)
@@ -365,9 +369,44 @@ To see all possible options run:
 man get
 ```
 
+### Filters
+
+Filters can be added to the `get` command to get only the objects that meet a certain characteristic.
+
+#### Simple filters
+
+Simple filters are the ones that use the egality operator (`=`). These filters can be used to get only objects that meet certain characteristics. Objects can be filtered by `name`, `slug`, `id`, `category`, `description`, `domain`, `tag` and by any other attributes, such as `size`, `height` and `rotation`.
+
+It is also possible to specify a `startDate` and an `endDate`, to filter objects last modified _since_ and _up to_, respectively, the `startDate` and the `endDate`. Dates should be defined with the format `yyyy-mm-dd`.
+
+Simple filters can be combined with commas (`,`), performing a logical `AND` operation.
+
+```
+get [path] tag=[tag_slug]
+get [path] category=[category]
+get [path] domain=[domain], height=[height]
+get [path] startDate=[yyyy-mm-dd], endDate=[yyyy-mm-dd]
+get [path] name=[name], category=[category], startDate=[yyyy-mm-dd]
+```
+
+#### Complex filters
+
+Complex filters are an extension of the simple ones, and the same functionalities are applied.
+
+Complex filters can be added to the `get` command with the flag `-f`, composing complex boolean expressions with the operators `=`, `!=`, `<`, `<=`, `>`, `>=`, `&` and `|`. Parenthesis can also be used to separate the expressions.
+
+```
+get [path] -f tag=[tag_slug]
+get [path] -f domain=[domain], height=[height]
+get [path] -f height=[height] & category=[category]
+get [path] -f (height>=[height]) | rotation!=[rotation]
+get [path] -f (name=[name] & rotation!=[rotation]) | size>[size]
+get [path] -f category!=[category] & ((height<=[height] & size<[size]) | id=[id])
+```
+
 ## Ls object
 
-To obtain the children of an object and facilitate navigation over the hierarchy, the ls command can be used:
+To obtain the children of an object and facilitate navigation over the hierarchy, the `ls` command can be used:
 
 ```
 ls [path]
@@ -418,21 +457,44 @@ get -r [layer_name]
 
 ### Filters
 
-Filters can be added to the ls command to get only the children that meet a certain characteristic.
+Filters can be added to the `ls` command to get only the children that meet a certain characteristic.
 
-#### Filter by tag
+#### Simple filters
 
-By adding the filter tag=[tag_slug] to the ls, we can obtain the children that have among their tag list the tag [tag_slug].
+Simple filters are the ones that use the egality operator (`=`). These filters can be used to get only children that meet certain characteristics. Objects can be filtered by `name`, `slug`, `id`, `category`, `description`, `domain`, `tag` and by any other attributes, such as `size`, `height` and `rotation`.
+
+It is also possible to specify a `startDate` and an `endDate`, to filter objects last modified _since_ and _up to_, respectively, the `startDate` and the `endDate`. Dates should be defined with the format `yyyy-mm-dd`.
+
+Simple filters can be combined with commas (`,`), performing a logical `AND` operation.
 
 ```
 ls [path] tag=[tag_slug]
+ls [path] category=[category]
+ls [path] domain=[domain], height=[height]
+ls [path] startDate=[yyyy-mm-dd], endDate=[yyyy-mm-dd]
+ls [path] name=[name], category=[category], startDate=[yyyy-mm-dd]
+```
+
+#### Complex filters
+
+Complex filters are an extension of the simple ones, and the same functionalities are applied.
+
+Complex filters can be added to the `ls` command with the flag `-f`, composing complex boolean expressions with the operators `=`, `!=`, `<`, `<=`, `>`, `>=`, `&` and `|`. Parenthesis can also be used to separate the expressions.
+
+```
+ls [path] -f tag=[tag_slug]
+ls [path] -f domain=[domain], height=[height]
+ls [path] -f height=[height] & category=[category]
+ls [path] -f (height>=[height]) | rotation!=[rotation]
+ls [path] -f (name=[name] & rotation!=[rotation]) | size>[size]
+ls [path] -f category!=[category] & ((height<=[height] & size<[size]) | id=[id])
 ```
 
 #### Filter by category
 
-Several commands are provided for running ls with category filter without typing them by hand: `lssite`, `lsbuilding`, `lsroom`, `lsrack`, `lsdev`, `lsac`, `lspanel`, `lscabinet`, `lscorridor`.
+Several commands are provided for running `ls` with category filter without typing them by hand: `lssite`, `lsbuilding`, `lsroom`, `lsrack`, `lsdev`, `lsac`, `lspanel`, `lscabinet`, `lscorridor`.
 
-In addition, each of these commands accepts all the options of the ls command and the addition of more filters.
+In addition, each of these commands accepts all the options of the `ls` command and the addition of more filters.
 
 ## Tree
 
@@ -640,23 +702,49 @@ Layers are identified by a slug. In addition, they have an applicability and the
 
 The applicability is the path in which the layer should be added when doing ls. Patterns can be used in the applicability (see [Applicability Patterns](#applicability-patterns)).
 
-A first filter in the format `field=value` should be given to create the layer. To add more filters, edit the layer using the following syntax:
+Layers can have simple filters in the format `field=value` or complex ones, composed of boolean expressions with the operators `=`, `!=`, `<`, `<=`, `>`, `>=`, `&` and `|`; parenthesis can also be used to separate the complex expressions. A first filter should be given to to create the layer.
 
 ```
-[layer_path]:filters+=[filter_name]=[filter_value]
++layer:[slug]@[applicability]@name=[name]
++layer:[slug]@[applicability]@height=[height]
++layer:[slug]@[applicability]@category=[category] & name!=[name]
++layer:[slug]@[applicability]@(name=[name] & height<[height]) | domain=[domain]
+```
+
+To add more filters, simple or complex ones, edit the layer using the following syntax:
+
+```
+[layer_path]:filters+=[filter]
+```
+
+This action will add an `AND` operation between the new filter and the existing layer filter.
+
+Examples:
+```
+[layer_path]:filters+=name=[name]
+[layer_path]:filters+=height=[height]
+[layer_path]:filters+=category=[category] & name!=[name]
+[layer_path]:filters+=(name=[name] & height<[height]) | domain=[domain]
 ```
 
 Where [layer_path] is `/Logical/Layers/[slug]` (or only `[slug]` if the current path is /Logical/Layers).
 
+To redefine the filter of a layer, editi using the following syntax:
+
+```
+[layer_path]:filters=[filter]
+```
+
+Examples:
+```
+[layer_path]:filters=name=[name]
+[layer_path]:filters=height=[height]
+[layer_path]:filters=category=[category] & name!=[name]
+[layer_path]:filters=(name=[name] & height<[height]) | domain=[domain]
+
 For the layer to filter the children whose category is device. When adding filters on different attributes, all must be fulfilled for a child to be part of the layer.
 
 Layers are not applied until their filters are defined.
-
-A filter can also be removed, using the syntax:
-
-```
-[layer_path]:filters-=[filter_name]
-```
 
 After the layer is created, it can be seen in /Logical/Layers. The command `get /Logical/Layers/[slug]` can be used to get the layer information.
 
@@ -726,13 +814,9 @@ Where:
   "right":  [0, -90, 0]  
   "top":    [90, 0, 0]  
   "bottom": [-90, 0, 0]  
-- `[size]` is a Vector3 whose interpretation varies according to the shape. All values are in cm.
-
-  if shape = `cube`: [width,length,height]  
-  if shape = `sphere`: [ignored,ignored,diameter]  
-  if shape = `cylinder`: [ignored,height,diameter]  
+- `[size]` is a Vector3 [width,length,height] . All values are in cm.
 - `[shape]` is a string defining the shape of the object. It can be: `cube`, `sphere` or `cylinder`.
-- `[type]` is a string defining the type shape. No predefined values.
+- `[type]` is a string defining the type of the object. No predefined values.
 - `[template]` is the name of the rack template
 
 # Set commands

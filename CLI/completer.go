@@ -227,6 +227,9 @@ func DrawCompleter(path string) func(string) []string {
 // and organisation
 func GetPrefixCompleter() *readline.PrefixCompleter {
 	return readline.NewPrefixCompleter(false,
+		readline.PcItem(commands.Cp, false),
+		readline.PcItem(commands.Connect3D, false),
+		readline.PcItem(commands.Disconnect3D, false),
 		readline.PcItem("cd", true,
 			readline.PcItemDynamic(ListEntities, false)),
 		readline.PcItem("pwd", false),
@@ -265,6 +268,9 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("unlink", false),
 			readline.PcItem("lssite", false),
 			readline.PcItem(commands.LsBuilding, false),
+			readline.PcItem(commands.Cp, false),
+			readline.PcItem(commands.Connect3D, false),
+			readline.PcItem(commands.Disconnect3D, false),
 			readline.PcItem("lsroom", false),
 			readline.PcItem("lsrack", false),
 			readline.PcItem("lsdev", false),

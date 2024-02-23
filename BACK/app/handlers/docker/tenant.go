@@ -298,7 +298,7 @@ func RemoveTenant(c *gin.Context) {
 
 	// Stop and remove containers
 	for _, str := range []string{"_webapp", "_api", "_db", "_doc"} {
-		cmd := exec.Command("docker", "rm", "--force", strings.ToLower(tenantName)+str)
+		cmd := exec.Command("docker", "rm", "-v", "--force", strings.ToLower(tenantName)+str)
 		cmd.Dir = DOCKER_DIR
 		var stderr bytes.Buffer
 		cmd.Stderr = &stderr
@@ -306,6 +306,16 @@ func RemoveTenant(c *gin.Context) {
 			fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
 			c.IndentedJSON(http.StatusInternalServerError, stderr.String())
 			return
+		} else if str == "_db" {
+			// Remove volume
+			cmd = exec.Command("docker", "volume", "rm", strings.ToLower(tenantName)+str)
+			cmd.Dir = DOCKER_DIR
+			cmd.Stderr = &stderr
+			if _, err := cmd.Output(); err != nil {
+				fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+				c.IndentedJSON(http.StatusInternalServerError, stderr.String())
+				return
+			}
 		}
 	}
 
@@ -418,4 +428,25 @@ func BackupTenantDB(c *gin.Context) {
 	} else {
 		c.String(http.StatusOK, "Backup file created as "+outfile.Name()+" at "+dir)
 	}
+}
+
+func StopStartTentant(c *gin.Context) {
+	tenantName := strings.ToLower(c.Param("name"))
+	path := strings.Split(c.FullPath(), "/")
+	command := path[len(path)-1]
+	println(command)
+	println(tenantName)
+	// Docker compose stop/start
+	println("Docker current tenant")
+	args := []string{"compose", "-p", tenantName, command}
+	cmd := exec.Command("docker", args...)
+	cmd.Dir = DOCKER_DIR
+	if err := streamExecuteCmd(cmd, c); err != nil {
+		errStr := "Error running docker: " + err.Error()
+		println(errStr)
+		c.IndentedJSON(http.StatusInternalServerError, errStr)
+		return
+	}
+	println("Finished with docker")
+	c.String(http.StatusOK, "")
 }

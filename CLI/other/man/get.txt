@@ -2,7 +2,7 @@ NAME
     get - get object information
 
 SYNOPSIS
-    get [OPTION]... [PATH] [FILTERS]
+    get [OPTION]... [PATH] [COMPLEX FILTER OPTION] [FILTERS]
 
 DESCRIPTION
     Retrieves object information from API and displays it's information in JSON format.
@@ -13,6 +13,9 @@ DESCRIPTION
     [FILTERS] is an optional list of filters that can be used to only get the objects that meet certain conditions.
     In order to use FILTERS, PATH must be present.
     The format to use is attribute1=expected_value,attribute2=expected_value,....
+
+    COMPLEX FILTERS can be used, composing complex boolean expressions with the operators `=`, `!=`, `<`, `<=`, `>`, `>=`, `&` and `|`.
+    In order to use COMPLEX FILTERS, PATH must be present. The option `-f` before the complex filter is also required.
 
 OPTIONS
     -r
@@ -30,6 +33,10 @@ OPTIONS
         Specifies the maximum number of children between the PATH and the results.
         Default is no limit.
 
+    -f
+        Specifies that you want to define a complex filter expression with the operators `=`, `!=`, `<`, `<=`, `>`, `>=`, `&` and `|`.
+        Regular filters can be used normally.
+
 EXAMPLES
     get
     get SiteA
@@ -41,3 +48,4 @@ EXAMPLES
     get #racks
     get -r #racks
     get -r -m 1 -M 2 #racks
+    get * -f category=rack & height>10

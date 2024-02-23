@@ -47,7 +47,7 @@ class _TagsViewState extends State<TagsView> {
             return const Center(child: CircularProgressIndicator());
           }
           return Theme(
-            data: ThemeData(
+            data: Theme.of(context).copyWith(
               cardTheme: const CardTheme(
                   elevation: 0,
                   surfaceTintColor: Colors.white,
