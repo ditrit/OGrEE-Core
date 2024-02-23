@@ -94,9 +94,6 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 		} else {
 			//Serialise size and posXY manually instead
 			attr["size"] = serialiseVector(attr, "size")
-
-			//Since template was not provided, set it empty
-			attr["template"] = ""
 		}
 
 		if attr["size"] == "" {
@@ -277,20 +274,15 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 		}
 		//}
 
-		var slot map[string]any
 		//Process the posU/slot attribute
-		if x, ok := attr["posU/slot"]; ok {
+		if x, ok := attr["posU/slot"].([]string); ok && len(x) > 0 {
 			delete(attr, "posU/slot")
-			if _, err := strconv.Atoi(x.(string)); err == nil {
-				attr["posU"] = x
-				attr["slot"] = ""
+			if _, err := strconv.Atoi(x[0]); len(x) == 1 && err == nil {
+				attr["posU"] = x[0]
 			} else {
 				attr["slot"] = x
 			}
-			slot, err = GetSlot(parent, x.(string))
-			if err != nil {
-				return err
-			}
+
 		}
 
 		//If user provided templates, get the JSON
@@ -301,7 +293,17 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 				return err
 			}
 		} else {
-			attr["template"] = ""
+			var slot map[string]any
+			if attr["slot"] != nil {
+				slots := attr["slot"].([]string)
+				if len(slots) != 1 {
+					return fmt.Errorf("Invalid device syntax: only one slot can be provided if no template")
+				}
+				slot, err = GetSlot(parent, slots[0])
+				if err != nil {
+					return err
+				}
+			}
 			if slot != nil {
 				size := slot["elemSize"].([]any)
 				attr["size"] = fmt.Sprintf(
@@ -315,6 +317,10 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			}
 		}
 		//End of device special routine
+
+		if attr["slot"] != nil {
+			attr["slot"] = "[" + strings.Join(attr["slot"].([]string), ",") + "]"
+		}
 
 		baseAttrs := map[string]interface{}{
 			"orientation": "front",
@@ -336,8 +342,6 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			if err != nil {
 				return err
 			}
-		} else {
-			attr["template"] = ""
 		}
 
 	default:

@@ -22,8 +22,8 @@
     ],
     "slots"      : [
         { "location": "u01", "type": "u", "elemOrient": "banana",     "elemPos": [58,51,44.45],  "elemSize": [482.6,1138,44.45], "mandatory": "no", "labelPos": "frontrear", "color": "@color1"},
-        { "location": "u02", "type": "u", "elemOrient": "",           "elemPos": [58,51,1,2],    "elemSize": [482.6,1138],       "mandatory": "no", "labelPos": "frontrear", "color": "@color1"},
+        { "location": "u02", "type": "u", "elemOrient": [0,0,0],           "elemPos": [58,51,1,2],    "elemSize": [482.6,1138],       "mandatory": "no", "labelPos": "frontrear", "color": "@color1"},
         { "location": "u03", "type": "u",                             "elemPos": [58,51,133.35], "elemSize": [482.6,1138,44.45], "mandatory": "no", "labelPos": "banana",    "color": "@color1"},
-        { "location": "u04", "type": "u", "elemOrient": "horizontal", "elemPos": [58,51,177.8],  "elemSize": [482.6,1138,44.45], "mandatory": "no", "labelPos": "frontrear", "color": "color1"}
+        { "location": "u04", "type": "u", "elemOrient": [-1,-2,-3], "elemPos": [58,51,177.8],  "elemSize": [482.6,1138,44.45], "mandatory": "no", "labelPos": "frontrear", "color": "color1"}
     ]
 }

@@ -10,7 +10,7 @@
         "partNumber": "0303XXXX",
         "size": "[388.4, 205.9]",
         "sizeUnit": "mm",
-        "slot": "slot6",
+        "slot": "[slot6]",
         "type": "blade",
         "vendor": "Huawei",
         "weightKg": "1.81"

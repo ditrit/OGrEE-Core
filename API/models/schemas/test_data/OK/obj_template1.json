@@ -18,7 +18,7 @@
         {
             "location": "midplane",
             "type": "chassis",
-            "elemOrient": "",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 0,
                 230,
@@ -36,7 +36,7 @@
         {
             "location": "fpc",
             "type": "mgmt",
-            "elemOrient": "",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 180,
                 0,
@@ -53,7 +53,7 @@
         {
             "location": "psu01",
             "type": "power",
-            "elemOrient": "",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 225,
                 0,
@@ -70,7 +70,7 @@
         {
             "location": "fan01",
             "type": "fan",
-            "elemOrient": "",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 360,
                 0,
@@ -87,7 +87,7 @@
         {
             "location": "psu06",
             "type": "power",
-            "elemOrient": "",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 0,
                 0,
@@ -104,7 +104,7 @@
         {
             "location": "fan10",
             "type": "fan",
-            "elemOrient": "",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 46,
                 0,
@@ -121,7 +121,7 @@
         {
             "location": "fan09",
             "type": "fan",
-            "elemOrient": "",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 135,
                 0,
@@ -138,7 +138,7 @@
         {
             "location": "psu05",
             "type": "power",
-            "elemOrient": "",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 225,
                 0,
@@ -155,7 +155,7 @@
         {
             "location": "fan08",
             "type": "fan",
-            "elemOrient": "",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 270,
                 0,
@@ -172,7 +172,7 @@
         {
             "location": "fan07",
             "type": "fan",
-            "elemOrient": "",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 360,
                 0,
@@ -189,7 +189,7 @@
         {
             "location": "psu04",
             "type": "power",
-            "elemOrient": "",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 0,
                 0,
@@ -206,7 +206,7 @@
         {
             "location": "fan06",
             "type": "fan",
-            "elemOrient": "",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 45,
                 0,
@@ -223,7 +223,7 @@
         {
             "location": "psu03",
             "type": "power",
-            "elemOrient": "",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 225,
                 0,
@@ -240,7 +240,7 @@
         {
             "location": "fan05",
             "type": "fan",
-            "elemOrient": "",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 270,
                 0,
@@ -257,7 +257,7 @@
         {
             "location": "psu02",
             "type": "power",
-            "elemOrient": "",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 0,
                 0,
@@ -274,7 +274,7 @@
         {
             "location": "fan04",
             "type": "fan",
-            "elemOrient": "",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 45,
                 0,
@@ -291,7 +291,7 @@
         {
             "location": "fan03",
             "type": "fan",
-            "elemOrient": "",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 135,
                 0,
@@ -308,7 +308,7 @@
         {
             "location": "fan02",
             "type": "fan",
-            "elemOrient": "",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 270,
                 0,
@@ -327,7 +327,7 @@
         {
             "location": "blade01",
             "type": "blade",
-            "elemOrient": "horizontal",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 225,
                 260,
@@ -344,7 +344,7 @@
         {
             "location": "blade02",
             "type": "blade",
-            "elemOrient": "horizontal",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 0,
                 260,
@@ -361,7 +361,7 @@
         {
             "location": "blade03",
             "type": "blade",
-            "elemOrient": "horizontal",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 225,
                 260,
@@ -378,7 +378,7 @@
         {
             "location": "blade04",
             "type": "blade",
-            "elemOrient": "vertical",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 0,
                 260,
@@ -395,7 +395,7 @@
         {
             "location": "blade05",
             "type": "blade",
-            "elemOrient": "vertical",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 225,
                 260,
@@ -412,7 +412,7 @@
         {
             "location": "blade06",
             "type": "blade",
-            "elemOrient": "vertical",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 0,
                 260,
@@ -429,7 +429,7 @@
         {
             "location": "blade07",
             "type": "blade",
-            "elemOrient": "vertical",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 225,
                 260,
@@ -446,7 +446,7 @@
         {
             "location": "blade08",
             "type": "blade",
-            "elemOrient": "vertical",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 0,
                 260,
@@ -463,7 +463,7 @@
         {
             "location": "blade09",
             "type": "blade",
-            "elemOrient": "vertical",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 225,
                 260,
@@ -480,7 +480,7 @@
         {
             "location": "blade10",
             "type": "blade",
-            "elemOrient": "vertical",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 0,
                 260,
@@ -497,7 +497,7 @@
         {
             "location": "blade11",
             "type": "blade",
-            "elemOrient": "vertical",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 225,
                 260,
@@ -514,7 +514,7 @@
         {
             "location": "blade12",
             "type": "blade",
-            "elemOrient": "vertical",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 0,
                 260,

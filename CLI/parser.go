@@ -536,6 +536,30 @@ func (p *parser) parseStringOrVec(name string) node {
 	return p.parseString("")
 }
 
+func (p *parser) parseStringOrVecStr(name string) []node {
+	defer un(trace(p, name))
+	p.skipWhiteSpaces()
+	if p.parseExact("[") {
+		listnodes := []node{}
+		for {
+			p.skipWhiteSpaces()
+			n := p.parseSimpleWord("slot")
+			listnodes = append(listnodes, &valueNode{n})
+			if p.parseExact(",") {
+				continue
+			} else {
+				break
+			}
+		}
+		if !p.parseExact("]") {
+			p.error("] expected")
+		}
+		p.skipWhiteSpaces()
+		return listnodes
+	}
+	return []node{p.parseString("")}
+}
+
 func (p *parser) parseArgValue() string {
 	defer un(trace(p, "value"))
 	if p.parseExact("\"") {
@@ -859,7 +883,7 @@ func (p *parser) parseLink() node {
 	p.expect("@")
 	destPath := p.parsePath("destination path")
 	if p.parseExact("@") {
-		slot := p.parseString("slot name")
+		slot := p.parseStringOrVecStr("posUOrSlot")
 		return &linkObjectNode{sourcePath, destPath, slot}
 	}
 	return &linkObjectNode{sourcePath, destPath, nil}
@@ -1137,7 +1161,7 @@ func (p *parser) parseCreateDevice() node {
 	defer un(trace(p, "create device"))
 	path := p.parsePath("")
 	p.expect("@")
-	posUOrSlot := p.parseString("posUOrSlot")
+	posUOrSlot := p.parseStringOrVecStr("posUOrSlot")
 	p.expect("@")
 	sizeUOrTemplate := p.parseString("sizeUOrTemplate")
 	if !p.parseExact("@") {
@@ -1243,7 +1267,9 @@ func (p *parser) parseUpdate() node {
 	values := []node{}
 	moreValues := true
 	for moreValues {
-		if attr == models.LayerFilters || attr == models.LayerFiltersAdd {
+		if attr == "slot" {
+			values = p.parseStringOrVecStr("slot")
+		} else if attr == models.LayerFilters || attr == models.LayerFiltersAdd {
 			filters := p.parseComplexFilters()["filter"]
 			values = append(values, filters)
 		} else {

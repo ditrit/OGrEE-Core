@@ -789,11 +789,20 @@ func (n *updateObjNode) execute() (interface{}, error) {
 }
 
 func updateAttributes(path, attributeName string, values []any) (map[string]any, error) {
-	if len(values) > 1 {
-		return nil, fmt.Errorf("attributes can only be assigned a single value")
+	var attributes map[string]any
+	if attributeName == "slot" {
+		slots := []string{}
+		for _, value := range values {
+			slots = append(slots, value.(string))
+		}
+		value := "[" + strings.Join(slots, ",") + "]"
+		attributes = map[string]any{attributeName: value}
+	} else {
+		if len(values) > 1 {
+			return nil, fmt.Errorf("attributes can only be assigned a single value")
+		}
+		attributes = map[string]any{attributeName: values[0]}
 	}
-
-	attributes := map[string]any{attributeName: values[0]}
 
 	return cmd.C.UpdateObj(path, map[string]any{"attributes": attributes})
 }
@@ -1184,7 +1193,7 @@ func (n *createGenericNode) execute() (interface{}, error) {
 
 type createDeviceNode struct {
 	path            node
-	posUOrSlot      node
+	posUOrSlot      []node
 	sizeUOrTemplate node
 	invertOffset    bool
 	side            node
@@ -1195,9 +1204,13 @@ func (n *createDeviceNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	posUOrSlot, err := nodeToString(n.posUOrSlot, "posU/slot")
-	if err != nil {
-		return nil, err
+	posUOrSlot := []string{}
+	for _, node := range n.posUOrSlot {
+		str, err := nodeToString(node, "posU/slot")
+		posUOrSlot = append(posUOrSlot, str)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	attributes := map[string]any{"posU/slot": posUOrSlot}
@@ -1502,7 +1515,7 @@ func (n *cameraWaitNode) execute() (interface{}, error) {
 type linkObjectNode struct {
 	source      node
 	destination node
-	posUOrSlot  node
+	slot        []node
 }
 
 func (n *linkObjectNode) execute() (interface{}, error) {
@@ -1514,14 +1527,20 @@ func (n *linkObjectNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	var posUOrSlot string
-	if n.posUOrSlot != nil {
-		posUOrSlot, err = nodeToString(n.posUOrSlot, "posU/slot")
-		if err != nil {
-			return nil, err
+
+	var slot []string
+	if n.slot != nil {
+		slot = []string{}
+		for _, node := range n.slot {
+			str, err := nodeToString(node, "posU/slot")
+			slot = append(slot, str)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
-	return nil, cmd.LinkObject(source, dest, posUOrSlot)
+
+	return nil, cmd.LinkObject(source, dest, slot)
 }
 
 type unlinkObjectNode struct {

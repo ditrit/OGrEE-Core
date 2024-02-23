@@ -14,6 +14,7 @@ import (
 	"github.com/elliotchance/pie/v2"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 //go:embed schemas/*.json
@@ -102,6 +103,9 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 			parent["parent"] = "rack"
 			parent["domain"] = x["domain"]
 			parent["id"] = x["id"]
+			if err := validateDeviceSlotExists(t, x); err != nil {
+				return nil, err
+			}
 			return parent, nil
 		}
 
@@ -110,6 +114,9 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 			parent["parent"] = "device"
 			parent["domain"] = y["domain"]
 			parent["id"] = y["id"]
+			if err := validateDeviceSlotExists(t, y); err != nil {
+				return nil, err
+			}
 			return parent, nil
 		}
 
@@ -175,6 +182,32 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 	return nil, nil
 }
 
+func validateDeviceSlotExists(deviceData map[string]interface{}, parentData map[string]interface{}) *u.Error {
+	fmt.Println(deviceData["attributes"].(map[string]any)["slot"])
+	if deviceSlots, err := slotStrToSlice(deviceData["attributes"].(map[string]any)); err == nil && len(deviceSlots) > 0 {
+		// check if requested slots exist in parent device
+		countFound := 0
+		if templateSlug, ok := parentData["attributes"].(map[string]any)["template"].(string); ok {
+			template, _ := GetObject(bson.M{"slug": templateSlug}, "obj_template", u.RequestFilters{}, nil)
+			if ps, ok := template["slots"].(primitive.A); ok {
+				parentSlots := []interface{}(ps)
+				for _, parentSlot := range parentSlots {
+					if pie.Contains(deviceSlots, parentSlot.(map[string]any)["location"].(string)) {
+						countFound = countFound + 1
+					}
+				}
+			}
+		}
+		if len(deviceSlots) != countFound {
+			return &u.Error{Type: u.ErrInvalidValue,
+				Message: "Invalid slot: parent does not have all the requested slots"}
+		}
+	} else if err != nil {
+		return err
+	}
+	return nil
+}
+
 func validateJsonSchema(entity int, t map[string]interface{}) (bool, *u.Error) {
 	// Get JSON schema
 	var schemaName string
@@ -230,12 +263,6 @@ func validateJsonSchema(entity int, t map[string]interface{}) (bool, *u.Error) {
 }
 
 func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
-	/*
-		TODO:
-		Need to capture device if it is a parent
-		and check that the device parent has a slot
-		attribute
-	*/
 	if shouldFillTags(entity, u.RequestFilters{}) {
 		t = fillTags(t)
 	}
@@ -275,7 +302,7 @@ func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 	}
 
 	// Check attributes
-	if entity == u.RACK || entity == u.GROUP || entity == u.CORRIDOR || entity == u.GENERIC {
+	if entity == u.RACK || entity == u.GROUP || entity == u.CORRIDOR || entity == u.GENERIC || entity == u.DEVICE {
 		attributes := t["attributes"].(map[string]any)
 
 		if pie.Contains(u.RoomChildren, entity) {
@@ -370,6 +397,32 @@ func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 						Message: "This group ID is not unique among " + entStr + "s"}
 				}
 			}
+		case u.DEVICE:
+			if deviceSlots, err := slotStrToSlice(attributes); err == nil && len(deviceSlots) > 0 {
+				// check if all requested slots are free
+				idPattern := primitive.Regex{Pattern: "^" + t["parentId"].(string) +
+					"(." + u.NAME_REGEX + "){1}$", Options: ""} // find siblings
+				if siblings, err := GetManyObjects(u.EntityToString(u.DEVICE), bson.M{"id": idPattern},
+					u.RequestFilters{}, nil, nil); err != nil {
+					return err
+				} else {
+					for _, obj := range siblings {
+						if obj["name"] != t["name"] { // do not check itself
+							if siblingSlots, err := slotStrToSlice(obj["attributes"].(map[string]any)); err == nil &&
+								len(siblingSlots) > 0 {
+								for _, requestedSlot := range deviceSlots {
+									if pie.Contains(siblingSlots, requestedSlot) {
+										return &u.Error{Type: u.ErrBadFormat,
+											Message: "Invalid slot: one or more requested slots are already in use"}
+									}
+								}
+							}
+						}
+					}
+				}
+			} else if err != nil {
+				return err
+			}
 		}
 	} else if entity == u.LAYER && !doublestar.ValidatePattern(t["applicability"].(string)) {
 		return &u.Error{
@@ -396,6 +449,18 @@ func ObjectsHaveAttribute(entities []int, attribute, value string) (bool, *u.Err
 	}
 
 	return false, nil
+}
+
+func slotStrToSlice(attributes map[string]any) ([]string, *u.Error) {
+	if slotStr, ok := attributes["slot"].(string); ok {
+		if len(slotStr) < 3 || string(slotStr[0]) != "[" || string(slotStr[len(slotStr)-1]) != "]" {
+			return []string{}, &u.Error{Type: u.ErrInvalidValue,
+				Message: "Invalid slot: must be a vector [] with at least one element"}
+		}
+		deviceSlots := strings.Split(slotStr[1:len(slotStr)-1], ",")
+		return deviceSlots, nil
+	}
+	return []string{}, nil
 }
 
 // Returns single-quoted string
