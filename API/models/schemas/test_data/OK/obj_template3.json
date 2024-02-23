@@ -19,7 +19,7 @@
         {
             "location": "eth1imm",
             "type": "port",
-            "elemOrient": "",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 86,
                 649,
@@ -40,7 +40,7 @@
         {
             "location": "eth2",
             "type": "port",
-            "elemOrient": "",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 104,
                 649,
@@ -61,7 +61,7 @@
         {
             "location": "raidadapter",
             "type": "disk",
-            "elemOrient": "",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 152,
                 72,
@@ -84,7 +84,7 @@
         {
             "location": "cpu1",
             "type": "processor",
-            "elemOrient": "vertical",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 68,
                 343,
@@ -105,7 +105,7 @@
         {
             "location": "cpu2",
             "type": "processor",
-            "elemOrient": "vertical",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 53,
                 223,
@@ -126,7 +126,7 @@
         {
             "location": "dimm1",
             "type": "memory",
-            "elemOrient": "vertical",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 200,
                 336,
@@ -147,7 +147,7 @@
         {
             "location": "dimm2",
             "type": "memory",
-            "elemOrient": "vertical",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 190,
                 336,
@@ -168,7 +168,7 @@
         {
             "location": "dimm4",
             "type": "memory",
-            "elemOrient": "vertical",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 180,
                 336,
@@ -189,7 +189,7 @@
         {
             "location": "dimm3",
             "type": "memory",
-            "elemOrient": "vertical",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 170,
                 336,
@@ -210,7 +210,7 @@
         {
             "location": "dimm5",
             "type": "memory",
-            "elemOrient": "vertical",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 64,
                 336,
@@ -231,7 +231,7 @@
         {
             "location": "dimm6",
             "type": "memory",
-            "elemOrient": "vertical",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 54,
                 336,
@@ -252,7 +252,7 @@
         {
             "location": "dimm7",
             "type": "memory",
-            "elemOrient": "vertical",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 44,
                 336,
@@ -273,7 +273,7 @@
         {
             "location": "dimm8",
             "type": "memory",
-            "elemOrient": "vertical",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 34,
                 336,
@@ -294,7 +294,7 @@
         {
             "location": "dimm9",
             "type": "memory",
-            "elemOrient": "vertical",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 190,
                 194,
@@ -315,7 +315,7 @@
         {
             "location": "dimm10",
             "type": "memory",
-            "elemOrient": "horizontal",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 180,
                 194,
@@ -336,7 +336,7 @@
         {
             "location": "dimm11",
             "type": "memory",
-            "elemOrient": "horizontal",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 170,
                 194,
@@ -357,7 +357,7 @@
         {
             "location": "dimm12",
             "type": "memory",
-            "elemOrient": "horizontal",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 160,
                 194,
@@ -378,7 +378,7 @@
         {
             "location": "dimm13",
             "type": "memory",
-            "elemOrient": "horizontal",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 45,
                 194,
@@ -399,7 +399,7 @@
         {
             "location": "dimm14",
             "type": "memory",
-            "elemOrient": "horizontal",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 35,
                 194,
@@ -420,7 +420,7 @@
         {
             "location": "dimm15",
             "type": "memory",
-            "elemOrient": "horizontal",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 25,
                 194,
@@ -441,7 +441,7 @@
         {
             "location": "dimm16",
             "type": "memory",
-            "elemOrient": "horizontal",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 15,
                 194,
@@ -462,7 +462,7 @@
         {
             "location": "slot2",
             "type": "adapter",
-            "elemOrient": "horizontal",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 153,
                 493,
@@ -483,7 +483,7 @@
         {
             "location": "slot1",
             "type": "adapter",
-            "elemOrient": "horizontal",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 29,
                 485,
@@ -504,7 +504,7 @@
         {
             "location": "eth1imm",
             "type": "port",
-            "elemOrient": "horizontal",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 86,
                 649,
@@ -525,7 +525,7 @@
         {
             "location": "imm2",
             "type": "port",
-            "elemOrient": "horizontal",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 162,
                 649,
@@ -546,7 +546,7 @@
         {
             "location": "eth2",
             "type": "port",
-            "elemOrient": "horizontal",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 104,
                 649,
@@ -567,7 +567,7 @@
         {
             "location": "hdd182",
             "type": "disk",
-            "elemOrient": "horizontal",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 152,
                 72,
@@ -588,7 +588,7 @@
         {
             "location": "hdd183",
             "type": "disk",
-            "elemOrient": "horizontal",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 152,
                 72,
@@ -609,7 +609,7 @@
         {
             "location": "hdd184",
             "type": "disk",
-            "elemOrient": "horizontal",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 152,
                 72,
@@ -630,7 +630,7 @@
         {
             "location": "hdd251",
             "type": "disk",
-            "elemOrient": "horizontal",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 136,
                 50,
@@ -651,7 +651,7 @@
         {
             "location": "hdd252",
             "type": "disk",
-            "elemOrient": "horizontal",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 136,
                 50,
@@ -672,7 +672,7 @@
         {
             "location": "hdd351",
             "type": "disk",
-            "elemOrient": "horizontal",
+            "elemOrient": [0,0,0],
             "elemPos": [
                 104,
                 3,

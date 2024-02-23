@@ -403,7 +403,7 @@ func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 				idPattern := primitive.Regex{Pattern: "^" + t["parentId"].(string) +
 					"(." + u.NAME_REGEX + "){1}$", Options: ""} // find siblings
 				if siblings, err := GetManyObjects(u.EntityToString(u.DEVICE), bson.M{"id": idPattern},
-					u.RequestFilters{}, nil); err != nil {
+					u.RequestFilters{}, nil, nil); err != nil {
 					return err
 				} else {
 					for _, obj := range siblings {
