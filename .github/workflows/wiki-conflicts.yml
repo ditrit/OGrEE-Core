@@ -7,8 +7,8 @@ on:
     # paths:
     #   - "docs/**"
   repository_dispatch:
-    types: [wiki]
-  gollum:
+    types: [docs]
+  gollum
 
 env:
   GIT_AUTHOR_NAME: Actionbot
