@@ -1515,7 +1515,8 @@ func (n *cameraWaitNode) execute() (interface{}, error) {
 type linkObjectNode struct {
 	source      node
 	destination node
-	slot        []node
+	attr        string
+	values      []node
 }
 
 func (n *linkObjectNode) execute() (interface{}, error) {
@@ -1528,19 +1529,16 @@ func (n *linkObjectNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	var slot []string
-	if n.slot != nil {
-		slot = []string{}
-		for _, node := range n.slot {
-			str, err := nodeToString(node, "posU/slot")
-			slot = append(slot, str)
-			if err != nil {
-				return nil, err
-			}
+	values := []any{}
+	for _, valueNode := range n.values {
+		val, err := valueNode.execute()
+		if err != nil {
+			return nil, err
 		}
+		values = append(values, val)
 	}
 
-	return nil, cmd.LinkObject(source, dest, slot)
+	return nil, cmd.LinkObject(source, dest, n.attr, values)
 }
 
 type unlinkObjectNode struct {

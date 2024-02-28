@@ -1806,11 +1806,8 @@ func LinkEntity(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusBadRequest)
 			u.Respond(w, u.Message("Error while decoding request body: must contain parentId"))
 			return
-		} else if newName, canParse = body["name"]; !canParse && len(body) > 1 {
-			w.WriteHeader(http.StatusBadRequest)
-			u.Respond(w, u.Message("Error while decoding request body: only parentId and name accepted"))
-			return
 		}
+		newName = body["name"]
 		entityStr = "stray_object"
 	}
 
@@ -1845,9 +1842,12 @@ func LinkEntity(w http.ResponseWriter, r *http.Request) {
 	} else {
 		data["parentId"] = body["parentId"]
 		entityStr = data["category"].(string)
-		destSlot, bodyHasSlot := body["slot"]
-		if entityStr == "device" && bodyHasSlot {
-			data["slot"] = destSlot
+		delete(body, "parentId")
+		delete(body, "name")
+		for attr, value := range body {
+			println("add " + attr)
+			println(value)
+			data["attributes"].(map[string]any)[attr] = value
 		}
 	}
 	if newName != "" {
