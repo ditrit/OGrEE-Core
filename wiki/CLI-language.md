@@ -82,83 +82,6 @@
   - [Loops](#loops)
   - [Aliases](#aliases)
 - [Examples](#examples)
-- [Glossary](#glossary)
-- [Comments](#comments)
-- [Variables](#variables)
-  - [Set a variable](#set-a-variable)
-  - [Use a variable](#use-a-variable)
-- [Expressions](#expressions)
-  - [Primary expressions](#primary-expressions)
-  - [Operators](#operators)
-    - [Compute operators](#compute-operators)
-    - [Boolean operators](#boolean-operators)
-- [Print](#print)
-- [String formatting](#string-formatting)
-- [Loading commands](#loading-commands)
-  - [Load commands from a text file](#load-commands-from-a-text-file)
-  - [Commands over multiple lines](#commands-over-multiple-lines)
-  - [Load template from JSON](#load-template-from-json)
-- [Hierarchy commands](#hierarchy-commands)
-  - [Select an object](#select-an-object)
-  - [Select child / children object](#select-child--children-object)
-  - [Select parent object](#select-parent-object)
-  - [Get object/s](#get-objects)
-  - [Ls object](#ls-object)
-    - [Layers](#layers)
-      - [Room's automatic layers](#rooms-automatic-layers)
-      - [Rack's automatic layers](#racks-automatic-layers)
-      - [Device's automatic layers](#devices-automatic-layers)
-    - [Filters](#filters)
-      - [Filter by tag](#filter-by-tag)
-      - [Filter by category](#filter-by-category)
-  - [Tree](#tree)
-  - [Delete object](#delete-object)
-  - [Focus an object](#focus-an-object)
-  - [Copy object](#copy-object)
-- [Create commands](#create-commands)
-  - [Create a Tenant](#create-a-tenant)
-  - [Create a Site](#create-a-site)
-  - [Create a Building](#create-a-building)
-  - [Create a Room](#create-a-room)
-  - [Create a Rack](#create-a-rack)
-  - [Create a Device](#create-a-device)
-  - [Create a Group](#create-a-group)
-  - [Create a Corridor](#create-a-corridor)
-  - [Create a Tag](#create-a-tag)
-  - [Create a Layer](#create-a-layer)
-    - [Applicability Patterns](#applicability-patterns)
-      - [Character Classes](#character-classes)
-  - [Create a Generic Object](#create-a-generic-object)
-- [Set commands](#set-commands)
-  - [Set colors for zones of all rooms in a datacenter](#set-colors-for-zones-of-all-rooms-in-a-datacenter)
-  - [Set reserved and technical zones of a room](#set-reserved-and-technical-zones-of-a-room)
-  - [Room separators](#room-separators)
-  - [Room pillars](#room-pillars)
-  - [Modify object's attribute](#modify-objects-attribute)
-  - [Tags](#tags)
-  - [Labels](#labels)
-    - [Choose Label](#choose-label)
-    - [Modify label's font](#modify-labels-font)
-    - [Modify label's background color](#modify-labels-background-color)
-  - [Interact with objects](#interact-with-objects)
-    - [Room](#room)
-    - [Rack](#rack)
-    - [Device](#device)
-    - [Group](#group)
-- [Manipulate UI](#manipulate-ui)
-  - [Delay commands](#delay-commands)
-  - [Display infos panel](#display-infos-panel)
-  - [Display debug panel](#display-debug-panel)
-  - [Highlight object](#highlight-object)
-- [Manipulate camera](#manipulate-camera)
-  - [Move camera](#move-camera)
-  - [Translate camera](#translate-camera)
-  - [Wait between two translations](#wait-between-two-translations)
-- [Control flow](#control-flow)
-  - [Conditions](#conditions)
-  - [Loops](#loops)
-  - [Aliases](#aliases)
-- [Examples](#examples)
 
 # Glossary
 
@@ -535,18 +458,19 @@ where `[source]` is the path of the object to be copied (currently only objects 
 
 # Create commands
 
-## Create a Tenant
+## Create a Domain
 
-Tenant will be created as a new root.
+To create a domain, a name and color should be provided. A domain can have a parent domain.  
+*`[color]` should be a 6 digit HEX Value (ie 00000A)*
 
 ```
-+tenant:[name]@[color]
-+tn:[name]@[color]
++domain:[name]@[color]
++do:[name]@[color]
 ```
 
 ## Create a Site
 
-Site must be child of a Tenant.
+Sites have no parent, only a name is needed to create it.
 
 ```
 +site:[name]  
@@ -1168,17 +1092,10 @@ titi
 # Examples
 
 ```
-+tn:DEMO@ffffff
++do:DEMO@ffffff
     DEMO.mainContact=Ced
     DEMO.mainPhone=0612345678
     DEMO.mainEmail=ced@ogree3D.com
-
-+tn:Marcus@42ff42
-    Marcus.mainContact=Marcus Pandora
-    Marcus.mainPhone=0666666666
-    Marcus.mainEmail=marcus@pandora.com
-
-+tenant:Billy@F0C300
 
 +si:DEMO.ALPHA@NW
     DEMO.ALPHA.description=This is a demo...
