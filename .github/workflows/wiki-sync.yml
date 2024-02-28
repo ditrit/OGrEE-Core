@@ -1,13 +1,11 @@
-name: Documentation
+name: 📚 Bi-directional Wiki Sync
 
 on:
   push:
     branches:
-      - fix396-wiki-conflicts
-    # paths:
-    #   - "docs/**"
-  # repository_dispatch:
-  #   types: [docs]
+      - main
+    paths:
+      - "wiki/**"
   gollum:
 
 env:
@@ -43,6 +41,4 @@ jobs:
           source: wiki
           destination: wiki/
           token: ${{ secrets.WIKI_ACTION_TOKEN }} 
-          # gitAuthorName: ${{ env.GIT_AUTHOR_NAME }}
-          # gitAuthorEmail: ${{ env.GIT_AUTHOR_EMAIL }}
-          branch: fix396-wiki-conflicts # since default branch is develop in this example
+          branch: main
