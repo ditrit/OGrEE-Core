@@ -172,9 +172,10 @@ class _BackupPopupState extends State<BackupPopup> {
               var path = (await getApplicationDocumentsDirectory()).path;
               var fileName = '$path/$filename';
               var file = File(fileName);
-              file.writeAsBytes(value, flush: true).then((value) => showSnackBar(
-                  messenger,
-                  "${AppLocalizations.of(context)!.fileSavedTo} $fileName"));
+              file.writeAsBytes(value, flush: true).then((value) =>
+                  showSnackBar(messenger,
+                      "${AppLocalizations.of(context)!.fileSavedTo} $fileName",
+                      copyTextTap: fileName));
             }
           } else {
             showSnackBar(messenger, value, isSuccess: true);

@@ -69,7 +69,9 @@ class _DeleteDialogState extends State<DeleteDialog> {
                             case Success():
                               break;
                             case Failure(exception: final exception):
-                              showSnackBar(messenger, "Error: $exception");
+                              showSnackBar(messenger, "Error: $exception",
+                                  isError: true,
+                                  duration: const Duration(seconds: 30));
                               setState(() => _isLoading = false);
                               return;
                           }
