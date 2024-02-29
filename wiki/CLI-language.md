@@ -39,7 +39,7 @@
   - [Focus an object](#focus-an-object)
   - [Copy object](#copy-object)
 - [Create commands](#create-commands)
-  - [Create a Tenant](#create-a-tenant)
+  - [Create a Domain](#create-a-domain)
   - [Create a Site](#create-a-site)
   - [Create a Building](#create-a-building)
   - [Create a Room](#create-a-room)
@@ -460,7 +460,8 @@ where `[source]` is the path of the object to be copied (currently only objects 
 
 ## Create a Domain
 
-To create a domain, a name and color should be provided. A domain can have a parent domain.  
+To create a domain, a name and color should be provided. Should be in the  `/Organisation/Domain` (`/O/Domain` on short version) path or include it in the domain's name. 
+Domains can have a hierarchy, that is, a domain can have a parent domain.  
 *`[color]` should be a 6 digit HEX Value (ie 00000A)*
 
 ```
