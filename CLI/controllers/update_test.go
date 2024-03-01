@@ -33,7 +33,7 @@ func TestUpdateTagColor(t *testing.T) {
 
 	controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
 
-	_, err := controller.UpdateObj(path, dataUpdate)
+	_, err := controller.UpdateObj(path, dataUpdate, false)
 	assert.Nil(t, err)
 }
 
@@ -64,6 +64,6 @@ func TestUpdateTagSlug(t *testing.T) {
 
 	controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
 
-	_, err := controller.UpdateObj(path, dataUpdate)
+	_, err := controller.UpdateObj(path, dataUpdate, false)
 	assert.Nil(t, err)
 }

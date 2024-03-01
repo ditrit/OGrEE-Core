@@ -470,7 +470,7 @@ func setRoomAreas(path string, values []any) (map[string]any, error) {
 	if e != nil {
 		return nil, e
 	}
-	return cmd.C.UpdateObj(path, map[string]any{"attributes": attributes})
+	return cmd.C.UpdateObj(path, map[string]any{"attributes": attributes}, false)
 }
 
 func setLabel(path string, values []any, hasSharpe bool) (map[string]any, error) {
@@ -581,7 +581,7 @@ func addRoomSeparator(path string, values []any) (map[string]any, error) {
 	newSeparator := Separator{startPos, endPos, sepType}
 	var keyExist bool
 	attr["separators"], keyExist = addToStringMap[Separator](separators, name, newSeparator)
-	obj, err = cmd.C.UpdateObj(path, map[string]any{"attributes": attr})
+	obj, err = cmd.C.UpdateObj(path, map[string]any{"attributes": attr}, false)
 	if err != nil {
 		return nil, err
 	}
@@ -626,7 +626,7 @@ func addRoomPillar(path string, values []any) (map[string]any, error) {
 	newPillar := Pillar{centerXY, sizeXY, rotation}
 	var keyExist bool
 	attr["pillars"], keyExist = addToStringMap[Pillar](pillars, name, newPillar)
-	obj, err = cmd.C.UpdateObj(path, map[string]any{"attributes": attr})
+	obj, err = cmd.C.UpdateObj(path, map[string]any{"attributes": attr}, false)
 	if err != nil {
 		return nil, err
 	}
@@ -658,7 +658,7 @@ func deleteRoomPillarOrSeparator(path, attribute, name string) (map[string]any, 
 		return nil, fmt.Errorf("%s %s does not exist", attribute, name)
 	}
 	attributes[attribute+"s"] = stringMap
-	return cmd.C.UpdateObj(path, map[string]any{"attributes": attributes})
+	return cmd.C.UpdateObj(path, map[string]any{"attributes": attributes}, false)
 }
 
 func parseDescriptionIdx(desc string) (int, error) {
@@ -704,7 +704,7 @@ func updateDescription(path string, attr string, values []any) (map[string]any, 
 		}
 		data["description"] = curDesc
 	}
-	return cmd.C.UpdateObj(path, data)
+	return cmd.C.UpdateObj(path, data, false)
 }
 
 type updateObjNode struct {
@@ -736,7 +736,7 @@ func (n *updateObjNode) execute() (interface{}, error) {
 		var err error
 		if models.IsTag(path) {
 			if n.attr == "slug" || n.attr == "color" || n.attr == "description" {
-				_, err = cmd.C.UpdateObj(path, map[string]any{n.attr: values[0]})
+				_, err = cmd.C.UpdateObj(path, map[string]any{n.attr: values[0]}, false)
 			}
 		} else if models.IsLayer(path) {
 			err = cmd.C.UpdateLayer(path, n.attr, values[0])
@@ -766,7 +766,8 @@ func (n *updateObjNode) execute() (interface{}, error) {
 			case "pillars-":
 				_, err = deleteRoomPillarOrSeparator(path, "pillar", values[0].(string))
 			case "domain", "tags+", "tags-":
-				_, err = cmd.C.UpdateObj(path, map[string]any{n.attr: values[0]})
+				isRecursive := len(values) > 1 && values[1] == "recursive"
+				_, err = cmd.C.UpdateObj(path, map[string]any{n.attr: values[0]}, isRecursive)
 			case "tags", "separators", "pillars":
 				err = fmt.Errorf(
 					"object's %[1]s can not be updated directly, please use %[1]s+= and %[1]s-=",
@@ -804,7 +805,7 @@ func updateAttributes(path, attributeName string, values []any) (map[string]any,
 		attributes = map[string]any{attributeName: values[0]}
 	}
 
-	return cmd.C.UpdateObj(path, map[string]any{"attributes": attributes})
+	return cmd.C.UpdateObj(path, map[string]any{"attributes": attributes}, false)
 }
 
 type treeNode struct {
