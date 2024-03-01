@@ -369,7 +369,8 @@ class _BackupPopupState extends State<BackupPopup>
       switch (result) {
         case Success(value: final value):
           showSnackBar(messenger,
-              "Backup restored: ${value.substring(value.lastIndexOf("+0000") + 5).trim()}");
+              "Backup restored: ${value.substring(value.lastIndexOf("+0000") + 5).trim()}",
+              duration: const Duration(seconds: 10));
           setState(() {
             _loadFileResult = value;
             _isLoading = false;
