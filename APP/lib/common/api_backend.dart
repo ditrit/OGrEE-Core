@@ -718,6 +718,31 @@ Future<Result<dynamic, Exception>> backupTenantDB(
   }
 }
 
+Future<Result<String, Exception>> restoreTenantDB(PlatformFile backup,
+    String tenantName, String password, bool shouldDrop) async {
+  print("API upload Tenant restore");
+  try {
+    Uri url = Uri.parse('$apiUrl/api/tenants/$tenantName/restore');
+    var request = http.MultipartRequest("POST", url);
+    request.fields['password'] = password;
+    request.fields['shouldDrop'] = shouldDrop.toString();
+    request.headers.addAll(getHeader(token));
+    request.files.add(http.MultipartFile.fromBytes("file", backup.bytes!,
+        filename: backup.name));
+    var response = await request.send();
+    print(response.statusCode);
+    if (response.statusCode == 200) {
+      String msg = await response.stream.bytesToString();
+      return Success(msg);
+    } else {
+      String errorMsg = await response.stream.bytesToString();
+      return Failure(Exception(errorMsg));
+    }
+  } on Exception catch (e) {
+    return Failure(e);
+  }
+}
+
 Future<Result<void, Exception>> createBackendServer(
     Map<String, dynamic> newBackend) async {
   print("API create Back Server");
