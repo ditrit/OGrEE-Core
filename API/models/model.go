@@ -694,7 +694,7 @@ func prepareUpdateObject(ctx mongo.SessionContext, entity int, id string, update
 	return nil
 }
 
-func UpdateObject(entityStr string, id string, updateData map[string]interface{}, isPatch bool, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
+func UpdateObject(entityStr string, id string, updateData map[string]interface{}, isPatch bool, userRoles map[string]Role, isRecursive bool) (map[string]interface{}, *u.Error) {
 	var idFilter bson.M
 	if u.IsEntityNonHierarchical(u.EntityStrToInt(entityStr)) {
 		idFilter = bson.M{"slug": id}
@@ -794,9 +794,28 @@ func UpdateObject(entityStr string, id string, updateData map[string]interface{}
 				}
 			}
 		}
+		if u.IsEntityHierarchical(entity) && (oldObj["domain"] != updateData["domain"]) {
+			if isRecursive {
+				// Change domain of all children too
+				if err := repository.PropagateDomainChangeToChildren(
+					ctx,
+					updateData["id"].(string),
+					updateData["domain"].(string),
+				); err != nil {
+					return nil, err
+				}
+			} else {
+				// Check if children domains are compatible
+				if err := repository.CheckParentDomainChange(entity, updateData["id"].(string),
+					updateData["domain"].(string)); err != nil {
+					return nil, err
+				}
+			}
+		}
 
 		return mongoRes, nil
 	})
+
 	if err != nil {
 		return nil, err
 	}

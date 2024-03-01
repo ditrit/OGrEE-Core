@@ -40,7 +40,7 @@
   - [Copy object](#copy-object)
   - [Link/Unlink object](#linkunlink-object)
 - [Create commands](#create-commands)
-  - [Create a Tenant](#create-a-tenant)
+  - [Create a Domain](#create-a-domain)
   - [Create a Site](#create-a-site)
   - [Create a Building](#create-a-building)
   - [Create a Room](#create-a-room)
@@ -481,18 +481,20 @@ link /Physical/Stray@/Physical/site/bldg/room/rack@slots=[slot1,slot2]@orientati
 
 # Create commands
 
-## Create a Tenant
+## Create a Domain
 
-Tenant will be created as a new root.
+To create a domain, a name and color should be provided. Should be in the  `/Organisation/Domain` (`/O/Domain` on short version) path or include it in the domain's name. 
+Domains can have a hierarchy, that is, a domain can have a parent domain.  
+*`[color]` should be a 6 digit HEX Value (ie 00000A)*
 
 ```
-+tenant:[name]@[color]
-+tn:[name]@[color]
++domain:[name]@[color]
++do:[name]@[color]
 ```
 
 ## Create a Site
 
-Site must be child of a Tenant.
+Sites have no parent, only a name is needed to create it.
 
 ```
 +site:[name]  
@@ -1114,17 +1116,10 @@ titi
 # Examples
 
 ```
-+tn:DEMO@ffffff
++do:DEMO@ffffff
     DEMO.mainContact=Ced
     DEMO.mainPhone=0612345678
     DEMO.mainEmail=ced@ogree3D.com
-
-+tn:Marcus@42ff42
-    Marcus.mainContact=Marcus Pandora
-    Marcus.mainPhone=0666666666
-    Marcus.mainEmail=marcus@pandora.com
-
-+tenant:Billy@F0C300
 
 +si:DEMO.ALPHA@NW
     DEMO.ALPHA.description=This is a demo...

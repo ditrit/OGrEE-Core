@@ -171,6 +171,47 @@ func PropagateDomainChange(ctx context.Context, oldDomainId, newDomainId string)
 	return nil
 }
 
+// PropagateDomainChangeToChildren: update domain of all children to the new domain of its parent
+func PropagateDomainChangeToChildren(ctx context.Context, parentId, newDomainId string) error {
+	// Find all objects containing parent name
+	req := bson.M{"id": primitive.Regex{Pattern: parentId + u.HN_DELIMETER, Options: ""}}
+	// For each object found, replace old domain by new
+	update := bson.D{{
+		Key: "$set", Value: bson.M{
+			"domain": newDomainId}}}
+	for i := u.BLDG; i <= u.GROUP; i++ {
+		_, err := GetDB().Collection(u.EntityToString(i)).UpdateMany(ctx,
+			req, mongo.Pipeline{update})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// CheckParentDomainChange: check if children have same or child of parent's new domain
+func CheckParentDomainChange(parentEntity int, parentId, parenDomain string) *u.Error {
+	andReq := bson.A{}
+	andReq = append(andReq, bson.M{"id": primitive.Regex{Pattern: parentId + u.HN_DELIMETER, Options: ""}})
+	andReq = append(andReq, bson.M{"domain": bson.M{"$not": primitive.Regex{Pattern: "^" + parenDomain + "(\\" + u.HN_DELIMETER + "|$)", Options: ""}}})
+	req := bson.M{"$and": andReq}
+	startEntity := parentEntity + 1
+	if parentEntity == u.DEVICE {
+		startEntity = u.DEVICE
+	}
+	for entity := startEntity; entity <= u.GROUP; entity++ {
+		countEntity, err := CountObjects(entity, req)
+		if err != nil {
+			return err
+		}
+		if countEntity > 0 {
+			return &u.Error{Type: u.ErrInvalidValue, Message: "New domain is not compatible with children's domain"}
+		}
+	}
+
+	return nil
+}
+
 func CountObjects(entity int, req bson.M) (int, *u.Error) {
 	ctx, cancel := u.Connect()
 	defer cancel()

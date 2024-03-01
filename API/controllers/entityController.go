@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"p3/models"
 	"p3/utils"
@@ -1208,6 +1209,10 @@ func UpdateEntity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get query params
+	queryValues, _ := url.ParseQuery(r.URL.RawQuery)
+	isRecursiveUpdate := queryValues.Get("recursive") == "true"
+
 	// Check id and try update
 	id := mux.Vars(r)["id"]
 	if id == "" {
@@ -1215,7 +1220,7 @@ func UpdateEntity(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.Message("Error while extracting from path parameters"))
 		u.ErrLog("Error while extracting from path parameters", "UPDATE ENTITY", "", r)
 	} else {
-		data, modelErr = models.UpdateObject(entity, id, updateData, isPatch, user.Roles)
+		data, modelErr = models.UpdateObject(entity, id, updateData, isPatch, user.Roles, isRecursiveUpdate)
 		if modelErr != nil {
 			u.RespondWithError(w, modelErr)
 		} else {

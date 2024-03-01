@@ -22,6 +22,7 @@ func TestUpdateGenericWorks(t *testing.T) {
 		},
 		true,
 		integration.ManagerUserRoles,
+		false,
 	)
 	assert.Nil(t, err)
 }

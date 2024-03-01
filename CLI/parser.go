@@ -1411,7 +1411,7 @@ func newParser(buffer string) *parser {
 	}
 	p.createObjDispatch = map[string]parseCommandFunc{
 		"domain":   p.parseCreateDomain,
-		"dm":       p.parseCreateDomain,
+		"do":       p.parseCreateDomain,
 		"site":     p.parseCreateSite,
 		"si":       p.parseCreateSite,
 		"bldg":     p.parseCreateBuilding,
