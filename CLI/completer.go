@@ -104,11 +104,7 @@ func UnLinkObjCompleter(line string) []string {
 
 	countAt := strings.Count(splitted[1], "@")
 	if countAt == 0 {
-		entities := ListEntities(splitted[1])
-		if !strings.Contains(line, "unlink") {
-			entities = append(entities, "@")
-		}
-		return entities
+		return ListEntities(splitted[1])
 	} else if countAt == 1 && !strings.Contains(line, "unlink") {
 		lineEntity := splitted[1]
 		lineEntity = lineEntity[strings.LastIndex(lineEntity, "@")+1:]
