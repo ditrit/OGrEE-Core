@@ -198,7 +198,7 @@ func TestParseExprArrayRef(t *testing.T) {
 func TestParseRawText(t *testing.T) {
 	defer recoverFunc(t)
 	p := newParser("${a}a")
-	expr := p.parseText(p.parseUnquotedStringToken, false)
+	expr := p.parseText(p.parseUnquotedStringToken, false, false)
 	expected := &formatStringNode{&valueNode{"%va"}, []node{&symbolReferenceNode{"a"}}}
 	if !reflect.DeepEqual(expr, expected) {
 		t.Errorf("unexpected expression : \n%s", spew.Sdump(expr))
