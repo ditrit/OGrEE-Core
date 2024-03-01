@@ -882,11 +882,24 @@ func (p *parser) parseLink() node {
 	sourcePath := p.parsePath("source path")
 	p.expect("@")
 	destPath := p.parsePath("destination path")
-	if p.parseExact("@") {
-		slot := p.parseStringOrVecStr("posUOrSlot")
-		return &linkObjectNode{sourcePath, destPath, slot}
+	values := []node{}
+	attrs := []string{}
+	var slots []node
+	for p.parseExact("@") {
+		p.skipWhiteSpaces()
+		attr := p.parseComplexWord("attribute")
+		p.skipWhiteSpaces()
+		p.expect("=")
+		p.skipWhiteSpaces()
+		if attr == "slot" {
+			slots = p.parseStringOrVecStr("slot")
+		} else {
+			value := p.parseValue()
+			values = append(values, value)
+			attrs = append(attrs, attr)
+		}
 	}
-	return &linkObjectNode{sourcePath, destPath, nil}
+	return &linkObjectNode{sourcePath, destPath, attrs, values, slots}
 }
 
 func (p *parser) parseUnlink() node {

@@ -38,6 +38,7 @@
   - [Delete object](#delete-object)
   - [Focus an object](#focus-an-object)
   - [Copy object](#copy-object)
+  - [Link/Unlink object](#linkunlink-object)
 - [Create commands](#create-commands)
   - [Create a Domain](#create-a-domain)
   - [Create a Site](#create-a-site)
@@ -456,6 +457,28 @@ cp [source] [dest]
 
 where `[source]` is the path of the object to be copied (currently only objects in /Logical/Layers are accepted) and `[dest]` is the destination path or slug of the destination layer.
 
+## Link/Unlink object
+Unlink an object transforms the object in a stray. In other words, it moves the object from the OGrEE hierarchy (no longer has a parent) and changes its type to stray object.
+
+```
+unlink [path/to/object]
+``` 
+
+Link an object reattaches the object to the OGrEE hierarchy, giving it a parent. It is possible to also set or modify attributes of the object by adding one or more `@attributeName=attributeValue` to the command. 
+
+```
+link [path/to/stray-object]@[path/to/new/parent]
+link [path/to/stray-object]@[path/to/new/parent]@attributeName=attributeValue
+```
+
+Examples:
+
+```
+unlink /Physical/site/bldg/room/rack/device
+link /Physical/Stray@/Physical/site/bldg/room/rack
+link /Physical/Stray@/Physical/site/bldg/room/rack@slots=[slot1,slot2]@orientation=front
+```
+
 # Create commands
 
 ## Create a Domain
@@ -666,7 +689,7 @@ Examples:
 [layer_path]:filters=height=[height]
 [layer_path]:filters=category=[category] & name!=[name]
 [layer_path]:filters=(name=[name] & height<[height]) | domain=[domain]
-
+```
 For the layer to filter the children whose category is device. When adding filters on different attributes, all must be fulfilled for a child to be part of the layer.
 
 Layers are not applied until their filters are defined.
