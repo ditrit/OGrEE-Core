@@ -109,8 +109,8 @@ func UnLinkObjCompleter(line string) []string {
 	}
 
 	entities := ListEntities(splitted[1])
-	if !partTwo {
-		entities = append(entities, " @ ")
+	if !partTwo && !strings.Contains(line, "unlink") {
+		entities = append(entities, "@")
 	}
 
 	return entities
