@@ -593,7 +593,7 @@ func LinkObject(source string, destination string, attrs []string, values []any,
 	payload := map[string]any{"parentId": destPath.ObjectID}
 
 	for i, attr := range attrs {
-		payload[attr] = values[i]
+		payload[attr] = Stringify(values[i])
 	}
 
 	if slots != nil {
