@@ -689,7 +689,7 @@ Examples:
 [layer_path]:filters=height=[height]
 [layer_path]:filters=category=[category] & name!=[name]
 [layer_path]:filters=(name=[name] & height<[height]) | domain=[domain]
-
+```
 For the layer to filter the children whose category is device. When adding filters on different attributes, all must be fulfilled for a child to be part of the layer.
 
 Layers are not applied until their filters are defined.
