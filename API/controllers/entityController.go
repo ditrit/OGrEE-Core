@@ -759,7 +759,7 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 
 	// Get entityStr from URL
 	entityStr := mux.Vars(r)["entity"]
-	var req primitive.M
+	//var req primitive.M
 	// If templates, format them
 	entityStr = strings.Replace(entityStr, "-", "_", 1)
 
@@ -789,19 +789,7 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 				entityStr = obj["category"].(string)
 			}
 		}
-		if u.EntityStrToInt(entityStr) == u.APPLICATION {
 
-			req = bson.M{"name": id}
-			obj, err := models.GetObject(req, entityStr, u.RequestFilters{}, user.Roles)
-			if err != nil {
-				u.ErrLog("Error finding hierarchyobj to delete", "DELETE ENTITY", err.Message, r)
-				u.RespondWithError(w, err)
-				return
-			} else {
-				entityStr = obj["category"].(string)
-
-			}
-		}
 		//		fmt.Printf(entityStr)
 		//		fmt.Printf(id)
 		modelErr := models.DeleteObject(entityStr, id, user.Roles)
