@@ -140,6 +140,9 @@
   "requestBackup": "Create database backup",
   "downloadBackup": "Download backup archive",
   "backupInfoMessage": "A backup archive file will be created in the host machine of the database container.\nIf this option is selected, this file will also be downloaded in your current machine.",
+  "restore": "Restore",
+  "dropCurrentDB": "Drop current database",
+  "restoreInfoMessage": "Everything in the current database will be erased before restoring the backup.\nIf not selected, conflicts may occur and the current DB will be favored",
 
   "tools": "Tools",
   "downloadCli": "Download latest CLI",

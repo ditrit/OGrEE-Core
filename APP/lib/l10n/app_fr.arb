@@ -170,6 +170,9 @@
   "requestBackup": "Créer backup de la base",
   "downloadBackup": "Télécharger archive de backup",
   "backupInfoMessage": "Un fichier de backup sera créé dans la machine hôte de ce déploiement Docker.\nSi sélectionné, le fichier sera aussi télécharger dans votre machine.",
+  "restore": "Restaurer",
+  "dropCurrentDB": "Effacer la DB actuelle",
+  "restoreInfoMessage": "Toutes les données seront effacées avant de restaurer.\nSi non selectionné, les données de la DB actuelle seront priorisées dans le cas de conflits avec le backup",
 
   "tools": "Outils",
   "downloadCli": "Télécharger la CLI",

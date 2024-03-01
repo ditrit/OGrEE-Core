@@ -68,6 +68,7 @@ func InitRouter(isKube bool) *gin.Engine {
 		protected.POST("/tenants/:name/logo", docker.AddTenantLogo)
 		protected.PUT("/tenants/:name", docker.UpdateTenant)
 		protected.POST("/tenants/:name/backup", docker.BackupTenantDB)
+		protected.POST("/tenants/:name/restore", docker.RestoreTenantDB)
 		protected.POST("/tenants/:name/stop", docker.StopStartTentant)
 		protected.POST("/tenants/:name/start", docker.StopStartTentant)
 		protected.GET("/containers/:name", docker.GetContainerLogs)

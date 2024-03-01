@@ -19,14 +19,13 @@ void showSnackBar(
       SnackBar(
         behavior: SnackBarBehavior.floating,
         backgroundColor: color,
-        content: copyTextTap != ""
-            ? InkWell(
-                child: Text(message),
-                onTap: () async {
-                  await Clipboard.setData(ClipboardData(text: copyTextTap));
-                },
-              )
-            : Text(message),
+        content: InkWell(
+          child: Text(message),
+          onTap: () async {
+            await Clipboard.setData(
+                ClipboardData(text: copyTextTap == "" ? message : copyTextTap));
+          },
+        ),
         duration: duration,
         action: copyTextAction == ""
             ? null
