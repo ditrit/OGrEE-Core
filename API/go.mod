@@ -11,7 +11,7 @@ require (
 	github.com/gorilla/schema v1.2.1
 	github.com/joho/godotenv v1.5.1
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	github.com/vincent-petithory/dataurl v1.0.0
 	go.mongodb.org/mongo-driver v1.13.1
 	golang.org/x/crypto v0.19.0
