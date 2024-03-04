@@ -14,7 +14,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/vincent-petithory/dataurl v1.0.0
 	go.mongodb.org/mongo-driver v1.13.1
-	golang.org/x/crypto v0.19.0
+	golang.org/x/crypto v0.20.0
 )
 
 require (
