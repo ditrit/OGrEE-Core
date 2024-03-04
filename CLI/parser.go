@@ -284,7 +284,7 @@ func (p *parser) parseBool() bool {
 	return tok.val.(bool)
 }
 
-func (p *parser) parseText(lexFunc func() token, trim bool) node {
+func (p *parser) parseText(lexFunc func() token, trim bool, isVecStr bool) node {
 	defer un(trace(p, ""))
 	s := ""
 	subExpr := []node{}
@@ -293,6 +293,11 @@ loop:
 		tok := lexFunc()
 		switch tok.t {
 		case tokText:
+			if isVecStr && tok.str[len(tok.str)-1:] == "]" {
+				p.backward(1)
+				s += tok.str[:len(tok.str)-1]
+				break loop
+			}
 			s += tok.str
 		case tokDeref:
 			s += "%v"
@@ -331,7 +336,7 @@ func (p *parser) parsePath(name string) *pathNode {
 	}
 	defer un(trace(p, name))
 	p.skipWhiteSpaces()
-	path := p.parseText(p.parsePathToken, true)
+	path := p.parseText(p.parsePathToken, true, false)
 	p.skipWhiteSpaces()
 	return &pathNode{path: path}
 }
@@ -400,7 +405,7 @@ func (p *parser) parsePrimaryExpr() node {
 	case tokFloat:
 		return &valueNode{tok.val.(float64)}
 	case tokDoubleQuote:
-		n := p.parseText(p.parseQuotedStringToken, false)
+		n := p.parseText(p.parseQuotedStringToken, false, false)
 		p.expect("\"")
 		return n
 	case tokDeref:
@@ -505,7 +510,7 @@ func (p *parser) parseString(name string) node {
 		p.backward(len("format"))
 		return p.parseExpr("")
 	}
-	n := p.parseText(p.parseUnquotedStringToken, true)
+	n := p.parseText(p.parseUnquotedStringToken, true, false)
 	p.skipWhiteSpaces()
 	return n
 }
@@ -543,8 +548,8 @@ func (p *parser) parseStringOrVecStr(name string) []node {
 		listnodes := []node{}
 		for {
 			p.skipWhiteSpaces()
-			n := p.parseSimpleWord("slot")
-			listnodes = append(listnodes, &valueNode{n})
+			n := p.parseText(p.parseUnquotedStringToken, true, true)
+			listnodes = append(listnodes, n)
 			if p.parseExact(",") {
 				continue
 			} else {
