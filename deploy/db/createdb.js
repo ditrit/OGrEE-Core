@@ -85,5 +85,5 @@ db.account.insertOne({email: "admin", password: "admin", roles: {"*": "manager"}
 
 // Create API User
 db.createUser({ user: "ogree"+DB_NAME+"Admin", pwd: CUSTOMER_API_PASSWORD,
-                roles: [{role: "readWrite", db: "ogree"+DB_NAME}]
+                roles: [{role: "readWrite", db: "ogree"+DB_NAME}, {role: "restore", db: "admin"}]
                 })

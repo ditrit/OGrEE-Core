@@ -122,9 +122,9 @@ class TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
 
   List<Tab> getTabs(AppLocalizations localeMsg) {
     List<Tab> tabs = [
-      const Tab(
-        text: "API Stats",
-        icon: Icon(Icons.info),
+      Tab(
+        text: localeMsg.apiStats,
+        icon: const Icon(Icons.info),
       ),
       Tab(
         text: "${localeMsg.domain}s",

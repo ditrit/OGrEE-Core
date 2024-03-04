@@ -447,14 +447,25 @@ func RestoreTenantDB(c *gin.Context) {
 
 	// Load dump and save it locally
 	formFile := updateRequest.File
+	println(formFile.Filename)
+	var dumpDBName string
+	if split := strings.Split(formFile.Filename, "_"); len(split) < 1 || len(split[0]) < 1 {
+		c.String(http.StatusBadRequest, "Invalid filename: dump filename should start with tenantName_")
+		return
+	} else {
+		dumpDBName = "ogree" + split[0]
+	}
 	err := c.SaveUploadedFile(formFile, DOCKER_DIR+"/dump.archive")
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
+		return
 	}
 
 	// Restore
 	println("Docker restore backup tenant")
-	restoreCmd := "mongorestore --username ogree" + tenantName + "Admin --password " + updateRequest.DBPassword + " -d ogree" + tenantName + " --archive"
+	thisDBName := "ogree" + tenantName
+	restoreCmd := "mongorestore --username " + thisDBName + "Admin --password " + updateRequest.DBPassword + " --authenticationDatabase " + thisDBName +
+		" --archive --nsFrom=\"" + dumpDBName + ".*\"" + " --nsTo=\"" + thisDBName + ".*\""
 	if updateRequest.IsDrop == "true" {
 		restoreCmd = restoreCmd + " --drop"
 	}

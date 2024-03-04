@@ -47,7 +47,7 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
                 children: [
                   Center(
                     child: Text(
-                      "Update ${widget.tenant.name}",
+                      "${localeMsg.toUpdate} ${widget.tenant.name}",
                       style: Theme.of(context).textTheme.headlineMedium,
                     ),
                   ),
@@ -146,7 +146,7 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
                               submitUpdateTenant(localeMsg, context);
                             }
                           },
-                          label: const Text("Update"),
+                          label: Text(localeMsg.toUpdate),
                           icon: _isLoading
                               ? Container(
                                   width: 24,

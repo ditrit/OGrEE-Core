@@ -74,8 +74,8 @@ class _BackupPopupState extends State<BackupPopup>
                                 isScrollable: true,
                                 indicatorSize: TabBarIndicatorSize.label,
                                 tabs: [
-                                  const Tab(
-                                    text: "Backup DB",
+                                  Tab(
+                                    text: "${localeMsg.toBackup} DB",
                                   ),
                                   Tab(
                                     text: "${localeMsg.restore} DB",
@@ -173,7 +173,7 @@ class _BackupPopupState extends State<BackupPopup>
             const SizedBox(width: 15),
             ElevatedButton.icon(
                 onPressed: requestBackup,
-                label: const Text("Backup"),
+                label: Text(localeMsg.toBackup),
                 icon: _isLoading
                     ? Container(
                         width: 24,
@@ -258,7 +258,7 @@ class _BackupPopupState extends State<BackupPopup>
                         : Icons.download),
                     label: _loadedFile != null
                         ? Text(_loadedFile!.name)
-                        : Text("${localeMsg.select} backup")),
+                        : Text("${localeMsg.select} ${localeMsg.backup}")),
               )
             : Container(),
         _loadFileResult != null
@@ -369,7 +369,7 @@ class _BackupPopupState extends State<BackupPopup>
       switch (result) {
         case Success(value: final value):
           showSnackBar(messenger,
-              "Backup restored: ${value.substring(value.lastIndexOf("+0000") + 5).trim()}",
+              "${localeMsg.backupRestored} ${value.substring(value.lastIndexOf("+0000") + 5).trim()}",
               duration: const Duration(seconds: 10));
           setState(() {
             _loadFileResult = value;
