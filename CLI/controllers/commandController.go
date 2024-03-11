@@ -597,6 +597,9 @@ func LinkObject(source string, destination string, attrs []string, values []any,
 	}
 
 	if slots != nil {
+		if slots, err = ExpandSlotVector(slots); err != nil {
+			return err
+		}
 		payload["slot"] = "[" + strings.Join(slots, ",") + "]"
 	}
 

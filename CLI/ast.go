@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"cli/config"
+	"cli/controllers"
 	cmd "cli/controllers"
 	"cli/models"
 	"cli/utils"
@@ -795,6 +796,10 @@ func updateAttributes(path, attributeName string, values []any) (map[string]any,
 		slots := []string{}
 		for _, value := range values {
 			slots = append(slots, value.(string))
+		}
+		var err error
+		if slots, err = controllers.ExpandSlotVector(slots); err != nil {
+			return nil, err
 		}
 		value := "[" + strings.Join(slots, ",") + "]"
 		attributes = map[string]any{attributeName: value}

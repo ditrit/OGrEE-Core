@@ -561,7 +561,7 @@ Rack must be child of a room.
 A chassis is a *parent* device racked at a defined U position.  
 *`[posU]` is the position in U in a rack  
 `[sizeU]` is the height in U in a rack  
-`[slot]` is a square brackets list [] with the names of slots in which you want to place the device separated by a comma. Example: [slot1, slot2, slot3]. If no template is given, only one slot can be provided in the list.  
+`[slot]` is a square brackets list [] with the names of slots in which you want to place the device separated by a comma. Example: [slot1, slot2, slot3]. A shorter version with `..` can be used for a single range of slots: [slot1..slot3]. If no template is given, only one slot can be provided in the list.  
 `[template]` is the name of the device template  
 `[invertOffset]` is a boolean that tells the 3D client to invert the default offset for positioning the device in its slot (false by default, if not provided)  
 `[side]` is from which side you can see the device if not "fullsize". This value is for overriding the one defined in the template. It can be front | rear | frontflipped | rearflipped*  
