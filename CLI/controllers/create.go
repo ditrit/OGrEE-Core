@@ -280,7 +280,11 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			if _, err := strconv.Atoi(x[0]); len(x) == 1 && err == nil {
 				attr["posU"] = x[0]
 			} else {
-				attr["slot"] = x
+				if slots, err := ExpandSlotVector(x); err != nil {
+					return err
+				} else {
+					attr["slot"] = slots
+				}
 			}
 
 		}

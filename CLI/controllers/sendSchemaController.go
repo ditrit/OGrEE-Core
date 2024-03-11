@@ -218,3 +218,37 @@ func Stringify(x interface{}) string {
 	}
 	return ""
 }
+
+// ExpandSlotVector: allow usage of .. on slot vector, converting as bellow:
+// [slot01..slot03] => [slot01,slot02,slot03]
+func ExpandSlotVector(slotVector []string) ([]string, error) {
+	slots := []string{}
+	for _, slot := range slotVector {
+		if strings.Contains(slot, "..") {
+			if len(slotVector) != 1 {
+				return nil, fmt.Errorf("Invalid device syntax: .. can only be used in a single element vector")
+			}
+			parts := strings.Split(slot, "..")
+			if len(parts) != 2 ||
+				(parts[0][:len(parts[0])-1] != parts[1][:len(parts[1])-1]) {
+				l.GetWarningLogger().Println("Invalid device syntax encountered")
+				return nil, fmt.Errorf("Invalid device syntax: incorrect use of .. for slot")
+			} else {
+				start, errS := strconv.Atoi(string(parts[0][len(parts[0])-1]))
+				end, errE := strconv.Atoi(string(parts[1][len(parts[1])-1]))
+				if errS != nil || errE != nil {
+					l.GetWarningLogger().Println("Invalid device syntax encountered")
+					return nil, fmt.Errorf("Invalid device syntax: incorrect use of .. for slot")
+				} else {
+					prefix := parts[0][:len(parts[0])-1]
+					for i := start; i <= end; i++ {
+						slots = append(slots, prefix+strconv.Itoa(i))
+					}
+				}
+			}
+		} else {
+			slots = append(slots, slot)
+		}
+	}
+	return slots, nil
+}
