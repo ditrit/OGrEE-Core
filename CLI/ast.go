@@ -775,7 +775,7 @@ func (n *updateObjNode) execute() (interface{}, error) {
 					n.attr,
 				)
 			default:
-				if strings.HasPrefix(n.attr, "description") {
+				if n.attr == "description" {
 					_, err = updateDescription(path, n.attr, values)
 				} else {
 					_, err = updateAttributes(path, n.attr, values)
