@@ -198,7 +198,7 @@ func TestParseExprArrayRef(t *testing.T) {
 func TestParseRawText(t *testing.T) {
 	defer recoverFunc(t)
 	p := newParser("${a}a")
-	expr := p.parseText(p.parseUnquotedStringToken, false)
+	expr := p.parseText(p.parseUnquotedStringToken, false, false)
 	expected := &formatStringNode{&valueNode{"%va"}, []node{&symbolReferenceNode{"a"}}}
 	if !reflect.DeepEqual(expr, expected) {
 		t.Errorf("unexpected expression : \n%s", spew.Sdump(expr))
@@ -355,12 +355,12 @@ var commandsMatching = map[string]node{
 	"+generic:${toto}/tata@[1., 2.]@t@front@[.1, 2., 3.]@cube@box": &createGenericNode{testPath, vec2(1., 2.), &valueNode{"t"}, &valueNode{"front"}, vec3(.1, 2., 3.), &valueNode{"cube"}, &valueNode{"box"}},
 	"+generic:${toto}/tata@[1., 2.]@m@front@template":              &createGenericNode{testPath, vec2(1., 2.), &valueNode{"m"}, &valueNode{"front"}, &valueNode{"template"}, nil, nil},
 	"+generic:${toto}/tata@[1., 2.]@m@[.1, 2., 3.]@template":       &createGenericNode{testPath, vec2(1., 2.), &valueNode{"m"}, vec3(.1, 2., 3.), &valueNode{"template"}, nil, nil},
-	"+device:${toto}/tata@42@42":                                   &createDeviceNode{testPath, &valueNode{"42"}, &valueNode{"42"}, false, nil},
-	"+device:${toto}/tata@42@template":                             &createDeviceNode{testPath, &valueNode{"42"}, &valueNode{"template"}, false, nil},
-	"+device:${toto}/tata@42@template@true@frontflipped ":          &createDeviceNode{testPath, &valueNode{"42"}, &valueNode{"template"}, true, &valueNode{"frontflipped"}},
-	"+device:${toto}/tata@slot42@42@true":                          &createDeviceNode{testPath, &valueNode{"slot42"}, &valueNode{"42"}, true, nil},
-	"+device:${toto}/tata@slot42@template":                         &createDeviceNode{testPath, &valueNode{"slot42"}, &valueNode{"template"}, false, nil},
-	"+device:${toto}/tata@slot42@template@false@frontflipped ":     &createDeviceNode{testPath, &valueNode{"slot42"}, &valueNode{"template"}, false, &valueNode{"frontflipped"}},
+	"+device:${toto}/tata@42@42":                                   &createDeviceNode{testPath, []node{&valueNode{"42"}}, &valueNode{"42"}, false, nil},
+	"+device:${toto}/tata@42@template":                             &createDeviceNode{testPath, []node{&valueNode{"42"}}, &valueNode{"template"}, false, nil},
+	"+device:${toto}/tata@42@template@true@frontflipped ":          &createDeviceNode{testPath, []node{&valueNode{"42"}}, &valueNode{"template"}, true, &valueNode{"frontflipped"}},
+	"+device:${toto}/tata@[slot42]@42@true":                        &createDeviceNode{testPath, []node{&valueNode{"slot42"}}, &valueNode{"42"}, true, nil},
+	"+device:${toto}/tata@[slot42,slot43]@template":                &createDeviceNode{testPath, []node{&valueNode{"slot42"}, &valueNode{"slot43"}}, &valueNode{"template"}, false, nil},
+	"+device:${toto}/tata@[slot42]@template@false@frontflipped ":   &createDeviceNode{testPath, []node{&valueNode{"slot42"}}, &valueNode{"template"}, false, &valueNode{"frontflipped"}},
 	"+group:${toto}/tata@{c1, c2}":                                 &createGroupNode{testPath, []node{&pathNode{path: &valueNode{"c1"}}, &pathNode{path: &valueNode{"c2"}}}},
 	"+corridor:${toto}/tata@[1., 2.]@t@front@[.1, 2., 3.]@cold":    &createCorridorNode{testPath, vec2(1., 2.), &valueNode{"t"}, &valueNode{"front"}, vec3(.1, 2., 3.), &valueNode{"cold"}},
 	"${toto}/tata:areas=[1., 2., 3., 4.]@[1., 2., 3., 4.]":         &updateObjNode{testPathUpdate, "areas", []node{vec4(1., 2., 3., 4.), vec4(1., 2., 3., 4.)}, false},

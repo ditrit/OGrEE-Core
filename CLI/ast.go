@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"cli/config"
+	"cli/controllers"
 	cmd "cli/controllers"
 	"cli/models"
 	"cli/utils"
@@ -470,7 +471,7 @@ func setRoomAreas(path string, values []any) (map[string]any, error) {
 	if e != nil {
 		return nil, e
 	}
-	return cmd.C.UpdateObj(path, map[string]any{"attributes": attributes})
+	return cmd.C.UpdateObj(path, map[string]any{"attributes": attributes}, false)
 }
 
 func setLabel(path string, values []any, hasSharpe bool) (map[string]any, error) {
@@ -581,7 +582,7 @@ func addRoomSeparator(path string, values []any) (map[string]any, error) {
 	newSeparator := Separator{startPos, endPos, sepType}
 	var keyExist bool
 	attr["separators"], keyExist = addToStringMap[Separator](separators, name, newSeparator)
-	obj, err = cmd.C.UpdateObj(path, map[string]any{"attributes": attr})
+	obj, err = cmd.C.UpdateObj(path, map[string]any{"attributes": attr}, false)
 	if err != nil {
 		return nil, err
 	}
@@ -626,7 +627,7 @@ func addRoomPillar(path string, values []any) (map[string]any, error) {
 	newPillar := Pillar{centerXY, sizeXY, rotation}
 	var keyExist bool
 	attr["pillars"], keyExist = addToStringMap[Pillar](pillars, name, newPillar)
-	obj, err = cmd.C.UpdateObj(path, map[string]any{"attributes": attr})
+	obj, err = cmd.C.UpdateObj(path, map[string]any{"attributes": attr}, false)
 	if err != nil {
 		return nil, err
 	}
@@ -658,7 +659,7 @@ func deleteRoomPillarOrSeparator(path, attribute, name string) (map[string]any, 
 		return nil, fmt.Errorf("%s %s does not exist", attribute, name)
 	}
 	attributes[attribute+"s"] = stringMap
-	return cmd.C.UpdateObj(path, map[string]any{"attributes": attributes})
+	return cmd.C.UpdateObj(path, map[string]any{"attributes": attributes}, false)
 }
 
 func parseDescriptionIdx(desc string) (int, error) {
@@ -704,7 +705,7 @@ func updateDescription(path string, attr string, values []any) (map[string]any, 
 		}
 		data["description"] = curDesc
 	}
-	return cmd.C.UpdateObj(path, data)
+	return cmd.C.UpdateObj(path, data, false)
 }
 
 type updateObjNode struct {
@@ -736,7 +737,7 @@ func (n *updateObjNode) execute() (interface{}, error) {
 		var err error
 		if models.IsTag(path) {
 			if n.attr == "slug" || n.attr == "color" || n.attr == "description" {
-				_, err = cmd.C.UpdateObj(path, map[string]any{n.attr: values[0]})
+				_, err = cmd.C.UpdateObj(path, map[string]any{n.attr: values[0]}, false)
 			}
 		} else if models.IsLayer(path) {
 			err = cmd.C.UpdateLayer(path, n.attr, values[0])
@@ -766,14 +767,15 @@ func (n *updateObjNode) execute() (interface{}, error) {
 			case "pillars-":
 				_, err = deleteRoomPillarOrSeparator(path, "pillar", values[0].(string))
 			case "domain", "tags+", "tags-":
-				_, err = cmd.C.UpdateObj(path, map[string]any{n.attr: values[0]})
+				isRecursive := len(values) > 1 && values[1] == "recursive"
+				_, err = cmd.C.UpdateObj(path, map[string]any{n.attr: values[0]}, isRecursive)
 			case "tags", "separators", "pillars":
 				err = fmt.Errorf(
 					"object's %[1]s can not be updated directly, please use %[1]s+= and %[1]s-=",
 					n.attr,
 				)
 			default:
-				if strings.HasPrefix(n.attr, "description") {
+				if n.attr == "description" {
 					_, err = updateDescription(path, n.attr, values)
 				} else {
 					_, err = updateAttributes(path, n.attr, values)
@@ -789,13 +791,26 @@ func (n *updateObjNode) execute() (interface{}, error) {
 }
 
 func updateAttributes(path, attributeName string, values []any) (map[string]any, error) {
-	if len(values) > 1 {
-		return nil, fmt.Errorf("attributes can only be assigned a single value")
+	var attributes map[string]any
+	if attributeName == "slot" {
+		slots := []string{}
+		for _, value := range values {
+			slots = append(slots, value.(string))
+		}
+		var err error
+		if slots, err = controllers.ExpandSlotVector(slots); err != nil {
+			return nil, err
+		}
+		value := "[" + strings.Join(slots, ",") + "]"
+		attributes = map[string]any{attributeName: value}
+	} else {
+		if len(values) > 1 {
+			return nil, fmt.Errorf("attributes can only be assigned a single value")
+		}
+		attributes = map[string]any{attributeName: values[0]}
 	}
 
-	attributes := map[string]any{attributeName: values[0]}
-
-	return cmd.C.UpdateObj(path, map[string]any{"attributes": attributes})
+	return cmd.C.UpdateObj(path, map[string]any{"attributes": attributes}, false)
 }
 
 type treeNode struct {
@@ -1184,7 +1199,7 @@ func (n *createGenericNode) execute() (interface{}, error) {
 
 type createDeviceNode struct {
 	path            node
-	posUOrSlot      node
+	posUOrSlot      []node
 	sizeUOrTemplate node
 	invertOffset    bool
 	side            node
@@ -1195,9 +1210,13 @@ func (n *createDeviceNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	posUOrSlot, err := nodeToString(n.posUOrSlot, "posU/slot")
-	if err != nil {
-		return nil, err
+	posUOrSlot := []string{}
+	for _, node := range n.posUOrSlot {
+		str, err := nodeToString(node, "posU/slot")
+		posUOrSlot = append(posUOrSlot, str)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	attributes := map[string]any{"posU/slot": posUOrSlot}
@@ -1502,7 +1521,9 @@ func (n *cameraWaitNode) execute() (interface{}, error) {
 type linkObjectNode struct {
 	source      node
 	destination node
-	posUOrSlot  node
+	attrs       []string
+	values      []node
+	slots       []node
 }
 
 func (n *linkObjectNode) execute() (interface{}, error) {
@@ -1514,14 +1535,29 @@ func (n *linkObjectNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	var posUOrSlot string
-	if n.posUOrSlot != nil {
-		posUOrSlot, err = nodeToString(n.posUOrSlot, "posU/slot")
+
+	values := []any{}
+	for _, valueNode := range n.values {
+		val, err := valueNode.execute()
 		if err != nil {
 			return nil, err
 		}
+		values = append(values, val)
 	}
-	return nil, cmd.LinkObject(source, dest, posUOrSlot)
+
+	var slots []string
+	if n.slots != nil {
+		slots = []string{}
+		for _, node := range n.slots {
+			str, err := nodeToString(node, "slots")
+			slots = append(slots, str)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	return nil, cmd.LinkObject(source, dest, n.attrs, values, slots)
 }
 
 type unlinkObjectNode struct {

@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func (controller Controller) UpdateObj(pathStr string, data map[string]any) (map[string]any, error) {
+func (controller Controller) UpdateObj(pathStr string, data map[string]any, withRecursive bool) (map[string]any, error) {
 	attributes, hasAttributes := data["attributes"].(map[string]any)
 	if hasAttributes {
 		for key, val := range attributes {
@@ -26,6 +26,9 @@ func (controller Controller) UpdateObj(pathStr string, data map[string]any) (map
 	url, err := controller.ObjectUrl(pathStr, 0)
 	if err != nil {
 		return nil, err
+	}
+	if withRecursive {
+		url = url + "?recursive=true"
 	}
 
 	resp, err := controller.API.Request(http.MethodPatch, url, data, http.StatusOK)

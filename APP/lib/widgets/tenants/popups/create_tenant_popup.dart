@@ -114,7 +114,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                         _apiPort = splitted[2];
                                       },
                                       label:
-                                          "${localeMsg.apiUrl} (hostname:port)",
+                                          "${localeMsg.apiUrl} (${localeMsg.hostnamePort})",
                                       icon: Icons.cloud,
                                       initial: "http://",
                                       isUrl: true,
@@ -129,7 +129,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                         _webPort = splitted[2];
                                       },
                                       label:
-                                          "${localeMsg.webUrl} (hostname:port)",
+                                          "${localeMsg.webUrl} (${localeMsg.hostnamePort})",
                                       icon: Icons.monitor,
                                       initial: "http://",
                                       isUrl: true,
@@ -191,7 +191,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                         _docPort = splitted[2];
                                       },
                                       label:
-                                          "${localeMsg.docUrl} (hostname:port)",
+                                          "${localeMsg.docUrl} (${localeMsg.hostnamePort})",
                                       icon: Icons.book,
                                       initial: "http://",
                                       isUrl: true,

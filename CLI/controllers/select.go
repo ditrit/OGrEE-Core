@@ -6,9 +6,13 @@ import (
 )
 
 func (controller Controller) Select(path string) ([]string, error) {
-	paths, err := controller.UnfoldPath(path)
-	if err != nil {
-		return nil, err
+	var paths []string
+	var err error
+	if len(path) > 0 {
+		paths, err = controller.UnfoldPath(path)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if len(paths) == 1 && paths[0] == path {

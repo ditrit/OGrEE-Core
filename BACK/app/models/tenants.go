@@ -1,5 +1,7 @@
 package models
 
+import "mime/multipart"
+
 type Tenant struct {
 	Name             string `json:"name" binding:"required"`
 	CustomerPassword string `json:"customerPassword"`
@@ -58,4 +60,10 @@ type APPFile struct {
 type Backup struct {
 	DBPassword string `json:"password" binding:"required"`
 	IsDownload bool   `json:"shouldDownload"`
+}
+
+type Restore struct {
+	File       *multipart.FileHeader `form:"file" binding:"required"`
+	DBPassword string                `form:"password" binding:"required"`
+	IsDrop     string                `form:"shouldDrop"`
 }

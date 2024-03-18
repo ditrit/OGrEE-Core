@@ -48,5 +48,10 @@ func GetAllApps(c *gin.Context) {
 	} else {
 		response["tools"] = append(response["tools"].([]models.ContainerInfo), opendcim...)
 	}
+	if nautobot, err := getDockerInfo("nautobot"); err != nil {
+		println(err.Error())
+	} else {
+		response["tools"] = append(response["tools"].([]models.ContainerInfo), nautobot...)
+	}
 	c.IndentedJSON(http.StatusOK, response)
 }

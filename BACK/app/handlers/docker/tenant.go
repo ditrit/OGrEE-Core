@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 func GetTenants(c *gin.Context) {
@@ -86,6 +87,10 @@ func getDockerInfo(name string) ([]models.ContainerInfo, error) {
 				}
 			} else if name == "opendcim" {
 				if strings.Contains(dc.Name, "opendcim-webapp") {
+					response = append(response, dc)
+				}
+			} else if name == "nautobot" {
+				if strings.Contains(dc.Name, "nautobot-1") {
 					response = append(response, dc)
 				}
 			} else if match, _ := regexp.MatchString("^"+name+"_", dc.Name); match {
@@ -428,6 +433,59 @@ func BackupTenantDB(c *gin.Context) {
 	} else {
 		c.String(http.StatusOK, "Backup file created as "+outfile.Name()+" at "+dir)
 	}
+}
+
+func RestoreTenantDB(c *gin.Context) {
+	tenantName := strings.ToLower(c.Param("name"))
+
+	// Bind received data
+	var updateRequest models.Restore
+	if err := c.ShouldBindWith(&updateRequest, binding.FormMultipart); err != nil {
+		_ = c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	// Load dump and save it locally
+	formFile := updateRequest.File
+	println(formFile.Filename)
+	var dumpDBName string
+	if split := strings.Split(formFile.Filename, "_"); len(split) < 1 || len(split[0]) < 1 {
+		c.String(http.StatusBadRequest, "Invalid filename: dump filename should start with tenantName_")
+		return
+	} else {
+		dumpDBName = "ogree" + split[0]
+	}
+	err := c.SaveUploadedFile(formFile, DOCKER_DIR+"/dump.archive")
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	// Restore
+	println("Docker restore backup tenant")
+	thisDBName := "ogree" + tenantName
+	restoreCmd := "mongorestore --username " + thisDBName + "Admin --password " + updateRequest.DBPassword + " --authenticationDatabase " + thisDBName +
+		" --archive --nsFrom=\"" + dumpDBName + ".*\"" + " --nsTo=\"" + thisDBName + ".*\""
+	if updateRequest.IsDrop == "true" {
+		restoreCmd = restoreCmd + " --drop"
+	}
+	args := []string{"exec", "-i", tenantName + "_db", "sh", "-c", restoreCmd}
+	cmd := exec.Command("docker", args...)
+	cmd.Dir = DOCKER_DIR
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	cmd.Stdin, _ = os.Open(DOCKER_DIR + "/dump.archive")
+	var stdout bytes.Buffer
+	cmd.Stdout = &stdout
+	if err := cmd.Run(); err != nil {
+		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+		c.String(http.StatusInternalServerError, stderr.String())
+	} else {
+		// even if ok, the output is always in stderr
+		fmt.Println("ok: " + stderr.String())
+		c.String(http.StatusOK, stderr.String())
+	}
+	println("Finished with docker")
 }
 
 func StopStartTentant(c *gin.Context) {

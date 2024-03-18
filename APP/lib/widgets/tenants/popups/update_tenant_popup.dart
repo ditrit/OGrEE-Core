@@ -47,7 +47,7 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
                 children: [
                   Center(
                     child: Text(
-                      "Update ${widget.tenant.name}",
+                      "${localeMsg.toUpdate} ${widget.tenant.name}",
                       style: Theme.of(context).textTheme.headlineMedium,
                     ),
                   ),
@@ -82,7 +82,7 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
                       widget.tenant.apiUrl = "${splitted[0]}:${splitted[1]}";
                       widget.tenant.apiPort = splitted[2];
                     },
-                    label: "${localeMsg.apiUrl} (hostname:port)",
+                    label: "${localeMsg.apiUrl} (${localeMsg.hostnamePort})",
                     icon: Icons.cloud,
                     isUrl: true,
                     initial: widget.tenant.apiUrl != ""
@@ -97,7 +97,8 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
                                 "${splitted[0]}:${splitted[1]}";
                             widget.tenant.webPort = splitted[2];
                           },
-                          label: "${localeMsg.webUrl} (hostname:port)",
+                          label:
+                              "${localeMsg.webUrl} (${localeMsg.hostnamePort})",
                           icon: Icons.monitor,
                           isUrl: true,
                           initial: widget.tenant.webUrl != ""
@@ -113,7 +114,8 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
                                 "${splitted[0]}:${splitted[1]}";
                             widget.tenant.docPort = splitted[2];
                           },
-                          label: "${localeMsg.docUrl} (hostname:port)",
+                          label:
+                              "${localeMsg.docUrl} (${localeMsg.hostnamePort})",
                           icon: Icons.book,
                           isUrl: true,
                           initial: widget.tenant.docUrl != ""
@@ -146,7 +148,7 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
                               submitUpdateTenant(localeMsg, context);
                             }
                           },
-                          label: const Text("Update"),
+                          label: Text(localeMsg.toUpdate),
                           icon: _isLoading
                               ? Container(
                                   width: 24,

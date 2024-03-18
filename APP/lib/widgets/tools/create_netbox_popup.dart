@@ -1,3 +1,4 @@
+import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ogree_app/common/api_backend.dart';
@@ -8,26 +9,36 @@ import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/models/netbox.dart';
 import 'package:ogree_app/widgets/common/form_field.dart';
 
-class CreateNetboxPopup extends StatefulWidget {
+//Create Nbox: Netbox or Nautobot
+class CreateNboxPopup extends StatefulWidget {
   Function() parentCallback;
-  CreateNetboxPopup({super.key, required this.parentCallback});
+  Tools tool;
+  CreateNboxPopup(
+      {super.key, required this.parentCallback, required this.tool});
 
   @override
-  State<CreateNetboxPopup> createState() => _CreateNetboxPopupState();
+  State<CreateNboxPopup> createState() => _CreateNboxPopupState();
 }
 
-class _CreateNetboxPopupState extends State<CreateNetboxPopup> {
+class _CreateNboxPopupState extends State<CreateNboxPopup> {
   final _formKey = GlobalKey<FormState>();
   String? _userName;
   String? _userPassword;
-  String? _port = "8000";
+  String? _port;
   bool _isLoading = false;
   bool _isSmallDisplay = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _port = widget.tool == Tools.netbox ? "8000" : "8001";
+  }
 
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
     _isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
+    final toolName = widget.tool.name.capitalize;
     return Center(
       child: Container(
         width: 500,
@@ -45,27 +56,25 @@ class _CreateNetboxPopupState extends State<CreateNetboxPopup> {
                           backgroundColor: Colors.white,
                           body: ListView(
                             padding: EdgeInsets.zero,
-                            //shrinkWrap: true,
                             children: [
                               Center(
                                   child: Text(
-                                "${localeMsg.create} netbox",
+                                "${localeMsg.create} $toolName",
                                 style:
                                     Theme.of(context).textTheme.headlineMedium,
                               )),
-                              // const Divider(height: 35),
                               const SizedBox(height: 20),
                               CustomFormField(
                                   save: (newValue) => _userName = newValue,
-                                  label: "Netbox user name",
+                                  label: "$toolName user name",
                                   icon: Icons.person),
                               CustomFormField(
                                   save: (newValue) => _userPassword = newValue,
-                                  label: "Netbox user password",
+                                  label: "$toolName user password",
                                   icon: Icons.lock),
                               CustomFormField(
                                 save: (newValue) => _port = newValue,
-                                label: "Netbox port",
+                                label: "$toolName port",
                                 initialValue: _port,
                                 icon: Icons.numbers,
                                 formatters: <TextInputFormatter>[
@@ -90,7 +99,7 @@ class _CreateNetboxPopupState extends State<CreateNetboxPopup> {
                                   const SizedBox(width: 15),
                                   ElevatedButton.icon(
                                       onPressed: () =>
-                                          submitCreateNetbox(localeMsg),
+                                          submitCreateNbox(localeMsg),
                                       label: Text(localeMsg.create),
                                       icon: _isLoading
                                           ? Container(
@@ -117,16 +126,20 @@ class _CreateNetboxPopupState extends State<CreateNetboxPopup> {
     );
   }
 
-  submitCreateNetbox(AppLocalizations localeMsg) async {
+  submitCreateNbox(AppLocalizations localeMsg) async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       setState(() {
         _isLoading = true;
       });
       final messenger = ScaffoldMessenger.of(context);
-      // Create tenant
-      var result =
-          await createNetbox(Netbox(_userName!, _userPassword!, _port!));
+      Result<void, Exception> result;
+      if (widget.tool == Tools.netbox) {
+        result = await createNetbox(Nbox(_userName!, _userPassword!, _port!));
+      } else {
+        //nautobot
+        result = await createNautobot(Nbox(_userName!, _userPassword!, _port!));
+      }
       switch (result) {
         case Success():
           widget.parentCallback();

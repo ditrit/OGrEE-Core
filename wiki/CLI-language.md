@@ -38,8 +38,9 @@
   - [Delete object](#delete-object)
   - [Focus an object](#focus-an-object)
   - [Copy object](#copy-object)
+  - [Link/Unlink object](#linkunlink-object)
 - [Create commands](#create-commands)
-  - [Create a Tenant](#create-a-tenant)
+  - [Create a Domain](#create-a-domain)
   - [Create a Site](#create-a-site)
   - [Create a Building](#create-a-building)
   - [Create a Room](#create-a-room)
@@ -456,20 +457,44 @@ cp [source] [dest]
 
 where `[source]` is the path of the object to be copied (currently only objects in /Logical/Layers are accepted) and `[dest]` is the destination path or slug of the destination layer.
 
-# Create commands
-
-## Create a Tenant
-
-Tenant will be created as a new root.
+## Link/Unlink object
+Unlink an object transforms the object in a stray. In other words, it moves the object from the OGrEE hierarchy (no longer has a parent) and changes its type to stray object.
 
 ```
-+tenant:[name]@[color]
-+tn:[name]@[color]
+unlink [path/to/object]
+``` 
+
+Link an object reattaches the object to the OGrEE hierarchy, giving it a parent. It is possible to also set or modify attributes of the object by adding one or more `@attributeName=attributeValue` to the command. 
+
+```
+link [path/to/stray-object]@[path/to/new/parent]
+link [path/to/stray-object]@[path/to/new/parent]@attributeName=attributeValue
+```
+
+Examples:
+
+```
+unlink /Physical/site/bldg/room/rack/device
+link /Physical/Stray@/Physical/site/bldg/room/rack
+link /Physical/Stray@/Physical/site/bldg/room/rack@slots=[slot1,slot2]@orientation=front
+```
+
+# Create commands
+
+## Create a Domain
+
+To create a domain, a name and color should be provided. Should be in the  `/Organisation/Domain` (`/O/Domain` on short version) path or include it in the domain's name. 
+Domains can have a hierarchy, that is, a domain can have a parent domain.  
+*`[color]` should be a 6 digit HEX Value (ie 00000A)*
+
+```
++domain:[name]@[color]
++do:[name]@[color]
 ```
 
 ## Create a Site
 
-Site must be child of a Tenant.
+Sites have no parent, only a name is needed to create it.
 
 ```
 +site:[name]  
@@ -536,7 +561,7 @@ Rack must be child of a room.
 A chassis is a *parent* device racked at a defined U position.  
 *`[posU]` is the position in U in a rack  
 `[sizeU]` is the height in U in a rack  
-`[slot]` is the name of the slot in which you want to place the device  
+`[slot]` is a square brackets list [] with the names of slots in which you want to place the device separated by a comma. Example: [slot1, slot2, slot3]. A shorter version with `..` can be used for a single range of slots: [slot1..slot3]. If no template is given, only one slot can be provided in the list.  
 `[template]` is the name of the device template  
 `[invertOffset]` is a boolean that tells the 3D client to invert the default offset for positioning the device in its slot (false by default, if not provided)  
 `[side]` is from which side you can see the device if not "fullsize". This value is for overriding the one defined in the template. It can be front | rear | frontflipped | rearflipped*  
@@ -664,7 +689,7 @@ Examples:
 [layer_path]:filters=height=[height]
 [layer_path]:filters=category=[category] & name!=[name]
 [layer_path]:filters=(name=[name] & height<[height]) | domain=[domain]
-
+```
 For the layer to filter the children whose category is device. When adding filters on different attributes, all must be fulfilled for a child to be part of the layer.
 
 Layers are not applied until their filters are defined.
@@ -1091,17 +1116,10 @@ titi
 # Examples
 
 ```
-+tn:DEMO@ffffff
++do:DEMO@ffffff
     DEMO.mainContact=Ced
     DEMO.mainPhone=0612345678
     DEMO.mainEmail=ced@ogree3D.com
-
-+tn:Marcus@42ff42
-    Marcus.mainContact=Marcus Pandora
-    Marcus.mainPhone=0666666666
-    Marcus.mainEmail=marcus@pandora.com
-
-+tenant:Billy@F0C300
 
 +si:DEMO.ALPHA@NW
     DEMO.ALPHA.description=This is a demo...

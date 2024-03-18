@@ -45,7 +45,7 @@ class DockerView extends StatelessWidget {
                         columnSpacing: 30,
                         showCheckboxColumn: false,
                         rowsPerPage: _dockerInfo!.length,
-                        columns: getColumns(),
+                        columns: getColumns(localeMsg),
                         source: _DataSource(context, _dockerInfo!),
                       ),
                     )),
@@ -58,7 +58,7 @@ class DockerView extends StatelessWidget {
                           context, BackupPopup(tenantName: tName),
                           isDismissible: true),
                       icon: const Icon(Icons.history),
-                      label: const Text("Backup"),
+                      label: Text(localeMsg.backup.capitalize()),
                     ),
                   ),
                 ),
@@ -80,16 +80,16 @@ class DockerView extends StatelessWidget {
     }
   }
 
-  List<DataColumn> getColumns() {
+  List<DataColumn> getColumns(AppLocalizations localeMsg) {
     TextStyle titleStyle = const TextStyle(fontWeight: FontWeight.w600);
     List<DataColumn> columns = [];
     for (var col in [
       "Logs",
-      "Name",
-      "Last Started",
+      localeMsg.name,
+      localeMsg.lastStarted,
       "Status",
       "Image",
-      "Size",
+      localeMsg.size,
       "Port(s)"
     ]) {
       columns.add(DataColumn(

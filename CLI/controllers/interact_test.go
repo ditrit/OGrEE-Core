@@ -30,7 +30,6 @@ func interactTestSetup(t *testing.T) (cmd.Controller, *mocks.APIPort, *mocks.Ogr
 			"sizeUnit":   "cm",
 			"shape":      "cube",
 			"type":       "box",
-			"template":   "",
 		},
 	})
 

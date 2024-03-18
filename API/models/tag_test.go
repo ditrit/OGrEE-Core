@@ -90,7 +90,7 @@ func TestRemoveTagFromObjectThatHasMultipleTags(t *testing.T) {
 }
 
 func TestUpdateTagNoExistentReturnsError(t *testing.T) {
-	_, err := models.UpdateObject(u.EntityToString(u.TAG), "update-tag", nil, false, nil)
+	_, err := models.UpdateObject(u.EntityToString(u.TAG), "update-tag", nil, false, nil, false)
 	assert.NotNil(t, err)
 	assert.Equal(t, "Nothing matches this request", err.Message)
 }
@@ -107,6 +107,7 @@ func TestUpdateTagNotPresentInAnyObjectWorks(t *testing.T) {
 		},
 		true,
 		nil,
+		false,
 	)
 	assert.Nil(t, err)
 	assert.Equal(t, "update-tag-1-1", updatedTag["slug"])
@@ -130,6 +131,7 @@ func TestUpdateTagPresentInOneObjectUpdatesItInList(t *testing.T) {
 		},
 		true,
 		nil,
+		false,
 	)
 	assert.Nil(t, err)
 	assert.Equal(t, "update-tag-2-2", updatedTag["slug"])
@@ -249,6 +251,7 @@ func TestUpdateTagWithImageWorks(t *testing.T) {
 		},
 		true,
 		nil,
+		false,
 	)
 	assert.Nil(t, err)
 	assert.NotNil(t, updatedTag["image"])
@@ -273,6 +276,7 @@ func TestUpdateSetEmptyImageRemovesOldImage(t *testing.T) {
 		},
 		true,
 		nil,
+		false,
 	)
 	assert.Nil(t, err)
 	assert.Empty(t, updatedTag["image"])
@@ -312,6 +316,7 @@ func TestUpdateWithNewImageRemovesOldImage(t *testing.T) {
 		},
 		true,
 		nil,
+		false,
 	)
 	assert.Nil(t, err)
 	assert.NotEmpty(t, updatedTag["image"])
@@ -451,7 +456,7 @@ func TestUpdateObjectWithTagsThatNotExistsReturnsError(t *testing.T) {
 
 	_, err = models.UpdateObject(u.EntityToString(u.SITE), "update-object-tags-1", map[string]any{
 		"tags": []any{"not-exists"},
-	}, false, integration.ManagerUserRoles)
+	}, false, integration.ManagerUserRoles, false)
 	assert.NotNil(t, err)
 	assert.Equal(t, u.ErrBadFormat, err.Type)
 	assert.Equal(t, "Tag \"not-exists\" not found", err.Message)
@@ -463,7 +468,7 @@ func TestPatchObjectWithTagsReturnsError(t *testing.T) {
 
 	_, err = models.UpdateObject(u.EntityToString(u.SITE), "update-object-tags-2", map[string]any{
 		"tags": []any{"not-exists"},
-	}, true, integration.ManagerUserRoles)
+	}, true, integration.ManagerUserRoles, false)
 	assert.NotNil(t, err)
 	assert.Equal(t, u.ErrBadFormat, err.Type)
 	assert.Equal(t, "Tags cannot be modified in this way, use tags+ and tags-", err.Message)
@@ -552,6 +557,7 @@ func addTagToObject(objectID string, tagSlug string) (map[string]any, *u.Error) 
 		},
 		true,
 		integration.ManagerUserRoles,
+		false,
 	)
 }
 
@@ -564,6 +570,7 @@ func removeTagFromObject(objectID string, tagSlug string) (map[string]any, *u.Er
 		},
 		true,
 		integration.ManagerUserRoles,
+		false,
 	)
 }
 

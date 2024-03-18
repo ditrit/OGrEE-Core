@@ -102,18 +102,16 @@ func UnLinkObjCompleter(line string) []string {
 		return nil
 	}
 
-	partTwo := false
-
-	if strings.Contains(splitted[1], "@") {
-		partTwo = true
+	countAt := strings.Count(splitted[1], "@")
+	if countAt == 0 {
+		return ListEntities(splitted[1])
+	} else if countAt == 1 && !strings.Contains(line, "unlink") {
+		lineEntity := splitted[1]
+		lineEntity = lineEntity[strings.LastIndex(lineEntity, "@")+1:]
+		entities := ListEntities(" " + lineEntity)
+		return entities
 	}
-
-	entities := ListEntities(splitted[1])
-	if !partTwo {
-		entities = append(entities, " @ ")
-	}
-
-	return entities
+	return nil
 }
 
 func ListForUI(line string) []string {

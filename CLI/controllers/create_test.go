@@ -73,7 +73,6 @@ func TestCreateGenericWithoutTemplateWorks(t *testing.T) {
 			"sizeUnit":   "cm",
 			"shape":      "cube",
 			"type":       "box",
-			"template":   "",
 		},
 	})
 

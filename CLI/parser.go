@@ -284,7 +284,7 @@ func (p *parser) parseBool() bool {
 	return tok.val.(bool)
 }
 
-func (p *parser) parseText(lexFunc func() token, trim bool) node {
+func (p *parser) parseText(lexFunc func() token, trim bool, isVecStr bool) node {
 	defer un(trace(p, ""))
 	s := ""
 	subExpr := []node{}
@@ -293,6 +293,11 @@ loop:
 		tok := lexFunc()
 		switch tok.t {
 		case tokText:
+			if isVecStr && tok.str[len(tok.str)-1:] == "]" {
+				p.backward(1)
+				s += tok.str[:len(tok.str)-1]
+				break loop
+			}
 			s += tok.str
 		case tokDeref:
 			s += "%v"
@@ -331,7 +336,7 @@ func (p *parser) parsePath(name string) *pathNode {
 	}
 	defer un(trace(p, name))
 	p.skipWhiteSpaces()
-	path := p.parseText(p.parsePathToken, true)
+	path := p.parseText(p.parsePathToken, true, false)
 	p.skipWhiteSpaces()
 	return &pathNode{path: path}
 }
@@ -400,7 +405,7 @@ func (p *parser) parsePrimaryExpr() node {
 	case tokFloat:
 		return &valueNode{tok.val.(float64)}
 	case tokDoubleQuote:
-		n := p.parseText(p.parseQuotedStringToken, false)
+		n := p.parseText(p.parseQuotedStringToken, false, false)
 		p.expect("\"")
 		return n
 	case tokDeref:
@@ -505,7 +510,7 @@ func (p *parser) parseString(name string) node {
 		p.backward(len("format"))
 		return p.parseExpr("")
 	}
-	n := p.parseText(p.parseUnquotedStringToken, true)
+	n := p.parseText(p.parseUnquotedStringToken, true, false)
 	p.skipWhiteSpaces()
 	return n
 }
@@ -534,6 +539,30 @@ func (p *parser) parseStringOrVec(name string) node {
 		return p.parseExpr("")
 	}
 	return p.parseString("")
+}
+
+func (p *parser) parseStringOrVecStr(name string) []node {
+	defer un(trace(p, name))
+	p.skipWhiteSpaces()
+	if p.parseExact("[") {
+		listnodes := []node{}
+		for {
+			p.skipWhiteSpaces()
+			n := p.parseText(p.parseUnquotedStringToken, true, true)
+			listnodes = append(listnodes, n)
+			if p.parseExact(",") {
+				continue
+			} else {
+				break
+			}
+		}
+		if !p.parseExact("]") {
+			p.error("] expected")
+		}
+		p.skipWhiteSpaces()
+		return listnodes
+	}
+	return []node{p.parseString("")}
 }
 
 func (p *parser) parseArgValue() string {
@@ -858,11 +887,24 @@ func (p *parser) parseLink() node {
 	sourcePath := p.parsePath("source path")
 	p.expect("@")
 	destPath := p.parsePath("destination path")
-	if p.parseExact("@") {
-		slot := p.parseString("slot name")
-		return &linkObjectNode{sourcePath, destPath, slot}
+	values := []node{}
+	attrs := []string{}
+	var slots []node
+	for p.parseExact("@") {
+		p.skipWhiteSpaces()
+		attr := p.parseComplexWord("attribute")
+		p.skipWhiteSpaces()
+		p.expect("=")
+		p.skipWhiteSpaces()
+		if attr == "slot" {
+			slots = p.parseStringOrVecStr("slot")
+		} else {
+			value := p.parseValue()
+			values = append(values, value)
+			attrs = append(attrs, attr)
+		}
 	}
-	return &linkObjectNode{sourcePath, destPath, nil}
+	return &linkObjectNode{sourcePath, destPath, attrs, values, slots}
 }
 
 func (p *parser) parseUnlink() node {
@@ -1137,7 +1179,7 @@ func (p *parser) parseCreateDevice() node {
 	defer un(trace(p, "create device"))
 	path := p.parsePath("")
 	p.expect("@")
-	posUOrSlot := p.parseString("posUOrSlot")
+	posUOrSlot := p.parseStringOrVecStr("posUOrSlot")
 	p.expect("@")
 	sizeUOrTemplate := p.parseString("sizeUOrTemplate")
 	if !p.parseExact("@") {
@@ -1243,7 +1285,9 @@ func (p *parser) parseUpdate() node {
 	values := []node{}
 	moreValues := true
 	for moreValues {
-		if attr == models.LayerFilters || attr == models.LayerFiltersAdd {
+		if attr == "slot" {
+			values = p.parseStringOrVecStr("slot")
+		} else if attr == models.LayerFilters || attr == models.LayerFiltersAdd {
 			filters := p.parseComplexFilters()["filter"]
 			values = append(values, filters)
 		} else {
@@ -1372,7 +1416,7 @@ func newParser(buffer string) *parser {
 	}
 	p.createObjDispatch = map[string]parseCommandFunc{
 		"domain":   p.parseCreateDomain,
-		"dm":       p.parseCreateDomain,
+		"do":       p.parseCreateDomain,
 		"site":     p.parseCreateSite,
 		"si":       p.parseCreateSite,
 		"bldg":     p.parseCreateBuilding,
