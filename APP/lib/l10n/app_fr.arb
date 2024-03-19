@@ -137,7 +137,7 @@
   "parameter": "Paramètre",
   "value": "Valeur",
   "notCreated" : "Pas créé",
-  "stopTentantWarn": "Ce tenant sera complètement arrêté.",
+  "stopTenantWarn": "Ce tenant sera complètement arrêté.",
   "startTenantOK": "Tenant démarré avec succès",
   "stopTenantOK": "Tenant arrêté avec succès",
   "startingTenant": "Démarrage en cours...",
