@@ -120,7 +120,7 @@
   "selectServer": "Elegir servidor",
   "createServer": "Crear nuevo Servidor Backend",
   "createKube": "Crear nuevo cluster Kubernetes",
-  "serverPath": "Ruta de instalación del servidor",
+  "serverPath": "Ruta de instalación en el servidor",
   "portServer": "Puerto del servidor Backend",
 
   "changePassword": "Cambiar contraseña",
