@@ -49,7 +49,7 @@ func getTenantsFromJSON() []models.Tenant {
 }
 
 func GetTenantDockerInfo(c *gin.Context) {
-	name := c.Param("name")
+	name := strings.ToLower(c.Param("name"))
 	println(name)
 	if response, err := getDockerInfo(name); err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, err.Error())
@@ -141,14 +141,13 @@ func AddTenant(c *gin.Context) {
 		c.IndentedJSON(http.StatusBadRequest, err.Error())
 		return
 	} else {
-		newTenant.Name = strings.ToLower(newTenant.Name)
 		if err := dockerCreateTenant(newTenant, c); err != "" {
 			c.String(http.StatusInternalServerError, err)
 			return
 		}
 
 		// Add to local json and respond
-		// newTenant.CustomerPassword = ""
+		newTenant.CustomerPassword = "***"
 		listTenants = append(listTenants, newTenant)
 		data, _ := json.MarshalIndent(listTenants, "", "  ")
 		_ = os.WriteFile("tenants.json", data, 0755)
@@ -158,18 +157,19 @@ func AddTenant(c *gin.Context) {
 }
 
 func dockerCreateTenant(newTenant models.Tenant, c *gin.Context) string {
+	tenantLower := strings.ToLower(newTenant.Name)
 	// Image tagging
 	if newTenant.ImageTag == "" {
 		newTenant.ImageTag = "main"
 	}
 
 	// Docker compose prepare
-	args := []string{"compose", "-p", newTenant.Name}
+	args := []string{"compose", "-p", tenantLower}
 	if newTenant.HasWeb {
 		args = append(args, "--profile")
 		args = append(args, "web")
 		// Create flutter assets folder
-		newTenant.AssetsDir = "./app-deploy/" + newTenant.Name
+		newTenant.AssetsDir = "./app-deploy/" + tenantLower
 		addAppAssets(newTenant, DOCKER_DIR+newTenant.AssetsDir)
 	} else {
 		// docker does not accept it empty, even if it wont be created
@@ -180,7 +180,7 @@ func dockerCreateTenant(newTenant models.Tenant, c *gin.Context) string {
 		args = append(args, "doc")
 	}
 	args = append(args, "--env-file")
-	envFilename := newTenant.Name + ".env"
+	envFilename := tenantLower + ".env"
 	args = append(args, envFilename)
 	args = append(args, "up")
 	args = append(args, "--build")
@@ -336,8 +336,9 @@ func RemoveTenant(c *gin.Context) {
 	var listTenants []models.Tenant
 	json.Unmarshal(data, &listTenants)
 	for i, ten := range listTenants {
-		if ten.Name == tenantName {
+		if strings.ToLower(ten.Name) == tenantName {
 			listTenants = append(listTenants[:i], listTenants[i+1:]...)
+			break
 		}
 	}
 	data, _ = json.MarshalIndent(listTenants, "", "  ")
