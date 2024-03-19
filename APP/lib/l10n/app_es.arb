@@ -145,7 +145,7 @@
   "downloadBackup": "Descargar el archivo de backup",
   "backupInfoMessage": "Un archivo de backup será creado en la máquina host del contenedor de base de datos.\nSi esta opción es seleccionada, este archivo será también descargado en su máquina.",
   "restore": "Restaurar",
-  "toBackup": "Backup",
+  "toBackup": "Hacer backup",
   "backup": "backup",
   "backupRestored": "Backup restaurado:",
   "dropCurrentDB": "Eliminar la base de datos actual",
@@ -171,7 +171,7 @@
   "objType": "Tipo de objeto:",
   "attributes": "Atributos:",
   "attribute": "Atributo",
-  "applicability": "Objeto aplicable",
+  "applicability": "Objetos donde aplicar",
   "applyAlso": "Aplicar también a:",
   "directChildren": "Hijos directos",
   "allChildren": "Todos los hijos",
@@ -181,10 +181,12 @@
   "viewEditNode": "Ver y editar este nodo",
 
   "selectColor": "Seleccionar color",
-  "colorPrimary": "Primario",
-  "colorWheel": "Rueda",
+  "colorPrimary": "Primarios",
+  "colorWheel": "Gradiente",
   "shouldBeOneOf": "Valores aceptados:",
   "parentIdTip": "Se acepta solamente letras, números, '-', '_' o '.'",
   "nameTip": "Se acepta solamente letras, números, '-' o '_'",
-  "tagTip": "Una lista de tags separados por ,"
+  "tagTip": "Una lista de tags separados por ,",
+
+  "applications": "Aplicaciones"
 }

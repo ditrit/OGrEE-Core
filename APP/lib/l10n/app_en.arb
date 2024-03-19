@@ -186,5 +186,7 @@
   "shouldBeOneOf": "One of:",
   "parentIdTip": "Accept only letters, numbers, '-', '_' or '.'",
   "nameTip": "Accept only letters, numbers, '-' or '_'",
-  "tagTip": "A list of tags separated by ,"
+  "tagTip": "A list of tags separated by ,",
+
+  "applications": "Applications"
 }

@@ -186,5 +186,7 @@
   "shouldBeOneOf": "Um de:",
   "parentIdTip": "Apenas letras, números, '-', '_' ou '.'",
   "nameTip": "Apenas letras, números, '-' ou '_'",
-  "tagTip": "Uma lista de tags separadas por ,"
+  "tagTip": "Uma lista de tags separadas por ,",
+
+  "applications": "Aplicativos"
 }

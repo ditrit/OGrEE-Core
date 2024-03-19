@@ -224,5 +224,7 @@
   "shouldBeOneOf": "Valeurs acceptées :",
   "parentIdTip": "Que des lettres, des chiffres, -, _ ou .",
   "nameTip": "Que des lettres, des chiffres, -, ou _",
-  "tagTip": "Une liste de tags séparées par des ,"
+  "tagTip": "Une liste de tags séparées par des ,",
+
+  "applications": "Applications"
 }
