@@ -108,7 +108,7 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
         padding: EdgeInsets.symmetric(vertical: 15),
         child: LanguageToggle(),
       ),
-      const SizedBox(width: 20),
+      const SizedBox(width: 17),
       PopupMenuButton<String>(
           onSelected: (value) {
             if (value == "logout") {
