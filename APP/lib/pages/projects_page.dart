@@ -285,7 +285,8 @@ class _ProjectsPageState extends State<ProjectsPage> {
               }
               break;
             case Tools.cli:
-              showCustomPopup(context, const DownloadCliPopup());
+              showCustomPopup(context, const DownloadCliPopup(),
+                  isDismissible: true);
               break;
           }
         },
