@@ -226,5 +226,29 @@
   "nameTip": "Que des lettres, des chiffres, -, ou _",
   "tagTip": "Une liste de tags séparées par des ,",
 
-  "applications": "Applications"
+  "applications": "Applications",
+  "toolUsername": "Nom d'utilisateur {toolName}",
+  "@toolUsername": {
+    "placeholders": {
+      "toolName": {
+        "type": "String"
+      }
+    }
+  },
+  "toolPassword": "Mot de passe utilisateur {toolName}",
+  "@toolPassword": {
+    "placeholders": {
+      "toolName": {
+        "type": "String"
+      }
+    }
+  },
+  "toolPort": "Porte {toolName}",
+  "@toolPort": {
+    "placeholders": {
+      "toolName": {
+        "type": "String"
+      }
+    }
+  }
 }

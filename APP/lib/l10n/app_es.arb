@@ -188,5 +188,8 @@
   "nameTip": "Se acepta solamente letras, números, '-' o '_'",
   "tagTip": "Una lista de tags separados por ,",
 
-  "applications": "Aplicaciones"
+  "applications": "Aplicaciones",
+  "toolUsername": "Nombre del usuario {toolName}",
+  "toolPassword": "Contraseña del usuario {toolName}",
+  "toolPort": "Puerto {toolName}"
 }
