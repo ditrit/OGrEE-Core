@@ -60,6 +60,11 @@ class _LanguageToggleState extends State<LanguageToggle> {
 
   @override
   Widget build(BuildContext context) {
+    if (MyApp.of(context) != null &&
+        MyApp.of(context)!.getLocale() != _selectedLanguage.locale) {
+      _selectedLanguage = languages.firstWhere(
+          (language) => language.locale == MyApp.of(context)!.getLocale());
+    }
     return PopupMenuButton(
       child: flagWrapper(_selectedLanguage.flag),
       onSelected: (language) => setState(() {
