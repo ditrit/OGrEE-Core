@@ -152,6 +152,11 @@
   "createKube": "Créer cluster Kubernetes",
   "serverPath": "Chemin d'installation (serveur)",
   "portServer": "Porte pour le backend (serveur)",
+  "sshHost": "Host SSH",
+  "sshUser": "Utilisateur SSH",
+  "privateKey": "Clé Privée",
+  "sshPrivateKey": "Clé Privée SSH",
+  "sshPrivateKeyPassphrase": "Passphrase de la Clé Privée",
 
   "changePassword": "Modifier mon mot de passe",
   "currentPassword": "Ancien mot de passe",
