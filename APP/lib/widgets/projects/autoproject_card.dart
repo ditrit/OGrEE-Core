@@ -70,7 +70,7 @@ class AutoProjectCard extends StatelessWidget {
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(bottom: 2.0),
-                    child: Text(localeMsg.description),
+                    child: Text(localeMsg.descriptionTwoPoints),
                   ),
                   Text(
                     "${localeMsg.viewAllObjsNs} ${namespace.name}",

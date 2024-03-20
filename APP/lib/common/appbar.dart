@@ -11,6 +11,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../widgets/tenants/popups/create_server_popup.dart';
 
 AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
+  final localeMsg = AppLocalizations.of(context)!;
   logout() => Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => const LoginPage(),
@@ -33,15 +34,15 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
         PopupMenuItem(
           value: "new",
           child: Text(backendType == BackendType.kubernetes
-              ? AppLocalizations.of(context)!.addKube
-              : AppLocalizations.of(context)!.addServer),
+              ? localeMsg.addKube
+              : localeMsg.addServer),
         ));
   } else if (isTenantAdmin) {
     entries.insert(
         0,
-        const PopupMenuItem(
+        PopupMenuItem(
           value: "tenant",
-          child: Text("Paramètres du tenant"),
+          child: Text(localeMsg.tenantParameters),
         ));
   }
 
