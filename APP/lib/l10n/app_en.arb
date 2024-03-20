@@ -19,6 +19,7 @@
   "select": "Select",
   "download": "Download",
   "name": "Name",
+  "description": "Description",
   "toUpdate": "Update",
 
   "welcome": "Welcome to OGrEE",
@@ -39,7 +40,7 @@
   "editProject": "Edit this project",
   "author": "Author:",
   "lastUpdate": "Last Update:",
-  "description": "Description:",
+  "descriptionTwoPoints": "Description:",
   "launch": "Launch",
   "projectName": "Project name",
   "mandatoryProjectName": "Project's name is mandatory",
@@ -117,6 +118,7 @@
 
   "addServer": "Add new server",
   "addKube": "Add new cluster",
+  "tenantParameters": "Tenant parameters",
   "selectServer": "Choose server",
   "createServer": "Create new Backend Server",
   "createKube": "Create new Kubernetes cluster",

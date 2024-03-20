@@ -19,6 +19,7 @@
   "select": "Choisir",
   "download": "Télécharger",
   "name": "Nom",
+  "description": "Description",
   "toUpdate": "Mettre à jour",
   
   "@welcome": { "description": "Login Page" },
@@ -41,7 +42,7 @@
   "editProject": "Editer ce projet",
   "author": "Auteur :",
   "lastUpdate": "Dernière modification :",
-  "description": "Description :",
+  "descriptionTwoPoints": "Description :",
   "launch": "Lancer",
   "projectName": "Nom du projet",
   "mandatoryProjectName": "Il faut donner un nom au projet",
@@ -147,6 +148,7 @@
 
   "addServer": "Ajouter nouveau serveur",
   "addKube": "Ajouter nouveau cluster",
+  "tenantParameters": "Paramètres du tenant",
   "selectServer": "Choisir serveur",
   "createServer": "Créer backend dans serveur",
   "createKube": "Créer cluster Kubernetes",
