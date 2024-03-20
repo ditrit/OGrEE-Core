@@ -79,7 +79,7 @@ class _CreateServerPopupState extends State<CreateServerPopup> {
                             child: RadioListTile<AuthOption>(
                               activeColor: Colors.blue.shade600,
                               dense: true,
-                              title: const Text(localeMsg.privateKey),
+                              title: Text(localeMsg.privateKey),
                               value: AuthOption.pKey,
                               groupValue: _authOption,
                               onChanged: (AuthOption? value) {
@@ -112,7 +112,8 @@ class _CreateServerPopupState extends State<CreateServerPopup> {
                               children: [
                                 getFormField(
                                     save: (newValue) => _sshKey = newValue,
-                                    label: "${localeMsg.sshPrivateKey} (/local/path/file)",
+                                    label:
+                                        "${localeMsg.sshPrivateKey} (/local/path/file)",
                                     icon: Icons.lock),
                                 getFormField(
                                     save: (newValue) => _sshKeyPass = newValue,
