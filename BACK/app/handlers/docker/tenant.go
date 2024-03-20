@@ -147,7 +147,7 @@ func AddTenant(c *gin.Context) {
 		}
 
 		// Add to local json and respond
-		newTenant.CustomerPassword = "***"
+		// newTenant.CustomerPassword = "***"
 		listTenants = append(listTenants, newTenant)
 		data, _ := json.MarshalIndent(listTenants, "", "  ")
 		_ = os.WriteFile("tenants.json", data, 0755)
