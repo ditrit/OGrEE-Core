@@ -1,6 +1,21 @@
-# OGrEE-Core
+<div align="center">
+<img src="https://raw.githubusercontent.com/ditrit/OGrEE-Core/main/APP/assets/custom/logo.png" width="300" alt="NetBox logo" />
+<p><strong>A smart datacenter digital twin</strong></p>
 
-OGrEE-Core assembles 3 essential components of OGrEE, allowing you to create an OGrEE Tenant to store and interact with your datacenter data.
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=helderbetiol_OGrEE-Core&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=helderbetiol_OGrEE-Core)
+[![⚙️ Build - Publish](https://github.com/ditrit/OGrEE-Core/actions/workflows/build-deploy.yaml/badge.svg)](https://github.com/ditrit/OGrEE-Core/actions/workflows/build-deploy.yaml)
+
+</div>
+
+OGrEE exists so managing a datacenter can be easier. It aggregates data from different datacenter tools to create a digital twin easily accessible from your computer, smartphone or even VR/AR glasses. Its analysis capabilities helps identify issues faster, better prepare for maintenance and migrations, minimize risks and errors.
+
+
+
+## What is OGrEE-Core?
+OGrEE-Core assembles 3 essential components of OGrEE.
+
+## What is OGrEE-3D?
+
 
 ## Quick Intro
 ![ogree-schema](https://github.com/ditrit/OGrEE-Core/assets/37706737/378c6cbe-aea2-4db0-82d6-6c3a18ecc6c5)
