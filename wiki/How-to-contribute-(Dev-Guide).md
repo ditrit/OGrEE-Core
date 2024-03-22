@@ -13,5 +13,18 @@ This is a **mono repo** (aka, a lot of things in the same place) for the Core ap
 
 * Once all work is done, create a **pull request** (PR). This will trigger several Github workflows (more about it [here](https://github.com/ditrit/OGrEE-Core?tab=readme-ov-file#-ogree-core-gitflow)) that will test and build your code. If all it's good, it's time for **peer review**! Another member of the time will check your code, maybe ask some questions or propose some changes. Once approved, the only thing left is to squash and merge. Your code will get to the main branch, closing the issue and triggering more [Github workflows](https://github.com/ditrit/OGrEE-Core?tab=readme-ov-file#-ogree-core-gitflow) to create or aggregate to a release candidate version. 
 
- 
+## How to checkout a single component
+OGrEE-Core is a monorepo hosting 3 differents applications: API, CLI and APP. With git sparse checkout functionality, you can choose which component you want to checkout instead of the whole repo. 
+
+```
+mkdir sparse
+cd sparse
+git init
+git remote add -f origin https://github.com/ditrit/OGrEE-Core.git
+git sparse-checkout init
+# subfolders to checkout
+git sparse-checkout set "deploy" "APP"
+# branch you wish to checkout
+git pull origin main 
+```
  
