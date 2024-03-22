@@ -1116,6 +1116,12 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 //     required: true
 //     type: string
 //     default: "siteA"
+//   - name: body
+//     in: body
+//     description: An object with the attributes to be changed
+//     type: json
+//     required: true
+//     example: '{"domain": "mynewdomain"}'
 //
 // responses:
 //     '200':
