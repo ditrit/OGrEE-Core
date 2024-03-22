@@ -559,23 +559,23 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 //     example: vendor=ibm ; name=siteA ; orientation=front
 //   - name: body
 //     in: body
-//     description: A JSON containing a mongoDB query to select and filter the desired objects.
+//     description: 'A JSON containing a mongoDB query to select and filter the desired objects.
 //     Operators can be `$not`, `$lt`, `$lte`, `$gt`, `$gte`, `$and` and `$or`.
 //     For equality, the syntax is: `[field]: value`.
 //     Objects can be filtered by any of their properties and attributes.'
 //     required: true
 //     default: {}
-//     example: {"$and": [{"domain": "DemoDomain"}, {"attributes.height": {"$lt": "3"}}]}
+//     example: '{"$and": [{"domain": "DemoDomain"}, {"attributes.height": {"$lt": "3"}}]}'
 // responses:
-//		'200':
-//		    description: 'Found. A response body will be returned with
-//	        a meaningful message.'
-//     '400':
+//      '200':
+//          description: 'Found. A response body will be returned with
+//          a meaningful message.'
+//      '400':
 //         description: 'Bad request. Request has wrong format.'
-//		'500':
-//		    description: Internal Error. A system error stopped the request.
+//      '500':
+//          description: Internal Error. A system error stopped the request.
 
-// swagger:operation DELETE /api/objects Objects HandleComplexFilters
+// swagger:operation DELETE /api/objects Objects HandleDeleteComplexFilters
 // Deletes an object that matches the complex filter in the system from any of the entities with no need to specify it.
 // Wildcards can be used on any of the parameters present in query.
 // Check endpoint `HandleGenericObjects` for more information on wildcards
@@ -616,13 +616,13 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 //     example: vendor=ibm ; name=siteA ; orientation=front
 //   - name: body
 //     in: body
-//     description: A JSON containing a mongoDB query to select and filter the desired objects.
+//     description: 'A JSON containing a mongoDB query to select and filter the desired objects.
 //     Operators can be `$not`, `$lt`, `$lte`, `$gt`, `$gte`, `$and` and `$or`.
 //     For equality, the syntax is: `[field]: value`.
 //     Objects can be filtered by any of their properties and attributes.'
 //     required: true
 //     default: {}
-//     example: {"$and": [{"domain": "DemoDomain"}, {"attributes.height": {"$lt": "3"}}]}
+//     example: '{"$and": [{"domain": "DemoDomain"}, {"attributes.height": {"$lt": "3"}}]}'
 // responses:
 //		'204':
 //			description: Successfully deleted object
@@ -1116,6 +1116,12 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 //     required: true
 //     type: string
 //     default: "siteA"
+//   - name: body
+//     in: body
+//     description: An object with the attributes to be changed
+//     type: json
+//     required: true
+//     example: '{"domain": "mynewdomain"}'
 //
 // responses:
 //     '200':

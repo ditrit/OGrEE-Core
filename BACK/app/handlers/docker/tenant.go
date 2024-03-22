@@ -141,6 +141,7 @@ func AddTenant(c *gin.Context) {
 		c.IndentedJSON(http.StatusBadRequest, err.Error())
 		return
 	} else {
+		newTenant.Name = strings.ToLower(newTenant.Name)
 		if err := dockerCreateTenant(newTenant, c); err != "" {
 			c.String(http.StatusInternalServerError, err)
 			return
@@ -157,19 +158,18 @@ func AddTenant(c *gin.Context) {
 }
 
 func dockerCreateTenant(newTenant models.Tenant, c *gin.Context) string {
-	tenantLower := strings.ToLower(newTenant.Name)
 	// Image tagging
 	if newTenant.ImageTag == "" {
 		newTenant.ImageTag = "main"
 	}
 
 	// Docker compose prepare
-	args := []string{"compose", "-p", tenantLower}
+	args := []string{"compose", "-p", newTenant.Name}
 	if newTenant.HasWeb {
 		args = append(args, "--profile")
 		args = append(args, "web")
 		// Create flutter assets folder
-		newTenant.AssetsDir = "./app-deploy/" + tenantLower
+		newTenant.AssetsDir = "./app-deploy/" + newTenant.Name
 		addAppAssets(newTenant, DOCKER_DIR+newTenant.AssetsDir)
 	} else {
 		// docker does not accept it empty, even if it wont be created
@@ -180,7 +180,7 @@ func dockerCreateTenant(newTenant models.Tenant, c *gin.Context) string {
 		args = append(args, "doc")
 	}
 	args = append(args, "--env-file")
-	envFilename := tenantLower + ".env"
+	envFilename := newTenant.Name + ".env"
 	args = append(args, envFilename)
 	args = append(args, "up")
 	args = append(args, "--build")
@@ -303,7 +303,7 @@ func RemoveTenant(c *gin.Context) {
 
 	// Stop and remove containers
 	for _, str := range []string{"_webapp", "_api", "_db", "_doc"} {
-		cmd := exec.Command("docker", "rm", "-v", "--force", strings.ToLower(tenantName)+str)
+		cmd := exec.Command("docker", "rm", "-v", "--force", tenantName+str)
 		cmd.Dir = DOCKER_DIR
 		var stderr bytes.Buffer
 		cmd.Stderr = &stderr
@@ -313,7 +313,7 @@ func RemoveTenant(c *gin.Context) {
 			return
 		} else if str == "_db" {
 			// Remove volume
-			cmd = exec.Command("docker", "volume", "rm", strings.ToLower(tenantName)+str)
+			cmd = exec.Command("docker", "volume", "rm", tenantName+str)
 			cmd.Dir = DOCKER_DIR
 			cmd.Stderr = &stderr
 			if _, err := cmd.Output(); err != nil {
