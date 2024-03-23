@@ -71,6 +71,7 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         TabBar(
+                          tabAlignment: TabAlignment.center,
                           controller: _tabController,
                           labelStyle: TextStyle(
                               fontSize: 15,

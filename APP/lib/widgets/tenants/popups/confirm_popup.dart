@@ -62,7 +62,7 @@ class _ConfirmPopupState extends State<ConfirmPopup> {
                     ? Container()
                     : Padding(
                         padding: const EdgeInsets.symmetric(vertical: 30),
-                        child: Text(localeMsg.stopTentantWarn),
+                        child: Text(localeMsg.stopTenantWarn),
                       ),
                 widget.isStart
                     ? Container()
