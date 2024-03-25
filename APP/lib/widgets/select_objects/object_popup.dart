@@ -715,7 +715,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
                 : domainAutoFillField())
             : Container(),
         CustomFormField(
-            save: (newValue) => objData["description"] = [newValue],
+            save: (newValue) => objData["description"] = newValue,
             label: "Description",
             icon: Icons.edit,
             shouldValidate: false,
