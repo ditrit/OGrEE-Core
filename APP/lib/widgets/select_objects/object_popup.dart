@@ -716,7 +716,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
             : Container(),
         CustomFormField(
             save: (newValue) => objData["description"] = newValue,
-            label: "Description",
+            label: localeMsg.description,
             icon: Icons.edit,
             shouldValidate: false,
             initialValue: objData["description"]),

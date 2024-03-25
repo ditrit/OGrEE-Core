@@ -28,7 +28,7 @@ class MyAppState extends State<MyApp> {
     });
   }
 
-  String getLocale() => _locale.languageCode;
+  Locale getLocale() => _locale;
 
   // This widget is the root of our application.
   @override

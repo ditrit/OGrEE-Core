@@ -5,14 +5,18 @@
             "pattern": "^[0-9a-fA-F]{6}$",
             "descriptions": {
                 "en": "a 6-character hexadecimal value (e.g. C0FFEE)",
-                "fr": "une valeur hexadécimale de 6 caractères (e.g. C0FFEE)"
+                "fr": "une valeur hexadécimale de 6 caractères (e.g. C0FFEE)",
+                "es": "Un valor hexadecimal de 6 caracteres (e.g. C0FFEE)",
+                "pt": "Um valor hexadecimal de 6 caracteres (e.g. C0FFEE)"
             }
         },
         "colorTemplate": {
             "pattern": "(^[0-9a-fA-F]{6}$)|(^@[a-zA-Z0-9-]+$)|(^$)",
             "descriptions": {
                 "en": "a 6-character hexadecimal value or @[color name] (e.g. C0FFEE, @blue)",
-                "fr": "une valeur hexadécimale de 6 caractères ou @[nom de la couleur]"
+                "fr": "une valeur hexadécimale de 6 caractères ou @[nom de la couleur]",
+                "es": "un valor hexadecimal de 6 caracteres o @[nombre del color]",
+                "pt": "um valor hexadecimal de 6 caracteres ou @[nome da cor]"
             }
         },
         "metricImperialUnit": {
@@ -25,49 +29,63 @@
             "pattern": "^\\[([+-]?([0-9]*[.])?[0-9]+),\\s*([+-]?([0-9]*[.])?[0-9]+)]$",
             "descriptions": {
                 "en": "a vector2 ([x, y]) containing two floats (e.g. [2, 3.14])",
-                "fr": "un vector2 ([x, y]) contenant deux nombres flottants (e.g. [2, 3.14])"
+                "fr": "un vector2 ([x, y]) contenant deux nombres flottants (e.g. [2, 3.14])",
+                "es": "un vector2 ([x, y]) que contiene dos números flotantes (e.g. [2, 3.14])",
+                "pt": "um vetor2 ([x, y]) contendo dois floats (e.g. [2, 3.14])"
             }
         },
         "vector3": {
             "pattern": "^\\[([+-]?([0-9]*[.])?[0-9]+)(,\\s*([+-]?([0-9]*[.])?[0-9]+)){2}]$",
             "descriptions": {
                 "en": "a vector3 ([x, y, z]) containing three floats (e.g. [2, 2.72, 3.14])",
-                "fr": "une vector3 ([x, y, z]) contenant trois nombres flottants (e.g. [2, 2.72, 3.14])"
+                "fr": "une vector3 ([x, y, z]) contenant trois nombres flottants (e.g. [2, 2.72, 3.14])",
+                "es": "un vector3 ([x, y, z]) que contiene tres números flotantes (e.g. [2, 2.72, 3.14])",
+                "pt": "um vetor3 ([x, y, z]) contendo três floats (e.g. [2, 2.72, 3.14])"
             }
         },
         "float": {
             "pattern": "^[-]?([0-9]*[.])?[0-9]+$",
             "descriptions": {
                 "en": "a floating point number (e.g. 3.14, -2.72, 1, -2)",
-                "fr": "un nombre flottant (e.g. 3.14, -2.72, 1, -2)"
+                "fr": "un nombre flottant (e.g. 3.14, -2.72, 1, -2)",
+                "es": "un número flotante (e.g. 3.14, -2.72, 1, -2)",
+                "pt": "um float (e.g. 3.14, -2.72, 1, -2)"
             }
         },
         "clearanceVector": {
             "pattern": "^\\[(([0-9]*[.])?[0-9]+)(,\\s*(([0-9]*[.])?[0-9]+)){5}]$",
             "descriptions": {
                 "en": "a vector ([...]) containing six floats (e.g. [2, 2.72, 3, 3.14, 4, 4.5])",
-                "fr": "une vector ([...]) contenant six nombres flottants (e.g. [2, 2.72, 3, 3.14, 4, 4.5])"
+                "fr": "une vector ([...]) contenant six nombres flottants (e.g. [2, 2.72, 3, 3.14, 4, 4.5])",
+                "es": "un vector ([...]) que contiene seis números flotantes (e.g. [2, 2.72, 3, 3.14, 4, 4.5])",
+                "pt": "um vetor ([...]) contendo seis floats (e.g. [2, 2.72, 3, 3.14, 4, 4.5])"
             }
         },
         "slug": {
             "pattern": "^[a-z0-9-_]+$",
             "descriptions": {
                 "en": "only lowercase letters, numbers, '-' or '_' (e.g. abc_xyz-0)",
-                "fr": "que des lettres minuscules, des chiffres, '-' ou '_' (e.g. abc_xyz-0)"
+                "fr": "que des lettres minuscules, des chiffres, '-' ou '_' (e.g. abc_xyz-0)",
+                "es": "solo letras minúsculas, números, '-' o '_' (e.g. abc_xyz-0)",
+                "pt": "apenas letras minúsculas, números, '-' ou '_' (e.g. abc_xyz-0)"
             }
         },
         "name": {
             "pattern": "^\\w(\\w|\\-)*$",
             "descriptions": {
                 "en": "only letters, numbers, '-' or '_' (e.g. ABC_xyz-0)",
-                "fr": "que des lettres, des chiffres, '-' ou '_' (e.g. abc_xyz-0)"
+                "fr": "que des lettres, des chiffres, '-' ou '_' (e.g. abc_xyz-0)",
+                "es": "solo letras, numeros, '-' o '_' (e.g. abc_xyz-0)",
+                "pt": "apenas letras, números, '-' ou '_' (e.g. abc_xyz-0)"
             }
         },
         "id": {
             "pattern": "^\\w(\\w|\\-)*(\\.\\w(\\w|\\-)*)*$",
             "descriptions": {
                 "en": "only letters, numbers, '-', '_' or '.' (e.g. BASIC.abc_xyz-0)",
-                "fr": "que des lettres, des chiffres, '-', '_' ou '.' (e.g. abc_xyz-0)"
+                "fr": "que des lettres, des chiffres, '-', '_' ou '.' (e.g. abc_xyz-0)",
+                "es": "solo letras, numeros, '-', '_' o '.' (e.g. abc_xyz-0)",
+                "pt": "apenas letras, números, '-', '_' ou '.' (e.g. abc_xyz-0)"
             }
         }
     }

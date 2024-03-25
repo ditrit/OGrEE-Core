@@ -100,6 +100,7 @@ class _DomainPopupState extends State<DomainPopup>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TabBar(
+                    tabAlignment: TabAlignment.center,
                     controller: _tabController,
                     labelStyle: TextStyle(
                         fontSize: 15,

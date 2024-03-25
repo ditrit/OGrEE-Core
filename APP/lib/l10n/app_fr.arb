@@ -19,6 +19,7 @@
   "select": "Choisir",
   "download": "Télécharger",
   "name": "Nom",
+  "description": "Description",
   "toUpdate": "Mettre à jour",
   
   "@welcome": { "description": "Login Page" },
@@ -41,7 +42,7 @@
   "editProject": "Editer ce projet",
   "author": "Auteur :",
   "lastUpdate": "Dernière modification :",
-  "description": "Description :",
+  "descriptionTwoPoints": "Description :",
   "launch": "Lancer",
   "projectName": "Nom du projet",
   "mandatoryProjectName": "Il faut donner un nom au projet",
@@ -137,7 +138,7 @@
   "parameter": "Paramètre",
   "value": "Valeur",
   "notCreated" : "Pas créé",
-  "stopTentantWarn": "Ce tenant sera complètement arrêté.",
+  "stopTenantWarn": "Ce tenant sera complètement arrêté.",
   "startTenantOK": "Tenant démarré avec succès",
   "stopTenantOK": "Tenant arrêté avec succès",
   "startingTenant": "Démarrage en cours...",
@@ -147,11 +148,17 @@
 
   "addServer": "Ajouter nouveau serveur",
   "addKube": "Ajouter nouveau cluster",
+  "tenantParameters": "Paramètres du tenant",
   "selectServer": "Choisir serveur",
   "createServer": "Créer backend dans serveur",
   "createKube": "Créer cluster Kubernetes",
   "serverPath": "Chemin d'installation (serveur)",
   "portServer": "Porte pour le backend (serveur)",
+  "sshHost": "Host SSH",
+  "sshUser": "Utilisateur SSH",
+  "privateKey": "Clé Privée",
+  "sshPrivateKey": "Clé Privée SSH",
+  "sshPrivateKeyPassphrase": "Passphrase de la Clé Privée",
 
   "changePassword": "Modifier mon mot de passe",
   "currentPassword": "Ancien mot de passe",
@@ -224,5 +231,31 @@
   "shouldBeOneOf": "Valeurs acceptées :",
   "parentIdTip": "Que des lettres, des chiffres, -, _ ou .",
   "nameTip": "Que des lettres, des chiffres, -, ou _",
-  "tagTip": "Une liste de tags séparées par des ,"
+  "tagTip": "Une liste de tags séparées par des ,",
+
+  "applications": "Applications",
+  "toolUsername": "Nom d'utilisateur {toolName}",
+  "@toolUsername": {
+    "placeholders": {
+      "toolName": {
+        "type": "String"
+      }
+    }
+  },
+  "toolPassword": "Mot de passe utilisateur {toolName}",
+  "@toolPassword": {
+    "placeholders": {
+      "toolName": {
+        "type": "String"
+      }
+    }
+  },
+  "toolPort": "Porte {toolName}",
+  "@toolPort": {
+    "placeholders": {
+      "toolName": {
+        "type": "String"
+      }
+    }
+  }
 }
