@@ -16,6 +16,9 @@ import (
 func init() {
 	integration.RequireCreateSite("site-no-temperature")
 	integration.RequireCreateBuilding("site-no-temperature", "building-1")
+	integration.RequireCreateBuilding("site-no-temperature", "building-2")
+	integration.RequireCreateRoom("site-no-temperature.building-1", "room-1")
+	integration.RequireCreateRoom("site-no-temperature.building-2", "room-1")
 	integration.RequireCreateSite("site-with-temperature")
 	integration.RequireCreateBuilding("site-with-temperature", "building-3")
 	var ManagerUserRoles = map[string]models.Role{
@@ -349,4 +352,160 @@ func TestGetTemperature(t *testing.T) {
 	temperatureUnit, exists := data["temperatureUnit"].(string)
 	assert.True(t, exists)
 	assert.Equal(t, "30", temperatureUnit)
+}
+
+// Tests get subentities
+// func TestErrorGetRoomsSites(t *testing.T) {
+// 	recorder := e2e.MakeRequest("GET", "/api/rooms/site-no-temperature.building-2.room-1/sites", nil)
+// 	assert.Equal(t, http.StatusNotFound, recorder.Code)
+// }
+
+// func TestErrorGetSitesRooms(t *testing.T) {
+// 	recorder := e2e.MakeRequest("GET", "/api/sites/unknown/rooms", nil)
+// 	assert.Equal(t, http.StatusNotFound, recorder.Code)
+
+// 	var response map[string]interface{}
+// 	json.Unmarshal(recorder.Body.Bytes(), &response)
+// 	fmt.Println(response)
+// 	message, exists := response["message"].(string)
+// 	assert.True(t, exists)
+// 	assert.Equal(t, "Nothing matches this request", message)
+// }
+
+func TestGetSitesRooms(t *testing.T) {
+	recorder := e2e.MakeRequest("GET", "/api/sites/site-no-temperature/rooms", nil)
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	var response map[string]interface{}
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	message, exists := response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "successfully got object", message)
+
+	data, exists := response["data"].(map[string]interface{})
+	assert.True(t, exists)
+	objects, exists := data["objects"].([]interface{})
+	assert.True(t, exists)
+	assert.Equal(t, 2, len(objects))
+
+	areRooms := true
+	for _, element := range objects {
+		if element.(map[string]interface{})["category"] != "room" {
+			areRooms = false
+			break
+		}
+	}
+	assert.True(t, areRooms)
+}
+
+func TestGetHierarchyAttributes(t *testing.T) {
+	recorder := e2e.MakeRequest("GET", "/api/hierarchy/attributes", nil)
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	var response map[string]interface{}
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	message, exists := response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "successfully got attrs hierarchy", message)
+
+	data, exists := response["data"].(map[string]interface{})
+	assert.True(t, exists)
+	keys := make([]int, len(data))
+	assert.True(t, len(keys) > 0)
+
+	// we test the color attribute is present for domain1
+	domain1, exists := data["domain1"].(map[string]interface{})
+	assert.True(t, exists)
+	color, exists := domain1["color"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "ffffff", color)
+}
+
+// Tests link and unlink entity
+func TestErrorUnlinkWithNotAllowedAttributes(t *testing.T) {
+	requestBody := []byte(`{
+		"name": "StrayRoom",
+		"other": "other"
+	}`)
+
+	recorder := e2e.MakeRequest("PATCH", "/api/rooms/site-no-temperature.building-2.room-1/unlink", requestBody)
+	assert.Equal(t, http.StatusBadRequest, recorder.Code)
+	var response map[string]interface{}
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	message, exists := response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "Body must be empty or only contain valid name", message)
+}
+
+func TestUnlinkRoom(t *testing.T) {
+	requestBody := []byte(`{
+		"name": "StrayRoom"
+	}`)
+
+	recorder := e2e.MakeRequest("PATCH", "/api/rooms/site-no-temperature.building-2.room-1/unlink", requestBody)
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	var response map[string]interface{}
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	message, exists := response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "successfully unlinked", message)
+
+	// TODO: add this
+	// We verify room-1 does not exist
+	// recorder = e2e.MakeRequest("GET", "/api/rooms/site-no-temperature.building-2.room-1", requestBody)
+	// assert.Equal(t, http.StatusNotFound, recorder.Code)
+
+	// We verify the StrayRoom exists
+	recorder = e2e.MakeRequest("GET", "/api/stray-objects/StrayRoom", requestBody)
+	assert.Equal(t, http.StatusOK, recorder.Code)
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	data, exists := response["data"].(map[string]interface{})
+	assert.True(t, exists)
+	id := data["id"].(string)
+	assert.Equal(t, "StrayRoom", id)
+}
+
+func TestErrorLinkWithoutParentId(t *testing.T) {
+	requestBody := []byte(`{
+		"name": "room-1"
+	}`)
+
+	recorder := e2e.MakeRequest("PATCH", "/api/stray-objects/StrayRoom/link", requestBody)
+	assert.Equal(t, http.StatusBadRequest, recorder.Code)
+	var response map[string]interface{}
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	message, exists := response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "Error while decoding request body: must contain parentId", message)
+}
+
+func TestLinkRoom(t *testing.T) {
+	requestBody := []byte(`{
+		"parentId": "site-no-temperature.building-2",
+		"name": "room-1"
+	}`)
+
+	recorder := e2e.MakeRequest("PATCH", "/api/stray-objects/StrayRoom/link", requestBody)
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	var response map[string]interface{}
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	message, exists := response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "successfully linked", message)
+
+	// TODO: add this
+	// We verify the StrayRoom  does not exist
+	// recorder = e2e.MakeRequest("GET", "/api/stray-objects/StrayRoom", requestBody)
+	// assert.Equal(t, http.StatusNotFound, recorder.Code)
+
+	// We verify room-1 exists again
+	recorder = e2e.MakeRequest("GET", "/api/rooms/site-no-temperature.building-2.room-1", requestBody)
+	assert.Equal(t, http.StatusOK, recorder.Code)
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	data, exists := response["data"].(map[string]interface{})
+	assert.True(t, exists)
+	id := data["id"].(string)
+	assert.Equal(t, "site-no-temperature.building-2.room-1", id)
 }
