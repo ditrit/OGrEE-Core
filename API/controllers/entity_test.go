@@ -40,14 +40,12 @@ func TestCreateBulkDomains(t *testing.T) {
 		{
 			"name": "domain1",
 			"parentId": "",
-			"description": "Domain 1",
 			"color": "ffffff"
 		},
 		{
 			"name": "domain2",
 			"parentId": "",
-			"description": "Domain 2",
-			"color": "ffffff"
+			"description": "Domain 2"
 		}
 	]`)
 
@@ -366,7 +364,6 @@ func TestGetTemperature(t *testing.T) {
 
 // 	var response map[string]interface{}
 // 	json.Unmarshal(recorder.Body.Bytes(), &response)
-// 	fmt.Println(response)
 // 	message, exists := response["message"].(string)
 // 	assert.True(t, exists)
 // 	assert.Equal(t, "Nothing matches this request", message)
@@ -508,4 +505,135 @@ func TestLinkRoom(t *testing.T) {
 	assert.True(t, exists)
 	id := data["id"].(string)
 	assert.Equal(t, "site-no-temperature.building-2.room-1", id)
+}
+
+// Tests entity validation
+func TestValidateNonExistentEntity(t *testing.T) {
+	requestBody := []byte(`{}`)
+
+	recorder := e2e.MakeRequest("POST", "/api/validate/invalid", requestBody)
+	assert.Equal(t, http.StatusNotFound, recorder.Code)
+}
+
+func TestValidateEntityWithoutAttributes(t *testing.T) {
+	requestBody := []byte(`{
+		"category": "room",
+		"description": "room",
+		"domain": "domain1",
+		"name": "roomA",
+		"parentId": "site-no-temperature.building-1"
+	}`)
+
+	recorder := e2e.MakeRequest("POST", "/api/validate/rooms", requestBody)
+	assert.Equal(t, http.StatusBadRequest, recorder.Code)
+
+	var response map[string]interface{}
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	message, exists := response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "JSON body doesn't validate with the expected JSON schema", message)
+}
+
+func TestValidateEntityNonExistentDomain(t *testing.T) {
+	requestBody := []byte(`{
+		"attributes": {
+			"floorUnit": "t",
+			"height": "2.8",
+			"heightUnit": "m",
+			"axisOrientation": "+x+y",
+			"rotation": "-90",
+			"posXY": "[0, 0]",
+			"posXYUnit": "m",
+			"size": "[-13, -2.9]",
+			"sizeUnit": "m",
+			"template": ""
+		},
+		"category": "room",
+		"description": "room",
+		"domain": "invalid",
+		"name": "roomA",
+		"parentId": "site-no-temperature.building-1"
+	}`)
+
+	recorder := e2e.MakeRequest("POST", "/api/validate/rooms", requestBody)
+	assert.Equal(t, http.StatusNotFound, recorder.Code)
+
+	var response map[string]interface{}
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	message, exists := response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "Domain not found: invalid", message)
+}
+
+func TestValidateEntityInvalidDomain(t *testing.T) {
+	requestBody := []byte(`{
+		"attributes": {
+			"floorUnit": "t",
+			"height": "2.8",
+			"heightUnit": "m",
+			"axisOrientation": "+x+y",
+			"rotation": "-90",
+			"posXY": "[0, 0]",
+			"posXYUnit": "m",
+			"size": "[-13, -2.9]",
+			"sizeUnit": "m",
+			"template": ""
+		},
+		"category": "room",
+		"description": "room",
+		"domain": "domain1",
+		"name": "roomA",
+		"parentId": "site-no-temperature.building-1"
+	}`)
+
+	recorder := e2e.MakeRequest("POST", "/api/validate/rooms", requestBody)
+	assert.Equal(t, http.StatusBadRequest, recorder.Code)
+
+	var response map[string]interface{}
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	message, exists := response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "Object domain is not equal or child of parent's domain", message)
+}
+
+func TestValidateValidRoomEntity(t *testing.T) {
+	requestBody := []byte(`{
+		"attributes": {
+			"floorUnit": "t",
+			"height": "2.8",
+			"heightUnit": "m",
+			"axisOrientation": "+x+y",
+			"rotation": "-90",
+			"posXY": "[0, 0]",
+			"posXYUnit": "m",
+			"size": "[-13, -2.9]",
+			"sizeUnit": "m",
+			"template": ""
+		},
+		"category": "room",
+		"description": "room",
+		"domain": "` + integration.TestDBName + `",
+		"name": "roomA",
+		"parentId": "site-no-temperature.building-1"
+	}`)
+
+	recorder := e2e.MakeRequest("POST", "/api/validate/rooms", requestBody)
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	var response map[string]interface{}
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	message, exists := response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "This object can be created", message)
+}
+
+func TestGetStats(t *testing.T) {
+	recorder := e2e.MakeRequest("GET", "/api/stats", nil)
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	var response map[string]interface{}
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	numberOfRacks, exists := response["Number of racks:"].(float64)
+	assert.True(t, exists)
+	assert.True(t, numberOfRacks > 0)
 }
