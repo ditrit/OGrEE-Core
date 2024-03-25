@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/url"
 	"p3/test/e2e"
+	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -122,7 +123,7 @@ func TestCreateBulkDomainWithDuplicateError(t *testing.T) {
 	assert.Equal(t, "Error while creating domain: Duplicates not allowed", message)
 }
 
-// Tests delete domains (/api/objects)
+// Tests delete subdomains (/api/objects)
 func TestDeleteSubdomains(t *testing.T) {
 	// Test delete subdomain using a pattern
 	params, _ := url.ParseQuery("id=domain3.*")
@@ -213,4 +214,80 @@ func TestComplexFilterDelete(t *testing.T) {
 	id, exists := domain["id"].(string)
 	assert.True(t, exists)
 	assert.Equal(t, "domain4.subDomain1", id)
+}
+
+// Tests get different entities
+func TestGetDomainEntity(t *testing.T) {
+	recorder := e2e.MakeRequest("GET", "/api/domains", nil)
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	var response map[string]interface{}
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	message, exists := response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "successfully got domains", message)
+
+	// we have multiple domains
+	data, exists := response["data"].(map[string]interface{})
+	assert.True(t, exists)
+
+	objects, exists := data["objects"].([]interface{})
+	assert.True(t, exists)
+	assert.Equal(t, true, len(objects) > 0) // we have domains created in this file and others
+
+	// domain3 exists but domain3.subDomain1 does not
+	hasDomain3 := slices.ContainsFunc(objects, func(value interface{}) bool {
+		domain := value.(map[string]interface{})
+		return domain["id"].(string) == "domain3"
+	})
+	assert.Equal(t, true, hasDomain3)
+
+	hasDomain3Subdomain1 := slices.ContainsFunc(objects, func(value interface{}) bool {
+		domain := value.(map[string]interface{})
+		return domain["id"].(string) == "domain3.subDomain1"
+	})
+	assert.Equal(t, false, hasDomain3Subdomain1)
+}
+
+func TestGetBuildingsEntity(t *testing.T) {
+	recorder := e2e.MakeRequest("GET", "/api/buildings", nil)
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	var response map[string]interface{}
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	message, exists := response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "successfully got buildings", message)
+
+	// we have multiple buildings
+	data, exists := response["data"].(map[string]interface{})
+	assert.True(t, exists)
+
+	objects, exists := data["objects"].([]interface{})
+	assert.True(t, exists)
+	assert.Equal(t, true, len(objects) > 0)
+}
+
+func TestGetUnknownEntity(t *testing.T) {
+	recorder := e2e.MakeRequest("GET", "/api/unknown", nil)
+	assert.Equal(t, http.StatusNotFound, recorder.Code)
+}
+
+func TestGetDomainEntitiesFilteredByColor(t *testing.T) {
+	recorder := e2e.MakeRequest("GET", "/api/domains?color=00ED00", nil)
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	var response map[string]interface{}
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	message, exists := response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "successfully got query for domain", message)
+
+	// we have multiple domains
+	data, exists := response["data"].(map[string]interface{})
+	assert.True(t, exists)
+
+	objects, exists := data["objects"].([]interface{})
+	assert.True(t, exists)
+	assert.Equal(t, 2, len(objects)) // domain3 and domain4
 }
