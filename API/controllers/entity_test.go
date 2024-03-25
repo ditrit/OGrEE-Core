@@ -4,12 +4,31 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/url"
+	"p3/models"
 	"p3/test/e2e"
+	"p3/test/integration"
 	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func init() {
+	integration.RequireCreateSite("site-no-temperature")
+	integration.RequireCreateBuilding("site-no-temperature", "building-1")
+	integration.RequireCreateSite("site-with-temperature")
+	integration.RequireCreateBuilding("site-with-temperature", "building-3")
+	var ManagerUserRoles = map[string]models.Role{
+		models.ROOT_DOMAIN: models.Manager,
+	}
+	temperatureData := map[string]any{
+		"attributes": map[string]any{
+			"temperatureUnit": "30",
+		},
+	}
+
+	models.UpdateObject("site", "site-with-temperature", temperatureData, true, ManagerUserRoles, false)
+}
 
 // Tests domain bulk creation (/api/domains/bulk)
 func TestCreateBulkDomains(t *testing.T) {
@@ -290,4 +309,44 @@ func TestGetDomainEntitiesFilteredByColor(t *testing.T) {
 	objects, exists := data["objects"].([]interface{})
 	assert.True(t, exists)
 	assert.Equal(t, 2, len(objects)) // domain3 and domain4
+}
+
+// Test get temperature unit
+func TestGetTemperatureForDomain(t *testing.T) {
+	recorder := e2e.MakeRequest("GET", "/api/tempunits/domain3", nil)
+	assert.Equal(t, http.StatusNotFound, recorder.Code)
+
+	var response map[string]interface{}
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	message, exists := response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "Could not find parent site for given object", message)
+}
+
+func TestGetTemperatureForParentWithNoTemperature(t *testing.T) {
+	recorder := e2e.MakeRequest("GET", "/api/tempunits/site-no-temperature.building-1", nil)
+	assert.Equal(t, http.StatusNotFound, recorder.Code)
+
+	var response map[string]interface{}
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	message, exists := response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "Parent site has no temperatureUnit in attributes", message)
+}
+
+func TestGetTemperature(t *testing.T) {
+	recorder := e2e.MakeRequest("GET", "/api/tempunits/site-with-temperature.building-3", nil)
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	var response map[string]interface{}
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	message, exists := response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "successfully got temperatureUnit from object's parent site", message)
+
+	data, exists := response["data"].(map[string]interface{})
+	assert.True(t, exists)
+	temperatureUnit, exists := data["temperatureUnit"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "30", temperatureUnit)
 }
