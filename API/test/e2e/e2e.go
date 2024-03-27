@@ -43,13 +43,25 @@ func createAdminAccount() {
 	}
 }
 
-func MakeRequest(method, url string, requestBody []byte) *httptest.ResponseRecorder {
+func MakeRequestWithHeaders(method, url string, requestBody []byte, header map[string]string) *httptest.ResponseRecorder {
 	recorder := httptest.NewRecorder()
 	request, _ := http.NewRequest(method, url, bytes.NewBuffer(requestBody))
-	request.Header.Set("Authorization", "Bearer "+AdminToken)
+	for key, value := range header {
+		request.Header.Set(key, value)
+	}
 	appRouter.ServeHTTP(recorder, request)
-
 	return recorder
+}
+
+func MakeRequestWithToken(method, url string, requestBody []byte, token string) *httptest.ResponseRecorder {
+	header := map[string]string{
+		"Authorization": "Bearer " + token,
+	}
+	return MakeRequestWithHeaders(method, url, requestBody, header)
+}
+
+func MakeRequest(method, url string, requestBody []byte) *httptest.ResponseRecorder {
+	return MakeRequestWithToken(method, url, requestBody, AdminToken)
 }
 
 func GetObjects(queryParams string) (*httptest.ResponseRecorder, []map[string]any) {

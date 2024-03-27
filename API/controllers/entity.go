@@ -275,9 +275,9 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 		}
 		domainObj["category"] = "domain"
 		if desc, ok := domain["description"].(string); ok {
-			domainObj["description"] = []string{desc}
+			domainObj["description"] = desc
 		} else {
-			domainObj["description"] = []string{name}
+			domainObj["description"] = name
 		}
 		domainObj["attributes"] = map[string]string{}
 		if color, ok := domain["color"].(string); ok {
