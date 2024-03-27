@@ -9,6 +9,7 @@ import (
 	"p3/test/integration"
 	"slices"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -199,6 +200,92 @@ func TestComplexFilterSearch(t *testing.T) {
 	id, exists := domain["id"].(string)
 	assert.True(t, exists)
 	assert.Equal(t, "domain4.subDomain1", id)
+}
+
+func TestComplexFilterSearchWithStartDateFilter(t *testing.T) {
+	// Test get subdomains of domain4 with color 00ED00 and different startDate
+	requestBody := []byte(`{
+		"$and": [
+			{
+				"id": {
+					"$regex": "^domain4[.].*"
+				}
+			},
+			{
+				"attributes.color": "00ED00"
+			}
+		]
+	}`)
+
+	yesterday := time.Now().Add(-24 * time.Hour)
+	tomorrow := time.Now().Add(24 * time.Hour)
+	recorder := e2e.MakeRequest("POST", "/api/objects/search?startDate="+yesterday.Format("2006-01-02"), requestBody)
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	var response map[string]interface{}
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	message, exists := response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "successfully processed request", message)
+
+	data, exists := response["data"].([]interface{})
+	assert.True(t, exists)
+	assert.Equal(t, 1, len(data))
+
+	recorder = e2e.MakeRequest("POST", "/api/objects/search?startDate="+tomorrow.Format("2006-01-02"), requestBody)
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	message, exists = response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "successfully processed request", message)
+
+	data, exists = response["data"].([]interface{})
+	assert.True(t, exists)
+	assert.Equal(t, 0, len(data))
+}
+
+func TestComplexFilterSearchWithEndtDateFilter(t *testing.T) {
+	// Test get subdomains of domain4 with color 00ED00 and different endDate
+	requestBody := []byte(`{
+		"$and": [
+			{
+				"id": {
+					"$regex": "^domain4[.].*"
+				}
+			},
+			{
+				"attributes.color": "00ED00"
+			}
+		]
+	}`)
+
+	yesterday := time.Now().Add(-24 * time.Hour)
+	tomorrow := time.Now().Add(24 * time.Hour)
+	recorder := e2e.MakeRequest("POST", "/api/objects/search?endDate="+tomorrow.Format("2006-01-02"), requestBody)
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	var response map[string]interface{}
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	message, exists := response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "successfully processed request", message)
+
+	data, exists := response["data"].([]interface{})
+	assert.True(t, exists)
+	assert.Equal(t, 1, len(data))
+
+	recorder = e2e.MakeRequest("POST", "/api/objects/search?endDate="+yesterday.Format("2006-01-02"), requestBody)
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	message, exists = response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "successfully processed request", message)
+
+	data, exists = response["data"].([]interface{})
+	assert.True(t, exists)
+	assert.Equal(t, 0, len(data))
 }
 
 // Tests handle delete with complex filters (/api/objects/search)
