@@ -36,16 +36,16 @@ jobs:
       run: make
 
     - name: Test
-      run: gotestsum --junitfile coverage/tests-api.xml -- -coverpkg=./... -coverprofile=coverage/coverage_api.out -p 1 ./...
+      run: gotestsum --junitfile tests-api.xml -- -coverpkg=./... -coverprofile=coverage_api.out -p 1 ./...
 
     - name: Test Report
       uses: dorny/test-reporter@v1
       if: always() # run this step even if previous steps failed
       with:
         name: API Tests Report  # Name of the check run which will be created
-        path: ./coverage/tests-api.xml     # Path to test results
+        path: ./tests-api.xml     # Path to test results
         reporter: java-junit                 # Format of test results
     - uses: actions/upload-artifact@v3
       with:
         name: coverage
-        path: coverage/coverage_api.out
+        path: coverage_api.out
