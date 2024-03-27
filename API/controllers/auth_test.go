@@ -137,6 +137,48 @@ func TestVerifyToken(t *testing.T) {
 	assert.Equal(t, "working", message)
 }
 
+func TestRequestWithEmptyAuthorizationHeader(t *testing.T) {
+	header := map[string]string{
+		"Authorization": "",
+	}
+	recorder := e2e.MakeRequestWithHeaders("GET", "/api/users", nil, header)
+	assert.Equal(t, http.StatusForbidden, recorder.Code)
+
+	var response map[string]interface{}
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+
+	message, exists := response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "Missing auth token", message)
+}
+
+func TestRequestWithNoToken(t *testing.T) {
+	header := map[string]string{
+		"Authorization": "Basic",
+	}
+	recorder := e2e.MakeRequestWithHeaders("GET", "/api/users", nil, header)
+	assert.Equal(t, http.StatusForbidden, recorder.Code)
+
+	var response map[string]interface{}
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+
+	message, exists := response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "Invalid/Malformed auth token", message)
+}
+
+func TestRequestWithInvalidToken(t *testing.T) {
+	recorder := e2e.MakeRequestWithToken("GET", "/api/users", nil, "invalid")
+	assert.Equal(t, http.StatusForbidden, recorder.Code)
+
+	var response map[string]interface{}
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+
+	message, exists := response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "Malformed authentication token", message)
+}
+
 func TestGetAllUsers(t *testing.T) {
 	// As admin, we get all users
 
