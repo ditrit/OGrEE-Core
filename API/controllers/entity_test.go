@@ -637,3 +637,20 @@ func TestGetStats(t *testing.T) {
 	assert.True(t, exists)
 	assert.True(t, numberOfRacks > 0)
 }
+
+func TestGetApiVersion(t *testing.T) {
+	recorder := e2e.MakeRequest("GET", "/api/version", nil)
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	var response map[string]interface{}
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	status, exists := response["status"].(bool)
+	assert.True(t, exists)
+	assert.True(t, status)
+
+	data, exists := response["data"].(map[string]interface{})
+	assert.True(t, exists)
+	customer, exists := data["Customer"].(string)
+	assert.True(t, exists)
+	assert.True(t, len(customer) > 0)
+}

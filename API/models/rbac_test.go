@@ -39,7 +39,9 @@ func TestGetRequestFilterByDomain(t *testing.T) {
 	filter, ok = GetRequestFilterByDomain(roles)
 	assert.True(t, ok)
 	regex = filter["domain"].(primitive.Regex)
-	assert.Equal(t, domain+"|"+subdomain, regex.Pattern)
+	condition := domain+"|"+subdomain == regex.Pattern
+	condition = condition || subdomain+"|"+domain == regex.Pattern
+	assert.True(t, condition)
 
 	// only viewer roles
 	roles[subdomain] = Viewer
