@@ -43,9 +43,9 @@ jobs:
       if: always() # run this step even if previous steps failed
       with:
         name: API Tests Report  # Name of the check run which will be created
-        path: ./tests-api.xml     # Path to test results
+        path: ./API/tests-api.xml     # Path to test results
         reporter: java-junit                 # Format of test results
     - uses: actions/upload-artifact@v3
       with:
         name: coverage
-        path: coverage_api.out
+        path: ./API/coverage_api.out
