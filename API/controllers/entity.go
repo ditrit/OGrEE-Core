@@ -816,7 +816,7 @@ func GetEntity(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// swagger:operation GET /api/layers/{id}/objects Objects GetLayerObjects
+// swagger:operation GET /api/layers/{slug}/objects Objects GetLayerObjects
 // Gets the object of a given layer.
 // Apply the layer filters to get children objects of a given root query param.
 // ---
@@ -825,7 +825,7 @@ func GetEntity(w http.ResponseWriter, r *http.Request) {
 // produces:
 // - application/json
 // parameters:
-//   - name: id
+//   - name: slug
 //     in: path
 //     description: 'ID of desired layer.'
 //     required: true
