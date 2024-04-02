@@ -34,7 +34,24 @@ func init() {
 	models.UpdateObject("site", "site-with-temperature", temperatureData, true, ManagerUserRoles, false)
 }
 
+func testInvalidBody(t *testing.T, httpMethod string, endpoint string) {
+	invalidBody := []byte(`{`)
+
+	recorder := e2e.MakeRequest(httpMethod, endpoint, invalidBody)
+	assert.Equal(t, http.StatusBadRequest, recorder.Code)
+
+	var response map[string]interface{}
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	message, exists := response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "Error while decoding request body", message)
+}
+
 // Tests domain bulk creation (/api/domains/bulk)
+func TestCreateBulkInvalidBody(t *testing.T) {
+	testInvalidBody(t, "POST", "/api/domains/bulk")
+}
+
 func TestCreateBulkDomains(t *testing.T) {
 	// Test create two separate domains
 	requestBody := []byte(`[
@@ -168,6 +185,10 @@ func TestDeleteSubdomains(t *testing.T) {
 }
 
 // Tests handle complex filters (/api/objects/search)
+func TestComplexFilterSearchInvalidBody(t *testing.T) {
+	testInvalidBody(t, "POST", "/api/objects/search")
+}
+
 func TestComplexFilterSearch(t *testing.T) {
 	// Test get subdomains of domain4 with color 00ED00
 	requestBody := []byte(`{
@@ -595,6 +616,10 @@ func TestLinkRoom(t *testing.T) {
 }
 
 // Tests entity validation
+func TestValidateInvalidBody(t *testing.T) {
+	testInvalidBody(t, "POST", "/api/validate/rooms")
+}
+
 func TestValidateNonExistentEntity(t *testing.T) {
 	requestBody := []byte(`{}`)
 
