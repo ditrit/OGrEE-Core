@@ -456,7 +456,7 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 
 	for _, entStr := range entities {
 		// Get objects
-		entData, err := models.GetManyObjects(entStr, req, filters, nil, user.Roles)
+		entData, err := models.GetManyObjects(entStr, req, filters, "", user.Roles)
 		if err != nil {
 			u.ErrLog("Error while looking for objects at  "+entStr, "HandleGenericObjects", err.Message, r)
 			u.RespondWithError(w, err)
@@ -635,6 +635,7 @@ func HandleComplexFilters(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
 	var complexFilters map[string]interface{}
+	var complexFilterExp string
 	matchingObjects := []map[string]interface{}{}
 
 	// Get user roles for permissions
@@ -649,6 +650,11 @@ func HandleComplexFilters(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.Message("Error while decoding request body"))
 		u.ErrLog("Error while decoding request body", "HANDLE COMPLEX FILTERS", "", r)
 		return
+	} else if complexFilterExp, ok := complexFilters["filter"].(string); !ok || len(complexFilterExp) == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message("Invalid body format: must contain a filter key with a not empty string as value"))
+		u.ErrLog("Error while decoding request body", "HANDLE COMPLEX FILTERS", "", r)
+		return
 	}
 	utils.ApplyWildcardsOnComplexFilter(complexFilters)
 
@@ -659,7 +665,7 @@ func HandleComplexFilters(w http.ResponseWriter, r *http.Request) {
 
 	for _, entStr := range entities {
 		// Get objects
-		entData, err := models.GetManyObjects(entStr, req, filters, complexFilters, user.Roles)
+		entData, err := models.GetManyObjects(entStr, req, filters, complexFilterExp, user.Roles)
 		if err != nil {
 			u.ErrLog("Error while looking for objects at "+entStr, "HandleComplexFilters", err.Message, r)
 			u.RespondWithError(w, err)
@@ -877,7 +883,6 @@ func GetLayerObjects(w http.ResponseWriter, r *http.Request) {
 
 		// Apply layer to get objects request
 		req := bson.M{}
-		u.AddFilterToReq(req, "filter", data["filter"].(string))
 		var searchId string
 		if filters.IsRecursive {
 			searchId = filters.Root + ".**.*"
@@ -889,8 +894,10 @@ func GetLayerObjects(w http.ResponseWriter, r *http.Request) {
 		// Get objects
 		matchingObjects := []map[string]interface{}{}
 		entities := u.GetEntitiesByNamespace(u.Any, searchId)
+		fmt.Println(req)
+		fmt.Println(entities)
 		for _, entStr := range entities {
-			entData, err := models.GetManyObjects(entStr, req, u.RequestFilters{}, nil, user.Roles)
+			entData, err := models.GetManyObjects(entStr, req, u.RequestFilters{}, data["filter"].(string), user.Roles)
 			if err != nil {
 				u.RespondWithError(w, err)
 				return
@@ -981,7 +988,7 @@ func GetAllEntities(w http.ResponseWriter, r *http.Request) {
 
 	// Get entities
 	req := bson.M{}
-	data, e := models.GetManyObjects(entStr, req, u.RequestFilters{}, nil, user.Roles)
+	data, e := models.GetManyObjects(entStr, req, u.RequestFilters{}, "", user.Roles)
 
 	// Respond
 	if e != nil {
@@ -1339,7 +1346,7 @@ func GetEntityByQuery(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	data, modelErr = models.GetManyObjects(entStr, bsonMap, filters, nil, user.Roles)
+	data, modelErr = models.GetManyObjects(entStr, bsonMap, filters, "", user.Roles)
 
 	if modelErr != nil {
 		u.ErrLog("Error while getting "+entStr, "GET ENTITYQUERY", modelErr.Message, r)
