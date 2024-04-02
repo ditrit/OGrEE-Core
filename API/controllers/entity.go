@@ -1415,19 +1415,19 @@ func GetTempUnit(w http.ResponseWriter, r *http.Request) {
 // - application/json
 // parameters:
 // - name: entity
-//   in: query
+//   in: path
 //   description: 'Indicates the entity.'
 //   required: true
 //   type: string
 //   default: sites
 // - name: ID
-//   in: query
+//   in: path
 //   description: ID of object
 //   required: true
-//   type: int
+//   type: string
 //   default: siteA
 // - name: subent
-//   in: query
+//   in: path
 //   description: 'Indicates the subentity to search for children.'
 //   required: true
 //   type: string
