@@ -18,6 +18,7 @@ func init() {
 	integration.RequireCreateSite("site-no-temperature")
 	integration.RequireCreateBuilding("site-no-temperature", "building-1")
 	integration.RequireCreateBuilding("site-no-temperature", "building-2")
+	integration.RequireCreateBuilding("site-no-temperature", "building-3")
 	integration.RequireCreateRoom("site-no-temperature.building-1", "room-1")
 	integration.RequireCreateRoom("site-no-temperature.building-2", "room-1")
 	integration.RequireCreateSite("site-with-temperature")
@@ -461,21 +462,21 @@ func TestGetTemperature(t *testing.T) {
 }
 
 // Tests get subentities
-// func TestErrorGetRoomsSites(t *testing.T) {
-// 	recorder := e2e.MakeRequest("GET", "/api/rooms/site-no-temperature.building-2.room-1/sites", nil)
-// 	assert.Equal(t, http.StatusNotFound, recorder.Code)
-// }
+func TestErrorGetRoomsSites(t *testing.T) {
+	recorder := e2e.MakeRequest("GET", "/api/rooms/site-no-temperature.building-2.room-1/sites", nil)
+	assert.Equal(t, http.StatusNotFound, recorder.Code)
+}
 
-// func TestErrorGetSitesRooms(t *testing.T) {
-// 	recorder := e2e.MakeRequest("GET", "/api/sites/unknown/rooms", nil)
-// 	assert.Equal(t, http.StatusNotFound, recorder.Code)
+func TestErrorGetSiteRoomsUnknownEntity(t *testing.T) {
+	recorder := e2e.MakeRequest("GET", "/api/sites/unknown/rooms", nil)
+	assert.Equal(t, http.StatusNotFound, recorder.Code)
 
-// 	var response map[string]interface{}
-// 	json.Unmarshal(recorder.Body.Bytes(), &response)
-// 	message, exists := response["message"].(string)
-// 	assert.True(t, exists)
-// 	assert.Equal(t, "Nothing matches this request", message)
-// }
+	var response map[string]interface{}
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	message, exists := response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "Nothing matches this request", message)
+}
 
 func TestGetSitesRooms(t *testing.T) {
 	recorder := e2e.MakeRequest("GET", "/api/sites/site-no-temperature/rooms", nil)
