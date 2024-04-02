@@ -1716,7 +1716,7 @@ func GetCompleteHierarchyAttributes(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// swagger:operation POST /api/{entity}/{id}/unlink Objects UnlinkObject
+// swagger:operation PATCH /api/{entity}/{id}/unlink Objects UnlinkObject
 // Removes the object from its original entity and hierarchy tree to make it stray.
 // The object will no longer have a parent, its id will change as well as the id of all its children.
 // The object will then belong to the stray-objects entity.
@@ -1753,7 +1753,7 @@ func GetCompleteHierarchyAttributes(w http.ResponseWriter, r *http.Request) {
 //     '500':
 //         description: 'Internal error. Unable to remove object from entity and create it as stray.'
 
-// swagger:operation POST /api/stray-objects/{id}/link Objects LinkObject
+// swagger:operation PATCH /api/stray-objects/{id}/link Objects LinkObject
 // Removes the object from stray and add it to the entity of its category attribute.
 // The object will again have a parent, its id will change as well as the id of all its children.
 // The object will then belong to the given entity.
