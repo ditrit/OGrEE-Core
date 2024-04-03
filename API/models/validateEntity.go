@@ -386,15 +386,17 @@ func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 			// Check if Group ID is unique
 			entities := u.GetEntitiesByNamespace(u.Physical, t["id"].(string))
 			for _, entStr := range entities {
-				// Get objects
-				entData, err := GetManyObjects(entStr, bson.M{"id": t["id"]}, u.RequestFilters{}, nil, nil)
-				if err != nil {
-					err.Message = "Error while check id unicity at " + entStr + ":" + err.Message
-					return err
-				}
-				if len(entData) > 0 {
-					return &u.Error{Type: u.ErrBadFormat,
-						Message: "This group ID is not unique among " + entStr + "s"}
+				if entStr != u.EntityToString(u.GROUP) {
+					// Get objects
+					entData, err := GetManyObjects(entStr, bson.M{"id": t["id"]}, u.RequestFilters{}, nil, nil)
+					if err != nil {
+						err.Message = "Error while check id unicity at " + entStr + ":" + err.Message
+						return err
+					}
+					if len(entData) > 0 {
+						return &u.Error{Type: u.ErrBadFormat,
+							Message: "This group ID is not unique among " + entStr + "s"}
+					}
 				}
 			}
 		case u.DEVICE:
