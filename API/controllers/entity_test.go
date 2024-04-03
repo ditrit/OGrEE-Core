@@ -228,20 +228,6 @@ func TestComplexFilterSearch(t *testing.T) {
 		"filter": "id=domain4.* & color=00ED00"
 	}`)
 
-	// requestBody := []byte(`{
-	// 	"filter": "id=domain4.* & attributes.color=00ED00",
-	// 	"$and": [
-	// 		{
-	// 			"id": {
-	// 				"$regex": "^domain4[.].*"
-	// 			}
-	// 		},
-	// 		{
-	// 			"attributes.color": "00ED00"
-	// 		}
-	// 	]
-	// }`)
-
 	recorder := e2e.MakeRequest("POST", "/api/objects/search", requestBody)
 	assert.Equal(t, http.StatusOK, recorder.Code)
 
@@ -264,16 +250,7 @@ func TestComplexFilterSearch(t *testing.T) {
 func TestComplexFilterSearchWithStartDateFilter(t *testing.T) {
 	// Test get subdomains of domain4 with color 00ED00 and different startDate
 	requestBody := []byte(`{
-		"$and": [
-			{
-				"id": {
-					"$regex": "^domain4[.].*"
-				}
-			},
-			{
-				"attributes.color": "00ED00"
-			}
-		]
+		"filter": "id=domain4.* & color=00ED00"
 	}`)
 
 	yesterday := time.Now().Add(-24 * time.Hour)
@@ -307,16 +284,7 @@ func TestComplexFilterSearchWithStartDateFilter(t *testing.T) {
 func TestComplexFilterSearchWithEndtDateFilter(t *testing.T) {
 	// Test get subdomains of domain4 with color 00ED00 and different endDate
 	requestBody := []byte(`{
-		"$and": [
-			{
-				"id": {
-					"$regex": "^domain4[.].*"
-				}
-			},
-			{
-				"attributes.color": "00ED00"
-			}
-		]
+		"filter": "id=domain4.* & color=00ED00"
 	}`)
 
 	yesterday := time.Now().Add(-24 * time.Hour)
@@ -351,16 +319,7 @@ func TestComplexFilterSearchWithEndtDateFilter(t *testing.T) {
 func TestComplexFilterDelete(t *testing.T) {
 	// Test delete subdomains of domain4 with color 00ED00
 	requestBody := []byte(`{
-		"$and": [
-			{
-				"id": {
-					"$regex": "^domain4[.].*"
-				}
-			},
-			{
-				"attributes.color": "00ED00"
-			}
-		]
+		"filter": "id=domain4.* & color=00ED00"
 	}`)
 
 	recorder := e2e.MakeRequest("DELETE", "/api/objects/search", requestBody)
@@ -529,7 +488,7 @@ func TestGetSitesRooms(t *testing.T) {
 	assert.True(t, exists)
 	objects, exists := data["objects"].([]interface{})
 	assert.True(t, exists)
-	assert.Equal(t, 2, len(objects))
+	assert.Equal(t, 3, len(objects))
 
 	areRooms := true
 	for _, element := range objects {
