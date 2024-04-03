@@ -255,6 +255,7 @@ func GetManyObjects(entityStr string, req bson.M, filters u.RequestFilters, comp
 			if err != nil {
 				return nil, &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
 			}
+			u.ApplyWildcardsOnComplexFilter(complexFilters)
 			maps.Copy(req, complexFilters)
 		}
 	}
@@ -383,8 +384,8 @@ func complexExpressionToMap(expressions []string) (map[string]any, error) {
 func getDatesFromComplexFilters(req map[string]any) error {
 	for k, v := range req {
 		if k == "$and" || k == "$or" {
-			for _, complexFilter := range v.([]any) {
-				err := getDatesFromComplexFilters(complexFilter.(map[string]any))
+			for _, complexFilter := range v.([]map[string]any) {
+				err := getDatesFromComplexFilters(complexFilter)
 				if err != nil {
 					return err
 				}

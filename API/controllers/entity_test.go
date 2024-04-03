@@ -7,7 +7,9 @@ import (
 	"p3/models"
 	"p3/test/e2e"
 	"p3/test/integration"
+	"p3/utils"
 	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -20,7 +22,12 @@ func init() {
 	integration.RequireCreateBuilding("site-no-temperature", "building-2")
 	integration.RequireCreateBuilding("site-no-temperature", "building-3")
 	integration.RequireCreateRoom("site-no-temperature.building-1", "room-1")
+	integration.RequireCreateRoom("site-no-temperature.building-1", "room-2")
 	integration.RequireCreateRoom("site-no-temperature.building-2", "room-1")
+	integration.RequireCreateRack("site-no-temperature.building-1.room-1", "rack-1")
+	integration.RequireCreateRack("site-no-temperature.building-1.room-1", "rack-2")
+	integration.RequireCreateDevice("site-no-temperature.building-1.room-1.rack-2", "device-1")
+	integration.RequireCreateRack("site-no-temperature.building-1.room-2", "rack-1")
 	integration.RequireCreateSite("site-with-temperature")
 	integration.RequireCreateBuilding("site-with-temperature", "building-3")
 	var ManagerUserRoles = map[string]models.Role{
@@ -33,6 +40,18 @@ func init() {
 	}
 
 	models.UpdateObject("site", "site-with-temperature", temperatureData, true, ManagerUserRoles, false)
+	layer := map[string]any{
+		"slug":          "racks-layer",
+		"filter":        "category=rack",
+		"applicability": "site-no-temperature.building-1.room-1",
+	}
+	models.CreateEntity(utils.LAYER, layer, ManagerUserRoles)
+	layer2 := map[string]any{
+		"slug":          "racks-1-layer",
+		"filter":        "category=rack & name=rack-1",
+		"applicability": "site-no-temperature.building-1.room-*",
+	}
+	models.CreateEntity(utils.LAYER, layer2, ManagerUserRoles)
 }
 
 func testInvalidBody(t *testing.T, httpMethod string, endpoint string) {
@@ -190,20 +209,38 @@ func TestComplexFilterSearchInvalidBody(t *testing.T) {
 	testInvalidBody(t, "POST", "/api/objects/search")
 }
 
+func TestComplexFilterWithNoFilterInput(t *testing.T) {
+	requestBody := []byte(`{}`)
+
+	recorder := e2e.MakeRequest("POST", "/api/objects/search", requestBody)
+	assert.Equal(t, http.StatusBadRequest, recorder.Code)
+
+	var response map[string]interface{}
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	message, exists := response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "Invalid body format: must contain a filter key with a not empty string as value", message)
+}
+
 func TestComplexFilterSearch(t *testing.T) {
 	// Test get subdomains of domain4 with color 00ED00
 	requestBody := []byte(`{
-		"$and": [
-			{
-				"id": {
-					"$regex": "^domain4[.].*"
-				}
-			},
-			{
-				"attributes.color": "00ED00"
-			}
-		]
+		"filter": "id=domain4.* & color=00ED00"
 	}`)
+
+	// requestBody := []byte(`{
+	// 	"filter": "id=domain4.* & attributes.color=00ED00",
+	// 	"$and": [
+	// 		{
+	// 			"id": {
+	// 				"$regex": "^domain4[.].*"
+	// 			}
+	// 		},
+	// 		{
+	// 			"attributes.color": "00ED00"
+	// 		}
+	// 	]
+	// }`)
 
 	recorder := e2e.MakeRequest("POST", "/api/objects/search", requestBody)
 	assert.Equal(t, http.StatusOK, recorder.Code)
@@ -766,4 +803,51 @@ func TestGetApiVersion(t *testing.T) {
 	customer, exists := data["Customer"].(string)
 	assert.True(t, exists)
 	assert.True(t, len(customer) > 0)
+}
+
+func TestGetLayersObjectsWithSimpleFilter(t *testing.T) {
+	recorder := e2e.MakeRequest("GET", "/api/layers/racks-layer/objects?root=site-no-temperature.building-1.room-1", nil)
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	var response map[string]interface{}
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	message, exists := response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "successfully processed request", message)
+
+	data, exists := response["data"].([]any)
+	assert.True(t, exists)
+	assert.Equal(t, 2, len(data))
+
+	condition := true
+	for _, rack := range data {
+		condition = condition && rack.(map[string]any)["parentId"] == "site-no-temperature.building-1.room-1"
+		condition = condition && rack.(map[string]any)["category"] == "rack"
+	}
+
+	assert.True(t, condition)
+}
+
+func TestGetLayersObjectsWithDoubleFilter(t *testing.T) {
+	recorder := e2e.MakeRequest("GET", "/api/layers/racks-1-layer/objects?root=site-no-temperature.building-1.room-*", nil)
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	var response map[string]interface{}
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	message, exists := response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "successfully processed request", message)
+
+	data, exists := response["data"].([]any)
+	assert.True(t, exists)
+	assert.Equal(t, 2, len(data))
+
+	condition := true
+	for _, rack := range data {
+		condition = condition && strings.HasPrefix(rack.(map[string]any)["parentId"].(string), "site-no-temperature.building-1.room-")
+		condition = condition && rack.(map[string]any)["category"] == "rack"
+		condition = condition && rack.(map[string]any)["name"] == "rack-1"
+	}
+
+	assert.True(t, condition)
 }

@@ -9,7 +9,6 @@ import (
 	"net/url"
 	"os"
 	"p3/models"
-	"p3/utils"
 	u "p3/utils"
 	"strconv"
 	"strings"
@@ -636,6 +635,7 @@ func HandleComplexFilters(w http.ResponseWriter, r *http.Request) {
 	DispRequestMetaData(r)
 	var complexFilters map[string]interface{}
 	var complexFilterExp string
+	var ok bool
 	matchingObjects := []map[string]interface{}{}
 
 	// Get user roles for permissions
@@ -650,13 +650,12 @@ func HandleComplexFilters(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.Message("Error while decoding request body"))
 		u.ErrLog("Error while decoding request body", "HANDLE COMPLEX FILTERS", "", r)
 		return
-	} else if complexFilterExp, ok := complexFilters["filter"].(string); !ok || len(complexFilterExp) == 0 {
+	} else if complexFilterExp, ok = complexFilters["filter"].(string); !ok || len(complexFilterExp) == 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message("Invalid body format: must contain a filter key with a not empty string as value"))
 		u.ErrLog("Error while decoding request body", "HANDLE COMPLEX FILTERS", "", r)
 		return
 	}
-	utils.ApplyWildcardsOnComplexFilter(complexFilters)
 
 	// Get objects
 	filters := getFiltersFromQueryParams(r)
