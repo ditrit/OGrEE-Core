@@ -255,3 +255,17 @@ func mockGetObjTemplate(mockAPI *mocks.APIPort, template map[string]any) {
 		}, nil,
 	).Once()
 }
+
+func mockGetRoomTemplate(mockAPI *mocks.APIPort, template map[string]any) {
+	mockAPI.On(
+		"Request", http.MethodGet,
+		"/api/room-templates/"+template["slug"].(string),
+		mock.Anything, http.StatusOK,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"data": template,
+			},
+		}, nil,
+	).Once()
+}
