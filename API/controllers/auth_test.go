@@ -194,7 +194,7 @@ func TestGetAllUsers(t *testing.T) {
 
 	data, exists := response["data"].([]interface{})
 	assert.True(t, exists)
-	assert.Equal(t, 3, len(data))
+	assert.Equal(t, 5, len(data))
 }
 
 func TestGetUsersWithNormalUser(t *testing.T) {

@@ -458,9 +458,15 @@ func TestGetTemperature(t *testing.T) {
 }
 
 // Tests get subentities
-func TestErrorGetRoomsSites(t *testing.T) {
-	recorder := e2e.MakeRequest("GET", "/api/rooms/site-no-temperature.building-2.room-1/sites", nil)
-	assert.Equal(t, http.StatusNotFound, recorder.Code)
+func TestErrorGetRoomsBuildingsInvalidHierarchy(t *testing.T) {
+	recorder := e2e.MakeRequest("GET", "/api/rooms/site-no-temperature.building-1.room-1/buildings", nil)
+	assert.Equal(t, http.StatusBadRequest, recorder.Code)
+
+	var response map[string]interface{}
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	message, exists := response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "Invalid set of entities in URL: first entity should be parent of the second entity", message)
 }
 
 func TestErrorGetSiteRoomsUnknownEntity(t *testing.T) {
@@ -736,6 +742,36 @@ func TestValidateValidRoomEntity(t *testing.T) {
 	assert.Equal(t, "This object can be created", message)
 }
 
+func TestErrorValidateValidRoomEntityNotEnoughPermissions(t *testing.T) {
+	requestBody := []byte(`{
+		"attributes": {
+			"floorUnit": "t",
+			"height": "2.8",
+			"heightUnit": "m",
+			"axisOrientation": "+x+y",
+			"rotation": "-90",
+			"posXY": "[0, 0]",
+			"posXYUnit": "m",
+			"size": "[-13, -2.9]",
+			"sizeUnit": "m",
+			"template": ""
+		},
+		"category": "room",
+		"description": "room",
+		"domain": "` + integration.TestDBName + `",
+		"name": "roomA",
+		"parentId": "site-no-temperature.building-1"
+	}`)
+	recorder := e2e.MakeRequestWithUser("POST", "/api/validate/rooms", requestBody, "viewer")
+	assert.Equal(t, http.StatusUnauthorized, recorder.Code)
+
+	var response map[string]interface{}
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	message, exists := response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "This user does not have sufficient permissions to create this object under this domain ", message)
+}
+
 func TestGetStats(t *testing.T) {
 	recorder := e2e.MakeRequest("GET", "/api/stats", nil)
 	assert.Equal(t, http.StatusOK, recorder.Code)
@@ -762,6 +798,23 @@ func TestGetApiVersion(t *testing.T) {
 	customer, exists := data["Customer"].(string)
 	assert.True(t, exists)
 	assert.True(t, len(customer) > 0)
+}
+
+// Tests layers objects
+func TestGetLayersObjectsRootRequired(t *testing.T) {
+	recorder := e2e.MakeRequest("GET", "/api/layers/racks-layer/objects", nil)
+	assert.Equal(t, http.StatusBadRequest, recorder.Code)
+
+	var response map[string]interface{}
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	message, exists := response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "Query param root is mandatory", message)
+}
+
+func TestGetLayersObjectsLayerUnknown(t *testing.T) {
+	recorder := e2e.MakeRequest("GET", "/api/layers/unknown/objects?root=site-no-temperature.building-1.room-1", nil)
+	assert.Equal(t, http.StatusNotFound, recorder.Code)
 }
 
 func TestGetLayersObjectsWithSimpleFilter(t *testing.T) {

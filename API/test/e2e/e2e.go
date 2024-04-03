@@ -13,33 +13,35 @@ import (
 
 	"github.com/elliotchance/pie/v2"
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 var appRouter *mux.Router
-var AdminId primitive.ObjectID
-var AdminToken string
+var users map[string]any
 
 func init() {
 	appRouter = router.Router(app.JwtAuthentication)
-	createAdminAccount()
+	users = map[string]any{}
+	createUser("admin", map[string]models.Role{"*": "manager"})
+	createUser("user", map[string]models.Role{"*": "user"})
+	createUser("viewer", map[string]models.Role{"*": "viewer"})
 }
 
-func createAdminAccount() {
-	// Create admin account
-	admin := models.Account{}
-	admin.Email = "admin@admin.com"
-	admin.Password = "admin123"
-	admin.Roles = map[string]models.Role{"*": "manager"}
+func createUser(userType string, role map[string]models.Role) {
+	user := models.Account{}
+	user.Email = userType + "@" + userType + ".com"
+	user.Password = userType + "123"
+	user.Roles = role
 
-	newAcc, err := admin.Create(map[string]models.Role{"*": "manager"})
+	newAcc, err := user.Create(map[string]models.Role{"*": "manager"})
 	if err != nil {
-		log.Fatalln("Error while creating admin account:", err.Error())
+		log.Fatalln("Error while creating "+userType+"account:", err.Error())
 	}
 
 	if newAcc != nil {
-		AdminId = newAcc.ID
-		AdminToken = newAcc.Token
+		users[userType] = map[string]any{
+			"id":    newAcc.ID,
+			"token": newAcc.Token,
+		}
 	}
 }
 
@@ -60,8 +62,13 @@ func MakeRequestWithToken(method, url string, requestBody []byte, token string) 
 	return MakeRequestWithHeaders(method, url, requestBody, header)
 }
 
+func MakeRequestWithUser(method, url string, requestBody []byte, user string) *httptest.ResponseRecorder {
+	token := users[user].(map[string]any)["token"].(string)
+	return MakeRequestWithToken(method, url, requestBody, token)
+}
+
 func MakeRequest(method, url string, requestBody []byte) *httptest.ResponseRecorder {
-	return MakeRequestWithToken(method, url, requestBody, AdminToken)
+	return MakeRequestWithUser(method, url, requestBody, "admin")
 }
 
 func GetObjects(queryParams string) (*httptest.ResponseRecorder, []map[string]any) {

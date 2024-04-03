@@ -878,6 +878,10 @@ func GetLayerObjects(w http.ResponseWriter, r *http.Request) {
 		data, modelErr = models.GetObject(bson.M{"slug": id}, u.EntityToString(u.LAYER), u.RequestFilters{}, user.Roles)
 		if modelErr != nil {
 			u.RespondWithError(w, modelErr)
+			return
+		} else if len(data) == 0 {
+			w.WriteHeader(http.StatusNotFound)
+			return
 		}
 
 		// Apply layer to get objects request
