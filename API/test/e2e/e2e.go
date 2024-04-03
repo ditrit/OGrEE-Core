@@ -10,9 +10,11 @@ import (
 	"p3/models"
 	"p3/router"
 	_ "p3/test/integration"
+	"testing"
 
 	"github.com/elliotchance/pie/v2"
 	"github.com/gorilla/mux"
+	"github.com/stretchr/testify/assert"
 )
 
 var appRouter *mux.Router
@@ -84,4 +86,17 @@ func GetObjects(queryParams string) (*httptest.ResponseRecorder, []map[string]an
 	}
 
 	return response, objects
+}
+
+func TestInvalidBody(t *testing.T, httpMethod string, endpoint string, errorMessage string) {
+	invalidBody := []byte(`{`)
+
+	recorder := MakeRequest(httpMethod, endpoint, invalidBody)
+	assert.Equal(t, http.StatusBadRequest, recorder.Code)
+
+	var response map[string]interface{}
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	message, exists := response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, errorMessage, message)
 }

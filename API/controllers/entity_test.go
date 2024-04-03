@@ -55,16 +55,11 @@ func init() {
 }
 
 func testInvalidBody(t *testing.T, httpMethod string, endpoint string) {
-	invalidBody := []byte(`{`)
+	e2e.TestInvalidBody(t, httpMethod, endpoint, "Error while decoding request body")
+}
 
-	recorder := e2e.MakeRequest(httpMethod, endpoint, invalidBody)
-	assert.Equal(t, http.StatusBadRequest, recorder.Code)
-
-	var response map[string]interface{}
-	json.Unmarshal(recorder.Body.Bytes(), &response)
-	message, exists := response["message"].(string)
-	assert.True(t, exists)
-	assert.Equal(t, "Error while decoding request body", message)
+func TestCreateEntityInvalidBody(t *testing.T) {
+	testInvalidBody(t, "POST", "/api/sites")
 }
 
 // Tests domain bulk creation (/api/domains/bulk)

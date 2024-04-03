@@ -20,6 +20,10 @@ func getUserToken(email string, password string) string {
 	return acc.Token
 }
 
+func TestCreateUserInvalidBody(t *testing.T) {
+	e2e.TestInvalidBody(t, "POST", "/api/users", "Invalid request: wrong format body")
+}
+
 // Tests domain bulk creation (/api/users/bulk)
 func TestCreateBulkUsersInvalidBody(t *testing.T) {
 	requestBody := []byte(`[
@@ -82,6 +86,11 @@ func TestCreateBulkUsers(t *testing.T) {
 	assert.Equal(t, "successfully created", status)
 	_, exists = userWithPassword["password"]
 	assert.False(t, exists)
+}
+
+// Tests Login
+func TestLoginInvalidBody(t *testing.T) {
+	e2e.TestInvalidBody(t, "POST", "/api/login", "Invalid request")
 }
 
 func TestLoginWrongPassword(t *testing.T) {
@@ -272,6 +281,11 @@ func TestDeleteWithInvalidIdReturnsError(t *testing.T) {
 }
 
 // Tests modify user role
+func TestModifyUserInvalidBody(t *testing.T) {
+	userId := models.GetUserByEmail("user_with_password@test.com").ID.Hex()
+	e2e.TestInvalidBody(t, "PATCH", "/api/users/"+userId, "Invalid request")
+}
+
 func TestModifyRoleWithMoreDataReturnsError(t *testing.T) {
 	// we get the user ID
 	userId := models.GetUserByEmail("user_with_password@test.com").ID.Hex()
@@ -381,6 +395,10 @@ func TestModifyRoleSuccess(t *testing.T) {
 }
 
 // Tests modify and reset user password
+func TestModifyPasswordInvalidBody(t *testing.T) {
+	e2e.TestInvalidBody(t, "POST", "/api/users/password/change", "Invalid request")
+}
+
 func TestModifyPasswordNotEnoughArguments(t *testing.T) {
 	userToken := getUserToken("user_with_password@test.com", "fake_password")
 	requestBody := []byte(`{

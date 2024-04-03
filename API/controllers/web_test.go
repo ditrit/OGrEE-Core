@@ -28,6 +28,10 @@ var project = map[string]any{
 }
 var projectId string
 
+func TestCreateProjectInvalidBody(t *testing.T) {
+	e2e.TestInvalidBody(t, "POST", "/api/projects", "Invalid request")
+}
+
 func TestCreateProject(t *testing.T) {
 	json.Marshal(project)
 	requestBody, _ := json.Marshal(project)
