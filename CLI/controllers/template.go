@@ -107,14 +107,9 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 									} else if val, ok := sizeInf[2].(int); ok {
 										res = int((float64(val) / 1000) / RACKUNIT)
 									} else {
-										//Resort to default value
-										msg := "Warning, invalid value provided for" +
-											" sizeU. Defaulting to 5"
-										println(msg)
-										res = int((5 / 1000) / RACKUNIT)
+										return errors.New("Invalid size vector on given template")
 									}
 									attr["sizeU"] = strconv.Itoa(res)
-
 								}
 							}
 						}
@@ -248,9 +243,9 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 			}
 		} else {
 			if State.DebugLvl > 1 {
-				println("Warning, invalid size value in template.",
-					"Default values will be assigned")
+				println("Warning, invalid size value in template.")
 			}
+			return errors.New("Invalid size vector on given template")
 		}
 	} else {
 		//Serialise size and posXY if given
