@@ -1,7 +1,9 @@
 package controllers_test
 
 import (
+	"cli/controllers"
 	"cli/models"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -51,10 +53,10 @@ func TestApplyTemplateOfTypeDeviceWorks(t *testing.T) {
 		"slug":        "device-template",
 		"description": "",
 		"category":    "device",
-		"sizeWDHmm":   []any{216, 659, 41},
+		"sizeWDHmm":   []any{216, 659, 100},
 		"fbxModel":    "",
 		"attributes": map[string]any{
-			"type":   "blade",
+			"type":   "chassis",
 			"vendor": "IBM",
 		},
 		"colors":     []any{},
@@ -63,14 +65,16 @@ func TestApplyTemplateOfTypeDeviceWorks(t *testing.T) {
 
 	mockGetObjTemplate(mockAPI, template)
 
+	sizeU := int((float64(template["sizeWDHmm"].([]any)[2].(int)) / 1000) / controllers.RACKUNIT)
 	err := controller.ApplyTemplate(attributes, device, models.DEVICE)
 	assert.Nil(t, err)
 
 	// we verify if the template was applied
-	assert.Equal(t, "41", device["attributes"].(map[string]any)["height"])
+	assert.Equal(t, "100", device["attributes"].(map[string]any)["height"])
 	assert.Equal(t, template["attributes"].(map[string]any)["type"], device["attributes"].(map[string]any)["type"])
 	assert.Equal(t, template["attributes"].(map[string]any)["vendor"], device["attributes"].(map[string]any)["vendor"])
 	assert.Equal(t, "[216, 659]", device["attributes"].(map[string]any)["size"])
+	assert.Equal(t, strconv.Itoa(sizeU), device["attributes"].(map[string]any)["sizeU"])
 }
 
 func TestApplyTemplateOfTypeRoomWorks(t *testing.T) {
