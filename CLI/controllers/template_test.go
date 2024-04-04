@@ -77,6 +77,36 @@ func TestApplyTemplateOfTypeDeviceWorks(t *testing.T) {
 	assert.Equal(t, strconv.Itoa(sizeU), device["attributes"].(map[string]any)["sizeU"])
 }
 
+func TestApplyTemplateOfTypeDeviceError(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+
+	device := copyMap(chassis)
+	attributes := map[string]any{
+		"template": "device-template",
+	}
+	device["attributes"] = attributes
+	template := map[string]any{
+		"slug":        "device-template",
+		"description": "",
+		"category":    "device",
+		"sizeWDHmm":   []any{216, 659, "100"},
+		"fbxModel":    "",
+		"attributes": map[string]any{
+			"type":   "chassis",
+			"vendor": "IBM",
+		},
+		"colors":     []any{},
+		"components": []any{},
+	}
+
+	mockGetObjTemplate(mockAPI, template)
+
+	err := controller.ApplyTemplate(attributes, device, models.DEVICE)
+	assert.NotNil(t, err)
+
+	assert.Equal(t, "invalid size vector on given template", err.Error())
+}
+
 func TestApplyTemplateOfTypeRoomWorks(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
