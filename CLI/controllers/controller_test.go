@@ -230,6 +230,16 @@ func mockUpdateObject(mockAPI *mocks.APIPort, dataUpdate map[string]any, dataUpd
 	)
 }
 
+func mockPutObject(mockAPI *mocks.APIPort, dataUpdate map[string]any, dataUpdated map[string]any) {
+	mockAPI.On("Request", http.MethodPut, mock.Anything, dataUpdate, http.StatusOK).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"data": dataUpdated,
+			},
+		}, nil,
+	)
+}
+
 func mockObjectNotFound(mockAPI *mocks.APIPort, path string) {
 	mockAPI.On(
 		"Request", http.MethodGet,

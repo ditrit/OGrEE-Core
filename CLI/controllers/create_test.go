@@ -15,6 +15,14 @@ var createRoom = map[string]any{
 	"domain":   "test-domain",
 }
 
+func TestCreateObjectErrorParentNotFound(t *testing.T) {
+	controller, _, _ := layersSetup(t)
+
+	err := controller.CreateObject("/", models.RACK, map[string]any{})
+	assert.NotNil(t, err)
+	assert.ErrorContains(t, err, "parent not found")
+}
+
 func TestCreateObjectWithNotExistentTemplateReturnsError(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 

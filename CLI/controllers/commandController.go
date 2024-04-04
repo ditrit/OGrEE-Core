@@ -151,7 +151,7 @@ func (controller Controller) ObjectUrlGeneric(pathStr string, depth int, filters
 	return url.String(), nil
 }
 
-func GetSlot(rack map[string]any, location string) (map[string]any, error) {
+func (controller Controller) GetSlot(rack map[string]any, location string) (map[string]any, error) {
 	templateAny, ok := rack["attributes"].(map[string]any)["template"]
 	if !ok {
 		return nil, nil
@@ -160,7 +160,7 @@ func GetSlot(rack map[string]any, location string) (map[string]any, error) {
 	if template == "" {
 		return nil, nil
 	}
-	resp, err := API.Request("GET", "/api/obj-templates/"+template, nil, http.StatusOK)
+	resp, err := controller.API.Request("GET", "/api/obj-templates/"+template, nil, http.StatusOK)
 	if err != nil {
 		return nil, err
 	}
@@ -177,8 +177,8 @@ func GetSlot(rack map[string]any, location string) (map[string]any, error) {
 	return nil, fmt.Errorf("the slot %s does not exist", location)
 }
 
-func UnsetAttribute(path string, attr string) error {
-	obj, err := C.GetObject(path)
+func (controller Controller) UnsetAttribute(path string, attr string) error {
+	obj, err := controller.GetObject(path)
 	if err != nil {
 		return err
 	}
@@ -190,16 +190,16 @@ func UnsetAttribute(path string, attr string) error {
 		return fmt.Errorf("object has no attributes")
 	}
 	delete(attributes, attr)
-	url, err := C.ObjectUrl(path, 0)
+	url, err := controller.ObjectUrl(path, 0)
 	if err != nil {
 		return err
 	}
-	_, err = API.Request("PUT", url, obj, http.StatusOK)
+	_, err = controller.API.Request("PUT", url, obj, http.StatusOK)
 	return err
 }
 
 // Specific update for deleting elements in an array of an obj
-func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
+func (controller Controller) UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
 	var arr []interface{}
 
 	//Check for valid idx
@@ -209,7 +209,7 @@ func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
 	}
 
 	//Get the object
-	obj, err := C.GetObject(Path)
+	obj, err := controller.GetObject(Path)
 	if err != nil {
 		return nil, err
 	}
@@ -266,12 +266,12 @@ func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
 		obj[attr] = arr
 	}
 
-	URL, err := C.ObjectUrl(Path, 0)
+	URL, err := controller.ObjectUrl(Path, 0)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = API.Request("PUT", URL, obj, http.StatusOK)
+	_, err = controller.API.Request("PUT", URL, obj, http.StatusOK)
 	if err != nil {
 		return nil, err
 	}

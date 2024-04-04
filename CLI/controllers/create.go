@@ -303,7 +303,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 				if len(slots) != 1 {
 					return fmt.Errorf("Invalid device syntax: only one slot can be provided if no template")
 				}
-				slot, err = GetSlot(parent, slots[0])
+				slot, err = C.GetSlot(parent, slots[0])
 				if err != nil {
 					return err
 				}

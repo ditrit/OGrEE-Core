@@ -970,9 +970,9 @@ func (n *unsetAttrNode) execute() (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-		return cmd.UnsetInObj(path, n.attr, idx)
+		return cmd.C.UnsetInObj(path, n.attr, idx)
 	}
-	return nil, cmd.UnsetAttribute(path, n.attr)
+	return nil, cmd.C.UnsetAttribute(path, n.attr)
 }
 
 type setEnvNode struct {
