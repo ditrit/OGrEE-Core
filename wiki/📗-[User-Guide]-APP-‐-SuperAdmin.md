@@ -58,55 +58,6 @@ A colored dot right next to the name hints on the tenant's status:
 The ✏️ edit button is to modify the deployment, allowing to add or remove applications (APP, DOC), change its URL and ports, update the tenant's version. The 🗑️ remove button is for deleting the tenant with its all data (be careful!).
 
 The 🔍 info button opens the tenant view. In the tab "Deployment", you can see more information regarding its applications (containers) status and configuration as well as check its logs. In the other tabs, you can access the API associated with this tenant (a login with the API's credentials will be requested), allowing to create and manage users, domains and tags for the tenant. 
-
-## Users and Domains
-The OGrEE-API implements a Role-based access control (RBAC). Each user has one or multiple domains with a level of permission attached to each domain. The default user created `admin`, automatically created with each new tenant, has all permissions on all domains (changing its password is **highly** recommended). You can create and manage users in the Users tab under the tenant's 🔍 info page.
-
-**Users permission:** 
-One of the following roles should be assigned for each domain assigned to an user:
-- _viewer_ : read-only access, can only see the objects from its domain environment, but cannot create/modify/delete them. In http words : only GET requests, no POST/PUT/PATCH/DELETE.
-- _user_ : can read and write within its domain environment. All possible http requests whitin its domain.
-- _manager_ : same as user + can create domains and users within its domain environment. A _super_ user would be a user with manager role to the root domain "*" (the default `admin` user).
-
-**Domain organization:** 
-Domains are organized in a hierarchy. If a user has access to the parent domain, he also has the same level of access to the children domains. However, this also implies an automatic read-only acces (_viewer_ role) to all the parent domains of the user domain, but very limited: can only see the objects' names (hierarchyNames). Examples:
-- John has _user_ role in domain **A.B.C**. Concerning objects, John can:
-
-| Object's domain | Read | Create/Modify/Delete | Users/Domains |
-|-----------------|------|----------------------|---------------|
-| A               | YES (only name)  | NO                   | NO            |
-| A.B             | YES (only name)  | NO                   | NO            |
-| **A.B.C** (John)    | YES  | YES                  | NO            |
-| **A.B.C**.D         | YES  | YES                  | NO            |
-| A.B.Z           | NO   | NO                   | NO            |
-| A.Y             | NO   | NO                   | NO            |
-
-- Now, if John was _manager_ of domain **A.B.C**:
-
-| Object's domain | Read | Create/Modify/Delete | Users/Domains |
-|-----------------|------|----------------------|---------------|
-| A               | YES (only name)  | NO                   | NO            |
-| A.B             | YES (only name)  | NO                   | NO            |
-| **A.B.C** (John)    | YES  | YES                  | YES           |
-| **A.B.C**.D         | YES  | YES                  | YES           |
-| A.B.Z           | NO   | NO                   | NO            |
-| A.Y             | NO   | NO                   | NO            |
-
-- Finally, as _viewer_ of domain **A.B.C**:
-
-| Object's domain | Read | Create/Modify/Delete | Users/Domains |
-|-----------------|------|----------------------|---------------|
-| A               | YES (only name)  | NO                   | NO            |
-| A.B             | YES (only name)  | NO                   | NO            |
-| **A.B.C** (John)    | YES  | NO                   | NO            |
-| **A.B.C**.D         | YES  | NO                   | NO            |
-| A.B.Z           | NO   | NO                   | NO            |
-| A.Y             | NO   | NO                   | NO            |
-
-All objects have a single domain. The parent object must always belong to the same domain or a parent domain of the child object. Examples:
-- Rack domain = A.B    -> Device domain = A.B.C :heavy_check_mark:
-- Rack domain = A.B.C -> Device domain = A.B.C :heavy_check_mark:
-- Rack domain = A.B.Z -> Device domain = A.B.C :x:
  
 ## Deploy Tools
 In SuperAdmin's page, you will find a Tools button with a dropdown menu giving the option to create 3 tools: 
