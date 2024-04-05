@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/exp/slices"
 )
 
 // Tests ObjectUrl
@@ -359,7 +360,7 @@ func TestUnsetInObjEmptyArray(t *testing.T) {
 	assert.Equal(t, "Cannot delete anymore elements", err.Error())
 }
 
-func TestUnsetInObjWork(t *testing.T) {
+func TestUnsetInObjWorksWithNestedAttribute(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
 	rack := copyMap(rack1)
@@ -378,4 +379,154 @@ func TestUnsetInObjWork(t *testing.T) {
 	result, err := controller.UnsetInObj("/Physical/BASIC/A/R1/A01", "posXYZ", 1)
 	assert.Nil(t, err)
 	assert.Nil(t, result)
+}
+
+func TestUnsetInObjWorksWithAttribute(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+
+	template := map[string]any{
+		"slug":            "small-room",
+		"category":        "room",
+		"axisOrientation": "+x+y",
+		"sizeWDHm":        []any{9.6, 22.8, 3.0},
+		"floorUnit":       "t",
+		"technicalArea":   []any{5.0, 0.0, 0.0, 0.0},
+		"reservedArea":    []any{3.0, 1.0, 1.0, 3.0},
+		"colors": []any{
+			map[string]any{
+				"name":  "my-color1",
+				"value": "00ED00",
+			},
+			map[string]any{
+				"name":  "my-color2",
+				"value": "ffffff",
+			},
+		},
+	}
+	updatedTemplate := copyMap(template)
+	updatedTemplate["colors"] = slices.Delete(updatedTemplate["colors"].([]any), 1, 2)
+	mockPutObject(mockAPI, updatedTemplate, updatedTemplate)
+	mockGetRoomTemplate(mockAPI, template)
+
+	result, err := controller.UnsetInObj(models.RoomTemplatesPath+"small-room", "colors", 1)
+	assert.Nil(t, err)
+	assert.Nil(t, result)
+}
+
+// Tests GetByAttr
+func TestGetByAttrErrorWhenObjIsNotRack(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+
+	mockGetObjectHierarchy(mockAPI, chassis)
+
+	err := controller.GetByAttr(models.PhysicalPath+"BASIC/A/R1/A01/chT", "colors")
+	assert.NotNil(t, err)
+	assert.Equal(t, "command may only be performed on rack objects", err.Error())
+}
+
+func TestGetByAttrErrorWhenObjIsRackWithSlotName(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+
+	rack := copyMap(rack1)
+	rack["attributes"] = map[string]any{
+		"slot": []any{
+			map[string]any{
+				"location":   "u01",
+				"type":       "u",
+				"elemOrient": []any{33.3, -44.4, 107},
+				"elemPos":    []any{58, 51, 44.45},
+				"elemSize":   []any{482.6, 1138, 44.45},
+				"mandatory":  "no",
+				"labelPos":   "frontrear",
+				"color":      "@color1",
+			},
+		},
+	}
+	mockGetObjectHierarchy(mockAPI, rack)
+
+	err := controller.GetByAttr(models.PhysicalPath+"BASIC/A/R1/A01", "u01")
+	assert.Nil(t, err)
+}
+
+func TestGetByAttrErrorWhenObjIsRackWithHeight(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+
+	rack := copyMap(rack1)
+	rack["height"] = "47"
+	mockGetObjectHierarchy(mockAPI, rack)
+
+	err := controller.GetByAttr(models.PhysicalPath+"BASIC/A/R1/A01", 47)
+	assert.Nil(t, err)
+}
+
+// Tests LinkObject
+func TestLinkObjectErrorNotStaryObject(t *testing.T) {
+	controller, _, _ := layersSetup(t)
+
+	err := controller.LinkObject(models.PhysicalPath+"BASIC/A/R1/A01", models.PhysicalPath+"BASIC/A/R1/A01", []string{}, []any{}, []string{})
+	assert.NotNil(t, err)
+	assert.Equal(t, "only stray objects can be linked", err.Error())
+}
+
+func TestLinkObjectWithoutSlots(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+
+	strayDevice := copyMap(chassis)
+	delete(strayDevice, "id")
+	delete(strayDevice, "parentId")
+	response := map[string]any{"message": "successfully linked"}
+	body := map[string]any{"parentId": "BASIC.A.R1.A01", "slot": "[]", "type": "chassis"}
+
+	mockUpdateObject(mockAPI, body, response)
+
+	slots := []string{}
+	attributes := []string{}
+	values := []any{}
+	for key, value := range strayDevice["attributes"].(map[string]any) {
+		attributes = append(attributes, key)
+		values = append(values, value)
+	}
+	err := controller.LinkObject(models.StrayPath+"chT", models.PhysicalPath+"BASIC/A/R1/A01", attributes, values, slots)
+	assert.Nil(t, err)
+}
+
+func TestLinkObjectWithInvalidSlots(t *testing.T) {
+	controller, _, _ := layersSetup(t)
+
+	strayDevice := copyMap(chassis)
+	delete(strayDevice, "id")
+	delete(strayDevice, "parentId")
+
+	slots := []string{"slot01..slot03", "slot4"}
+	attributes := []string{}
+	values := []any{}
+	for key, value := range strayDevice["attributes"].(map[string]any) {
+		attributes = append(attributes, key)
+		values = append(values, value)
+	}
+	err := controller.LinkObject(models.StrayPath+"chT", models.PhysicalPath+"BASIC/A/R1/A01", attributes, values, slots)
+	assert.NotNil(t, err)
+	assert.Equal(t, "Invalid device syntax: .. can only be used in a single element vector", err.Error())
+}
+
+func TestLinkObjectWithValidSlots(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+
+	strayDevice := copyMap(chassis)
+	delete(strayDevice, "id")
+	delete(strayDevice, "parentId")
+	response := map[string]any{"message": "successfully linked"}
+	body := map[string]any{"parentId": "BASIC.A.R1.A01", "slot": "[slot01]", "type": "chassis"}
+
+	mockUpdateObject(mockAPI, body, response)
+
+	slots := []string{"slot01"}
+	attributes := []string{}
+	values := []any{}
+	for key, value := range strayDevice["attributes"].(map[string]any) {
+		attributes = append(attributes, key)
+		values = append(values, value)
+	}
+	err := controller.LinkObject(models.StrayPath+"chT", models.PhysicalPath+"BASIC/A/R1/A01", attributes, values, slots)
+	assert.Nil(t, err)
 }

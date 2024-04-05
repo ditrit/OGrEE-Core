@@ -247,7 +247,7 @@ func (n *getUNode) execute() (interface{}, error) {
 		return nil, fmt.Errorf("The U value must be positive")
 	}
 
-	return nil, cmd.GetByAttr(path, u)
+	return nil, cmd.C.GetByAttr(path, u)
 }
 
 type getSlotNode struct {
@@ -265,7 +265,7 @@ func (n *getSlotNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	return nil, cmd.GetByAttr(path, slot)
+	return nil, cmd.C.GetByAttr(path, slot)
 }
 
 type loadNode struct {
@@ -1557,7 +1557,7 @@ func (n *linkObjectNode) execute() (interface{}, error) {
 		}
 	}
 
-	return nil, cmd.LinkObject(source, dest, n.attrs, values, slots)
+	return nil, cmd.C.LinkObject(source, dest, n.attrs, values, slots)
 }
 
 type unlinkObjectNode struct {

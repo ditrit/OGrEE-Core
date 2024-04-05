@@ -370,8 +370,8 @@ func Env(userVars, userFuncs map[string]interface{}) {
 	}
 }
 
-func GetByAttr(path string, u interface{}) error {
-	obj, err := C.GetObjectWithChildren(path, 1)
+func (controller Controller) GetByAttr(path string, u interface{}) error {
+	obj, err := controller.GetObjectWithChildren(path, 1)
 	if err != nil {
 		return err
 	}
@@ -578,12 +578,12 @@ func FocusUI(path string) error {
 	return nil
 }
 
-func LinkObject(source string, destination string, attrs []string, values []any, slots []string) error {
-	sourceUrl, err := C.ObjectUrl(source, 0)
+func (controller Controller) LinkObject(source string, destination string, attrs []string, values []any, slots []string) error {
+	sourceUrl, err := controller.ObjectUrl(source, 0)
 	if err != nil {
 		return err
 	}
-	destPath, err := C.SplitPath(destination)
+	destPath, err := controller.SplitPath(destination)
 	if err != nil {
 		return err
 	}
@@ -603,7 +603,7 @@ func LinkObject(source string, destination string, attrs []string, values []any,
 		payload["slot"] = "[" + strings.Join(slots, ",") + "]"
 	}
 
-	_, err = API.Request("PATCH", sourceUrl+"/link", payload, http.StatusOK)
+	_, err = controller.API.Request("PATCH", sourceUrl+"/link", payload, http.StatusOK)
 	if err != nil {
 		return err
 	}
