@@ -367,7 +367,7 @@ func (n *isEntityDrawableNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	drawable, err := cmd.IsEntityDrawable(path)
+	drawable, err := cmd.C.IsEntityDrawable(path)
 	if err != nil {
 		return nil, err
 	}

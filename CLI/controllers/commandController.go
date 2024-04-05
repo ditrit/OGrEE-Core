@@ -619,8 +619,8 @@ func (controller Controller) UnlinkObject(path string) error {
 	return err
 }
 
-func IsEntityDrawable(path string) (bool, error) {
-	obj, err := C.GetObject(path)
+func (controller Controller) IsEntityDrawable(path string) (bool, error) {
+	obj, err := controller.GetObject(path)
 	if err != nil {
 		return false, err
 	}

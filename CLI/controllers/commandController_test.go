@@ -548,3 +548,37 @@ func TestUnlinkObjectWithValidPath(t *testing.T) {
 	err := controller.UnlinkObject(models.PhysicalPath + "BASIC/A/R1/A01")
 	assert.Nil(t, err)
 }
+
+// Tests IsEntityDrawable
+func TestIsEntityDrawableObjectNotFound(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+
+	mockObjectNotFound(mockAPI, "/api/hierarchy-objects/BASIC.A.R1.A01")
+
+	isDrawable, err := controller.IsEntityDrawable(models.PhysicalPath + "BASIC/A/R1/A01")
+	assert.False(t, isDrawable)
+	assert.NotNil(t, err)
+	assert.Equal(t, "object not found", err.Error())
+}
+
+func TestIsEntityDrawableCategoryIsNotDrawable(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+	controllers.State.DrawableObjs = []int{models.EntityStrToInt("device")}
+
+	mockGetObject(mockAPI, rack1)
+
+	isDrawable, err := controller.IsEntityDrawable(models.PhysicalPath + "BASIC/A/R1/A01")
+	assert.False(t, isDrawable)
+	assert.Nil(t, err)
+}
+
+func TestIsEntityDrawableWorks(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+	controllers.State.DrawableObjs = []int{models.EntityStrToInt("rack")}
+
+	mockGetObject(mockAPI, rack1)
+
+	isDrawable, err := controller.IsEntityDrawable(models.PhysicalPath + "BASIC/A/R1/A01")
+	assert.True(t, isDrawable)
+	assert.Nil(t, err)
+}
