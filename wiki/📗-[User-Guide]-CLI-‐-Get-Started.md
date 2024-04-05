@@ -1,6 +1,8 @@
-To use the frontend (CLI, 3D, APP), a ```config.toml``` file must be created at the root of the repo.
+The CLI is the entry to the API and the 3D client. Check the README from the CLI folder on how to build the CLI.
 
-Example :
+## Configuration
+To use the CLI as well as the 3D client, a `config.toml` file must be created at the root of the repo. If you are not cloning the repo and just executing the CLI binary, use the `--conf-path` launch argument to pass the config file location. If no file is provided, default values will be used just as defined by the example `config.toml` file below:
+
 ```
 [OGrEE-CLI]
 Verbose = "ERROR"
@@ -62,3 +64,13 @@ customTemperatureGradient = [
     [255,255,0,50]
 ]
 ```
+
+## Launch Arguments
+These arguments override the respective values found in the config.toml file.
+
+* --conf_path (or -c) : Specify the location of the config.toml file
+* --verbose (or -v) : Indicates level of debugging messages.The levels are in ascending order:{NONE,ERROR,WARNING,INFO,DEBUG}. (default "ERROR")
+* --unity_url (or -u) : Specify the Unity URL
+* --api_url (or -a) : Specify API URL
+* --history_path (or -h) : Specify location of the .history file
+* --file (or -f) : Interpret an OCLI script file
