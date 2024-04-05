@@ -554,10 +554,13 @@ func TestUnlinkRoom(t *testing.T) {
 	assert.True(t, exists)
 	assert.Equal(t, "successfully unlinked", message)
 
-	// TODO: add this
 	// We verify room-1 does not exist
-	// recorder = e2e.MakeRequest("GET", "/api/rooms/site-no-temperature.building-2.room-1", requestBody)
-	// assert.Equal(t, http.StatusNotFound, recorder.Code)
+	recorder = e2e.MakeRequest("GET", "/api/rooms/site-no-temperature.building-2.room-1", requestBody)
+	assert.Equal(t, http.StatusNotFound, recorder.Code)
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	message, exists = response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "Nothing matches this request", message)
 
 	// We verify the StrayRoom exists
 	recorder = e2e.MakeRequest("GET", "/api/stray-objects/StrayRoom", requestBody)
@@ -598,10 +601,13 @@ func TestLinkRoom(t *testing.T) {
 	assert.True(t, exists)
 	assert.Equal(t, "successfully linked", message)
 
-	// TODO: add this
 	// We verify the StrayRoom  does not exist
-	// recorder = e2e.MakeRequest("GET", "/api/stray-objects/StrayRoom", requestBody)
-	// assert.Equal(t, http.StatusNotFound, recorder.Code)
+	recorder = e2e.MakeRequest("GET", "/api/stray-objects/StrayRoom", requestBody)
+	assert.Equal(t, http.StatusNotFound, recorder.Code)
+	json.Unmarshal(recorder.Body.Bytes(), &response)
+	message, exists = response["message"].(string)
+	assert.True(t, exists)
+	assert.Equal(t, "Nothing matches this request", message)
 
 	// We verify room-1 exists again
 	recorder = e2e.MakeRequest("GET", "/api/rooms/site-no-temperature.building-2.room-1", requestBody)
