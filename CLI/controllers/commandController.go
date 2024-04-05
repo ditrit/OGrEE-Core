@@ -610,12 +610,12 @@ func (controller Controller) LinkObject(source string, destination string, attrs
 	return nil
 }
 
-func UnlinkObject(path string) error {
-	sourceUrl, err := C.ObjectUrl(path, 0)
+func (controller Controller) UnlinkObject(path string) error {
+	sourceUrl, err := controller.ObjectUrl(path, 0)
 	if err != nil {
 		return err
 	}
-	_, err = API.Request("PATCH", sourceUrl+"/unlink", nil, http.StatusOK)
+	_, err = controller.API.Request("PATCH", sourceUrl+"/unlink", nil, http.StatusOK)
 	return err
 }
 

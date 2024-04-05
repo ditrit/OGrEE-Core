@@ -530,3 +530,21 @@ func TestLinkObjectWithValidSlots(t *testing.T) {
 	err := controller.LinkObject(models.StrayPath+"chT", models.PhysicalPath+"BASIC/A/R1/A01", attributes, values, slots)
 	assert.Nil(t, err)
 }
+
+// Tests UnlinkObject
+func TestUnlinkObjectWithInvalidPath(t *testing.T) {
+	controller, _, _ := layersSetup(t)
+
+	err := controller.UnlinkObject("/invalid/path")
+	assert.NotNil(t, err)
+	assert.Equal(t, "invalid object path", err.Error())
+}
+
+func TestUnlinkObjectWithValidPath(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+
+	mockUpdateObject(mockAPI, nil, map[string]any{"message": "successfully unlinked"})
+
+	err := controller.UnlinkObject(models.PhysicalPath + "BASIC/A/R1/A01")
+	assert.Nil(t, err)
+}

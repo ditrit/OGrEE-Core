@@ -1569,7 +1569,7 @@ func (n *unlinkObjectNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return nil, cmd.UnlinkObject(source)
+	return nil, cmd.C.UnlinkObject(source)
 }
 
 type symbolReferenceNode struct {
