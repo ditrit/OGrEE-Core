@@ -1,6 +1,6 @@
 The APP is a Flutter application that can be run as a webapp or native Windows/Linux/macOS/iOS/Android app. Its SuperAdmin mode is used for creating and managing tenant and can help you get started with installing OGrEE-Core.
 
-# How to install
+# How to install it
 
 ### Install OGrEE-Core on Windows
 An OGrEE Windows Installer is available with each new version. With it, you can choose to install locally on your Windows machine any of the following components:
@@ -23,7 +23,7 @@ To quickly deploy an APP and docker backend in SuperAdmin mode, clone the repo a
 
 Once both are running, you will be able to use the SuperAdmin APP to download a CLI and a 3D client under the button `Tools`, completing your OGrEE-Core installation.
 
-# How to use
+# How to use it
 
 ## Login 
 Your backend will by default run on `http://localhost:8081`. On the OGrEE Admin UI, choose that URL as the server then enter the login credentials, by default as it follows:
