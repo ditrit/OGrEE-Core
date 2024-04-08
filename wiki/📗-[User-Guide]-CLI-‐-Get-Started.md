@@ -65,7 +65,7 @@ customTemperatureGradient = [
 ]
 ```
 
-## Launch Arguments
+## Launch arguments
 These arguments override the respective values found in the config.toml file.
 
 * --conf_path (or -c) : Specify the location of the config.toml file
@@ -74,3 +74,50 @@ These arguments override the respective values found in the config.toml file.
 * --api_url (or -a) : Specify API URL
 * --history_path (or -h) : Specify location of the .history file
 * --file (or -f) : Interpret an OCLI script file
+
+## Create your first objects
+
+After launching and logging in the CLI, we land in a prompt where we can start typing commands. The CLI is organized like a filesystem but here, instead of files, we have OGrEE objects disposed in a hierarchy with OGrEE namespaces as root. More information about namespaces and the OGrEE hierarchy can be found in the [Basic Concepts](https://github.com/ditrit/OGrEE-Core/wiki/%F0%9F%93%97-%5BUser-Guide%5D-Basic-Concepts) page. To navigate the tree of objects, Unix inspired commands can be used, such as `ls` to see the objects of the current level and `cd` to change level. Too see all possible commands, see the CLI Language page.
+
+Let's create some OGrEE components! First, we will create a site named `siteA`:
+```
++site:/P/siteA
+```
+
+The `/P/` is a prefix to the complete path and is the same as `/Physical/`. We can also go to Physical and create the site by only giving the name:
+```
+cd /Physical
++site:siteA
+```
+Now, let's create a building named `blgdA` under our new site:
+
+```
++bd:/P/siteA/blgdA@[0,0]@-90@[25,29.4,1]
+```
+Here, we also add some attributes with `@` followed by the attribute's value in the order and format described in the [Create Building](https://github.com/ditrit/OGrEE-Core/wiki/%F0%9F%93%97-%5BUser-Guide%5D-CLI-%E2%80%90-Language#create-a-building) command. 
+Next, we will create a room named `R1`:
+```
++ro:/P/siteA/blgdA/R1@[0,0]@0@[22.8,19.8,0.5]@+x+y
+```
+Instead of giving attributes, another option for the [Create Room](https://github.com/ditrit/OGrEE-Core/wiki/%F0%9F%93%97-%5BUser-Guide%5D-CLI-%E2%80%90-Language#create-a-room) command is to, first, create a room [template](https://github.com/ditrit/OGrEE-Core/wiki/%F0%9F%93%97-%5BUser-Guide%5D-API-%E2%80%90-JSON-templates-definitions) and then create a room passing the template as an attribute. This will automatically apply the template values to the new room.
+Inside the room, we will now create a two racks, `A01` and `A02`:
+```
++rk:/P/siteA/blgdA/R1/A01@[1,2]@t@[0,0,180]@[60,120,42]
++rk:/P/siteA/blgdA/R1/A02@[2,2]@t@[0,0,180]@[60,120,42]
+```
+The [Create Rack](https://github.com/ditrit/OGrEE-Core/wiki/%F0%9F%93%97-%5BUser-Guide%5D-CLI-%E2%80%90-Language#create-a-rack) (above) as well as the [Crete Device](https://github.com/ditrit/OGrEE-Core/wiki/%F0%9F%93%97-%5BUser-Guide%5D-CLI-%E2%80%90-Language#create-a-device) (below) command can also use templates. Let's create a simple device:
+```
++dv:/P/siteA/blgdA/R1/A01/DeviceA@1@3
+```
+We have created a complete hierarchy of OGrEE objects! We can check it out with the [Tree](https://github.com/ditrit/OGrEE-Core/wiki/%F0%9F%93%97-%5BUser-Guide%5D-CLI-%E2%80%90-Language#tree) command:
+```
+> tree /Physical 5
+/Physical
+├── Stray
+└── siteA
+    └── blgdA
+        └── R1
+            ├── A01
+            │   ├── DeviceA
+            └── A02
+```
