@@ -154,7 +154,7 @@ func (n *focusNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return nil, cmd.FocusUI(path)
+	return nil, cmd.C.FocusUI(path)
 }
 
 type cdNode struct {
@@ -1431,7 +1431,7 @@ func (n *addRoleNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	return nil, cmd.AddRole(email, role, domain)
+	return nil, cmd.C.AddRole(email, role, domain)
 }
 
 type changePasswordNode struct{}
@@ -1460,7 +1460,7 @@ type uiDelayNode struct {
 }
 
 func (n *uiDelayNode) execute() (interface{}, error) {
-	return nil, cmd.UIDelay(n.time)
+	return nil, cmd.C.UIDelay(n.time)
 }
 
 type uiToggleNode struct {
@@ -1469,7 +1469,7 @@ type uiToggleNode struct {
 }
 
 func (n *uiToggleNode) execute() (interface{}, error) {
-	return nil, cmd.UIToggle(n.feature, n.enable)
+	return nil, cmd.C.UIToggle(n.feature, n.enable)
 }
 
 type uiHighlightNode struct {
@@ -1481,14 +1481,14 @@ func (n *uiHighlightNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return nil, cmd.UIHighlight(path)
+	return nil, cmd.C.UIHighlight(path)
 }
 
 type uiClearCacheNode struct {
 }
 
 func (n *uiClearCacheNode) execute() (interface{}, error) {
-	return nil, cmd.UIClearCache()
+	return nil, cmd.C.UIClearCache()
 }
 
 type cameraMoveNode struct {
@@ -1507,7 +1507,7 @@ func (n *cameraMoveNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	return nil, cmd.CameraMove(n.command, position, rotation)
+	return nil, cmd.C.CameraMove(n.command, position, rotation)
 }
 
 type cameraWaitNode struct {
@@ -1515,7 +1515,7 @@ type cameraWaitNode struct {
 }
 
 func (n *cameraWaitNode) execute() (interface{}, error) {
-	return nil, cmd.CameraWait(n.time)
+	return nil, cmd.C.CameraWait(n.time)
 }
 
 type linkObjectNode struct {

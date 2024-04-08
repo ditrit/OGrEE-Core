@@ -475,28 +475,28 @@ func Disconnect3D() {
 	Ogree3D.Disconnect()
 }
 
-func UIDelay(time float64) error {
+func (controller Controller) UIDelay(time float64) error {
 	subdata := map[string]interface{}{"command": "delay", "data": time}
 	data := map[string]interface{}{"type": "ui", "data": subdata}
 	if State.DebugLvl > WARNING {
 		Disp(data)
 	}
 
-	return Ogree3D.Inform("HandleUI", -1, data)
+	return controller.Ogree3D.Inform("HandleUI", -1, data)
 }
 
-func UIToggle(feature string, enable bool) error {
+func (controller Controller) UIToggle(feature string, enable bool) error {
 	subdata := map[string]interface{}{"command": feature, "data": enable}
 	data := map[string]interface{}{"type": "ui", "data": subdata}
 	if State.DebugLvl > WARNING {
 		Disp(data)
 	}
 
-	return Ogree3D.Inform("HandleUI", -1, data)
+	return controller.Ogree3D.Inform("HandleUI", -1, data)
 }
 
-func UIHighlight(path string) error {
-	obj, err := C.GetObject(path)
+func (controller Controller) UIHighlight(path string) error {
+	obj, err := controller.GetObject(path)
 	if err != nil {
 		return err
 	}
@@ -507,20 +507,20 @@ func UIHighlight(path string) error {
 		Disp(data)
 	}
 
-	return Ogree3D.Inform("HandleUI", -1, data)
+	return controller.Ogree3D.Inform("HandleUI", -1, data)
 }
 
-func UIClearCache() error {
+func (controller Controller) UIClearCache() error {
 	subdata := map[string]interface{}{"command": "clearcache", "data": ""}
 	data := map[string]interface{}{"type": "ui", "data": subdata}
 	if State.DebugLvl > WARNING {
 		Disp(data)
 	}
 
-	return Ogree3D.Inform("HandleUI", -1, data)
+	return controller.Ogree3D.Inform("HandleUI", -1, data)
 }
 
-func CameraMove(command string, position []float64, rotation []float64) error {
+func (controller Controller) CameraMove(command string, position []float64, rotation []float64) error {
 	subdata := map[string]interface{}{"command": command}
 	subdata["position"] = map[string]interface{}{"x": position[0], "y": position[1], "z": position[2]}
 	subdata["rotation"] = map[string]interface{}{"x": rotation[0], "y": rotation[1]}
@@ -529,10 +529,10 @@ func CameraMove(command string, position []float64, rotation []float64) error {
 		Disp(data)
 	}
 
-	return Ogree3D.Inform("HandleUI", -1, data)
+	return controller.Ogree3D.Inform("HandleUI", -1, data)
 }
 
-func CameraWait(time float64) error {
+func (controller Controller) CameraWait(time float64) error {
 	subdata := map[string]interface{}{"command": "wait"}
 	subdata["position"] = map[string]interface{}{"x": 0, "y": 0, "z": 0}
 	subdata["rotation"] = map[string]interface{}{"x": 999, "y": time}
@@ -541,13 +541,13 @@ func CameraWait(time float64) error {
 		Disp(data)
 	}
 
-	return Ogree3D.Inform("HandleUI", -1, data)
+	return controller.Ogree3D.Inform("HandleUI", -1, data)
 }
 
-func FocusUI(path string) error {
+func (controller Controller) FocusUI(path string) error {
 	var id string
 	if path != "" {
-		obj, err := C.GetObject(path)
+		obj, err := controller.GetObject(path)
 		if err != nil {
 			return err
 		}
@@ -564,13 +564,13 @@ func FocusUI(path string) error {
 	}
 
 	data := map[string]interface{}{"type": "focus", "data": id}
-	err := Ogree3D.Inform("FocusUI", -1, data)
+	err := controller.Ogree3D.Inform("FocusUI", -1, data)
 	if err != nil {
 		return err
 	}
 
 	if path != "" {
-		return C.CD(path)
+		return controller.CD(path)
 	} else {
 		fmt.Println("Focus is now empty")
 	}
@@ -743,8 +743,8 @@ func (controller Controller) CreateUser(email string, role string, domain string
 	return nil
 }
 
-func AddRole(email string, role string, domain string) error {
-	response, err := API.Request("GET", "/api/users", nil, http.StatusOK)
+func (controller Controller) AddRole(email string, role string, domain string) error {
+	response, err := controller.API.Request("GET", "/api/users", nil, http.StatusOK)
 	if err != nil {
 		return err
 	}
@@ -768,7 +768,7 @@ func AddRole(email string, role string, domain string) error {
 	if userID == "" {
 		return fmt.Errorf("user not found")
 	}
-	response, err = API.Request("PATCH", fmt.Sprintf("/api/users/%s", userID),
+	response, err = controller.API.Request("PATCH", fmt.Sprintf("/api/users/%s", userID),
 		map[string]any{
 			"roles": map[string]any{
 				domain: role,
