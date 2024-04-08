@@ -3,6 +3,7 @@ package controllers_test
 import (
 	"cli/controllers"
 	"cli/models"
+	"errors"
 	"net/url"
 	"strings"
 	"testing"
@@ -580,5 +581,132 @@ func TestIsEntityDrawableWorks(t *testing.T) {
 
 	isDrawable, err := controller.IsEntityDrawable(models.PhysicalPath + "BASIC/A/R1/A01")
 	assert.True(t, isDrawable)
+	assert.Nil(t, err)
+}
+
+// Tests IsAttrDrawable (and IsCategoryAttrDrawable)
+func TestIsAttrDrawableObjectNotFound(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+	path := "/api/hierarchy-objects/BASIC.A.R1.A01"
+
+	mockObjectNotFound(mockAPI, path)
+
+	isAttrDrawable, err := controller.IsAttrDrawable(models.PhysicalPath+"BASIC/A/R1/A01", "color")
+	assert.False(t, isAttrDrawable)
+	assert.NotNil(t, err)
+	assert.Equal(t, "object not found", err.Error())
+}
+
+func TestIsAttrDrawableTemplateJsonIsNil(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+	controllers.State.DrawableObjs = []int{models.EntityStrToInt("rack")}
+
+	controllers.State.DrawableJsons = map[string]map[string]any{
+		"rack": nil,
+	}
+
+	mockGetObject(mockAPI, rack1)
+
+	isAttrDrawable, err := controller.IsAttrDrawable(models.PhysicalPath+"BASIC/A/R1/A01", "color")
+	assert.True(t, isAttrDrawable)
+	assert.Nil(t, err)
+}
+
+func TestIsAttrDrawableSpecialAttribute(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+	controllers.State.DrawableObjs = []int{models.EntityStrToInt("rack")}
+
+	controllers.State.DrawableJsons = map[string]map[string]any{
+		"rack": map[string]any{
+			"name":        true,
+			"parentId":    true,
+			"category":    true,
+			"description": false,
+			"domain":      true,
+			"attributes": map[string]any{
+				"color": true,
+			},
+		},
+	}
+
+	mockGetObject(mockAPI, rack1)
+	isAttrDrawable, err := controller.IsAttrDrawable(models.PhysicalPath+"BASIC/A/R1/A01", "name")
+	assert.True(t, isAttrDrawable)
+	assert.Nil(t, err)
+
+	// description is set to false so it should return false
+	mockGetObject(mockAPI, rack1)
+	isAttrDrawable, err = controller.IsAttrDrawable(models.PhysicalPath+"BASIC/A/R1/A01", "description")
+	assert.False(t, isAttrDrawable)
+	assert.Nil(t, err)
+}
+
+func TestIsAttrDrawableDefaultAttribute(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+	controllers.State.DrawableObjs = []int{models.EntityStrToInt("rack")}
+
+	controllers.State.DrawableJsons = map[string]map[string]any{
+		"rack": map[string]any{
+			"name":        true,
+			"parentId":    true,
+			"category":    true,
+			"description": false,
+			"domain":      true,
+			"attributes": map[string]any{
+				"color": true,
+			},
+		},
+	}
+
+	// color is not in the first case. So it will be searched in attributes field
+	mockGetObject(mockAPI, rack1)
+	isAttrDrawable, err := controller.IsAttrDrawable(models.PhysicalPath+"BASIC/A/R1/A01", "color")
+	assert.True(t, isAttrDrawable)
+	assert.Nil(t, err)
+
+	// height is not present in attributes, so it should return false
+	mockGetObject(mockAPI, rack1)
+	isAttrDrawable, err = controller.IsAttrDrawable(models.PhysicalPath+"BASIC/A/R1/A01", "height")
+	assert.False(t, isAttrDrawable)
+	assert.Nil(t, err)
+}
+
+// Tests CreateUser
+func TestCreateUserInvalidEmail(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+
+	mockAPI.On(
+		"Request", "POST",
+		"/api/users",
+		"mock.Anything", 201,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"message": "A valid email address is required",
+			},
+			Status: 400,
+		}, errors.New("[Response From API] A valid email address is required"),
+	).Once()
+
+	err := controller.CreateUser("email", "manager", "*")
+	assert.NotNil(t, err)
+	assert.Equal(t, "[Response From API] A valid email address is required", err.Error())
+}
+
+func TestCreateUserWorks(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+
+	mockAPI.On("Request", "POST",
+		"/api/users",
+		"mock.Anything", 201,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"message": "Account has been created",
+			},
+		}, nil,
+	).Once()
+
+	err := controller.CreateUser("email@email.com", "manager", "*")
 	assert.Nil(t, err)
 }

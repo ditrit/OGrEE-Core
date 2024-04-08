@@ -661,8 +661,8 @@ func IsCategoryAttrDrawable(category string, attr string) bool {
 	}
 }
 
-func IsAttrDrawable(path string, attr string) (bool, error) {
-	obj, err := C.GetObject(path)
+func (controller Controller) IsAttrDrawable(path string, attr string) (bool, error) {
+	obj, err := controller.GetObject(path)
 	if err != nil {
 		return false, err
 	}
@@ -721,9 +721,9 @@ func randPassword(n int) string {
 	return string(b)
 }
 
-func CreateUser(email string, role string, domain string) error {
+func (controller Controller) CreateUser(email string, role string, domain string) error {
 	password := randPassword(14)
-	response, err := API.Request(
+	response, err := controller.API.Request(
 		"POST",
 		"/api/users",
 		map[string]any{

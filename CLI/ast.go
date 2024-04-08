@@ -385,7 +385,7 @@ func (n *isAttrDrawableNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	drawable, err := cmd.IsAttrDrawable(path, n.attr)
+	drawable, err := cmd.C.IsAttrDrawable(path, n.attr)
 	if err != nil {
 		return nil, err
 	}
@@ -1408,7 +1408,7 @@ func (n *createUserNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	return nil, cmd.CreateUser(email, role, domain)
+	return nil, cmd.C.CreateUser(email, role, domain)
 }
 
 type addRoleNode struct {
