@@ -95,7 +95,7 @@ You can put comments in an .ocli file with the `//` indicator.
 
 ```
 // This is a comment
-+tn:example@ffffff // This is another comment
++si:example@ffffff // This is another comment
 ```
 
 # Variables
