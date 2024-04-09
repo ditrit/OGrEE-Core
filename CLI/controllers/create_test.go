@@ -515,16 +515,16 @@ func TestCreateDevice(t *testing.T) {
 func TestCreateDeviceWithSizeU(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	mockGetObject(mockAPI, map[string]any{
+	mockGetResponse := map[string]any{
 		"category": "rack",
 		"children": []any{},
 		"id":       "BASIC.A.R1.A01",
 		"name":     "A01",
 		"parentId": "BASIC.A.R1",
 		"domain":   "test-domain",
-	})
+	}
 
-	mockCreateObject(mockAPI, "device", map[string]any{
+	mockCreateResponse := map[string]any{
 		"category":    "device",
 		"id":          "BASIC.A.R1.A01.D1",
 		"name":        "D1",
@@ -539,8 +539,11 @@ func TestCreateDeviceWithSizeU(t *testing.T) {
 			"size":        `[1,1]`,
 			"sizeUnit":    "cm",
 		},
-	})
+	}
 
+	// SizeU of int type
+	mockGetObject(mockAPI, mockGetResponse)
+	mockCreateObject(mockAPI, "device", mockCreateResponse)
 	err := controller.CreateObject("/Physical/BASIC/A/R1/A01/D1", models.DEVICE, map[string]any{
 		"category": "device",
 		"id":       "BASIC.A.R1.A01.D1",
@@ -549,6 +552,25 @@ func TestCreateDeviceWithSizeU(t *testing.T) {
 		"domain":   "test-domain",
 		"attributes": map[string]any{
 			"sizeU":       2,
+			"heightUnit":  "U",
+			"orientation": "front",
+			"size":        []float64{1, 1},
+			"sizeUnit":    "cm",
+		},
+	})
+	assert.Nil(t, err)
+
+	// SizeU of float type
+	mockGetObject(mockAPI, mockGetResponse)
+	mockCreateObject(mockAPI, "device", mockCreateResponse)
+	err = controller.CreateObject("/Physical/BASIC/A/R1/A01/D1", models.DEVICE, map[string]any{
+		"category": "device",
+		"id":       "BASIC.A.R1.A01.D1",
+		"name":     "D1",
+		"parentId": "BASIC.A.R1.A01",
+		"domain":   "test-domain",
+		"attributes": map[string]any{
+			"sizeU":       2.0,
 			"heightUnit":  "U",
 			"orientation": "front",
 			"size":        []float64{1, 1},
@@ -591,5 +613,20 @@ func TestCreateGroup(t *testing.T) {
 		"name":        "G1",
 		"parentId":    "BASIC",
 	})
+	assert.Nil(t, err)
+}
+
+func TestCreateTag(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+	color := "D0FF78"
+	slug := "my-tag"
+
+	mockCreateObject(mockAPI, "tag", map[string]any{
+		"color":       color,
+		"description": slug,
+		"slug":        slug,
+	})
+
+	err := controller.CreateTag(slug, color)
 	assert.Nil(t, err)
 }

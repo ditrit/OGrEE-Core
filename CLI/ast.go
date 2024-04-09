@@ -1295,7 +1295,7 @@ func (n *createTagNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	return nil, cmd.CreateTag(slug, color)
+	return nil, cmd.C.CreateTag(slug, color)
 }
 
 type createLayerNode struct {
