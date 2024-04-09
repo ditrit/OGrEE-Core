@@ -141,7 +141,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		}
 
 		return nil, &u.Error{Type: u.ErrInvalidValue,
-			Message: "ParentID should correspond to existing rack or room ID"}
+			Message: "Group parent should correspond to existing rack or room"}
 
 	case u.GENERIC:
 		x, _ := GetObject(req, "room", u.RequestFilters{}, nil)
