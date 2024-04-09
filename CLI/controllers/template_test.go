@@ -171,3 +171,52 @@ func TestApplyTemplateOfTypeRoomWorks(t *testing.T) {
 	assert.Equal(t, "[0,0,0]", room["attributes"].(map[string]any)["vertices"])
 	assert.Equal(t, "[\"my-color\"]", room["attributes"].(map[string]any)["colors"])
 }
+
+func TestLoadTemplateRoom(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+
+	template := map[string]any{
+		"slug":        "room-example",
+		"description": "room example",
+		"category":    "room",
+		"sizeWDHm":    []any{216, 659, 41},
+	}
+
+	mockCreateObject(mockAPI, "room-template", template)
+
+	err := controller.LoadTemplate(template)
+	assert.Nil(t, err)
+}
+
+func TestLoadTemplateBuilding(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+
+	template := map[string]any{
+		"slug":        "building-example",
+		"description": "building example",
+		"category":    "building",
+		"sizeWDHm":    []any{216, 659, 41},
+		"center":      []any{0, 0},
+	}
+
+	mockCreateObject(mockAPI, "bldg-template", template)
+
+	err := controller.LoadTemplate(template)
+	assert.Nil(t, err)
+}
+
+func TestLoadTemplateInvalidCategory(t *testing.T) {
+	controller, _, _ := layersSetup(t)
+
+	template := map[string]any{
+		"slug":        "invalid-example",
+		"description": "invalid example",
+		"category":    "invalid",
+		"sizeWDHm":    []any{216, 659, 41},
+		"center":      []any{0, 0},
+	}
+
+	err := controller.LoadTemplate(template)
+	assert.NotNil(t, err)
+	assert.ErrorContains(t, err, "this template does not have a valid category. Please add a category attribute with a value of building, room, rack, device or generic")
+}
