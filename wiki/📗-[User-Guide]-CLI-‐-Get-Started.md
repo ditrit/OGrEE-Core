@@ -125,3 +125,28 @@ If you have a local 3D client running and connected to your CLI, you can then se
 ```
 draw /Physical/siteA 5
 ```
+
+## Create with .ocli files
+A faster way to create objects with the CLI is to use `.ocli` files. Simply put the CLI commands inside a text file with this extension and call it from the CLI. From inside an `.ocli` file, you can also call another `.ocli` file. Let's create a second site using a `.ocli` file. We will also see how to use [variables](https://github.com/ditrit/OGrEE-Core/wiki/%F0%9F%93%97-%5BUser-Guide%5D-CLI-%E2%80%90-Language#variables) and [for loops](https://github.com/ditrit/OGrEE-Core/wiki/%F0%9F%93%97-%5BUser-Guide%5D-CLI-%E2%80%90-Language#control-flow). 
+
+First, in the same folder of your CLI binary, create a file called `siteB.ocli` with the following content:
+```
+.var:siteName=siteB
++site:$siteName
++bd:/P/$siteName/blgdB@[0,0]@-90@[25,29.4,1]
++ro:/P/$siteName/blgdB/R2@[0,0]@0@[22.8,19.8,0.5]@+x+y
+
++cmds:./racksB.ocli
+```
+
+Still in the same folder of your CLI binary, create a file called `racksB.ocli`:
+```
+for i in 1..9 {                                                            \ 
+    .var:multbyten=eval 10*$i;                                             \ 
+    +rk:/P/$siteName/blgdB/R2/A${multbyten}@[$i,2]@t@[0,0,180]@[60,120,42] \
+}
+```
+Now, in the CLI, run the following command to create it all:
+```
+.cmds:./siteB.ocli
+```
