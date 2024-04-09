@@ -12,6 +12,22 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+// Test PWD
+func TestPWD(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+	controller.CD("/")
+	location := controllers.PWD()
+	assert.Equal(t, "/", location)
+
+	mockGetObject(mockAPI, rack1)
+	path := "/Physical/" + strings.Replace(rack1["id"].(string), ".", "/", -1)
+	err := controller.CD(path)
+	assert.Nil(t, err)
+
+	location = controllers.PWD()
+	assert.Equal(t, path, location)
+}
+
 // Tests ObjectUrl
 func TestObjectUrlInvalidPath(t *testing.T) {
 	_, err := controllers.C.ObjectUrl("/invalid/path", 0)
