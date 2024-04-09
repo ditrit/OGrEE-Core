@@ -77,7 +77,7 @@ These arguments override the respective values found in the config.toml file.
 
 ## Create your first objects
 
-After launching and logging in the CLI, we land in a prompt where we can start typing commands. The CLI is organized like a filesystem but here, instead of files, we have OGrEE objects disposed in a hierarchy with OGrEE namespaces as root. More information about namespaces and the OGrEE hierarchy can be found in the [Basic Concepts](https://github.com/ditrit/OGrEE-Core/wiki/%F0%9F%93%97-%5BUser-Guide%5D-Basic-Concepts) page. To navigate the tree of objects, Unix inspired commands can be used, such as `ls` to see the objects of the current level and `cd` to change level. Too see all possible commands, see the CLI Language page.
+After launching and logging in the CLI, we land in a prompt where we can start typing commands. The CLI is organized like a filesystem but here, instead of files, we have OGrEE objects disposed in a hierarchy with OGrEE namespaces as root. More information about namespaces and the OGrEE hierarchy can be found in the [Basic Concepts](https://github.com/ditrit/OGrEE-Core/wiki/%F0%9F%93%97-%5BUser-Guide%5D-Basic-Concepts) page. To navigate the tree of objects, Unix inspired commands can be used, such as `ls` to see the objects of the current level and `cd` to change level. Too see all possible commands, see the [CLI Language](https://github.com/ditrit/OGrEE-Core/wiki/%F0%9F%93%97-%5BUser-Guide%5D-CLI-%E2%80%90-Language) page.
 
 Let's create some OGrEE components! First, we will create a site named `siteA`:
 ```
@@ -166,3 +166,5 @@ This will first process the `siteB.ocli`, creating a new site, building and room
         ├── A80
         └── A90
 ```
+
+For more commands, check the [CLI Language](https://github.com/ditrit/OGrEE-Core/wiki/%F0%9F%93%97-%5BUser-Guide%5D-CLI-%E2%80%90-Language) page!
