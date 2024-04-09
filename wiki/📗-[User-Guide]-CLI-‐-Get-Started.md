@@ -150,3 +150,19 @@ Now, in the CLI, run the following command to create it all:
 ```
 .cmds:./siteB.ocli
 ```
+This will first process the `siteB.ocli`, creating a new site, building and room, and then the `racksB.ocli`, creating 10 new racks. Check the result with the tree command:
+```
+> tree /P/siteB 5
+/Physical/siteB
+└── blgdB
+    └── R2
+        ├── A10
+        ├── A20
+        ├── A30
+        ├── A40
+        ├── A50
+        ├── A60
+        ├── A70
+        ├── A80
+        └── A90
+```
