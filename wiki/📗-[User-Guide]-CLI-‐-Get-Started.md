@@ -118,7 +118,7 @@ We have created a complete hierarchy of OGrEE objects! We can check it out with 
     └── blgdA
         └── R1
             ├── A01
-            │   ├── DeviceA
+            │   └── DeviceA
             └── A02
 ```
 If you have a local 3D client running and connected to your CLI, you can then see your recently created objects in 3D with the draw command:
