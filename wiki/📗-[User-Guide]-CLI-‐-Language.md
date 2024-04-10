@@ -1,13 +1,3 @@
-# CLI Launch Arguments
-These arguments override the respective values found in the config.toml file.
-
-* --conf_path (or -c) : Specify the location of the config.toml file
-* --verbose (or -v) : Indicates level of debugging messages.The levels are in ascending order:{NONE,ERROR,WARNING,INFO,DEBUG}. (default "ERROR")
-* --unity_url (or -u) : Specify the Unity URL
-* --api_url (or -a) : Specify API URL
-* --history_path (or -h) : Specify location of the .history file
-* --file (or -f) : Interpret an OCLI script file
-
 # Contents <!-- omit in toc -->
 
 - [Glossary](#glossary)
@@ -96,7 +86,7 @@ These arguments override the respective values found in the config.toml file.
 
 # Glossary
 
-`[name]` is case sensitive. It include the whole path of the object (for example: `tn/si/bd/ro/rk`)  
+`[name]` is case sensitive. It includes the whole path of the object (for example: `tn/si/bd/ro/rk`)  
 `[color]` is a hexadecimal code (*ffffff*)  
 
 # Comments
@@ -105,7 +95,7 @@ You can put comments in an .ocli file with the `//` indicator.
 
 ```
 // This is a comment
-+tn:example@ffffff // This is another comment
++si:example@ffffff // This is another comment
 ```
 
 # Variables
@@ -134,8 +124,11 @@ where ```[value]``` can be either:
 
 ## Use a variable
 
-```${[name]}``` or ```$[name]```  
+`${[name]}` or `$[name]`  
 in the second case, the longest identifier is used as ```[name]```
+```
++si:$siteNameVar
+```
 
 # Expressions
 
@@ -165,7 +158,7 @@ The ```print``` command prints the given string. The argument can take the same 
 
 The ```printf``` command is equivalent to a ```print format```, see next section for details about ```format```.
 
-# String formatting
+## String formatting
 
 You can dereference variables inside strings with ```${[name]}``` or ```$[name]```.
 
@@ -189,11 +182,14 @@ print format("2+3 equals %02d", 2+3) // prints "2+3 equals 05"
 # Loading commands
 
 ## Load commands from a text file
+```
+.cmds:[path]
+```
 
 *`[path]` path of the file*
 
 ```
-.cmds:[path]
+.cmds:/path/to/file.ocli
 ```
 
 By convention, these files carry the extension .ocli.
@@ -213,20 +209,26 @@ for i in 0..5 {                                                \
 
 ## Load template from JSON
 
+```
+.template:[path]
+```
 *`[path]` path of the json file*
 
 ```
-.template:[path]
+.template:/path/to/template.json
 ```
 
 # Hierarchy commands
 
 ## Select an object
 
+```
+=[name]
+```
 *If `[name]` is empty, go back to root*
 
 ```
-=[name]
+=/Physical/Site/Building/RoomToSelect
 ```
 
 ## Select child / children object

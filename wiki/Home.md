@@ -1,30 +1,24 @@
-Welcome to the OGrEE-Core wiki!
+Welcome to the OGrEE-Core wiki! Let us present our documentation!
 
-# What is OGrEE ?
-OGrEE stands for Offline Graph End to End  
-Offline    : no connection with customer SI : only logs (securely) stored somewhere !  
-Graph      : try to link / draw component / informations and their relationships  
-End-to-End : depending on informations found in logs, OGrEE is able to :
-  - make the complete I/O path between a "disk" seen under Linux and the way it is built in the storage array, with internal / external replication and full SAN path.
-  - list/display all impacted devices in DC when maintenance team ask for a PowerPanel maintenance PowerPanel/PowerFeed/PDU/PSU/Devices)
-  - Displayed information could be more precise if more useful logs are given.  
+#### New here? 
+👉 Learn some basic concepts of the project: 📗 [[User Guide] Basic Concepts](https://github.com/ditrit/OGrEE-Core/wiki/%F0%9F%93%97-%5BUser-Guide%5D-Basic-Concepts)
 
-OGrEE is neither SPLUNK, nor a DCIM (netbox) nor an ELK...   
+#### Do you want to install it and create an OGrEE Tenant? 
+👉 See how to use the SuperAdmin for it: 📗 [[User Guide] APP ‐ SuperAdmin](https://github.com/ditrit/OGrEE-Core/wiki/%F0%9F%93%97-%5BUser-Guide%5D-APP-%E2%80%90-SuperAdmin)
 
+#### How to use OGrEE components? 
+👉 Get started on how to interact with our main components:
 
-# And OGrEE-3D ?
-This is the OGrEE 3D client: a 3D front end part of OGrEE, based on Unity game engine.  
-It will display data from OGrEE using OGrEE-CLI.  
-You can access to the OGrEE-3D repo [here](https://github.com/ditrit/OGrEE-3D).  
+📗 [[User Guide] CLI ‐ Get Started](https://github.com/ditrit/OGrEE-Core/wiki/%F0%9F%93%97-%5BUser-Guide%5D-CLI-%E2%80%90-Get-Started)  
+📗 [[User Guide] API ‐ Get Started](https://github.com/ditrit/OGrEE-Core/wiki/%F0%9F%93%97-%5BUser-Guide%5D-API-%E2%80%90-Get-Started)  
+📗 [[User Guide] APP ‐ Tenant Mode](https://github.com/ditrit/OGrEE-Core/wiki/%F0%9F%93%97-%5BUser-Guide%5D-APP-%E2%80%90-Tenant-Mode)
 
-OGrEE 3D was firstly designed
-- to help "non certified" technicians to replace spare parts in complex IT devices
-- to avoid loosing time updating "vision/draw.io" schemas
-- to propose a funny-visual-3D representation of a datacenter with the ability to display any kind of information on 3D objects  
+#### Are you a developer? 
+👉 Check how to setup OGrEE dev environement, how to contribute to this project or even how our CI/CD works allowing new releases to come to live: 
 
-# Demo
-Here is an example video of an OGrEE usage:  
-
-https://github.com/ditrit/OGrEE-Core/assets/35805113/d6fe1a3e-9c5f-42e7-b926-1c6211a7df0d
-
-[Youtube link](https://youtu.be/OU3gOS__lcg)
+📙 [[Dev Guide] Quickstart for Linux Dev](https://github.com/ditrit/OGrEE-Core/wiki/%F0%9F%93%99-%5BDev-Guide%5D-Quickstart-for-Linux-Dev)  
+📙 [[Dev Guide] How to contribute](https://github.com/ditrit/OGrEE-Core/wiki/%F0%9F%93%99-%5BDev-Guide%5D-How-to-contribute)  
+📙 [[Dev Guide] Release GitFlow](https://github.com/ditrit/OGrEE-Core/wiki/%F0%9F%93%99-%5BDev-Guide%5D-Release-GitFlow)
+ 
+#### Questions?
+If you have any questions or just would like to get in touch, our Github [discussions](https://github.com/ditrit/OGrEE-Core/discussions) page is a great way to do it! One of our maintener will be happy to assist you.
