@@ -232,13 +232,19 @@ func TestValidateEntityGroupParent(t *testing.T) {
 	template["parentId"] = "siteA.building-1.room-1"
 	template["name"] = "groupA"
 	template["attributes"].(map[string]any)["content"] = "rack-1"
+	assert.NotNil(t, err)
+	assert.Equal(t, "All group objects must be directly under the parent (no . allowed)", err.Message)
+
+	template["parentId"] = "siteA.building-1.room-1"
+	template["name"] = "groupA"
+	template["attributes"].(map[string]any)["content"] = "rack-1"
 	delete(template, "id")
 	err = models.ValidateEntity(u.GROUP, template)
 	assert.Nil(t, err)
 
 	template["parentId"] = "siteA.building-1.room-1.rack-1"
 	template["name"] = "groupA"
-	template["attributes"].(map[string]any)["content"] = "device-1,device-1.device-2"
+	template["attributes"].(map[string]any)["content"] = "device-1,device-2"
 	delete(template, "id")
 	err = models.ValidateEntity(u.GROUP, template)
 	assert.Nil(t, err)
