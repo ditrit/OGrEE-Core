@@ -17,6 +17,7 @@ func init() {
 	integration.RequireCreateRoom("siteA.building-1", "room-1")
 	integration.RequireCreateRack("siteA.building-1.room-1", "rack-1")
 	integration.RequireCreateDevice("siteA.building-1.room-1.rack-1", "device-1")
+	integration.RequireCreateDevice("siteA.building-1.room-1.rack-1", "device-2")
 	integration.RequireCreateDevice("siteA.building-1.room-1.rack-1.device-1", "device-2")
 	ManagerUserRoles := map[string]models.Role{
 		models.ROOT_DOMAIN: models.Manager,
