@@ -66,15 +66,15 @@ class _CreateNboxPopupState extends State<CreateNboxPopup> {
                               const SizedBox(height: 20),
                               CustomFormField(
                                   save: (newValue) => _userName = newValue,
-                                  label: "$toolName user name",
+                                  label: localeMsg.toolUsername(toolName),
                                   icon: Icons.person),
                               CustomFormField(
                                   save: (newValue) => _userPassword = newValue,
-                                  label: "$toolName user password",
+                                  label: localeMsg.toolPassword(toolName),
                                   icon: Icons.lock),
                               CustomFormField(
                                 save: (newValue) => _port = newValue,
-                                label: "$toolName port",
+                                label: localeMsg.toolPort(toolName),
                                 initialValue: _port,
                                 icon: Icons.numbers,
                                 formatters: <TextInputFormatter>[

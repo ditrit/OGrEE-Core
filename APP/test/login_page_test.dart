@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ogree_app/main.dart';
+import 'package:ogree_app/widgets/common/language_toggle.dart';
 
 import 'common.dart';
 
@@ -12,7 +13,7 @@ void main() {
       await tester.pumpWidget(const MyApp());
       final msgs = await getFrenchMessages();
       expect(find.textContaining(msgs["welcome"]!), findsOneWidget);
-      expect(find.text('EN'), findsOneWidget);
+      expect(find.bySubtype<LanguageToggle>(), findsOneWidget);
       expect(find.textContaining('mail'), findsOneWidget);
       expect(find.textContaining(msgs["password"]!), findsNWidgets(2));
       expect(find.textContaining(msgs["login"]!), findsOneWidget);

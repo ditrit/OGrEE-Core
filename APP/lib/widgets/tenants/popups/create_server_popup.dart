@@ -65,11 +65,11 @@ class _CreateServerPopupState extends State<CreateServerPopup> {
                       const SizedBox(height: 20),
                       getFormField(
                           save: (newValue) => _sshHost = newValue,
-                          label: "SSH Host",
+                          label: localeMsg.sshHost,
                           icon: Icons.dns),
                       getFormField(
                           save: (newValue) => _sshUser = newValue,
-                          label: "SSH User",
+                          label: localeMsg.sshUser,
                           icon: Icons.person),
                       const SizedBox(height: 4),
                       Wrap(
@@ -79,7 +79,7 @@ class _CreateServerPopupState extends State<CreateServerPopup> {
                             child: RadioListTile<AuthOption>(
                               activeColor: Colors.blue.shade600,
                               dense: true,
-                              title: const Text('Private Key'),
+                              title: Text(localeMsg.privateKey),
                               value: AuthOption.pKey,
                               groupValue: _authOption,
                               onChanged: (AuthOption? value) {
@@ -112,12 +112,13 @@ class _CreateServerPopupState extends State<CreateServerPopup> {
                               children: [
                                 getFormField(
                                     save: (newValue) => _sshKey = newValue,
-                                    label: "SSH Private Key (/local/path/file)",
+                                    label:
+                                        "${localeMsg.sshPrivateKey} (/local/path/file)",
                                     icon: Icons.lock),
                                 getFormField(
                                     save: (newValue) => _sshKeyPass = newValue,
                                     label:
-                                        "Private Key Passphrase (${localeMsg.optional})",
+                                        "${localeMsg.sshPrivateKeyPassphrase} (${localeMsg.optional})",
                                     icon: Icons.lock,
                                     shouldValidate: false),
                               ],

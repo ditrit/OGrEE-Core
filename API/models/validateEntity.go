@@ -140,16 +140,8 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 			return parent, nil
 		}
 
-		z, _ := GetObject(req, "building", u.RequestFilters{}, nil)
-		if z != nil {
-			parent["parent"] = "building"
-			parent["domain"] = z["domain"]
-			parent["id"] = z["id"]
-			return parent, nil
-		}
-
 		return nil, &u.Error{Type: u.ErrInvalidValue,
-			Message: "ParentID should correspond to existing rack, room or building ID"}
+			Message: "Group parent should correspond to existing rack or room"}
 
 	case u.GENERIC:
 		x, _ := GetObject(req, "room", u.RequestFilters{}, nil)
@@ -352,6 +344,12 @@ func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 			// Ensure objects all exist
 			orReq := bson.A{}
 			for _, objectName := range objects {
+				if strings.Contains(objectName, u.HN_DELIMETER) {
+					return &u.Error{
+						Type:    u.ErrBadFormat,
+						Message: "All group objects must be directly under the parent (no . allowed)",
+					}
+				}
 				orReq = append(orReq, bson.M{"id": t["parentId"].(string) + u.HN_DELIMETER + objectName})
 			}
 			filter := bson.M{"$or": orReq}
@@ -386,15 +384,17 @@ func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 			// Check if Group ID is unique
 			entities := u.GetEntitiesByNamespace(u.Physical, t["id"].(string))
 			for _, entStr := range entities {
-				// Get objects
-				entData, err := GetManyObjects(entStr, bson.M{"id": t["id"]}, u.RequestFilters{}, nil, nil)
-				if err != nil {
-					err.Message = "Error while check id unicity at " + entStr + ":" + err.Message
-					return err
-				}
-				if len(entData) > 0 {
-					return &u.Error{Type: u.ErrBadFormat,
-						Message: "This group ID is not unique among " + entStr + "s"}
+				if entStr != u.EntityToString(u.GROUP) {
+					// Get objects
+					entData, err := GetManyObjects(entStr, bson.M{"id": t["id"]}, u.RequestFilters{}, nil, nil)
+					if err != nil {
+						err.Message = "Error while check id unicity at " + entStr + ":" + err.Message
+						return err
+					}
+					if len(entData) > 0 {
+						return &u.Error{Type: u.ErrBadFormat,
+							Message: "This group ID is not unique among " + entStr + "s"}
+					}
 				}
 			}
 		case u.DEVICE:
