@@ -227,13 +227,7 @@ func TestValidateEntityGroupParent(t *testing.T) {
 	}
 	err := models.ValidateEntity(u.GROUP, template)
 	assert.NotNil(t, err)
-	assert.Equal(t, "ParentID should correspond to existing rack, room or building ID", err.Message)
-
-	template["parentId"] = "siteA.building-1"
-	template["attributes"].(map[string]any)["content"] = "room-1"
-	err = models.ValidateEntity(u.GROUP, template)
-	assert.Nil(t, err)
-	assert.Equal(t, template["parentId"].(string)+".groupA", template["id"])
+	assert.Equal(t, "Group parent should correspond to existing rack or room", err.Message)
 
 	template["parentId"] = "siteA.building-1.room-1"
 	template["name"] = "groupA"
