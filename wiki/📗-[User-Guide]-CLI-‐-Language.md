@@ -231,7 +231,7 @@ for i in 0..5 {                                                \
 =/Physical/Site/Building/RoomToSelect
 ```
 
-## Select child / children object
+### Select child object
 
 Select one or several children of current selected object.  
 *`[relativeName]` is the hierarchy name without the selected object part*
@@ -241,13 +241,13 @@ Select one or several children of current selected object.
 ={[relativeName],[relativeName],...}
 ```  
 
-## Select parent object
+### Select parent object
 
 ```
-..
+=..
 ```
 
-## Get object/s
+## Get object
 
 The information of an object or a list of objects can be obtained using the get command:
 
@@ -256,6 +256,15 @@ get [path]
 ```
 
 where `[path]` can be either the path of a single object (get rack1) or a list of objects using wildcards (get rack1/*) (see [Wildcards](#wildcards)).
+
+```
+get SiteA
+get /Physical/SiteB
+get *                              // get all objs in current path
+get * -f category=rack & height>10 // complex filter
+get A*                             // get all objs with name starting by A
+get A* category=rack               // simple filter
+```
 
 To see all possible options run:
 
@@ -349,7 +358,17 @@ ls [path]
 ```
 
 ls can also be used without [path] to do ls on the current path.
-
+```
+ls
+ls DEMO_RACK/DeviceA
+ls /Physical/SiteA
+ls $x                             // using a variable
+ls -s height                      // sort by height
+ls -a height:size                 // show obj's height and size on ls result 
+ls -r #racks                      // recursive, all levels below
+ls . height=12                    // simple filter
+ls . -f category=rack & height>10 // complex filter
+```
 To see all possible options run:
 
 ```
@@ -441,6 +460,14 @@ tree // default path will be the current path (.)
 tree [path] // default depth will be 1
 tree [path] [depth]
 ```
+Examples:
+```
+tree .
+tree . 2
+tree DEMO_RACK/DeviceA 2
+tree $x 4
+tree /Physical/SiteA
+```
 
 ## Delete object
 
@@ -448,7 +475,12 @@ Works with single or multi selection.
 
 ```
 -[name]
--selection
+```
+Examples:
+```
+-.
+-BUILDING/ROOM
+-selection // delete all objects previously selected
 ```
 
 ## Focus an object
@@ -461,7 +493,7 @@ Works with single or multi selection.
 
 ## Copy object
 
-Currently it is only possible to copy layers. To copy an object use:
+Currently it is only possible to copy **layers**. To copy an object use:
 
 ```
 cp [source] [dest]
@@ -495,31 +527,33 @@ link /Physical/Stray@/Physical/site/bldg/room/rack@slots=[slot1,slot2]@orientati
 
 ## Create a Domain
 
+```
++domain:[name]@[color]
++do:[name]@[color]
+```
 To create a domain, a name and color should be provided. Should be in the  `/Organisation/Domain` (`/O/Domain` on short version) path or include it in the domain's name. 
 Domains can have a hierarchy, that is, a domain can have a parent domain.  
 *`[color]` should be a 6 digit HEX Value (ie 00000A)*
 
 ```
-+domain:[name]@[color]
-+do:[name]@[color]
++domain:Newdomain@ff00ee
++do:/O/Domain/Newdomain/Newsubdomain@000AAA
 ```
 
 ## Create a Site
-
-Sites have no parent, only a name is needed to create it.
 
 ```
 +site:[name]  
 +si:[name]
 ```
+Sites have no parent, only a name is needed to create it.
+
+```
++site:siteA // current path: /Physical
++si:/P/siteB
+```
 
 ## Create a Building
-
-Building must be child of a Site.  
-*`[pos]` is a Vector2 [x,y] (m,m)  
-`[rotation]` is the rotation of the building around its lower left corner, in degree  
-`[size]` is a Vector3 [width,length,height] (m,m,m)  
-`[template]` is the name (slug) of the building template*
 
 ```
 +building:[name]@[pos]@[rotation]@[size]  
@@ -527,9 +561,25 @@ Building must be child of a Site.
 +bd:[name]@[pos]@[rotation]@[size]
 +bd:[name]@[pos]@[rotation]@[template]
 ```
+Building must be child of a Site.  
+*`[pos]` is a Vector2 [x,y] (m,m)  
+`[rotation]` is the rotation of the building around its lower left corner, in degree  
+`[size]` is a Vector3 [width,length,height] (m,m,m)  
+`[template]` is the name (slug) of the building template*
+
+```
++building:/P/siteA/BldgA@[5,5]@49.1@[300,300,300]
++bd:BldgA@[5,5]@-27.89@BldgTemplateA 
+```
 
 ## Create a Room
 
+```
++room:[name]@[pos]@[rotation]@[size]@[axisOrientation]@[floorUnit]  
++room:[name]@[pos]@[rotation]@[template]
++ro:[name]@[pos]@[rotation]@[size]@[axisOrientation]@[floorUnit]  
++ro:[name]@[pos]@[rotation]@[template]
+```
 Room must be child of a building.  
 Its name will be displayed in the center of the room in its local coordinates system.  
 *`[pos]` is a Vector2 [x,y] (m,m)  
@@ -540,14 +590,18 @@ Its name will be displayed in the center of the room in its local coordinates sy
 `[floorUnit]` is optional: by default set to "t" (tiles), can also be m (meters) or f (feet)*
 
 ```
-+room:[name]@[pos]@[rotation]@[size]@[axisOrientation]@[floorUnit]  
-+room:[name]@[pos]@[rotation]@[template]
-+ro:[name]@[pos]@[rotation]@[size]@[axisOrientation]@[floorUnit]  
-+ro:[name]@[pos]@[rotation]@[template]
++ro:/P/siteA/BldgA/R1@[0,0]@-36.202@[22.8,19.8,2]@+N+W@t
++room:/P/siteA/BldgA/R1@[0,0]@-36.202@RoomTemplateA
 ```
 
 ## Create a Rack
 
+```
++rack:[name]@[pos]@[unit]@[rotation]@[size]
++rack:[name]@[pos]@[unit]@[rotation]@[template]
++rk:[name]@[pos]@[unit]@[rotation]@[size]
++rk:[name]@[pos]@[unit]@[rotation]@[template]
+```
 Rack must be child of a room.  
 `[pos]` is a Vector2 [x,y] (tile,tile) or a Vector3 [x,y,z] (tile,tile,cm) if the rack is wall mounted. It can be decimal or fraction. Can also be negative  
 `[unit]` is t(tiles), m(meters) or f(feet)  
@@ -562,21 +616,12 @@ Rack must be child of a room.
 `[template]` is the name of the rack template
 
 ```
-+rack:[name]@[pos]@[unit]@[rotation]@[size]
-+rack:[name]@[pos]@[unit]@[rotation]@[template]
-+rk:[name]@[pos]@[unit]@[rotation]@[size]
-+rk:[name]@[pos]@[unit]@[rotation]@[template]
++rack:/P/siteA/BldgA/R1/A01@[1,2]@t@[0,0,180]@[60,120,42]
++rk:A01@[9,1]@t@[60,120,45]@BldgTemplate // current path /P/siteA/BldgA
 ```
 
 ## Create a Device
 
-A chassis is a *parent* device racked at a defined U position.  
-*`[posU]` is the position in U in a rack  
-`[sizeU]` is the height in U in a rack  
-`[slot]` is a square brackets list [] with the names of slots in which you want to place the device separated by a comma. Example: [slot1, slot2, slot3]. A shorter version with `..` can be used for a single range of slots: [slot1..slot3]. If no template is given, only one slot can be provided in the list.  
-`[template]` is the name of the device template  
-`[invertOffset]` is a boolean that tells the 3D client to invert the default offset for positioning the device in its slot (false by default, if not provided)  
-`[side]` is from which side you can see the device if not "fullsize". This value is for overriding the one defined in the template. It can be front | rear | frontflipped | rearflipped*  
 If the parent rack doesn't have slots:
 
 ```
@@ -592,7 +637,7 @@ If the parent rack has slots:
 +device:[name]@[slot]@[sizeU]@[invertOffset]
 +device:[name]@[slot]@[template]@[invertOffset]
 ```  
-
+A chassis is a *parent* device racked at a defined U position. 
 All other devices (blades / components like processor, memory, adapters, disks...) have to be declared with a parent's slot and a template.
 
 ```
@@ -603,26 +648,47 @@ All other devices (blades / components like processor, memory, adapters, disks..
 +dv:[name]@[slot]@[template]@[invertOffset]
 +dv:[name]@[slot]@[template]@[invertOffset]@[side]
 ```  
+ 
+*`[posU]` is the position in U in a rack  
+`[sizeU]` is the height in U in a rack  
+`[slot]` is a square brackets list [] with the names of slots in which you want to place the device separated by a comma. Example: [slot1, slot2, slot3]. A shorter version with `..` can be used for a single range of slots: [slot1..slot3]. If no template is given, only one slot can be provided in the list.  
+`[template]` is the name of the device template  
+`[invertOffset]` is a boolean that tells the 3D client to invert the default offset for positioning the device in its slot (false by default, if not provided)  
+`[side]` is from which side you can see the device if not "fullsize". This value is for overriding the one defined in the template. It can be front | rear | frontflipped | rearflipped*  
+```
++dv:/P/siteA/BldgA/R1/A01/chassis@12@10
++dv:/P/siteA/BldgA/R1/A01/devA@[SlotA,SlotB]@10
++dv:/P/siteA/BldgA/R1/A01/devB@[SlotC]@DevTemplate
++dv:/P/siteA/BldgA/R1/A01/devB@[SlotC]@DevTemplate@true@front
+```  
+
 
 ## Create a Group
-
-Group must be child of a room or a rack
-A group is a box containing all given children.
-
-- If the group is a child of a room, it can contain racks and corridors.
-- If the group is a child of a rack, it can contain devices.
-
-`c1,c2,...,cN` are the short names (eg. A01 instead of tn.si.bd.ro.A01)
 
 ```
 +group:[name]@{c1,c2,...,cN}
 +gr:[name]@{c1,c2,...,cN}
 ```
+Group must be child of a room or a rack
+A group is represented as a single box in the 3D client, containing all given children.
+
+- If the group is a child of a room, it can contain racks and corridors.
+- If the group is a child of a rack, it can contain devices.
+
+`c1,c2,...,cN` are the short names (eg. A01 instead of /P/siteA/BldgA/R1/A01)
+
+```
++gr:/P/siteA/BldgA/R1/GR1@{A01,A02,A03} // group child of room, contains racks
+```
 
 ## Create a Corridor
 
-Corridor must be child of a room
-A corridor is a cold or warm corridor.  
+```
++corridor:[name]@[pos]@[unit]@[rotation]@[size]@[temperature]
++co:[name]@[pos]@[unit]@[rotation]@[size]@[temperature]
+```
+Corridor must be child of a room.
+
 `[pos]` is a Vector2 [x,y] (tile,tile) or a Vector3 [x,y,z] (tile,tile,cm) if the corridor is wall mounted. It can be decimal or fraction. Can also be negative  
 `[unit]` is t(tiles), m(meters) or f(feet)  
 `[rotation]` is a Vector3 of angles or one of following keywords :  
@@ -636,8 +702,8 @@ A corridor is a cold or warm corridor.
 `[temperature]` is cold or warm.
 
 ```
-+corridor:[name]@[pos]@[unit]@[rotation]@[size]@[temperature]
-+co:[name]@[pos]@[unit]@[rotation]@[size]@[temperature]
++co:/P/siteA/BldgA/R1/CO1@[0,2]@t@[0,0,0]@[180,120,200]@warm
++co:/P/siteA/BldgA/R1/CO2@[3,2]@m@rear@[3*60,2*60,200]@cold
 ```
 
 ## Create a Tag
@@ -648,9 +714,13 @@ Tags are identified by a slug. In addition, they have a color, a description and
 +tag:[slug]@[color]
 ```
 
-The description will initially be defined the same as the slug, but can be modified (see [Modify object's attribute](#modify-objects-attribute)). Image can only be modified from the web version.
+The description will initially be defined the same as the slug, but can be modified (see [Modify object's attribute](#modify-objects-attribute)). Image can only be added or modified through the APP.
 
-After the tag is created, it can be seen in /Logical/Tags. The command `get /Logical/Tags/[slug]` can be used to get the tag information. In doing so, the tag image will be the route in which the image can be obtained via an http request.
+After the tag is created, it can be seen in /Logical/Tags. The command `get /Logical/Tags/[slug]` can be used to get the tag information. In this get response, the field image contains a value that can be used to download the image from the API (check the endpoint /api/images in the API documentation).
+
+```
++tag:gpu_servers@00ff00
+```
 
 ## Create a Layer
 
@@ -660,15 +730,13 @@ Layers are identified by a slug. In addition, they have an applicability and the
 +layer:[slug]@[applicability]@[filter]
 ```
 
-The applicability is the path in which the layer should be added when doing ls. Patterns can be used in the applicability (see [Applicability Patterns](#applicability-patterns)).
+The applicability is the path in which the layer should be added when running the `ls` command. Patterns can be used in the applicability (see [Applicability Patterns](#applicability-patterns)).
 
 Layers can have simple filters in the format `field=value` or complex ones, composed of boolean expressions with the operators `=`, `!=`, `<`, `<=`, `>`, `>=`, `&` and `|`; parenthesis can also be used to separate the complex expressions. A first filter should be given to to create the layer.
 
 ```
 +layer:[slug]@[applicability]@name=[name]
-+layer:[slug]@[applicability]@height=[height]
 +layer:[slug]@[applicability]@category=[category] & name!=[name]
-+layer:[slug]@[applicability]@(name=[name] & height<[height]) | domain=[domain]
 ```
 
 To add more filters, simple or complex ones, edit the layer using the following syntax:
@@ -682,14 +750,12 @@ This action will add an `AND` operation between the new filter and the existing 
 Examples:
 ```
 [layer_path]:filters+=name=[name]
-[layer_path]:filters+=height=[height]
-[layer_path]:filters+=category=[category] & name!=[name]
 [layer_path]:filters+=(name=[name] & height<[height]) | domain=[domain]
 ```
 
 Where [layer_path] is `/Logical/Layers/[slug]` (or only `[slug]` if the current path is /Logical/Layers).
 
-To redefine the filter of a layer, editi using the following syntax:
+To redefine the filter of a layer, edit using the following syntax:
 
 ```
 [layer_path]:filters=[filter]
@@ -697,14 +763,10 @@ To redefine the filter of a layer, editi using the following syntax:
 
 Examples:
 ```
-[layer_path]:filters=name=[name]
 [layer_path]:filters=height=[height]
 [layer_path]:filters=category=[category] & name!=[name]
-[layer_path]:filters=(name=[name] & height<[height]) | domain=[domain]
 ```
 For the layer to filter the children whose category is device. When adding filters on different attributes, all must be fulfilled for a child to be part of the layer.
-
-Layers are not applied until their filters are defined.
 
 After the layer is created, it can be seen in /Logical/Layers. The command `get /Logical/Layers/[slug]` can be used to get the layer information.
 
