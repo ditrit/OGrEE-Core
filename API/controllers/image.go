@@ -27,7 +27,7 @@ func imageIDToUrl(entity int, object map[string]any) map[string]any {
 	return object
 }
 
-// swagger:operation GET /api/image/{id} Objects GetImage
+// swagger:operation GET /api/images/{id} Objects GetImage
 // Gets an image by its id.
 // Returns a HTTP response with the binary of the image.
 // The format of the image will correspond to the content type of the response.

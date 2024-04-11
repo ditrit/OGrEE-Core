@@ -947,3 +947,20 @@ Future<Result<void, Exception>> importNetboxDump() async {
     return Failure(e);
   }
 }
+
+Future<Result<Map<String, dynamic>, Exception>> fetchSchema(String id) async {
+  print("API fetch Schema");
+  try {
+    Uri url = Uri.parse('$apiUrl/api/schemas/$id');
+    final response = await http.get(url, headers: getHeader(token));
+    if (response.statusCode == 200) {
+      Map<String, dynamic> data = json.decode(response.body);
+      return Success(data);
+    } else {
+      final Map<String, dynamic> data = json.decode(response.body);
+      return Failure(Exception(data["message"].toString()));
+    }
+  } on Exception catch (e) {
+    return Failure(e);
+  }
+}

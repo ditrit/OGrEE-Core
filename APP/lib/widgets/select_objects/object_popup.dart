@@ -332,13 +332,20 @@ class _ObjectPopupState extends State<ObjectPopup> {
   readJsonAssets() async {
     final localeMsg = AppLocalizations.of(context)!;
     var language = AppLocalizations.of(context)!.localeName;
+    final messenger = ScaffoldMessenger.of(context);
     // Get JSON refs/types
-    String data = await DefaultAssetBundle.of(context)
-        .loadString("../API/models/schemas/refs/types.json");
-    final Map<String, dynamic> jsonResult = json.decode(data);
-    var defs = Map<String, dynamic>.from(jsonResult["definitions"]);
-    Map<String, String> types = {};
+    Map<String, dynamic> defs;
+    var result = await fetchSchema("types.json");
+    switch (result) {
+      case Success(value: final value):
+        defs = value["definitions"];
+      case Failure(exception: final exception):
+        showSnackBar(messenger, exception.toString(), isError: true);
+        if (context.mounted) Navigator.pop(context);
+        return;
+    }
 
+    Map<String, String> types = {};
     for (var def in defs.keys.toList()) {
       if (defs[def]["descriptions"] != null) {
         types["refs/types.json#/definitions/$def"] =
@@ -359,9 +366,17 @@ class _ObjectPopupState extends State<ObjectPopup> {
 
     for (var obj in objects) {
       // Read JSON schema
-      String data = await DefaultAssetBundle.of(context)
-          .loadString("../API/models/schemas/${obj}_schema.json");
-      final Map<String, dynamic> jsonResult = json.decode(data);
+      Map<String, dynamic> jsonResult;
+      var result = await fetchSchema("${obj}_schema.json");
+      switch (result) {
+        case Success(value: final value):
+          jsonResult = value;
+        case Failure(exception: final exception):
+          showSnackBar(messenger, exception.toString(), isError: true);
+          if (context.mounted) Navigator.pop(context);
+          return;
+      }
+
       if (jsonResult["properties"]["attributes"]["properties"] != null) {
         // Get all properties
         var attrs = Map<String, dynamic>.from(
