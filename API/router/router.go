@@ -75,6 +75,10 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 	router.HandleFunc(controllers.GetImagePath+"{id}",
 		controllers.GetImage).Methods("GET", "HEAD", "OPTIONS")
 
+	// JSON schemas
+	router.HandleFunc("/api/schemas/{id}",
+		controllers.GetSchemaJSON).Methods("GET", "HEAD", "OPTIONS")
+
 	// For obtaining the complete hierarchy (tree)
 	router.HandleFunc("/api/hierarchy",
 		controllers.GetCompleteHierarchy).Methods("GET", "OPTIONS", "HEAD")
