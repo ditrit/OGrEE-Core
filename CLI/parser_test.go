@@ -468,7 +468,7 @@ func parserRecoverFunction(t *testing.T, p *parser, expectedErrorMessage string)
 	if panicInfo := recover(); panicInfo != nil {
 		assert.Equal(t, expectedErrorMessage, p.err)
 	} else {
-		t.Errorf("The function should have ended wwith an error")
+		t.Errorf("The function should have ended with an error")
 	}
 }
 
@@ -567,4 +567,126 @@ func TestParseCreateLayer(t *testing.T) {
 	assert.Equal(t, "layer", parsedNode.slug.(*valueNode).val)
 	assert.Equal(t, "site.building.room", parsedNode.applicability.(*pathNode).path.(*valueNode).val)
 	assert.Equal(t, "category=rack", parsedNode.filterValue.(*valueNode).val)
+}
+
+func TestParseCreateOrphan(t *testing.T) {
+	path := models.StrayPath + "orphan"
+	templateName := "my-template"
+	p := newParser("device : " + path + "@" + templateName)
+	parsedNode := p.parseCreateOrphan().(*createOrphanNode)
+	assert.Equal(t, path, parsedNode.path.(*pathNode).path.(*valueNode).val)
+	assert.Equal(t, templateName, parsedNode.template.(*valueNode).val)
+}
+
+func TestParseCreateUser(t *testing.T) {
+	email := "email@mail.com"
+	role := "my-role"
+	domain := "my-domain"
+	p := newParser(`"` + email + `"` + "@" + role + "@" + domain)
+	parsedNode := p.parseCreateUser().(*createUserNode)
+	assert.Equal(t, email, parsedNode.email.(*valueNode).val)
+	assert.Equal(t, role, parsedNode.role.(*valueNode).val)
+	assert.Equal(t, domain, parsedNode.domain.(*valueNode).val)
+}
+
+func TestParseAddRole(t *testing.T) {
+	email := "email@mail.com"
+	role := "my-role-2"
+	domain := "my-domain"
+	p := newParser(`"` + email + `"` + "@" + role + "@" + domain)
+	parsedNode := p.parseAddRole().(*addRoleNode)
+	assert.Equal(t, email, parsedNode.email.(*valueNode).val)
+	assert.Equal(t, role, parsedNode.role.(*valueNode).val)
+	assert.Equal(t, domain, parsedNode.domain.(*valueNode).val)
+}
+
+func TestParseCp(t *testing.T) {
+	source := models.LayersPath + "layer1"
+	destination := "layer2"
+	p := newParser(source + " " + destination)
+	parsedNode := p.parseCp().(*cpNode)
+	assert.Equal(t, source, parsedNode.source.(*pathNode).path.(*valueNode).val)
+	assert.Equal(t, destination, parsedNode.dest.(*valueNode).val)
+}
+
+func TestParseExprList(t *testing.T) {
+	p := newParser("-1")
+	parsedNode := p.parseUnaryExpr().(*negateNode)
+	assert.Equal(t, 1, parsedNode.val.(*valueNode).val)
+
+	p = newParser("!true")
+	parsedNode2 := p.parseUnaryExpr().(*negateBoolNode)
+	assert.Equal(t, true, parsedNode2.expr.(*valueNode).val)
+
+	p = newParser("+1")
+	parsedNode3 := p.parseUnaryExpr().(*valueNode)
+	assert.Equal(t, 1, parsedNode3.val)
+}
+
+func TestParseLsStarError(t *testing.T) {
+	p := newParser("-r /*")
+	defer parserRecoverFunction(t, p, "unexpected character in path: '*'")
+	p.parseLs("")
+}
+
+func TestParseLsPathError(t *testing.T) {
+	p := newParser("-r path/$ra")
+	defer parserRecoverFunction(t, p, "path expected")
+	p.parseLs("")
+}
+
+func TestParseDrawable(t *testing.T) {
+	path := "/path/to/draw"
+	p := newParser(path)
+	parsedNode := p.parseDrawable().(*isEntityDrawableNode)
+	assert.Equal(t, path, parsedNode.path.(*pathNode).path.(*valueNode).val)
+
+	attribute := "color"
+	p = newParser(path + " " + attribute)
+	parsedNodes := p.parseDrawable().(*isAttrDrawableNode)
+	assert.Equal(t, path, parsedNodes.path.(*pathNode).path.(*valueNode).val)
+	assert.Equal(t, attribute, parsedNodes.attr)
+}
+
+func TestParseUnsetVariable(t *testing.T) {
+	varName := "myVar"
+	p := newParser("-v " + varName)
+	parsedNode := p.parseUnset().(*unsetVarNode)
+	assert.Equal(t, varName, parsedNode.varName)
+}
+
+func TestParseUnsetFunction(t *testing.T) {
+	functionName := "myFunction"
+	p := newParser("-f " + functionName)
+	parsedNode := p.parseUnset().(*unsetFuncNode)
+	assert.Equal(t, functionName, parsedNode.funcName)
+}
+
+func TestParseUnsetAttribute(t *testing.T) {
+	path := "path/to/room"
+	attribute := "template"
+	p := newParser(path + ":" + attribute)
+	parsedNode := p.parseUnset().(*unsetAttrNode)
+	assert.Equal(t, path, parsedNode.path.(*pathNode).path.(*valueNode).val)
+	assert.Equal(t, attribute, parsedNode.attr)
+}
+
+func TestParseTree(t *testing.T) {
+	path := "/path"
+	p := newParser(path)
+	parsedNode := p.parseTree().(*treeNode)
+	assert.Equal(t, path, parsedNode.path.(*pathNode).path.(*valueNode).val)
+	assert.Equal(t, 1, parsedNode.depth)
+
+	p = newParser(path + " 3")
+	parsedNode = p.parseTree().(*treeNode)
+	assert.Equal(t, path, parsedNode.path.(*pathNode).path.(*valueNode).val)
+	assert.Equal(t, 3, parsedNode.depth)
+}
+
+func TestParseConnect3D(t *testing.T) {
+	url := "url.com/path"
+	p := newParser(url)
+	parsedNode := p.parseConnect3D().(*connect3DNode)
+	assert.Equal(t, url, parsedNode.url)
 }
