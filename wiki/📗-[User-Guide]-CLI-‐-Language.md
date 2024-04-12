@@ -127,7 +127,14 @@ where ```[value]``` can be either:
 `${[name]}` or `$[name]`  
 in the second case, the longest identifier is used as ```[name]```
 ```
+.var:siteNameVar=SITE
 +si:$siteNameVar
+
+.var:ROOM=/P/$siteNameVar/BLDG/ROOM1
+${ROOM}/Rack:description="Rack of site $siteNameVar"
+
+.var:i=eval (10+10)*10; // i=200
+.var:j=eval $i/10-1;    // j=19
 ```
 
 # Expressions
@@ -199,11 +206,11 @@ By convention, these files carry the extension .ocli.
 In .ocli script files, commands are usually separated by line breaks, however it is possible to have commands over multiple lines by using the \ character at the end of one or more consecutive lines, as shown below:
 
 ```
-for i in 0..5 {                                                \
-    .var:r=eval 10+$i;                                         \
-    .var:x=eval (36+$i*4)/3;                                   \
-    +rk:/P/NSQSI/NSQBD/NSQRO/J${r}@[ $x, 52]@[80,120,42]@rear; \
-    +rk:/P/NSQSI/NSQBD/NSQRO/K${r}@[ $x, 55]@[80,120,42]@front \
+for i in 0..5 {                                           \
+    .var:r=eval 10+$i;                                    \
+    .var:x=eval (36+$i*4)/3;                              \
+    +rk:/P/SI/BLDG/ROOM/J${r}@[ $x, 52]@[80,120,42]@rear; \
+    +rk:/P/SI/BLDG/ROOM/K${r}@[ $x, 55]@[80,120,42]@front \
 }
 ```
 
@@ -735,22 +742,23 @@ The applicability is the path in which the layer should be added when running th
 Layers can have simple filters in the format `field=value` or complex ones, composed of boolean expressions with the operators `=`, `!=`, `<`, `<=`, `>`, `>=`, `&` and `|`; parenthesis can also be used to separate the complex expressions. A first filter should be given to to create the layer.
 
 ```
-+layer:[slug]@[applicability]@name=[name]
-+layer:[slug]@[applicability]@category=[category] & name!=[name]
++layer:Aobjs@/P/site/bldg/room@name=A* // all objs of room starting by A
+// only racks that does not start by A:
++layer:RacksNotA@/P/site/bldg/room@category=racks & name!=A* 
 ```
 
 To add more filters, simple or complex ones, edit the layer using the following syntax:
 
 ```
-[layer_path]:filters+=[filter]
+[layer_path]:filter+=[filter]
 ```
 
 This action will add an `AND` operation between the new filter and the existing layer filter.
 
 Examples:
 ```
-[layer_path]:filters+=name=[name]
-[layer_path]:filters+=(name=[name] & height<[height]) | domain=[domain]
+[layer_path]:filter+=name=[name]
+[layer_path]:filter+=(name=[name] & height<[height]) | domain=[domain]
 ```
 
 Where [layer_path] is `/Logical/Layers/[slug]` (or only `[slug]` if the current path is /Logical/Layers).
@@ -758,14 +766,9 @@ Where [layer_path] is `/Logical/Layers/[slug]` (or only `[slug]` if the current 
 To redefine the filter of a layer, edit using the following syntax:
 
 ```
-[layer_path]:filters=[filter]
+[layer_path]:filter=[filter]
 ```
 
-Examples:
-```
-[layer_path]:filters=height=[height]
-[layer_path]:filters=category=[category] & name!=[name]
-```
 For the layer to filter the children whose category is device. When adding filters on different attributes, all must be fulfilled for a child to be part of the layer.
 
 After the layer is created, it can be seen in /Logical/Layers. The command `get /Logical/Layers/[slug]` can be used to get the layer information.
@@ -776,10 +779,10 @@ The following special terms are supported in the patterns:
 
 Special Terms | Meaning
 ------------- | -------
-`*`           | matches any sequence of non-path-separators
+`/*`           | matches anything in the following directory
 `/**/`        | matches zero or more directories
-`?`           | matches any single non-path-separator character
-`[class]`     | matches any single non-path-separator character against a class of characters (see [Character classes](#character-classes))
+`?`           | matches any single character
+`[class]`     | matches any single character against a class of characters (see [Character classes](#character-classes))
 `{alt1,...}`  | matches a sequence of characters if one of the comma-separated alternatives matches
 
 Any character with a special meaning can be escaped with a backslash (`\`).
@@ -787,7 +790,7 @@ Any character with a special meaning can be escaped with a backslash (`\`).
 A doublestar (`**`) should appear surrounded by path separators such as `/**/`.
 A mid-pattern doublestar (`**`) behaves like bash's globstar option: a pattern
 such as `path/to/**` would return the same results as `path/to/*`. The
-pattern you're looking for is `path/to/**/*`.
+pattern you're looking is probably `path/to/**/*`.
 
 #### Character Classes
 
@@ -800,6 +803,26 @@ Class      | Meaning
 `[^class]` | matches any single character which does *not* match the class
 `[!class]` | same as `^`: negates the class
 
+#### Examples
+
+```
+// layer available at all levels under /P/si/bldg 
+// e.g. at /P/si/bldg/room/rack/device
++layer:[slug]@/P/si/bldg/**/*@[filter] 
+
+// layer available only at levels directly under /P/si/bldg 
+// e.g. at /P/si/bldg/room but not at /P/si/bldg/room/rack
++layer:[slug]@/P/si/bldg/*@[filter] 
+
+// layer available only at room level with id starting as /P/site/bldg/RoomA
+// e.g. at /P/site/bldg/RoomA1 and /P/site/bldg/RoomA2
++layer:[slug]@/P/si/bldg/RoomA?@[filter] 
+
+// layer available only at levels /P/site/bldg/RoomA and /P/site/bldg/RoomB
+// e.g. not at /P/site/bldg/RoomC
++layer:[slug]@/P/si/bldg/Room[AB]@[filter] 
+```
+
 ## Create a Generic Object
 
 Generic objects allow you to model any type of object that is not of the previous classes (tables, cabinets, doors, etc).
@@ -810,17 +833,8 @@ To create them, use one of the following options:
 
 ```
 +generic:[name]@[pos]@[unit]@[rotation]@[size]@[shape]@[type]
-```
-
-```
 +generic:[name]@[pos]@[unit]@[rotation]@[template]
-```
-
-```
 +ge:[name]@[pos]@[unit]@[rotation]@[size]@[shape]@[type]
-```
-
-```
 +ge:[name]@[pos]@[unit]@[rotation]@[template]
 ```
 
@@ -841,18 +855,29 @@ Where:
 - `[type]` is a string defining the type of the object. No predefined values.
 - `[template]` is the name of the rack template
 
+Examples:
+
+```
++ge:/P/SI/BLDG/ROOM/BOX@[0,6,10]@t@[0,0,90]@[10,10,10]@cube@box
++ge:/P/SI/BLDG/ROOM/CHAIR@[5,5]@t@front@chair // with template
+```
+
 # Set commands
 
 ## Set colors for zones of all rooms in a datacenter
 
+Add or modify the following color attributes of site:
 ```
-[datacenter]:usableColor=[color]
-[datacenter]:reservedColor=[color]
-[datacenter]:technicalColor=[color]
+[site]:usableColor=[color]
+[site]:reservedColor=[color]
+[site]:technicalColor=[color]
 ```  
 
 ## Set reserved and technical zones of a room
 
+```
+[room]:areas=[reserved]@[technical]  
+```
 Enables tiles edges display.  
 You can modify areas only if the room has no racks in it.  
 **Technical** area : typically a restricted zone where power panels and AC systems are installed. separated from "IT space" with either a wall or a wire mesh  
@@ -862,7 +887,7 @@ You can modify areas only if the room has no racks in it.
 `[technical]` is a vector4: [front,back,right,left] (tile,tile,tile,tile)*
 
 ```
-[room]:areas=[reserved]@[technical]  
+/P/SI/BLDG/ROOM:areas=[2,2,2,2]@[3,1,1,1] 
 ```
 
 ## Room separators
@@ -880,6 +905,10 @@ Where:
 `[type]` is the type of wall: wireframe or plain*  
 
 It will add the given separator to `[room].attributes["separators"]`, which is a list of all its separators.
+
+```
+/P/SI/BLDG/ROOM:separators+=sep1@[1.2,10.2]@[1.2,14.2]@wireframe
+```
 
 Separators can be removed using:
 
@@ -905,6 +934,10 @@ Where:
 `[rotation]` is the angle of the pillar, in degrees*  
 
 It will add the given pillar to `[room].attributes["pillars"]`, which is a list of all its pillars.
+
+```
+/P/SI/BLDG/ROOM:pillars+=pillar1@[4.22,3.85]@[0.25,0.25]@0
+```
 
 Pillars can be removed using:
 
@@ -937,12 +970,16 @@ _:[attribute]=[value]
 
 ```
 [name]:description=[value]
+// Example:
+/P/SI/BLDG/R1/RACK:description="My Rack\nNew Servers\nWith GPU A4000"
 ```
 
 - Object's clearance are vector6, they define how much gap (in mm) has to be left on each side of the object:
 
 ```
 [name]:clearance=[front, rear, left, right, top, bottom]
+// Example:
+/P/SI/BLDG/R1/RACK:clearance=[800,500,0,0,0,0]
 ```
 
 ## Tags
@@ -966,7 +1003,7 @@ To add a tag to an object use:
 [name]:tags+=[tag_slug]
 ```
 
-Where tag_slug is the slug of an existing tag, which can be found in /Logical/Tags.
+Where tag_slug is the slug of an existing tag, which can be found in /Logical/Tags. The tag _must_ be previously created (check [Create Tag](https://github.com/ditrit/OGrEE-Core/wiki/%F0%9F%93%97-%5BUser-Guide%5D-CLI-%E2%80%90-Language#create-a-tag)).
 
 To remove a tag from an object use:
 
@@ -1081,7 +1118,7 @@ The same way you can modify object's attributes, you can interact with them thro
 
 ### Group
 
-- Display or hide contained racks/devices
+- Display or hide contained objects
 
 ```
 [name]:content=[true|false]
@@ -1094,7 +1131,9 @@ The same way you can modify object's attributes, you can interact with them thro
 You can put delay before each command: up to 2 seconds.
 
 ```
-ui.delay=[time]
+ui.delay=[time in seconds]
+// Example: 
+ui.delay=0.5 // 500ms
 ```  
 
 ## Display infos panel
@@ -1111,64 +1150,99 @@ ui.debug=[true|false]
 
 ## Highlight object
 
-*This is a "toggle" command: use it to turn on/off the highlighting of an object.  
-If given object is hidden in its parent, the parent will be highlighted.*
+This is a "toggle" command: use it to turn on/off the highlighting of an object.  
+If given object is hidden in its parent, the parent will be highlighted.
 
 ```
 ui.highlight=[name]
 ui.hl=[name]
+// Example:
+ui.hl=/P/SI/BLDG/R1/RACK
 ```
 
 # Manipulate camera
 
 ## Move camera
 
+```
+camera.move=[position]@[rotation]
+```  
 Move the camera to the given point.  
 *`[position]` is a Vector3: the new position of the camera  
 `[rotation]` is a Vector2: the rotation of the camera*
 
 ```
-camera.move=[position]@[rotation]
+camera.move=[-20.2;-71.98,21.32]@[37,0]
 ```  
 
 ## Translate camera
 
+```
+camera.translate=[position]@[rotation]
+```  
 Move the camera to the given destination. You can stack several destinations, the camera will move to each point in the given order.  
 *`[position]` is a Vector3: the position of the camera's destination  
 `[rotation]` is a Vector2: the rotation of the camera's destination*
 
 ```
-camera.translate=[position]@[rotation]
+camera.translate=[-17,15.5,22]@[78,-90]
 ```  
 
 ## Wait between two translations
 
+```
+camera.wait=[time]
+```
 You can define a delay between two camera translations.  
 *`[time]` is the time to wait in seconds*
 
 ```
-camera.wait=[time]
+camera.wait=5 // 5s
 ```
 
 # Control flow
 
 ## Conditions
-
 ```
->if 42 > 43 { print toto } elif 42 == 43 { print tata } else { print titi }
+if condition { commands } elif condition { commands } else { commands }
+```
+`If-elif-else` statements have a similar syntax to Go. It expects an expression to be evaluated to true or false, followed by `{}` contaning the commands to execute if true. Examples:
+```
+> if 42 > 43 { print toto } elif 42 == 43 { print tata } else { print titi }
 titi
+
+// Multiple lines
+if $shouldCreateSite == true {  \
+  +si:/P/SITE                   \
+  /P/SITE:reservedColor=AAAAAA  \
+}
 ```
 
 ## Loops
-
 ```
->for i in 0..3 { .var: i2 = $(($i * $i)) ; print $i^2 = $i2 }
+for index in start..end { commands }
+```
+A `for` loop expects the name to give the index followed by a range and then `{}` with the commands. The range must be a start interger number followed by `..` and an end integer number superior to start. Examples: 
+```
+> for i in 0..3 { .var: i2 = $(($i * $i)) ; print $i^2 = $i2 }
 0^2 = 0
 1^2 = 1
 2^2 = 4
 3^2 = 9
-```
 
+// Multiple lines
+for i in 0..5 {                                           \
+    .var:r=eval 10+$i;                                    \
+    .var:x=eval (36+$i*4)/3;                              \
+    +rk:/P/SI/BLDG/ROOM/J${r}@[ $x, 52]@[80,120,42]@rear; \
+    +rk:/P/SI/BLDG/ROOM/K${r}@[ $x, 55]@[80,120,42]@front \
+}
+```
+Another loop comandavaiable is the `while`.
+```
+while condition { commands }
+```
+A while loop expects an expression to be evaluated to true or false, followed by `{}` contaning the commands to execute repeteadly with the expression remains true. Examples: 
 ```
 >.var: i = 0; while $i<4 {print $i^2 = $(($i * $i)); .var: i = eval $i+1 }
 0^2 = 0
@@ -1178,6 +1252,8 @@ titi
 ```
 
 ## Aliases
+`alias name { commands }`
+An `alias` can be created to replace a list of commands. It expects the name of the alias followed by `{}` containing the commands it should evoke. Examples:
 ```
 >alias pi2 { .var: i2 = $(($i * $i)) ; print $i^2 = $i2 }
 >for i in 0..3 { pi2 }
@@ -1187,109 +1263,3 @@ titi
 3^2 = 9
 ```
 
-# Examples
-
-```
-+do:DEMO@ffffff
-    DEMO.mainContact=Ced
-    DEMO.mainPhone=0612345678
-    DEMO.mainEmail=ced@ogree3D.com
-
-+si:DEMO.ALPHA@NW
-    DEMO.ALPHA.description=This is a demo...
-    DEMO.ALPHA.address=1 rue bidule
-    DEMO.ALPHA.zipcode=42000
-    DEMO.ALPHA.city=Truc
-    DEMO.ALPHA.country=FRANCE
-    DEMO.ALPHA.gps=[1,2,0]
-    DEMO.ALPHA.usableColor=5BDCFF
-    DEMO.ALPHA.reservedColor=AAAAAA
-    DEMO.ALPHA.technicalColor=D0FF78
-
-// Building A
-
-+bd:DEMO.ALPHA.A@[0,0,0]@[12,12,5]
-    DEMO.ALPHA.A.description=Building A
-    DEMO.ALPHA.A.nbFloors=1
-+ro:DEMO.ALPHA.A.R0_EN@[6,6,0]@[4.2,5.4,1]@EN
-+ro:DEMO.ALPHA.A.R0_NW@[6,6,0]@[4.2,5.4,1]@NW
-+ro:DEMO.ALPHA.A.R0_WS@[6,6,0]@[4.2,5.4,1]@WS
-+ro:DEMO.ALPHA.A.R0_SE@[6,6,0]@[4.2,5.4,1]@SE
-
-+rk:DEMO.ALPHA.A.R0_EN.TEST_EN@[ 1,1]@[60,120,42]@front
-+rk:DEMO.ALPHA.A.R0_NW.TEST_NW@[1 ,1]@[60,120,42]@front
-+rk:DEMO.ALPHA.A.R0_WS.TEST_WS@[1, 1]@[60,120,42]@front
-+rk:DEMO.ALPHA.A.R0_SE.TEST_SE@[1,1 ]@[60,120,42]@front
-
-// Building B
-
-+bd:DEMO.ALPHA.B@[-30,10,0]@[25,29.4,5]
-    DEMO.ALPHA.B.description=Building B
-    DEMO.ALPHA.B.nbFloors=1
-
-+ro:DEMO.ALPHA.B.R1@[0,0,0]@[22.8,19.8,4]@NW
-    DEMO.ALPHA.B.R1.areas=[2,1,5,2]@[3,3,1,1]
-    DEMO.ALPHA.B.R1.description=First room
-
-+ro:DEMO.ALPHA.B.R2@[22.8,19.8,0]@[9.6,22.8,3]@WS
-    DEMO.ALPHA.B.R2.areas=[3,1,1,3]@[5,0,0,0]
-    DEMO.ALPHA.B.R2.description=Second room, owned by Marcus
-    DEMO.ALPHA.B.R2.tenant=Marcus
-
-// Racks for R1
-
-+rk:DEMO.ALPHA.B.R1.A01@[1,1]@[60,120,42]@front
-    DEMO.ALPHA.B.R1.A01.description=Rack A01
-    DEMO.ALPHA.B.R1.A01.vendor=someVendor
-    DEMO.ALPHA.B.R1.A01.type=someType
-    DEMO.ALPHA.B.R1.A01.model=someModel
-    DEMO.ALPHA.B.R1.A01.serial=someSerial
-
-+rk:DEMO.ALPHA.B.R1.A02@[2,1]@[60,120,42]@front
-+rk:DEMO.ALPHA.B.R1.A03@[3,1]@[60,120,42]@front
-+rk:DEMO.ALPHA.B.R1.A04@[4,1]@[60,120,42]@front
-+rk:DEMO.ALPHA.B.R1.A05@[5,1]@[60,120,42]@front
-    DEMO.ALPHA.B.R1.A05.tenant=Billy
-
-+rk:DEMO.ALPHA.B.R1.B05 @[8,6] @[60,120,42]@rear
-+rk:DEMO.ALPHA.B.R1.B09 @[9,6] @[60,120,42]@rear
-+rk:DEMO.ALPHA.B.R1.B010@[10,6]@[60,120,42]@rear
-+rk:DEMO.ALPHA.B.R1.B011@[11,6]@[60,120,42]@rear
-+rk:DEMO.ALPHA.B.R1.B012@[12,6]@[60,120,42]@rear
-
-+rk:DEMO.ALPHA.B.R1.C08 @[8,9] @[60,120,42]@front
-+rk:DEMO.ALPHA.B.R1.C09 @[9,9] @[60,120,42]@front
-+rk:DEMO.ALPHA.B.R1.C010@[10,9]@[60,120,42]@front
-+rk:DEMO.ALPHA.B.R1.C011@[11,9]@[60,120,42]@front
-+rk:DEMO.ALPHA.B.R1.C012@[12,9]@[60,120,42]@front
-
-+rk:DEMO.ALPHA.B.R1.D01@[20,5]@[60,120,42]@left
-    DEMO.ALPHA.B.R1.D01.tenant=Marcus
-+rk:DEMO.ALPHA.B.R1.D02@[20,6]@[60,120,42]@left
-    DEMO.ALPHA.B.R1.D02.tenant=Marcus
-+rk:DEMO.ALPHA.B.R1.D03@[20,7]@[60,120,42]@left
-    DEMO.ALPHA.B.R1.D03.tenant=Marcus
-
-+rk:DEMO.ALPHA.B.R1.E01@[23,5]@[60,120,42]@right
-    DEMO.ALPHA.B.R1.E01.tenant=Marcus
-+rk:DEMO.ALPHA.B.R1.E02@[23,6]@[60,120,42]@right
-    DEMO.ALPHA.B.R1.E02.tenant=Marcus
-+rk:DEMO.ALPHA.B.R1.E03@[23,7]@[60,120,42]@right
-    DEMO.ALPHA.B.R1.E03.tenant=Marcus
-
-// Racks for R2
-
-+rk:DEMO.ALPHA.B.R2.A01@[1,3]@[60,120,42]@rear
-+rk:DEMO.ALPHA.B.R2.A02@[2,3]@[60,120,42]@rear
-+rk:DEMO.ALPHA.B.R2.A03@[3,3]@[60,120,42]@rear
-+rk:DEMO.ALPHA.B.R2.A04@[4,3]@[60,120,42]@rear
-+rk:DEMO.ALPHA.B.R2.A05@[5,3]@[60,120,42]@rear
-
-+rk:DEMO.ALPHA.B.R2.B01@[1,5]@[60,120,42]@front
-    DEMO.ALPHA.B.R2.B01.tenant=Billy
-    DEMO.ALPHA.B.R2.B01.alpha=50
-
-// Edit description of several racks in R1
-={B05,B09,B10,B11,B12}
-selection.description=Row B
-```
