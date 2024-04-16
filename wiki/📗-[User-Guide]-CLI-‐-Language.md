@@ -3,86 +3,72 @@
 - [Glossary](#glossary)
 - [Comments](#comments)
 - [Variables](#variables)
-  - [Set a variable](#set-a-variable)
-  - [Use a variable](#use-a-variable)
+   * [Set a variable](#set-a-variable)
+   * [Use a variable](#use-a-variable)
 - [Expressions](#expressions)
-  - [Primary expressions](#primary-expressions)
-  - [Operators](#operators)
-    - [Compute operators](#compute-operators)
-    - [Boolean operators](#boolean-operators)
+   * [Primary expressions](#primary-expressions)
+   * [Operators](#operators)
 - [Print](#print)
-- [String formatting](#string-formatting)
-- [Loading commands](#loading-commands)
-  - [Load commands from a text file](#load-commands-from-a-text-file)
-  - [Commands over multiple lines](#commands-over-multiple-lines)
-  - [Load template from JSON](#load-template-from-json)
-- [Hierarchy commands](#hierarchy-commands)
-  - [Select an object](#select-an-object)
-  - [Select child / children object](#select-child--children-object)
-  - [Select parent object](#select-parent-object)
-  - [Get object/s](#get-objects)
-    - [Wildcards](#wildcards)
-    - [Filters](#filters)
-      - [Simple filters](#simple-filters)
-      - [Complex filters](#complex-filters)
-  - [Ls object](#ls-object)
-    - [Layers](#layers)
-      - [Room's automatic layers](#rooms-automatic-layers)
-      - [Rack's automatic layers](#racks-automatic-layers)
-      - [Device's automatic layers](#devices-automatic-layers)
-    - [Filters](#filters-1)
-      - [Simple filters](#simple-filters-1)
-      - [Complex filters](#complex-filters-1)
-      - [Filter by category](#filter-by-category)
-  - [Tree](#tree)
-  - [Delete object](#delete-object)
-  - [Focus an object](#focus-an-object)
-  - [Copy object](#copy-object)
-  - [Link/Unlink object](#linkunlink-object)
-- [Create commands](#create-commands)
-  - [Create a Domain](#create-a-domain)
-  - [Create a Site](#create-a-site)
-  - [Create a Building](#create-a-building)
-  - [Create a Room](#create-a-room)
-  - [Create a Rack](#create-a-rack)
-  - [Create a Device](#create-a-device)
-  - [Create a Group](#create-a-group)
-  - [Create a Corridor](#create-a-corridor)
-  - [Create a Tag](#create-a-tag)
-  - [Create a Layer](#create-a-layer)
-    - [Applicability Patterns](#applicability-patterns)
-      - [Character Classes](#character-classes)
-  - [Create a Generic Object](#create-a-generic-object)
-- [Set commands](#set-commands)
-  - [Set colors for zones of all rooms in a datacenter](#set-colors-for-zones-of-all-rooms-in-a-datacenter)
-  - [Set reserved and technical zones of a room](#set-reserved-and-technical-zones-of-a-room)
-  - [Room separators](#room-separators)
-  - [Room pillars](#room-pillars)
-  - [Modify object's attribute](#modify-objects-attribute)
-  - [Tags](#tags)
-  - [Labels](#labels)
-    - [Choose Label](#choose-label)
-    - [Modify label's font](#modify-labels-font)
-    - [Modify label's background color](#modify-labels-background-color)
-  - [Interact with objects](#interact-with-objects)
-    - [Room](#room)
-    - [Rack](#rack)
-    - [Device](#device)
-    - [Group](#group)
+   * [String formatting](#string-formatting)
+- [Loading Commands](#loading-commands)
+   * [Load commands from a text file](#load-commands-from-a-text-file)
+   * [Commands over multiple lines](#commands-over-multiple-lines)
+   * [Load template from JSON](#load-template-from-json)
+- [Object Commands](#object-commands)
+   * [Select an object](#select-an-object)
+      + [Select child object](#select-child-object)
+      + [Select parent object](#select-parent-object)
+   * [Focus an object](#focus-an-object)
+   * [Get object](#get-object)
+      + [Wildcards](#wildcards)
+      + [Filters](#filters)
+   * [Ls object](#ls-object)
+      + [Layers](#layers)
+      + [Filters](#filters-1)
+   * [Tree](#tree)
+   * [Delete object](#delete-object)
+   * [Modify object's attribute](#modify-objects-attribute)
+   * [Link/Unlink object](#linkunlink-object)
+- [Object Specific Commands](#object-specific-commands)
+   * [Domain](#domain)
+   * [Site](#site)
+      + [Set colors for zones of all rooms in a datacenter](#set-colors-for-zones-of-all-rooms-in-a-datacenter)
+   * [Building](#building)
+   * [Room](#room)
+      + [Set reserved and technical zones of a room](#set-reserved-and-technical-zones-of-a-room)
+      + [Room separators](#room-separators)
+      + [Room pillars](#room-pillars)
+      + [Interact with Room](#interact-with-room)
+   * [Rack](#rack)
+      + [Interact with Rack](#interact-with-rack)
+   * [Device](#device)
+      + [Interact with Device](#interact-with-device)
+   * [Group](#group)
+      + [Interact with Group](#interact-with-group)
+   * [Corridor](#corridor)
+   * [Generic Object](#generic-object)
+   * [Tag](#tag)
+      + [Apply tags to objects](#apply-tags-to-objects)
+   * [Layer](#layer)
+      + [Applicability Patterns](#applicability-patterns)
+      + [Copy Layer](#copy-layer)
+   * [Labels](#labels)
+      + [Choose Label](#choose-label)
+      + [Modify label's font](#modify-labels-font)
+      + [Modify label's background color](#modify-labels-background-color)
 - [Manipulate UI](#manipulate-ui)
-  - [Delay commands](#delay-commands)
-  - [Display infos panel](#display-infos-panel)
-  - [Display debug panel](#display-debug-panel)
-  - [Highlight object](#highlight-object)
+   * [Delay commands](#delay-commands)
+   * [Display infos panel](#display-infos-panel)
+   * [Display debug panel](#display-debug-panel)
+   * [Highlight object](#highlight-object)
 - [Manipulate camera](#manipulate-camera)
-  - [Move camera](#move-camera)
-  - [Translate camera](#translate-camera)
-  - [Wait between two translations](#wait-between-two-translations)
+   * [Move camera](#move-camera)
+   * [Translate camera](#translate-camera)
+   * [Wait between two translations](#wait-between-two-translations)
 - [Control flow](#control-flow)
-  - [Conditions](#conditions)
-  - [Loops](#loops)
-  - [Aliases](#aliases)
-- [Examples](#examples)
+   * [Conditions](#conditions)
+   * [Loops](#loops)
+   * [Aliases](#aliases)
 
 # Glossary
 
@@ -156,7 +142,8 @@ They can be used to build more complex expressions through operators.
 
 these will only work if both side return a number  
 +, -, *, /, \ (integer division), % (modulo)
-### Boolean operators : 
+
+### Boolean operators
 <, >, <=, >=, ==, !=, || (or), && (and) 
 
 # Print
@@ -186,7 +173,7 @@ For a sprintf-like formatting, you can use the format function, it uses the go f
 print format("2+3 equals %02d", 2+3) // prints "2+3 equals 05"
 ```
 
-# Loading commands
+# Loading Commands
 
 ## Load commands from a text file
 ```
@@ -225,7 +212,9 @@ for i in 0..5 {                                           \
 .template:/path/to/template.json
 ```
 
-# Hierarchy commands
+# Object Commands
+
+The following commands are generic and can be applied to most of the OGrEE objects.
 
 ## Select an object
 
@@ -252,6 +241,14 @@ Select one or several children of current selected object.
 
 ```
 =..
+```
+
+## Focus an object
+
+*If `[name]` is empty, unfocus all items*
+
+```
+>[name]
 ```
 
 ## Get object
@@ -490,23 +487,39 @@ Examples:
 -selection // delete all objects previously selected
 ```
 
-## Focus an object
+## Modify object's attribute
 
-*If `[name]` is empty, unfocus all items*
-
-```
->[name]
-```
-
-## Copy object
-
-Currently it is only possible to copy **layers**. To copy an object use:
+Works with single or multi selection.  
+*`[name]` can be `selection` or `_` for modifying selected objects attributes*
 
 ```
-cp [source] [dest]
+[name]:[attribute]=[value]
+
+selection:[attribute]=[value]
+_:[attribute]=[value]
 ```
 
-where `[source]` is the path of the object to be copied (currently only objects in /Logical/Layers are accepted) and `[dest]` is the destination path or slug of the destination layer.
+- Object's domain can be changed recursively for changing all it's children's domains at the same time.
+
+```
+[name]:domain=[value]@recursive
+```
+
+- Object's description attribute is a string. Use `\n` to represent line-breaks.
+
+```
+[name]:description=[value]
+// Example:
+/P/SI/BLDG/R1/RACK:description="My Rack\nNew Servers\nWith GPU A4000"
+```
+
+- Object's clearance are vector6, they define how much gap (in mm) has to be left on each side of the object:
+
+```
+[name]:clearance=[front, rear, left, right, top, bottom]
+// Example:
+/P/SI/BLDG/R1/RACK:clearance=[800,500,0,0,0,0]
+```
 
 ## Link/Unlink object
 Unlink an object transforms the object in a stray. In other words, it moves the object from the OGrEE hierarchy (no longer has a parent) and changes its type to stray object.
@@ -530,9 +543,11 @@ link /Physical/Stray@/Physical/site/bldg/room/rack
 link /Physical/Stray@/Physical/site/bldg/room/rack@slots=[slot1,slot2]@orientation=front
 ```
 
-# Create commands
+# Object Specific Commands
 
-## Create a Domain
+Each object entity has its own create command and may have some special commands to allow interaction.
+
+## Domain
 
 ```
 +domain:[name]@[color]
@@ -547,7 +562,7 @@ Domains can have a hierarchy, that is, a domain can have a parent domain.
 +do:/O/Domain/Newdomain/Newsubdomain@000AAA
 ```
 
-## Create a Site
+## Site
 
 ```
 +site:[name]  
@@ -560,7 +575,16 @@ Sites have no parent, only a name is needed to create it.
 +si:/P/siteB
 ```
 
-## Create a Building
+### Set colors for zones of all rooms in a datacenter
+
+Add or modify the following color attributes of site:
+```
+[site]:usableColor=[color]
+[site]:reservedColor=[color]
+[site]:technicalColor=[color]
+```  
+
+## Building
 
 ```
 +building:[name]@[pos]@[rotation]@[size]  
@@ -579,7 +603,7 @@ Building must be child of a Site.
 +bd:BldgA@[5,5]@-27.89@BldgTemplateA 
 ```
 
-## Create a Room
+## Room
 
 ```
 +room:[name]@[pos]@[rotation]@[size]@[axisOrientation]@[floorUnit]  
@@ -601,7 +625,99 @@ Its name will be displayed in the center of the room in its local coordinates sy
 +room:/P/siteA/BldgA/R1@[0,0]@-36.202@RoomTemplateA
 ```
 
-## Create a Rack
+
+### Set reserved and technical zones of a room
+
+```
+[room]:areas=[reserved]@[technical]  
+```
+Enables tiles edges display.  
+You can modify areas only if the room has no racks in it.  
+**Technical** area : typically a restricted zone where power panels and AC systems are installed. separated from "IT space" with either a wall or a wire mesh  
+**Reserved** area : some tiles around the room that must be kept free to move racks and walk (usually 2 or 3 tiles)  
+
+*`[reserved]` is a vector4: [front,back,right,left] (tile,tile,tile,tile)  
+`[technical]` is a vector4: [front,back,right,left] (tile,tile,tile,tile)*
+
+```
+/P/SI/BLDG/ROOM:areas=[2,2,2,2]@[3,1,1,1] 
+```
+
+### Room separators
+
+Separators (wired or plain walls) can be added inside rooms. To do it, use:
+
+```
+[room]:separators+=[name]@[startPos]@[endPos]@[type]
+```
+
+Where:  
+*`[name]` is an identifier for the separator  
+`[startPos]` is a vector2: [x,y] (m,m)  
+`[endPos]` is a vector2: [x,y] (m,m)  
+`[type]` is the type of wall: wireframe or plain*  
+
+It will add the given separator to `[room].attributes["separators"]`, which is a list of all its separators.
+
+```
+/P/SI/BLDG/ROOM:separators+=sep1@[1.2,10.2]@[1.2,14.2]@wireframe
+```
+
+Separators can be removed using:
+
+```
+[room]:separators-=[name]
+```
+
+Where:  
+*`[name]` is the identifier of the separator to be removed  
+
+### Room pillars
+
+Pillars can be added inside rooms. To do it, use:
+
+```
+[room]:pillars+=[name]@[centerXY]@[sizeXY]@[rotation]
+```
+
+Where:  
+*`[name]` is an identifier for the pillar  
+`[centerXY]` is a vector2: [x,y] (m,m)  
+`[sizeXY]` is a vector2: [x,y] (m,m)  
+`[rotation]` is the angle of the pillar, in degrees*  
+
+It will add the given pillar to `[room].attributes["pillars"]`, which is a list of all its pillars.
+
+```
+/P/SI/BLDG/ROOM:pillars+=pillar1@[4.22,3.85]@[0.25,0.25]@0
+```
+
+Pillars can be removed using:
+
+```
+[room]:pillars-=[name]
+```
+
+Where:  
+*`[name]` is the identifier of the pillar to be removed
+
+### Interact with Room
+
+The same way you can modify object's attributes, you can interact with them through specific commands.
+
+- Display or hide tiles name
+
+```
+[name]:tilesName=[true|false]
+```
+
+- Display or hide colors and textures
+
+```
+[name]:tilesColor=[true|false]
+```
+
+## Rack
 
 ```
 +rack:[name]@[pos]@[unit]@[rotation]@[size]
@@ -627,7 +743,33 @@ Rack must be child of a room.
 +rk:A01@[9,1]@t@[60,120,45]@BldgTemplate // current path /P/siteA/BldgA
 ```
 
-## Create a Device
+### Interact with Rack
+
+- Display or hide rack's box. This will also affect its label
+
+```
+[name]:alpha=[true|false]
+```
+
+- Display or hide rack's U helpers to simply identify objects in a rack.
+
+```
+[name]:U=[true|false]
+```  
+
+- Display or hide rack's slots
+
+```
+[name]:slots=[true|false]
+```  
+
+- Display or hide rack's local coordinate system
+
+```
+[name]:localCS=[true|false]
+```  
+
+## Device
 
 If the parent rack doesn't have slots:
 
@@ -669,8 +811,27 @@ All other devices (blades / components like processor, memory, adapters, disks..
 +dv:/P/siteA/BldgA/R1/A01/devB@[SlotC]@DevTemplate@true@front
 ```  
 
+### Interact with Device
 
-## Create a Group
+- Display or hide device's box. This will also affect its label
+
+```
+[name]:alpha=[true|false]
+```
+
+- Display or hide device's slots
+
+```
+[name]:slots=[true|false]
+```
+
+- Display or hide device's local coordinate system
+
+```
+[name]:localCS=[true|false]
+```
+
+## Group
 
 ```
 +group:[name]@{c1,c2,...,cN}
@@ -688,7 +849,15 @@ A group is represented as a single box in the 3D client, containing all given ch
 +gr:/P/siteA/BldgA/R1/GR1@{A01,A02,A03} // group child of room, contains racks
 ```
 
-## Create a Corridor
+### Interact with Group
+
+- Display or hide contained objects
+
+```
+[name]:content=[true|false]
+```
+
+## Corridor
 
 ```
 +corridor:[name]@[pos]@[unit]@[rotation]@[size]@[temperature]
@@ -713,7 +882,47 @@ Corridor must be child of a room.
 +co:/P/siteA/BldgA/R1/CO2@[3,2]@m@rear@[3*60,2*60,200]@cold
 ```
 
-## Create a Tag
+## Generic Object
+
+Generic objects allow you to model any type of object that is not of the previous classes (tables, cabinets, doors, etc).
+
+They must be child of a room.
+
+To create them, use one of the following options:
+
+```
++generic:[name]@[pos]@[unit]@[rotation]@[size]@[shape]@[type]
++generic:[name]@[pos]@[unit]@[rotation]@[template]
++ge:[name]@[pos]@[unit]@[rotation]@[size]@[shape]@[type]
++ge:[name]@[pos]@[unit]@[rotation]@[template]
+```
+
+Where:
+
+- `[pos]` is a Vector3 [x,y,z] or a Vector2 [x,y] if z is 0. Each value can be decimal (1, 1.2, etc.) or fraction (1/2, 2/3, etc.). Can also be negative (-1, -1.2, -1/2).
+- `[unit]` is the unit of the position [pos]. It can be: `t` (tiles), `m` (meters) or `f` (feet).
+- `[rotation]` is a Vector3 of angles or one of following keywords:
+
+  "front":  [0, 0, 180]  
+  "rear":   [0, 0, 0]  
+  "left":   [0, 90, 0]  
+  "right":  [0, -90, 0]  
+  "top":    [90, 0, 0]  
+  "bottom": [-90, 0, 0]  
+- `[size]` is a Vector3 [width,length,height] . All values are in cm.
+- `[shape]` is a string defining the shape of the object. It can be: `cube`, `sphere` or `cylinder`.
+- `[type]` is a string defining the type of the object. No predefined values.
+- `[template]` is the name of the rack template
+
+Examples:
+
+```
++ge:/P/SI/BLDG/ROOM/BOX@[0,6,10]@t@[0,0,90]@[10,10,10]@cube@box
++ge:/P/SI/BLDG/ROOM/CHAIR@[5,5]@t@front@chair // with template
+```
+
+
+## Tag
 
 Tags are identified by a slug. In addition, they have a color, a description and an image (optional). To create a tag, use:
 
@@ -729,7 +938,36 @@ After the tag is created, it can be seen in /Logical/Tags. The command `get /Log
 +tag:gpu_servers@00ff00
 ```
 
-## Create a Layer
+### Apply tags to objects
+
+Any object can be taged. When getting an object, it will contain a list of tags, example:
+
+```
+$ get /Physical/BASIC
+{
+    "id": "BASIC",
+    ...
+    "tags": [
+        "demo"
+    ]
+}
+```
+
+To add a tag to an object use:
+
+```
+[name]:tags+=[tag_slug]
+```
+
+Where tag_slug is the slug of an existing tag, which can be found in /Logical/Tags. The tag _must_ be previously created (check [Create Tag](https://github.com/ditrit/OGrEE-Core/wiki/%F0%9F%93%97-%5BUser-Guide%5D-CLI-%E2%80%90-Language#create-a-tag)).
+
+To remove a tag from an object use:
+
+```
+[name]:tags-=[tag_slug]
+```
+
+## Layer
 
 Layers are identified by a slug. In addition, they have an applicability and the filters they apply. To create a layer, use:
 
@@ -792,6 +1030,16 @@ A mid-pattern doublestar (`**`) behaves like bash's globstar option: a pattern
 such as `path/to/**` would return the same results as `path/to/*`. The
 pattern you're looking is probably `path/to/**/*`.
 
+### Copy Layer
+
+Currently it is only possible to copy **layers**. To copy an object use:
+
+```
+cp [source] [dest]
+```
+
+where `[source]` is the path of the object to be copied (currently only objects in /Logical/Layers are accepted) and `[dest]` is the destination path or slug of the destination layer.
+
 #### Character Classes
 
 Character classes support the following:
@@ -821,194 +1069,6 @@ Class      | Meaning
 // layer available only at levels /P/site/bldg/RoomA and /P/site/bldg/RoomB
 // e.g. not at /P/site/bldg/RoomC
 +layer:[slug]@/P/si/bldg/Room[AB]@[filter] 
-```
-
-## Create a Generic Object
-
-Generic objects allow you to model any type of object that is not of the previous classes (tables, cabinets, doors, etc).
-
-They must be child of a room.
-
-To create them, use one of the following options:
-
-```
-+generic:[name]@[pos]@[unit]@[rotation]@[size]@[shape]@[type]
-+generic:[name]@[pos]@[unit]@[rotation]@[template]
-+ge:[name]@[pos]@[unit]@[rotation]@[size]@[shape]@[type]
-+ge:[name]@[pos]@[unit]@[rotation]@[template]
-```
-
-Where:
-
-- `[pos]` is a Vector3 [x,y,z] or a Vector2 [x,y] if z is 0. Each value can be decimal (1, 1.2, etc.) or fraction (1/2, 2/3, etc.). Can also be negative (-1, -1.2, -1/2).
-- `[unit]` is the unit of the position [pos]. It can be: `t` (tiles), `m` (meters) or `f` (feet).
-- `[rotation]` is a Vector3 of angles or one of following keywords:
-
-  "front":  [0, 0, 180]  
-  "rear":   [0, 0, 0]  
-  "left":   [0, 90, 0]  
-  "right":  [0, -90, 0]  
-  "top":    [90, 0, 0]  
-  "bottom": [-90, 0, 0]  
-- `[size]` is a Vector3 [width,length,height] . All values are in cm.
-- `[shape]` is a string defining the shape of the object. It can be: `cube`, `sphere` or `cylinder`.
-- `[type]` is a string defining the type of the object. No predefined values.
-- `[template]` is the name of the rack template
-
-Examples:
-
-```
-+ge:/P/SI/BLDG/ROOM/BOX@[0,6,10]@t@[0,0,90]@[10,10,10]@cube@box
-+ge:/P/SI/BLDG/ROOM/CHAIR@[5,5]@t@front@chair // with template
-```
-
-# Set commands
-
-## Set colors for zones of all rooms in a datacenter
-
-Add or modify the following color attributes of site:
-```
-[site]:usableColor=[color]
-[site]:reservedColor=[color]
-[site]:technicalColor=[color]
-```  
-
-## Set reserved and technical zones of a room
-
-```
-[room]:areas=[reserved]@[technical]  
-```
-Enables tiles edges display.  
-You can modify areas only if the room has no racks in it.  
-**Technical** area : typically a restricted zone where power panels and AC systems are installed. separated from "IT space" with either a wall or a wire mesh  
-**Reserved** area : some tiles around the room that must be kept free to move racks and walk (usually 2 or 3 tiles)  
-
-*`[reserved]` is a vector4: [front,back,right,left] (tile,tile,tile,tile)  
-`[technical]` is a vector4: [front,back,right,left] (tile,tile,tile,tile)*
-
-```
-/P/SI/BLDG/ROOM:areas=[2,2,2,2]@[3,1,1,1] 
-```
-
-## Room separators
-
-Separators (wired or plain walls) can be added inside rooms. To do it, use:
-
-```
-[room]:separators+=[name]@[startPos]@[endPos]@[type]
-```
-
-Where:  
-*`[name]` is an identifier for the separator  
-`[startPos]` is a vector2: [x,y] (m,m)  
-`[endPos]` is a vector2: [x,y] (m,m)  
-`[type]` is the type of wall: wireframe or plain*  
-
-It will add the given separator to `[room].attributes["separators"]`, which is a list of all its separators.
-
-```
-/P/SI/BLDG/ROOM:separators+=sep1@[1.2,10.2]@[1.2,14.2]@wireframe
-```
-
-Separators can be removed using:
-
-```
-[room]:separators-=[name]
-```
-
-Where:  
-*`[name]` is the identifier of the separator to be removed  
-
-## Room pillars
-
-Pillars can be added inside rooms. To do it, use:
-
-```
-[room]:pillars+=[name]@[centerXY]@[sizeXY]@[rotation]
-```
-
-Where:  
-*`[name]` is an identifier for the pillar  
-`[centerXY]` is a vector2: [x,y] (m,m)  
-`[sizeXY]` is a vector2: [x,y] (m,m)  
-`[rotation]` is the angle of the pillar, in degrees*  
-
-It will add the given pillar to `[room].attributes["pillars"]`, which is a list of all its pillars.
-
-```
-/P/SI/BLDG/ROOM:pillars+=pillar1@[4.22,3.85]@[0.25,0.25]@0
-```
-
-Pillars can be removed using:
-
-```
-[room]:pillars-=[name]
-```
-
-Where:  
-*`[name]` is the identifier of the pillar to be removed  
-
-## Modify object's attribute
-
-Works with single or multi selection.  
-*`[name]` can be `selection` or `_` for modifying selected objects attributes*
-
-```
-[name]:[attribute]=[value]
-
-selection:[attribute]=[value]
-_:[attribute]=[value]
-```
-
-- Object's domain can be changed recursively for changing all it's children's domains at the same time.
-
-```
-[name]:domain=[value]@recursive
-```
-
-- Object's description attribute is a string. Use `\n` to represent line-breaks.
-
-```
-[name]:description=[value]
-// Example:
-/P/SI/BLDG/R1/RACK:description="My Rack\nNew Servers\nWith GPU A4000"
-```
-
-- Object's clearance are vector6, they define how much gap (in mm) has to be left on each side of the object:
-
-```
-[name]:clearance=[front, rear, left, right, top, bottom]
-// Example:
-/P/SI/BLDG/R1/RACK:clearance=[800,500,0,0,0,0]
-```
-
-## Tags
-
-Any object can be taged. When getting an object, it will contain a list of tags, example:
-
-```
-$ get /Physical/BASIC
-{
-    "id": "BASIC",
-    ...
-    "tags": [
-        "demo"
-    ]
-}
-```
-
-To add a tag to an object use:
-
-```
-[name]:tags+=[tag_slug]
-```
-
-Where tag_slug is the slug of an existing tag, which can be found in /Logical/Tags. The tag _must_ be previously created (check [Create Tag](https://github.com/ditrit/OGrEE-Core/wiki/%F0%9F%93%97-%5BUser-Guide%5D-CLI-%E2%80%90-Language#create-a-tag)).
-
-To remove a tag from an object use:
-
-```
-[name]:tags-=[tag_slug]
 ```
 
 ## Labels
@@ -1050,78 +1110,6 @@ You can change the label's background color when it is hovering over the object.
 
 ```
 [name]:labelBackground=[color]
-```
-
-## Interact with objects
-
-The same way you can modify object's attributes, you can interact with them through specific commands.
-
-### Room
-
-- Display or hide tiles name
-
-```
-[name]:tilesName=[true|false]
-```
-
-- Display or hide colors and textures
-
-```
-[name]:tilesColor=[true|false]
-```  
-
-### Rack
-
-- Display or hide rack's box. This will also affect its label
-
-```
-[name]:alpha=[true|false]
-```
-
-- Display or hide rack's U helpers to simply identify objects in a rack.
-
-```
-[name]:U=[true|false]
-```  
-
-- Display or hide rack's slots
-
-```
-[name]:slots=[true|false]
-```  
-
-- Display or hide rack's local coordinate system
-
-```
-[name]:localCS=[true|false]
-```  
-
-### Device
-
-- Display or hide device's box. This will also affect its label
-
-```
-[name]:alpha=[true|false]
-```
-
-- Display or hide device's slots
-
-```
-[name]:slots=[true|false]
-```
-
-- Display or hide device's local coordinate system
-
-```
-[name]:localCS=[true|false]
-```
-
-### Group
-
-- Display or hide contained objects
-
-```
-[name]:content=[true|false]
 ```
 
 # Manipulate UI
