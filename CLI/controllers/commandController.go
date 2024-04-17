@@ -592,15 +592,11 @@ func LinkObject(source string, destination string, attrs []string, values []any,
 	}
 	payload := map[string]any{"parentId": destPath.ObjectID}
 
-	for i, attr := range attrs {
-		payload[attr] = Stringify(values[i])
-	}
-
 	if slots != nil {
 		if slots, err = ExpandSlotVector(slots); err != nil {
 			return err
 		}
-		payload["slot"] = "[" + strings.Join(slots, ",") + "]"
+		payload["slot"] = slots
 	}
 
 	_, err = API.Request("PATCH", sourceUrl+"/link", payload, http.StatusOK)

@@ -322,10 +322,6 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 		}
 		//End of device special routine
 
-		if attr["slot"] != nil {
-			attr["slot"] = "[" + strings.Join(attr["slot"].([]string), ",") + "]"
-		}
-
 		baseAttrs := map[string]interface{}{
 			"orientation": "front",
 			"sizeUnit":    "mm",
@@ -338,7 +334,6 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 
 	case models.GROUP:
 		data["parentId"] = parent["id"]
-		attr["content"] = strings.Join(attr["content"].([]string), ",")
 
 	case models.STRAY_DEV:
 		if _, ok := attr["template"]; ok {
@@ -351,11 +346,6 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 	default:
 		//Execution should not reach here!
 		return fmt.Errorf("Invalid Object Specified!")
-	}
-
-	//Stringify the attributes if not already
-	for i := range attr {
-		attr[i] = Stringify(attr[i])
 	}
 
 	data["attributes"] = attr

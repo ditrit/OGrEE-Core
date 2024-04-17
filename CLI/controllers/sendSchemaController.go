@@ -12,42 +12,21 @@ import (
 	"strings"
 )
 
-func serialiseVector(attr map[string]interface{}, want string) string {
-	var vector, newVector string
+func serialiseVector(attr map[string]interface{}, want string) []any {
+	var vector []any
+	var ok bool
 
-	if vec, ok := attr[want]; !ok {
-		return ""
-	} else {
-		vector = Stringify(vec)
+	if vector, ok = attr[want].([]interface{}); !ok {
+		return []any{}
 	}
-
-	left := strings.Index(vector, "[")
-	right := strings.Index(vector, "]")
-	if left == -1 || right == -1 {
-		return ""
-	}
-
-	nums := stringSplitter(vector[left+1:right], ",", want)
-	if nums == nil {
-		return ""
-	}
-	//nums := strings.Split(subStr, ",")
-
-	length := len(nums)
-	if want == "size" {
-		length = 2
-	} else if want == "posXYZ" && length == 2 {
-		nums = append(nums, "0")
-		length++
-	}
-
-	newVector = "[" + strings.Join(nums[:length], ", ") + "]"
 
 	if want == "size" {
-		attr["height"] = nums[2]
+		attr["height"] = vector[2]
+	} else if want == "posXYZ" && len(vector) == 2 {
+		vector = append(vector, 0)
 	}
 
-	return newVector
+	return vector
 }
 
 // Auxillary function for serialiseAttr

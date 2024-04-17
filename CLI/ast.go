@@ -801,8 +801,7 @@ func updateAttributes(path, attributeName string, values []any) (map[string]any,
 		if slots, err = controllers.ExpandSlotVector(slots); err != nil {
 			return nil, err
 		}
-		value := "[" + strings.Join(slots, ",") + "]"
-		attributes = map[string]any{attributeName: value}
+		attributes = map[string]any{attributeName: slots}
 	} else {
 		if len(values) > 1 {
 			return nil, fmt.Errorf("attributes can only be assigned a single value")

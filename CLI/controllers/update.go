@@ -6,13 +6,6 @@ import (
 )
 
 func (controller Controller) UpdateObj(pathStr string, data map[string]any, withRecursive bool) (map[string]any, error) {
-	attributes, hasAttributes := data["attributes"].(map[string]any)
-	if hasAttributes {
-		for key, val := range attributes {
-			attributes[key] = Stringify(val)
-		}
-	}
-
 	obj, err := controller.GetObject(pathStr)
 	if err != nil {
 		return nil, err
