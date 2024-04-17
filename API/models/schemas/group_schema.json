@@ -8,7 +8,12 @@
         "type": "object",
         "properties": {
             "content": {
-              "type": "string"
+              "type": "array",
+              "items": {
+                  "type": "string"
+              },
+              "minItems": 2,
+              "maxItems": 2
             },
             "color": {
               "type": "string",

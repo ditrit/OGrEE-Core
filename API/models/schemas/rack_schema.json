@@ -8,7 +8,6 @@
       "type": "object",
       "properties": {
         "height": {
-          "type": "string",
           "$ref": "refs/types.json#/definitions/float"
         },
         "heightUnit": {
@@ -16,11 +15,9 @@
           "$ref": "refs/types.json#/definitions/metricImperialUUnit"
         },
         "rotation": {
-          "type": "string",
           "$ref": "refs/types.json#/definitions/vector3"
         },
         "posXYZ": {
-          "type": "string",
           "$ref": "refs/types.json#/definitions/vector3"
         },
         "posXYUnit": {
@@ -32,7 +29,6 @@
           "$ref": "refs/types.json#/definitions/metricImperialUnit"
         },
         "size": {
-          "type": "string",
           "$ref": "refs/types.json#/definitions/vector2"
         },
         "sizeUnit": {
@@ -47,7 +43,6 @@
           "$ref": "refs/types.json#/definitions/color"
         },
         "clearance": {
-          "type": "string",
           "$ref": "refs/types.json#/definitions/clearanceVector"
         }
       },
