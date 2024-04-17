@@ -12,21 +12,18 @@ import (
 	"strings"
 )
 
-func serialiseVector(attr map[string]interface{}, want string) []any {
-	var vector []any
-	var ok bool
-
-	if vector, ok = attr[want].([]interface{}); !ok {
-		return []any{}
+func serialiseVector(attr map[string]interface{}, want string) []float64 {
+	if vector, ok := attr[want].([]float64); ok {
+		if want == "size" && len(vector) == 3 {
+			attr["height"] = vector[2]
+			vector = vector[:len(vector)-1]
+		} else if want == "posXYZ" && len(vector) == 2 {
+			vector = append(vector, 0)
+		}
+		return vector
+	} else {
+		return []float64{}
 	}
-
-	if want == "size" {
-		attr["height"] = vector[2]
-	} else if want == "posXYZ" && len(vector) == 2 {
-		vector = append(vector, 0)
-	}
-
-	return vector
 }
 
 // Auxillary function for serialiseAttr

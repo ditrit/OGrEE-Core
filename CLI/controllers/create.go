@@ -94,9 +94,10 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 		} else {
 			//Serialise size and posXY manually instead
 			attr["size"] = serialiseVector(attr, "size")
+			fmt.Println(attr)
 		}
 
-		if attr["size"] == "" {
+		if size, ok := attr["size"].([]float64); !ok || len(size) != 2 {
 			if State.DebugLvl > 0 {
 				l.GetErrorLogger().Println(
 					"User gave invalid size value for creating building")
@@ -111,7 +112,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 
 		attr["posXY"] = serialiseVector(attr, "posXY")
 
-		if attr["posXY"] == "" {
+		if posXY, ok := attr["posXY"].([]float64); !ok || len(posXY) != 2 {
 			if State.DebugLvl > 0 {
 				l.GetErrorLogger().Println(
 					"User gave invalid posXY value for creating building")
@@ -122,12 +123,6 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 					"using this syntax")
 			}
 			return nil
-		}
-
-		//Check rotation
-		if _, ok := attr["rotation"].(float64); ok {
-			attr["rotation"] =
-				strconv.FormatFloat(attr["rotation"].(float64), 'f', -1, 64)
 		}
 
 		attr["posXYUnit"] = "m"
@@ -156,7 +151,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 
 		attr["posXY"] = serialiseVector(attr, "posXY")
 
-		if attr["posXY"] == "" {
+		if posXY, ok := attr["posXY"].([]float64); !ok || len(posXY) != 2 {
 			if State.DebugLvl > 0 {
 				l.GetErrorLogger().Println(
 					"User gave invalid posXY value for creating room")
@@ -169,13 +164,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			return nil
 		}
 
-		//Check rotation
-		if _, ok := attr["rotation"].(float64); ok {
-			attr["rotation"] =
-				strconv.FormatFloat(attr["rotation"].(float64), 'f', -1, 64)
-		}
-
-		if attr["size"] == "" {
+		if size, ok := attr["size"].([]float64); !ok || len(size) != 2 {
 			if State.DebugLvl > 0 {
 				l.GetErrorLogger().Println(
 					"User gave invalid size value for creating room")
@@ -195,9 +184,6 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 		}
 
 	case models.RACK, models.CORRIDOR, models.GENERIC:
-		// Save rotation because it gets overwritten by GetOCLIAtributesTemplateHelper()
-		rotation := attr["rotation"].([]float64)
-
 		baseAttrs := map[string]any{
 			"sizeUnit":   "cm",
 			"heightUnit": "U",
@@ -215,7 +201,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			return err
 		}
 
-		if attr["size"] == "" {
+		if size, ok := attr["size"].([]float64); !ok || len(size) != 2 {
 			if State.DebugLvl > 0 {
 				l.GetErrorLogger().Println(
 					"User gave invalid size value for creating rack")
@@ -234,10 +220,6 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 
 		//Serialise posXY if given
 		attr["posXYZ"] = serialiseVector(attr, "posXYZ")
-
-		//Restore the rotation overwritten
-		//by the helper func
-		attr["rotation"] = fmt.Sprintf("[%v, %v, %v]", rotation[0], rotation[1], rotation[2])
 
 		data["parentId"] = parent["id"]
 
@@ -258,13 +240,12 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 
 			//Convert block
 			//And Set height
-			if _, ok := sizeU.(int); ok {
-				attr["sizeU"] = strconv.Itoa(sizeU.(int))
-				attr["height"] = strconv.FormatFloat(
-					(float64(sizeU.(int)) * 44.5), 'G', -1, 64)
-			} else if _, ok := sizeU.(float64); ok {
-				attr["sizeU"] = strconv.FormatFloat(sizeU.(float64), 'G', -1, 64)
-				attr["height"] = strconv.FormatFloat(sizeU.(float64)*44.5, 'G', -1, 64)
+			if sizeUInt, ok := sizeU.(int); ok {
+				attr["sizeU"] = sizeUInt
+				attr["height"] = float64(sizeUInt) * 44.5
+			} else if sizeUFloat, ok := sizeU.(float64); ok {
+				attr["sizeU"] = sizeUFloat
+				attr["height"] = sizeUFloat * 44.5
 			}
 			//End of convert block
 			if _, ok := attr["slot"]; ok {
@@ -277,8 +258,8 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 		//Process the posU/slot attribute
 		if x, ok := attr["posU/slot"].([]string); ok && len(x) > 0 {
 			delete(attr, "posU/slot")
-			if _, err := strconv.Atoi(x[0]); len(x) == 1 && err == nil {
-				attr["posU"] = x[0]
+			if posU, err := strconv.Atoi(x[0]); len(x) == 1 && err == nil {
+				attr["posU"] = posU
 			} else {
 				if slots, err := ExpandSlotVector(x); err != nil {
 					return err
@@ -286,7 +267,6 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 					attr["slot"] = slots
 				}
 			}
-
 		}
 
 		//If user provided templates, get the JSON
@@ -310,8 +290,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			}
 			if slot != nil {
 				size := slot["elemSize"].([]any)
-				attr["size"] = fmt.Sprintf(
-					"[%f, %f]", size[0].(float64)/10., size[1].(float64)/10.)
+				attr["size"] = []float64{size[0].(float64) / 10., size[1].(float64) / 10.}
 			} else {
 				if parAttr, ok := parent["attributes"].(map[string]interface{}); ok {
 					if rackSize, ok := parAttr["size"]; ok {

@@ -451,9 +451,11 @@ func ObjectsHaveAttribute(entities []int, attribute, value string) (bool, *u.Err
 }
 
 func slotToValidSlice(attributes map[string]any) ([]string, *u.Error) {
-	if slotSlice, ok := attributes["slot"].([]string); !ok || len(slotSlice) < 1 {
+	if slotSlice, ok := attributes["slot"].([]string); ok && len(slotSlice) < 1 {
 		return []string{}, &u.Error{Type: u.ErrInvalidValue,
 			Message: "Invalid slot: must be a vector [] with at least one element"}
+	} else if !ok { // no slot provided (just posU is valid)
+		return []string{}, nil
 	} else {
 		return slotSlice, nil
 	}
