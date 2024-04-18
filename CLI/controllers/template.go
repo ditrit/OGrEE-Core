@@ -58,10 +58,9 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 			return err
 		}
 
-		//MergeMaps(attr, tmpl, true)
 		key := determineStrKey(tmpl, []string{"sizeWDHmm", "sizeWDHm"})
 
-		if sizeInf, hasSize := tmpl[key].([]float64); hasSize && len(sizeInf) == 3 {
+		if sizeInf, hasSize := tmpl[key].([]any); hasSize && len(sizeInf) == 3 {
 			attr["size"] = sizeInf[:2]
 			attr["height"] = sizeInf[2]
 			CopyAttr(attr, tmpl, "shape")
@@ -74,7 +73,13 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 						if tmp, ok := x["type"]; ok {
 							if t, ok := tmp.(string); ok {
 								if t == "chassis" || t == "server" {
-									attr["sizeU"] = int((sizeInf[2] / 1000) / RACKUNIT)
+									res := 0
+									if val, ok := sizeInf[2].(float64); ok {
+										res = int((val / 1000) / RACKUNIT)
+									} else if val, ok := sizeInf[2].(int); ok {
+										res = int((float64(val) / 1000) / RACKUNIT)
+									}
+									attr["sizeU"] = res
 								}
 							}
 						}
@@ -152,10 +157,7 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 				}
 			}
 		} else {
-			if State.DebugLvl > 1 {
-				println("Warning, invalid size value in template.",
-					"Default values will be assigned")
-			}
+			println("Warning, invalid size value in template.")
 		}
 	} else {
 		//Serialise size and posXY if given

@@ -29,7 +29,10 @@
             "$ref": "refs/types.json#/definitions/metricImperialUnit"
           },
           "slot": {
-            "type": "string"
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
           },
           "template": {
             "type": "string"
