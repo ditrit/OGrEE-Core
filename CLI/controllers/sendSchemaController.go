@@ -12,8 +12,8 @@ import (
 	"strings"
 )
 
-func serialiseVector(attr map[string]interface{}, want string) []any {
-	if vector, ok := attr[want].([]any); ok {
+func serialiseVector(attr map[string]interface{}, want string) []float64 {
+	if vector, ok := attr[want].([]float64); ok {
 		if want == "size" && len(vector) == 3 {
 			attr["height"] = vector[2]
 			vector = vector[:len(vector)-1]
@@ -22,7 +22,7 @@ func serialiseVector(attr map[string]interface{}, want string) []any {
 		}
 		return vector
 	} else {
-		return []any{}
+		return []float64{}
 	}
 }
 

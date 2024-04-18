@@ -325,7 +325,7 @@ func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 				attributes["color"] = "000099"
 			}
 		case u.GROUP:
-			objects := attributes["content"].([]string)
+			objects := attributes["content"].([]interface{})
 			if len(objects) <= 1 && objects[0] == "" {
 				return &u.Error{
 					Type:    u.ErrBadFormat,
@@ -344,13 +344,13 @@ func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 			// Ensure objects all exist
 			orReq := bson.A{}
 			for _, objectName := range objects {
-				if strings.Contains(objectName, u.HN_DELIMETER) {
+				if strings.Contains(objectName.(string), u.HN_DELIMETER) {
 					return &u.Error{
 						Type:    u.ErrBadFormat,
 						Message: "All group objects must be directly under the parent (no . allowed)",
 					}
 				}
-				orReq = append(orReq, bson.M{"id": t["parentId"].(string) + u.HN_DELIMETER + objectName})
+				orReq = append(orReq, bson.M{"id": t["parentId"].(string) + u.HN_DELIMETER + objectName.(string)})
 			}
 			filter := bson.M{"$or": orReq}
 

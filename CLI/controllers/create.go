@@ -97,17 +97,19 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			fmt.Println(attr)
 		}
 
-		if size, ok := attr["size"].([]float64); !ok || len(size) != 2 {
-			if State.DebugLvl > 0 {
-				l.GetErrorLogger().Println(
-					"User gave invalid size value for creating building")
-				return fmt.Errorf("Invalid size attribute provided." +
-					" \nIt must be an array/list/vector with 3 elements." +
-					" Please refer to the wiki or manual reference" +
-					" for more details on how to create objects " +
-					"using this syntax")
+		if _, ok := attr["size"].([]any); !ok {
+			if _, ok = attr["size"].([]float64); !ok {
+				if State.DebugLvl > 0 {
+					l.GetErrorLogger().Println(
+						"User gave invalid size value for creating building")
+					return fmt.Errorf("Invalid size attribute provided." +
+						" \nIt must be an array/list/vector with 3 elements." +
+						" Please refer to the wiki or manual reference" +
+						" for more details on how to create objects " +
+						"using this syntax")
+				}
+				return nil
 			}
-			return nil
 		}
 
 		attr["posXY"] = serialiseVector(attr, "posXY")
@@ -164,17 +166,19 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			return nil
 		}
 
-		if size, ok := attr["size"].([]float64); !ok || len(size) != 2 {
-			if State.DebugLvl > 0 {
-				l.GetErrorLogger().Println(
-					"User gave invalid size value for creating room")
-				return fmt.Errorf("Invalid size attribute provided." +
-					" \nIt must be an array/list/vector with 3 elements." +
-					" Please refer to the wiki or manual reference" +
-					" for more details on how to create objects " +
-					"using this syntax")
+		if _, ok := attr["size"].([]any); !ok {
+			if _, ok = attr["size"].([]float64); !ok {
+				if State.DebugLvl > 0 {
+					l.GetErrorLogger().Println(
+						"User gave invalid size value for creating room")
+					return fmt.Errorf("Invalid size attribute provided." +
+						" \nIt must be an array/list/vector with 3 elements." +
+						" Please refer to the wiki or manual reference" +
+						" for more details on how to create objects " +
+						"using this syntax")
+				}
+				return nil
 			}
-			return nil
 		}
 
 		data["parentId"] = parent["id"]
@@ -201,21 +205,23 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			return err
 		}
 
-		if size, ok := attr["size"].([]float64); !ok || len(size) != 2 {
-			if State.DebugLvl > 0 {
-				l.GetErrorLogger().Println(
-					"User gave invalid size value for creating rack")
-				return fmt.Errorf("Invalid size attribute/template provided." +
-					" \nThe size must be an array/list/vector with " +
-					"3 elements." + "\n\nIf you have provided a" +
-					" template, please check that you are referring to " +
-					"an existing template" +
-					"\n\nFor more information " +
-					"please refer to the wiki or manual reference" +
-					" for more details on how to create objects " +
-					"using this syntax")
+		if _, ok := attr["size"].([]any); !ok {
+			if _, ok = attr["size"].([]float64); !ok {
+				if State.DebugLvl > 0 {
+					l.GetErrorLogger().Println(
+						"User gave invalid size value for creating rack")
+					return fmt.Errorf("Invalid size attribute/template provided." +
+						" \nThe size must be an array/list/vector with " +
+						"3 elements." + "\n\nIf you have provided a" +
+						" template, please check that you are referring to " +
+						"an existing template" +
+						"\n\nFor more information " +
+						"please refer to the wiki or manual reference" +
+						" for more details on how to create objects " +
+						"using this syntax")
+				}
+				return nil
 			}
-			return nil
 		}
 
 		//Serialise posXY if given
