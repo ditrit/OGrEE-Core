@@ -67,6 +67,7 @@ class _TagsViewState extends State<TagsView> {
                       width: isSmallDisplay ? 115 : 145,
                       child: DropdownButtonFormField<TagSearchFields>(
                         isExpanded: true,
+                        borderRadius: BorderRadius.circular(12.0),
                         decoration: GetFormInputDecoration(
                           isSmallDisplay,
                           null,
