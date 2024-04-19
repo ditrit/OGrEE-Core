@@ -122,8 +122,8 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 				attr["heightUnit"] = "m"
 
 			} else {
-				attr["sizeUnit"] = "cm"
-				attr["heightUnit"] = "cm"
+				attr["sizeUnit"] = "mm"
+				attr["heightUnit"] = "mm"
 			}
 
 			//Copy Description
