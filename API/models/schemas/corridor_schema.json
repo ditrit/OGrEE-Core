@@ -58,14 +58,13 @@
     "examples": [
         {
             "attributes": {
-                "content": "B11,C19",
                 "temperature": "cold",
-                "height": "47",
+                "height": 47,
                 "heightUnit": "cm",
-                "rotation": "[45, 45, 45]",
+                "rotation": [45, 45, 45],
                 "posXYUnit": "m",
-                "posXYZ": "[4.6666666666667,  -2, 0]",
-                "size": "[80, 100.532442]",
+                "posXYZ": [4.6666666666667,  -2, 0],
+                "size": [80, 100.532442],
                 "sizeUnit": "cm"
             },
             "category": "corridor",

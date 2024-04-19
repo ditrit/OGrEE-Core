@@ -75,23 +75,23 @@
           "TDP": "",
           "TDPmax": "",
           "fbxModel": "https://github.com/test.fbx",
-          "height": "40.1",
+          "height": 40.1,
           "heightUnit": "mm",
           "model": "TNF2LTX",
           "orientation": "front",
           "partNumber": "0303XXXX",
-          "size": "[388.4, 205.9]",
+          "size": [388.4, 205.9],
           "sizeUnit": "mm",
           "template": "huawei-xxxxxx",
           "type": "blade",
           "vendor": "Huawei",
-          "weightKg": "1.81"
+          "weightKg": 1.81
       },
       "category": "device",
       "description": "Optix XXX - Dual 9-Port Wavelength Selective Switching Board",
       "domain": "domainTest",
       "name": "deviceName",
-      "parentId": "xxxx5a111ac5f3b6f313xxxx"
+      "parentId": "site.bldg.room.rack"
     }
   ]
 }

@@ -76,12 +76,12 @@
   "examples": [
     {
       "attributes": {
-        "height": "47",
+        "height": 47,
         "heightUnit": "cm",
-        "rotation": "[45, 45, 45]",
-        "posXYZ": "[4.6666666666667, -2, 0]",
+        "rotation": [45, 45, 45],
+        "posXYZ": [4.6666666666667, -2, 0],
         "posXYUnit": "m",
-        "size": "[80, 100.532442]",
+        "size": [80, 100.532442],
         "sizeUnit": "cm",
         "template": "",
         "shape": "cube",

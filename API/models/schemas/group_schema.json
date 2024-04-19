@@ -28,7 +28,7 @@
     [
       {
         "attributes": {
-            "content": "B11,B12,C11,C12"
+            "content": ["B11","B12","C11","C12"]
         },
         "category": "group",
         "description": "group",
