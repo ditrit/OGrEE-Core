@@ -54,7 +54,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
   String _objId = "";
   List<StatefulBuilder> customAttributesRows = [];
   Map<String, List<String>> categoryAttrs = {};
-  Map<String, Map<String, String>> examplesAttrs = {};
+  Map<String, Map<String, dynamic>> examplesAttrs = {};
   List<String> domainList = [];
   Map<String, dynamic> objData = {};
   Map<String, dynamic> objDataAttrs = {};
@@ -398,7 +398,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
         // Get examples
         var examples = List<Map<String, dynamic>>.from(jsonResult["examples"]);
         examplesAttrs[obj] =
-            Map<String, String>.from(examples[0]["attributes"]);
+            Map<String, dynamic>.from(examples[0]["attributes"]);
         for (var attr in categoryAttrs[obj]!) {
           attr = attr.replaceFirst(starSymbol, ""); // use original name
           if (attrs[attr]["\$ref"] != null) {
