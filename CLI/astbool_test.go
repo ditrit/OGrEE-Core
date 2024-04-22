@@ -76,7 +76,7 @@ func TestLogicalNodeExecute(t *testing.T) {
 	assert.ErrorContains(t, err, "Invalid logical operator : &|")
 }
 
-func TestNegateBoolNode(t *testing.T) {
+func TestNegateBoolNodeExecute(t *testing.T) {
 	valNode := negateBoolNode{&valueNode{"true"}}
 	value, err := valNode.execute()
 	assert.Nil(t, err)
