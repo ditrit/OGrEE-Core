@@ -57,11 +57,11 @@ func TestNodeToInt(t *testing.T) {
 }
 
 func TestNodeToBool(t *testing.T) {
-	valNode := valueNode{"true"}
+	valNode := valueNode{"false"}
 	value, err := nodeToBool(&valNode, "")
 
 	assert.Nil(t, err)
-	assert.True(t, value)
+	assert.False(t, value)
 
 	valNode = valueNode{"3.5"}
 	_, err = nodeToBool(&valNode, "invalidBoolNode")
