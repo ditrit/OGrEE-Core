@@ -1236,11 +1236,7 @@ func (n *createDeviceNode) execute() (interface{}, error) {
 		attributes["template"] = template
 	}
 
-	if n.invertOffset {
-		attributes["invertOffset"] = "true"
-	} else {
-		attributes["invertOffset"] = "false"
-	}
+	attributes["invertOffset"] = n.invertOffset
 
 	if n.side != nil {
 		side, err := n.side.execute()

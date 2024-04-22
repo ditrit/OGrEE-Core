@@ -51,8 +51,7 @@
             "$ref": "refs/types.json#/definitions/color"
           },
           "invertOffset": {
-            "type": "string",
-            "enum": ["true", "false"]
+            "type": "boolean"
           }
         },
         "patternProperties": {
