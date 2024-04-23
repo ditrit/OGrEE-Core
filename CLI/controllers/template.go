@@ -105,8 +105,6 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 					delete(attr, "reservedArea")
 				}
 
-				parseReservedTech(attr)
-
 				CopyAttr(attr, tmpl, "separators")
 				CopyAttr(attr, tmpl, "pillars")
 				CopyAttr(attr, tmpl, "floorUnit")

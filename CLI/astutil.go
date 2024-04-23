@@ -114,7 +114,7 @@ func evalNodeArr[elt comparable](arr *[]node, x []elt) ([]elt, error) {
 }
 
 // errResponder helper func for specialUpdateNode
-// used for separator, pillar err msgs and parseAreas()
+// used for separator, pillar err msgs and validateAreas()
 func errorResponder(attr, numElts string, multi bool) error {
 	var errorMsg string
 	if multi {

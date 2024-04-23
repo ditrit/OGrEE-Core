@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"cli/config"
 	"cli/controllers"
 	cmd "cli/controllers"
@@ -466,9 +465,8 @@ func setRoomAreas(path string, values []any) (map[string]any, error) {
 	if len(values) != 2 {
 		return nil, fmt.Errorf("2 values (reserved, technical) expected to set room areas")
 	}
-	areas := map[string]any{"reserved": values[0], "technical": values[1]}
-	attributes, e := parseAreas(areas)
-	if e != nil {
+	attributes := map[string]any{"reserved": values[0], "technical": values[1]}
+	if e := validateAreas(attributes); e != nil {
 		return nil, e
 	}
 	return cmd.C.UpdateObj(path, map[string]any{"attributes": attributes}, false)
@@ -1629,44 +1627,27 @@ func (a *assignNode) execute() (interface{}, error) {
 	return nil, fmt.Errorf("Invalid type to assign variable %s", a.variable)
 }
 
-// Hack function for the [room]:areas=[r1,r2,r3,r4]@[t1,t2,t3,t4]
-// command
-func parseAreas(areas map[string]interface{}) (map[string]interface{}, error) {
-	var reservedStr string
-	var techStr string
-
+// Validate format for cmd [room]:areas=[r1,r2,r3,r4]@[t1,t2,t3,t4]
+func validateAreas(areas map[string]interface{}) error {
 	if reserved, ok := areas["reserved"].([]float64); ok {
 		if tech, ok := areas["technical"].([]float64); ok {
 			if len(reserved) == 4 && len(tech) == 4 {
-				var r [4]*bytes.Buffer
-				var t [4]*bytes.Buffer
-				for i := 3; i >= 0; i-- {
-					r[i] = bytes.NewBufferString("")
-					fmt.Fprintf(r[i], "%v", reserved[i])
-					t[i] = bytes.NewBufferString("")
-					fmt.Fprintf(t[i], "%v", tech[i])
-				}
-				// [front/top, back/bottom, right, left]
-				reservedStr = "[" + r[0].String() + ", " + r[1].String() + ", " + r[2].String() + ", " + r[3].String() + "]"
-				techStr = "[" + t[0].String() + ", " + t[1].String() + ", " + t[2].String() + ", " + t[3].String() + "]"
-				areas["reserved"] = reservedStr
-				areas["technical"] = techStr
+				return nil
 			} else {
 				if len(reserved) != 4 && len(tech) == 4 {
-					return nil, errorResponder("reserved", "4", false)
+					return errorResponder("reserved", "4", false)
 				} else if len(tech) != 4 && len(reserved) == 4 {
-					return nil, errorResponder("technical", "4", false)
+					return errorResponder("technical", "4", false)
 				} else { //Both invalid
-					return nil, errorResponder("reserved and technical", "4", true)
+					return errorResponder("reserved and technical", "4", true)
 				}
 			}
 		} else {
-			return nil, errorResponder("technical", "4", false)
+			return errorResponder("technical", "4", false)
 		}
 	} else {
-		return nil, errorResponder("reserved", "4", false)
+		return errorResponder("reserved", "4", false)
 	}
-	return areas, nil
 }
 
 type cpNode struct {

@@ -4,7 +4,6 @@ package controllers
 // before the CLI sends off to API
 
 import (
-	"bytes"
 	l "cli/logger"
 	"cli/models"
 	"fmt"
@@ -110,43 +109,6 @@ func checkNumeric(x interface{}) bool {
 	default:
 		return false
 	}
-}
-
-// Hack function for the reserved and technical areas
-// which copies that room areas function in ast.go
-// [room]:areas=[r1,r2,r3,r4]@[t1,t2,t3,t4]
-func parseReservedTech(x map[string]interface{}) map[string]interface{} {
-	var reservedStr string
-	var techStr string
-	if reserved, ok := x["reserved"].([]interface{}); ok {
-		if tech, ok := x["technical"].([]interface{}); ok {
-			if len(reserved) == 4 && len(tech) == 4 {
-				r4 := bytes.NewBufferString("")
-				fmt.Fprintf(r4, "%v", reserved[3].(float64))
-				r3 := bytes.NewBufferString("")
-				fmt.Fprintf(r3, "%v", reserved[2].(float64))
-				r2 := bytes.NewBufferString("")
-				fmt.Fprintf(r2, "%v", reserved[1].(float64))
-				r1 := bytes.NewBufferString("")
-				fmt.Fprintf(r1, "%v", reserved[0].(float64))
-
-				t4 := bytes.NewBufferString("")
-				fmt.Fprintf(t4, "%v", tech[3].(float64))
-				t3 := bytes.NewBufferString("")
-				fmt.Fprintf(t3, "%v", tech[2].(float64))
-				t2 := bytes.NewBufferString("")
-				fmt.Fprintf(t2, "%v", tech[1].(float64))
-				t1 := bytes.NewBufferString("")
-				fmt.Fprintf(t1, "%v", tech[0].(float64))
-				// [front/top, back/bottom, right, left]
-				reservedStr = "[" + r1.String() + ", " + r2.String() + ", " + r3.String() + ", " + r4.String() + "]"
-				techStr = "[" + t1.String() + ", " + t2.String() + ", " + t3.String() + ", " + t4.String() + "]"
-				x["reserved"] = reservedStr
-				x["technical"] = techStr
-			}
-		}
-	}
-	return x
 }
 
 // Helper func that safely deletes a string key in a map

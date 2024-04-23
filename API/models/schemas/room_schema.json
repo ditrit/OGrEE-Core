@@ -46,6 +46,22 @@
         },
         "template": {
           "type": "string"
+        },
+        "reserved": {
+          "type": "array",
+          "items": {
+              "type": "integer"
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "technical": {
+          "type": "array",
+          "items": {
+              "type": "integer"
+          },
+          "minItems": 4,
+          "maxItems": 4
         }
       },
       "required": [
