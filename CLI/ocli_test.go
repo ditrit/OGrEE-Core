@@ -88,8 +88,8 @@ func TestNewStackTraceError(t *testing.T) {
 }
 
 func TestLoadFile(t *testing.T) {
-	oldValue := controllers.State.DynamicSymbolTable
-	controllers.State.DynamicSymbolTable = map[string]any{}
+	_, _, deferFunction := setMainEnvironmentMock(t)
+	defer deferFunction()
 
 	basePath := t.TempDir() // temporary directory that will be deleted after the tests have finished
 	fileContent := ".var:siteName=siteB\n"
@@ -109,16 +109,37 @@ func TestLoadFile(t *testing.T) {
 
 	assert.Contains(t, controllers.State.DynamicSymbolTable, "siteName")
 	assert.Equal(t, "siteB", controllers.State.DynamicSymbolTable["siteName"])
-
-	controllers.State.DynamicSymbolTable = oldValue
 }
 
-func TestLoadFileError(t *testing.T) {
-	oldValue := controllers.State.DynamicSymbolTable
-	controllers.State.DynamicSymbolTable = map[string]any{}
+func TestLoadFileParseError(t *testing.T) {
+	_, _, deferFunction := setMainEnvironmentMock(t)
+	defer deferFunction()
 
-	basePath := t.TempDir()               // temporary directory that will be deleted after the tests have finished
-	fileContent := ".va:siteName=siteB\n" // typo .var
+	basePath := t.TempDir() // temporary directory that will be deleted after the tests have finished
+	fileContent := "siteName=siteB\n"
+
+	filename := "load_test_file.ocli"
+	filePath := basePath + "/" + filename
+
+	err := os.WriteFile(filePath, []byte(fileContent), 0644)
+
+	if err != nil {
+		t.Errorf("an error ocurred while creating the test file: %s", err)
+	}
+	err = LoadFile(filePath)
+	assert.NotNil(t, err)
+	assert.IsType(t, &fileParseError{}, err)
+
+	errMsg := "Syntax errors were found in the file: " + filename + "\nThe following commands were invalid\n  LINE#: 1\tCOMMAND:siteName=siteB"
+	assert.ErrorContains(t, err, errMsg)
+}
+
+func TestLoadFileStackError(t *testing.T) {
+	_, _, deferFunction := setMainEnvironmentMock(t)
+	defer deferFunction()
+
+	basePath := t.TempDir() // temporary directory that will be deleted after the tests have finished
+	fileContent := ".var: i = eval 10/0\n"
 
 	filename := "load_test_file.ocli"
 	filePath := basePath + "/" + filename
@@ -132,8 +153,6 @@ func TestLoadFileError(t *testing.T) {
 	assert.NotNil(t, err)
 	assert.IsType(t, &stackTraceError{}, err)
 
-	errMsg := "Stack trace (most recent call last):\n  File \"" + filename + "\", line 1\n    .va:siteName=siteB\nError : object not found"
+	errMsg := "Stack trace (most recent call last):\n  File \"" + filename + "\", line 1\n    .var: i = eval 10/0\nError : cannot divide by 0"
 	assert.ErrorContains(t, err, errMsg)
-
-	controllers.State.DynamicSymbolTable = oldValue
 }

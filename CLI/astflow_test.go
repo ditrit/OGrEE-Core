@@ -28,8 +28,8 @@ func TestIfNodeExecute(t *testing.T) {
 }
 
 func TestWhileNodeExecute(t *testing.T) {
-	oldValue := controllers.State.DynamicSymbolTable
-	controllers.State.DynamicSymbolTable = map[string]any{}
+	_, _, deferFunction := setMainEnvironmentMock(t)
+	defer deferFunction()
 	variable := &assignNode{"i", &valueNode{"0"}}
 	variable.execute()
 	// "while $i<6 {var: i = eval $i+1}"
@@ -42,12 +42,11 @@ func TestWhileNodeExecute(t *testing.T) {
 	assert.Nil(t, value)
 	assert.Contains(t, controllers.State.DynamicSymbolTable, "i")
 	assert.Equal(t, 6, controllers.State.DynamicSymbolTable["i"])
-	controllers.State.DynamicSymbolTable = oldValue
 }
 
 func TestForNodeExecute(t *testing.T) {
-	oldValue := controllers.State.DynamicSymbolTable
-	controllers.State.DynamicSymbolTable = map[string]any{}
+	_, _, deferFunction := setMainEnvironmentMock(t)
+	defer deferFunction()
 
 	// "for i=0;i<10;i=i+1 { print $i }"
 	valNode := forNode{
@@ -62,7 +61,6 @@ func TestForNodeExecute(t *testing.T) {
 
 	assert.Contains(t, controllers.State.DynamicSymbolTable, "i")
 	assert.Equal(t, 10, controllers.State.DynamicSymbolTable["i"])
-	controllers.State.DynamicSymbolTable = oldValue
 }
 
 // ToDo: enable this test once the forArrayNode.execute is fixed
@@ -88,8 +86,8 @@ func TestForNodeExecute(t *testing.T) {
 // }
 
 func TestForArrayNodeExecuteError(t *testing.T) {
-	oldValue := controllers.State.DynamicSymbolTable
-	controllers.State.DynamicSymbolTable = map[string]any{}
+	_, _, deferFunction := setMainEnvironmentMock(t)
+	defer deferFunction()
 
 	// "for i in 2 { print $i }"
 	valNode := forArrayNode{
@@ -101,13 +99,11 @@ func TestForArrayNodeExecuteError(t *testing.T) {
 	assert.Nil(t, value)
 	assert.NotNil(t, err)
 	assert.ErrorContains(t, err, "only an array can be iterated")
-
-	controllers.State.DynamicSymbolTable = oldValue
 }
 
 func TestForRangeNodeExecute(t *testing.T) {
-	oldValue := controllers.State.DynamicSymbolTable
-	controllers.State.DynamicSymbolTable = map[string]any{}
+	_, _, deferFunction := setMainEnvironmentMock(t)
+	defer deferFunction()
 
 	// "for i in 0..3 { print $i }"
 	valNode := forRangeNode{
@@ -122,12 +118,11 @@ func TestForRangeNodeExecute(t *testing.T) {
 
 	assert.Contains(t, controllers.State.DynamicSymbolTable, "i")
 	assert.Equal(t, 3, controllers.State.DynamicSymbolTable["i"])
-	controllers.State.DynamicSymbolTable = oldValue
 }
 
 func TestForRangeNodeExecuteError(t *testing.T) {
-	oldValue := controllers.State.DynamicSymbolTable
-	controllers.State.DynamicSymbolTable = map[string]any{}
+	_, _, deferFunction := setMainEnvironmentMock(t)
+	defer deferFunction()
 
 	// Start value higher than end value
 	// "for i in 3..0 { print $i }"
@@ -153,6 +148,4 @@ func TestForRangeNodeExecuteError(t *testing.T) {
 	assert.Nil(t, value)
 	assert.NotNil(t, err)
 	assert.ErrorContains(t, err, "loop body should not be empty")
-
-	controllers.State.DynamicSymbolTable = oldValue
 }
