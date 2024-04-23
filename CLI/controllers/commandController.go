@@ -335,7 +335,7 @@ func LSEnterprise() error {
 	if err != nil {
 		return err
 	}
-	views.DisplayJson(resp.Body)
+	views.DisplayJson("", resp.Body)
 	return nil
 }
 
@@ -387,7 +387,7 @@ func GetByAttr(path string, u interface{}) error {
 			if attr, ok := devices[i]["attributes"].(map[string]interface{}); ok {
 				uStr := strconv.Itoa(u.(int))
 				if attr["height"] == uStr {
-					views.DisplayJson(devices[i])
+					views.DisplayJson("", devices[i])
 					return nil //What if the user placed multiple devices at same height?
 				}
 			}
@@ -399,7 +399,7 @@ func GetByAttr(path string, u interface{}) error {
 		for i := range devices {
 			if attr, ok := devices[i]["attributes"].(map[string]interface{}); ok {
 				if attr["slot"] == u.(string) {
-					views.DisplayJson(devices[i])
+					views.DisplayJson("", devices[i])
 					return nil //What if the user placed multiple devices at same slot?
 				}
 			}
