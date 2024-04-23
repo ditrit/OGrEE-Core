@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cli/controllers"
 	"fmt"
 	"os"
 	"strings"
@@ -86,21 +87,53 @@ func TestNewStackTraceError(t *testing.T) {
 	assert.Equal(t, msg, stackTrace.Error())
 }
 
-// func TestLoadFile(t *testing.T) {
-// 	basePath := t.TempDir() // temporary directory that will be deleted after the tests have finished
-// 	fileContent := ".var:siteName=siteB\n"
+func TestLoadFile(t *testing.T) {
+	oldValue := controllers.State.DynamicSymbolTable
+	controllers.State.DynamicSymbolTable = map[string]any{}
 
-// 	filename := "load_test_file.ocli"
-// 	filePath := basePath + "/" + filename
+	basePath := t.TempDir() // temporary directory that will be deleted after the tests have finished
+	fileContent := ".var:siteName=siteB\n"
 
-// 	fmt.Println(cmd.State)
-// 	err := os.WriteFile(filePath, []byte(fileContent), 0644)
+	filename := "load_test_file.ocli"
+	filePath := basePath + "/" + filename
 
-// 	if err != nil {
-// 		t.Errorf("an error ocurred while creating the test file: %s", err)
-// 	}
-// 	err = LoadFile(filePath)
-// 	if err != nil {
-// 		t.Errorf("an error ocurred parsing the file: %s", err)
-// 	}
-// }
+	err := os.WriteFile(filePath, []byte(fileContent), 0644)
+
+	if err != nil {
+		t.Errorf("an error ocurred while creating the test file: %s", err)
+	}
+	err = LoadFile(filePath)
+	if err != nil {
+		t.Errorf("an error ocurred parsing the file: %s", err)
+	}
+
+	assert.Contains(t, controllers.State.DynamicSymbolTable, "siteName")
+	assert.Equal(t, "siteB", controllers.State.DynamicSymbolTable["siteName"])
+
+	controllers.State.DynamicSymbolTable = oldValue
+}
+
+func TestLoadFileError(t *testing.T) {
+	oldValue := controllers.State.DynamicSymbolTable
+	controllers.State.DynamicSymbolTable = map[string]any{}
+
+	basePath := t.TempDir()               // temporary directory that will be deleted after the tests have finished
+	fileContent := ".va:siteName=siteB\n" // typo .var
+
+	filename := "load_test_file.ocli"
+	filePath := basePath + "/" + filename
+
+	err := os.WriteFile(filePath, []byte(fileContent), 0644)
+
+	if err != nil {
+		t.Errorf("an error ocurred while creating the test file: %s", err)
+	}
+	err = LoadFile(filePath)
+	assert.NotNil(t, err)
+	assert.IsType(t, &stackTraceError{}, err)
+
+	errMsg := "Stack trace (most recent call last):\n  File \"" + filename + "\", line 1\n    .va:siteName=siteB\nError : object not found"
+	assert.ErrorContains(t, err, errMsg)
+
+	controllers.State.DynamicSymbolTable = oldValue
+}
