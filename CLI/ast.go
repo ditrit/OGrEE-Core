@@ -721,9 +721,14 @@ func (n *updateObjNode) execute() (interface{}, error) {
 
 	values := []any{}
 	for _, valueNode := range n.values {
-		val, err := valueNode.execute()
-		if err != nil {
-			return nil, err
+		var val any
+		if num, err := nodeToNum(valueNode, "update attribute"); err == nil {
+			val = num
+		} else {
+			val, err = valueNode.execute()
+			if err != nil {
+				return nil, err
+			}
 		}
 		values = append(values, val)
 	}
