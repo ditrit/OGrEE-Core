@@ -1,14 +1,14 @@
-USAGE: - [PATH]   
-Delete an object at current path. A selection of objects can optionally be deleted if 'selection' was provided as the PATH parameter. If the PATH is not specified then the current path will be used  
+USAGE: - [PATH] [:ATTRIBUTE](optional)
+Delete an object or the attribute of an object at path.
+If the PATH is not specified then the current path will be used.
+If :ATTRIBUTE is provided, that attribute of the given PATH object will be removed.
 
 NOTE:
-
-    You must include a space between the '-' operator and its argument (path to object)
-
-    You may also delete a selection of objects by issuing the 'selection' keyword
+    You may also delete a selection of objects by issuing the 'selection' keyword (no :ATTRIBUTE allowed). 
 
 EXAMPLE:
 
-    - DEMO/ALPHA
-    - selection
-    - .
+    -DEMO/SITE
+    -selection
+    -.
+    -DEMO/SITE:attributeToRemove

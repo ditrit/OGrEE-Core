@@ -808,14 +808,8 @@ func (p *parser) parseUnset() node {
 	defer un(trace(p, "unset"))
 	args := p.parseArgs([]string{"f", "v"}, []string{}, "unset")
 	if len(args) == 0 {
-		path := p.parsePath("")
-		p.expect(":")
-		attr := p.parseComplexWord("attribute")
-		if p.commandEnd() {
-			return &unsetAttrNode{path, attr, nil}
-		}
-		index := p.parseIndexing()
-		return &unsetAttrNode{path, attr, index}
+		p.error("an argument is mandatory: -f or -v")
+		return nil
 	}
 	if funcName, ok := args["f"]; ok {
 		return &unsetFuncNode{funcName}
@@ -823,7 +817,8 @@ func (p *parser) parseUnset() node {
 	if varName, ok := args["v"]; ok {
 		return &unsetVarNode{varName}
 	}
-	panic("unexpected argument while unset command")
+	p.error("unexpected argument while unset command")
+	return nil
 }
 
 func (p *parser) parseEnv() node {
@@ -843,8 +838,12 @@ func (p *parser) parseDelete() node {
 		p.error("path expected")
 	}
 	path := p.parsePath("")
-
-	return &deleteObjNode{path}
+	if p.parseExact(":") {
+		attr := p.parseComplexWord("attribute")
+		return &deleteAttrNode{path, attr}
+	} else {
+		return &deleteObjNode{path}
+	}
 }
 
 func (p *parser) parseEqual() node {

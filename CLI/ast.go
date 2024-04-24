@@ -358,6 +358,19 @@ func (n *deleteSelectionNode) execute() (interface{}, error) {
 	return nil, nil
 }
 
+type deleteAttrNode struct {
+	path node
+	attr string
+}
+
+func (n *deleteAttrNode) execute() (interface{}, error) {
+	path, err := nodeToString(n.path, "path")
+	if err != nil {
+		return nil, err
+	}
+	return nil, cmd.UnsetAttribute(path, n.attr)
+}
+
 type isEntityDrawableNode struct {
 	path node
 }
