@@ -75,7 +75,7 @@ func TestCreateGenericWithSameNameAsCorridorReturnsError(t *testing.T) {
 func TestCreateGroupWithObjectThatNotExistsReturnsError(t *testing.T) {
 	room := integration.RequireCreateRoom("", "create-object-6-room")
 
-	_, err := integration.CreateGroup(room["id"].(string), "create-object-6", []string{"not-exists"})
+	_, err := integration.CreateGroup(room["id"].(string), "create-object-6", []any{"not-exists"})
 	assert.NotNil(t, err)
 	assert.Equal(t, u.ErrBadFormat, err.Type)
 	assert.Equal(t, "Some object(s) could not be found. Please check and try again", err.Message)
@@ -90,10 +90,10 @@ func TestCreateGroupWithCorridorsRacksAndGenericWorks(t *testing.T) {
 	group, err := integration.CreateGroup(
 		room["id"].(string),
 		"create-object-7",
-		[]string{rack["name"].(string), corridor["name"].(string), generic["name"].(string)},
+		[]any{rack["name"].(string), corridor["name"].(string), generic["name"].(string)},
 	)
 	assert.Nil(t, err)
-	unit.HasAttribute(t, group, "content", "create-object-7-rack,create-object-7-corridor,create-object-7-generic")
+	unit.HasAttribute(t, group, "content", []any{"create-object-7-rack", "create-object-7-corridor", "create-object-7-generic"})
 }
 
 func TestCreateGenericWithParentNotRoomReturnsError(t *testing.T) {

@@ -4,7 +4,6 @@ import (
 	"log"
 	"p3/models"
 	"p3/utils"
-	"strings"
 )
 
 var ManagerUserRoles = map[string]models.Role{
@@ -62,13 +61,13 @@ func internalCreateBuilding(siteID, name string, require bool) (map[string]any, 
 		utils.BLDG,
 		map[string]any{
 			"attributes": map[string]any{
-				"height":     "5",
+				"height":     5,
 				"heightUnit": "m",
-				"posXY":      "[50, 0]",
+				"posXY":      []any{50, 0},
 				"posXYUnit":  "m",
-				"size":       "[49, 46.6]",
+				"size":       []any{49, 46.5},
 				"sizeUnit":   "m",
-				"rotation":   "30.5",
+				"rotation":   30.5,
 			},
 			"category":    "building",
 			"description": name,
@@ -100,13 +99,13 @@ func internalCreateRoom(buildingID, name string, require bool) (map[string]any, 
 		map[string]any{
 			"attributes": map[string]any{
 				"floorUnit":       "t",
-				"height":          "2.8",
+				"height":          2.8,
 				"heightUnit":      "m",
 				"axisOrientation": "+x+y",
-				"rotation":        "-90",
-				"posXY":           "[0, 0]",
+				"rotation":        -90,
+				"posXY":           []any{0, 0},
 				"posXYUnit":       "m",
-				"size":            "[-13, -2.9]",
+				"size":            []any{-13, -2.9},
 				"sizeUnit":        "m",
 				"template":        "",
 			},
@@ -139,12 +138,12 @@ func internalCreateRack(roomID, name string, require bool) (map[string]any, *uti
 		utils.RACK,
 		map[string]any{
 			"attributes": map[string]any{
-				"height":     "47",
+				"height":     47,
 				"heightUnit": "U",
-				"rotation":   "[45, 45, 45]",
+				"rotation":   []any{45, 45, 45},
 				"posXYUnit":  "m",
-				"posXYZ":     "[4.6666666666667, -2, 0]",
-				"size":       "[80, 100.532442]",
+				"posXYZ":     []any{4.6666666666667, -2, 0},
+				"size":       []any{80, 100.532442},
 				"sizeUnit":   "cm",
 				"template":   "",
 			},
@@ -180,12 +179,12 @@ func internalCreateCorridor(roomID, name string, require bool) (map[string]any, 
 				"color":       "000099",
 				"content":     "B11,C19",
 				"temperature": "cold",
-				"height":      "470",
+				"height":      470,
 				"heightUnit":  "cm",
-				"rotation":    "[45, 45, 45]",
+				"rotation":    []any{45, 45, 45},
 				"posXYUnit":   "m",
-				"posXYZ":      "[4.6666666666667, -2, 0]",
-				"size":        "[80, 100.532442]",
+				"posXYZ":      []any{4.6666666666667, -2, 0},
+				"size":        []any{80, 100.532442},
 				"sizeUnit":    "cm",
 			},
 			"category":    "corridor",
@@ -217,12 +216,12 @@ func internalCreateGeneric(roomID, name string, require bool) (map[string]any, *
 		utils.GENERIC,
 		map[string]any{
 			"attributes": map[string]any{
-				"height":     "47",
+				"height":     47,
 				"heightUnit": "cm",
-				"rotation":   "[45, 45, 45]",
-				"posXYZ":     "[4.6666666666667, -2, 0]",
+				"rotation":   []any{45, 45, 45},
+				"posXYZ":     []any{4.6666666666667, -2, 0},
 				"posXYUnit":  "m",
-				"size":       "[80, 100.532442]",
+				"size":       []any{80, 100.532442},
 				"shape":      "cube",
 				"sizeUnit":   "cm",
 				"template":   "",
@@ -255,12 +254,12 @@ func internalCreateDevice(parentID, name string, require bool) (map[string]any, 
 				"TDP":         "",
 				"TDPmax":      "",
 				"fbxModel":    "https://github.com/test.fbx",
-				"height":      "40.1",
+				"height":      40.1,
 				"heightUnit":  "mm",
 				"model":       "TNF2LTX",
 				"orientation": "front",
 				"partNumber":  "0303XXXX",
-				"size":        "[388.4, 205.9]",
+				"size":        []any{388.4, 205.9},
 				"sizeUnit":    "mm",
 				"template":    "huawei-xxxxxx",
 				"type":        "blade",
@@ -286,12 +285,12 @@ func CreateDevice(parentID, name string) (map[string]any, *utils.Error) {
 	return internalCreateDevice(parentID, name, false)
 }
 
-func internalCreateGroup(parentID, name string, content []string, require bool) (map[string]any, *utils.Error) {
+func internalCreateGroup(parentID, name string, content []any, require bool) (map[string]any, *utils.Error) {
 	return createObject(
 		utils.GROUP,
 		map[string]any{
 			"attributes": map[string]any{
-				"content": strings.Join(content, ","),
+				"content": content,
 			},
 			"category":    "group",
 			"description": name,
@@ -303,11 +302,11 @@ func internalCreateGroup(parentID, name string, content []string, require bool) 
 	)
 }
 
-func RequireCreateGroup(parentID, name string, content []string) map[string]any {
+func RequireCreateGroup(parentID, name string, content []any) map[string]any {
 	obj, _ := internalCreateGroup(parentID, name, content, true)
 	return obj
 }
 
-func CreateGroup(parentID, name string, content []string) (map[string]any, *utils.Error) {
+func CreateGroup(parentID, name string, content []any) (map[string]any, *utils.Error) {
 	return internalCreateGroup(parentID, name, content, false)
 }
