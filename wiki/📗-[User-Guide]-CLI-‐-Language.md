@@ -1,20 +1,25 @@
 # Contents <!-- omit in toc -->
 
 - [Glossary](#glossary)
-- [Comments](#comments)
-- [Variables](#variables)
-   * [Set a variable](#set-a-variable)
-   * [Use a variable](#use-a-variable)
-- [Expressions](#expressions)
-   * [Primary expressions](#primary-expressions)
-   * [Operators](#operators)
-- [Print](#print)
-   * [String formatting](#string-formatting)
+- [Language Syntax](#language-syntax)
+   * [Comments](#comments)
+   * [Variables](#variables)
+      + [Set a variable](#set-a-variable)
+      + [Use a variable](#use-a-variable)
+   * [Expressions](#expressions)
+      + [Primary expressions](#primary-expressions)
+      + [Operators](#operators)
+   * [Print](#print)
+      + [String formatting](#string-formatting)
+   * [Control flow](#control-flow)
+      + [Conditions](#conditions)
+      + [Loops](#loops)
+      + [Aliases](#aliases)
 - [Loading Commands](#loading-commands)
    * [Load commands from a text file](#load-commands-from-a-text-file)
    * [Commands over multiple lines](#commands-over-multiple-lines)
    * [Load template from JSON](#load-template-from-json)
-- [Object Commands](#object-commands)
+- [Object Generic Commands](#object-commands)
    * [Select an object](#select-an-object)
       + [Select child object](#select-child-object)
       + [Select parent object](#select-parent-object)
@@ -27,7 +32,8 @@
       + [Filters](#filters-1)
    * [Tree](#tree)
    * [Delete object](#delete-object)
-   * [Modify object's attribute](#modify-objects-attribute)
+   * [Modify object attribute](#modify-object-attribute)
+   * [Delete object attribute](#delete-object-attribute)
    * [Link/Unlink object](#linkunlink-object)
 - [Object Specific Commands](#object-specific-commands)
    * [Domain](#domain)
@@ -65,28 +71,27 @@
    * [Move camera](#move-camera)
    * [Translate camera](#translate-camera)
    * [Wait between two translations](#wait-between-two-translations)
-- [Control flow](#control-flow)
-   * [Conditions](#conditions)
-   * [Loops](#loops)
-   * [Aliases](#aliases)
 
 # Glossary
 
 `[name]` is case sensitive. It includes the whole path of the object (for example: `tn/si/bd/ro/rk`)  
 `[color]` is a hexadecimal code (*ffffff*)  
 
-# Comments
+# Language Syntax
+Just like a programming language, the CLI Language allows the user to use variables, control flow such as for loops and much more, as described below.
 
-You can put comments in an .ocli file with the `//` indicator.
+## Comments
+
+You can put comments in an .ocli file with the `//` indicator. This can be useful in `.ocli` files, that is, text files with multiple CLI commands (check [Load commands from a text file](#load-commands-from-a-text-file)).
 
 ```
 // This is a comment
 +si:example@ffffff // This is another comment
 ```
 
-# Variables
+## Variables
 
-## Set a variable
+### Set a variable
 
 ```
 .var:[name]=[value]
@@ -108,7 +113,12 @@ where ```[value]``` can be either:
                     // even though it can be used as a number in expressions
 ```
 
-## Use a variable
+To unset a variable, that is, to completely remove it, use:
+```
+unset -v [name]
+```
+
+### Use a variable
 
 `${[name]}` or `$[name]`  
 in the second case, the longest identifier is used as ```[name]```
@@ -123,9 +133,9 @@ ${ROOM}/Rack:description="Rack of site $siteNameVar"
 .var:j=eval $i/10-1;    // j=19
 ```
 
-# Expressions
+## Expressions
 
-## Primary expressions
+### Primary expressions
 
 - booleans true / false
 - integers
@@ -136,23 +146,23 @@ ${ROOM}/Rack:description="Rack of site $siteNameVar"
 
 They can be used to build more complex expressions through operators.  
 
-## Operators
+### Operators
 
-### Compute operators
+#### Compute operators
 
 these will only work if both side return a number  
 +, -, *, /, \ (integer division), % (modulo)
 
-### Boolean operators
+#### Boolean operators
 <, >, <=, >=, ==, !=, || (or), && (and) 
 
-# Print
+## Print
 
 The ```print``` command prints the given string. The argument can take the same values as for variable assignments.
 
 The ```printf``` command is equivalent to a ```print format```, see next section for details about ```format```.
 
-## String formatting
+### String formatting
 
 You can dereference variables inside strings with ```${[name]}``` or ```$[name]```.
 
@@ -173,6 +183,77 @@ For a sprintf-like formatting, you can use the format function, it uses the go f
 print format("2+3 equals %02d", 2+3) // prints "2+3 equals 05"
 ```
 
+## Control flow
+
+### Conditions
+```
+if condition { commands } elif condition { commands } else { commands }
+```
+`If-elif-else` statements have a similar syntax to Go. It expects an expression to be evaluated to true or false, followed by `{}` contaning the commands to execute if true. Examples:
+```
+> if 42 > 43 { print toto } elif 42 == 43 { print tata } else { print titi }
+titi
+
+// Multiple lines
+if $shouldCreateSite == true {  \
+  +si:/P/SITE                   \
+  /P/SITE:reservedColor=AAAAAA  \
+}
+```
+
+### Loops
+```
+for index in start..end { commands }
+```
+A `for` loop expects the name to give the index followed by a range and then `{}` with the commands. The range must be a start interger number followed by `..` and an end integer number superior to start. Examples: 
+```
+> for i in 0..3 { .var: i2 = $(($i * $i)) ; print $i^2 = $i2 }
+0^2 = 0
+1^2 = 1
+2^2 = 4
+3^2 = 9
+
+// Multiple lines
+for i in 0..5 {                                           \
+    .var:r=eval 10+$i;                                    \
+    .var:x=eval (36+$i*4)/3;                              \
+    +rk:/P/SI/BLDG/ROOM/J${r}@[ $x, 52]@[80,120,42]@rear; \
+    +rk:/P/SI/BLDG/ROOM/K${r}@[ $x, 55]@[80,120,42]@front \
+}
+```
+Another loop comandavaiable is the `while`.
+```
+while condition { commands }
+```
+A while loop expects an expression to be evaluated to true or false, followed by `{}` contaning the commands to execute repeteadly with the expression remains true. Examples: 
+```
+>.var: i = 0; while $i<4 {print $i^2 = $(($i * $i)); .var: i = eval $i+1 }
+0^2 = 0
+1^2 = 1
+2^2 = 4
+3^2 = 9
+```
+
+### Aliases
+```
+alias name { commands }
+```
+
+An `alias` can be created to replace a list of commands, that is, to create a function without arguments. It expects the name of the alias followed by `{}` containing the commands it should evoke. Examples:
+```
+>alias pi2 { .var: i2 = $(($i * $i)) ; print $i^2 = $i2 }
+>for i in 0..3 { pi2 }
+0^2 = 0
+1^2 = 1
+2^2 = 4
+3^2 = 9
+```
+
+To unset a function, that is, remove the alias, use:
+```
+unset -f [name]
+```
+
 # Loading Commands
 
 ## Load commands from a text file
@@ -186,7 +267,7 @@ print format("2+3 equals %02d", 2+3) // prints "2+3 equals 05"
 .cmds:/path/to/file.ocli
 ```
 
-By convention, these files carry the extension .ocli.
+By convention, these files carry the extension .ocli. It should include a sequence of commands accepted by the CLI. For example, it can include the creation of variables used in a for loop with commands to create sites, buildings, rooms, etc. It can also include a `.cmds`command to call for another file with more commands. Check some examples [here](https://github.com/ditrit/OGrEE-Core/wiki/📗-%5BUser-Guide%5D-CLI-%E2%80%90-Get-Started#create-with-ocli-files).
 
 ## Commands over multiple lines
 
@@ -487,14 +568,15 @@ Examples:
 -selection // delete all objects previously selected
 ```
 
-## Modify object's attribute
-
-Works with single or multi selection.  
+## Modify object attribute
+```
+[name]:[attribute]=[value]
+```
+To add or modify new attributes use the syntax bellow, giving the name of the object, followed by the attribute and its value. 
+It also works with single or multi selection.  
 *`[name]` can be `selection` or `_` for modifying selected objects attributes*
 
 ```
-[name]:[attribute]=[value]
-
 selection:[attribute]=[value]
 _:[attribute]=[value]
 ```
@@ -519,6 +601,16 @@ _:[attribute]=[value]
 [name]:clearance=[front, rear, left, right, top, bottom]
 // Example:
 /P/SI/BLDG/R1/RACK:clearance=[800,500,0,0,0,0]
+```
+
+## Delete object attribute
+```
+-[name]:[attribute]
+```
+Use this command to remove not requirde attributes of a given object.
+
+```
+-/P/site/building:mycustomattr
 ```
 
 ## Link/Unlink object
@@ -1186,68 +1278,5 @@ You can define a delay between two camera translations.
 
 ```
 camera.wait=5 // 5s
-```
-
-# Control flow
-
-## Conditions
-```
-if condition { commands } elif condition { commands } else { commands }
-```
-`If-elif-else` statements have a similar syntax to Go. It expects an expression to be evaluated to true or false, followed by `{}` contaning the commands to execute if true. Examples:
-```
-> if 42 > 43 { print toto } elif 42 == 43 { print tata } else { print titi }
-titi
-
-// Multiple lines
-if $shouldCreateSite == true {  \
-  +si:/P/SITE                   \
-  /P/SITE:reservedColor=AAAAAA  \
-}
-```
-
-## Loops
-```
-for index in start..end { commands }
-```
-A `for` loop expects the name to give the index followed by a range and then `{}` with the commands. The range must be a start interger number followed by `..` and an end integer number superior to start. Examples: 
-```
-> for i in 0..3 { .var: i2 = $(($i * $i)) ; print $i^2 = $i2 }
-0^2 = 0
-1^2 = 1
-2^2 = 4
-3^2 = 9
-
-// Multiple lines
-for i in 0..5 {                                           \
-    .var:r=eval 10+$i;                                    \
-    .var:x=eval (36+$i*4)/3;                              \
-    +rk:/P/SI/BLDG/ROOM/J${r}@[ $x, 52]@[80,120,42]@rear; \
-    +rk:/P/SI/BLDG/ROOM/K${r}@[ $x, 55]@[80,120,42]@front \
-}
-```
-Another loop comandavaiable is the `while`.
-```
-while condition { commands }
-```
-A while loop expects an expression to be evaluated to true or false, followed by `{}` contaning the commands to execute repeteadly with the expression remains true. Examples: 
-```
->.var: i = 0; while $i<4 {print $i^2 = $(($i * $i)); .var: i = eval $i+1 }
-0^2 = 0
-1^2 = 1
-2^2 = 4
-3^2 = 9
-```
-
-## Aliases
-`alias name { commands }`
-An `alias` can be created to replace a list of commands. It expects the name of the alias followed by `{}` containing the commands it should evoke. Examples:
-```
->alias pi2 { .var: i2 = $(($i * $i)) ; print $i^2 = $i2 }
->for i in 0..3 { pi2 }
-0^2 = 0
-1^2 = 1
-2^2 = 4
-3^2 = 9
 ```
 
