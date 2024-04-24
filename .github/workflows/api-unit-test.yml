@@ -38,6 +38,9 @@ jobs:
     - name: Test
       run: gotestsum --junitfile tests-api.xml -- -coverpkg=./... -coverprofile=coverage_api.out -p 1 ./...
 
+    - name: Log Test Coverage
+      run: go tool cover -func coverage_api.out | grep total
+
     - name: Test Report
       uses: dorny/test-reporter@v1
       if: always() # run this step even if previous steps failed

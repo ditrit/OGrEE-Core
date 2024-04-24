@@ -28,4 +28,19 @@ jobs:
       run: make
     
     - name: Test
-      run: go test ./...
+      run: gotestsum --junitfile tests-cli.xml -- -coverprofile=coverage_cli.out -p 1 `go list ./... | grep -v ./readline | grep -v ./mocks`
+
+    - name: Log Test Coverage
+      run: go tool cover -func coverage_cli.out | grep total
+
+    - name: Test Report
+      uses: dorny/test-reporter@v1
+      if: always() # run this step even if previous steps failed
+      with:
+        name: CLI Tests Report  # Name of the check run which will be created
+        path: ./CLI/tests-cli.xml     # Path to test results
+        reporter: java-junit                 # Format of test results
+    - uses: actions/upload-artifact@v3
+      with:
+        name: coverage
+        path: ./CLI/coverage_cli.out
