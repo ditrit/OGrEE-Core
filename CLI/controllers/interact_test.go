@@ -148,7 +148,7 @@ func TestLabelBackgroundOk(t *testing.T) {
 
 func TestContentOk(t *testing.T) {
 	controller, _, _ := interactLabelTestSetup(t)
-	err := controller.InteractObject("/Physical/BASIC/A/R1/A01", "content", true, false)
+	err := controller.InteractObject("/Physical/BASIC/A/R1/A01", "displayContent", true, false)
 	assert.Nil(t, err)
 }
 

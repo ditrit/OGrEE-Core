@@ -1285,7 +1285,7 @@ func (p *parser) parseUpdate() node {
 	values := []node{}
 	moreValues := true
 	for moreValues {
-		if attr == "slot" {
+		if attr == "slot" || attr == "content" {
 			values = p.parseStringOrVecStr("slot")
 		} else if attr == models.LayerFilters || attr == models.LayerFiltersAdd {
 			filters := p.parseComplexFilters()["filter"]

@@ -157,9 +157,9 @@ func Stringify(x interface{}) string {
 	return ""
 }
 
-// ExpandSlotVector: allow usage of .. on slot vector, converting as bellow:
-// [slot01..slot03] => [slot01,slot02,slot03]
-func ExpandSlotVector(slotVector []string) ([]string, error) {
+// ExpandStrVector: allow usage of .. on device slot and group content vector
+// converting [slot01..slot03] on [slot01,slot02,slot03]
+func ExpandStrVector(slotVector []string) ([]string, error) {
 	slots := []string{}
 	for _, slot := range slotVector {
 		if strings.Contains(slot, "..") {

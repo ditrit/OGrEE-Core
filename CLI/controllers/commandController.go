@@ -593,7 +593,7 @@ func LinkObject(source string, destination string, attrs []string, values []any,
 	payload := map[string]any{"parentId": destPath.ObjectID}
 
 	if slots != nil {
-		if slots, err = ExpandSlotVector(slots); err != nil {
+		if slots, err = ExpandStrVector(slots); err != nil {
 			return err
 		}
 		payload["slot"] = slots

@@ -746,7 +746,7 @@ func (n *updateObjNode) execute() (interface{}, error) {
 			err = cmd.C.UpdateLayer(path, n.attr, values[0])
 		} else {
 			switch n.attr {
-			case "content", "alpha", "tilesName", "tilesColor", "U", "slots", "localCS":
+			case "displayContent", "alpha", "tilesName", "tilesColor", "U", "slots", "localCS":
 				var boolVal bool
 				boolVal, err = utils.ValToBool(values[0], n.attr)
 				if err != nil {
@@ -795,16 +795,16 @@ func (n *updateObjNode) execute() (interface{}, error) {
 
 func updateAttributes(path, attributeName string, values []any) (map[string]any, error) {
 	var attributes map[string]any
-	if attributeName == "slot" {
-		slots := []string{}
+	if attributeName == "slot" || attributeName == "content" {
+		vecStr := []string{}
 		for _, value := range values {
-			slots = append(slots, value.(string))
+			vecStr = append(vecStr, value.(string))
 		}
 		var err error
-		if slots, err = controllers.ExpandSlotVector(slots); err != nil {
+		if vecStr, err = controllers.ExpandStrVector(vecStr); err != nil {
 			return nil, err
 		}
-		attributes = map[string]any{attributeName: slots}
+		attributes = map[string]any{attributeName: vecStr}
 	} else {
 		if len(values) > 1 {
 			return nil, fmt.Errorf("attributes can only be assigned a single value")
