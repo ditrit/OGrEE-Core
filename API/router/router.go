@@ -68,8 +68,8 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 		controllers.UserForgotPassword).Methods("POST", "OPTIONS")
 
 	// For obtaining temperatureUnit from object's site
-	router.HandleFunc("/api/tempunits/{id}",
-		controllers.GetTempUnit).Methods("GET", "OPTIONS", "HEAD")
+	router.HandleFunc("/api/{siteAttr:tempunits|sitecolors}/{id}",
+		controllers.GetSiteAttr).Methods("GET", "OPTIONS", "HEAD")
 
 	// IMAGES
 	router.HandleFunc(controllers.GetImagePath+"{id}",

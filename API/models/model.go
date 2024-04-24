@@ -472,9 +472,9 @@ func GetCompleteHierarchyAttributes(userRoles map[string]Role) (map[string]inter
 	return response, nil
 }
 
-// GetSiteParentTempUnit: search for the object of given ID,
-// then search for its site parent and return its attributes.temperatureUnit
-func GetSiteParentTempUnit(id string) (string, *u.Error) {
+// GetSiteParentAttribute: search for the object of given ID,
+// then search for its site parent and return its requested attribute
+func GetSiteParentAttribute(id string, attribute string) (map[string]any, *u.Error) {
 	data := map[string]interface{}{}
 
 	// Get all collections names
@@ -483,7 +483,7 @@ func GetSiteParentTempUnit(id string) (string, *u.Error) {
 	collNames, err := db.ListCollectionNames(ctx, bson.D{})
 	if err != nil {
 		fmt.Println(err.Error())
-		return "", &u.Error{Type: u.ErrDBError, Message: err.Error()}
+		return nil, &u.Error{Type: u.ErrDBError, Message: err.Error()}
 	}
 	// Find object
 	for _, collName := range collNames {
@@ -499,7 +499,7 @@ func GetSiteParentTempUnit(id string) (string, *u.Error) {
 				siteName := nameSlice[0] // CONSIDER SITE AS 0
 				err := db.Collection("site").FindOne(ctx, bson.M{"id": siteName}).Decode(&data)
 				if err != nil {
-					return "", &u.Error{Type: u.ErrNotFound,
+					return nil, &u.Error{Type: u.ErrNotFound,
 						Message: "Could not find parent site for given object"}
 				}
 			}
@@ -509,12 +509,22 @@ func GetSiteParentTempUnit(id string) (string, *u.Error) {
 	defer cancel()
 
 	if len(data) == 0 {
-		return "", &u.Error{Type: u.ErrNotFound, Message: "No object found with given id"}
-	} else if tempUnit := data["attributes"].(map[string]interface{})["temperatureUnit"]; tempUnit == nil {
-		return "", &u.Error{Type: u.ErrNotFound,
+		return nil, &u.Error{Type: u.ErrNotFound, Message: "No object found with given id"}
+	} else if attribute == "sitecolors" {
+		resp := map[string]any{}
+		for _, colorName := range []string{"reservedColor", "technicalColor", "usableColor"} {
+			if color := data["attributes"].(map[string]interface{})[colorName]; color != nil {
+				resp[colorName] = color
+			} else {
+				resp[colorName] = ""
+			}
+		}
+		return resp, nil
+	} else if attrValue := data["attributes"].(map[string]interface{})[attribute]; attrValue == nil {
+		return nil, &u.Error{Type: u.ErrNotFound,
 			Message: "Parent site has no temperatureUnit in attributes"}
 	} else {
-		return tempUnit.(string), nil
+		return map[string]any{attribute: attrValue}, nil
 	}
 }
 
