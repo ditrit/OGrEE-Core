@@ -45,5 +45,5 @@ jobs:
         reporter: java-junit                 # Format of test results
     - uses: actions/upload-artifact@v3
       with:
-        name: coverage
+        name: coverage_cli
         path: ./CLI/coverage_cli.out
