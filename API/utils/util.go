@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"flag"
 	"log"
 	"net/http"
 	"net/url"
@@ -160,6 +161,9 @@ func RespondWithError(w http.ResponseWriter, err *Error) {
 }
 
 func ErrLog(message, funcname, details string, r *http.Request) {
+	if flag.Lookup("test.v") != nil {
+		return
+	}
 	f, err := os.OpenFile("resources/debug.log",
 		os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {

@@ -151,7 +151,7 @@ func (controller Controller) ObjectUrlGeneric(pathStr string, depth int, filters
 	return url.String(), nil
 }
 
-func GetSlot(rack map[string]any, location string) (map[string]any, error) {
+func (controller Controller) GetSlot(rack map[string]any, location string) (map[string]any, error) {
 	templateAny, ok := rack["attributes"].(map[string]any)["template"]
 	if !ok {
 		return nil, nil
@@ -160,7 +160,7 @@ func GetSlot(rack map[string]any, location string) (map[string]any, error) {
 	if template == "" {
 		return nil, nil
 	}
-	resp, err := API.Request("GET", "/api/obj-templates/"+template, nil, http.StatusOK)
+	resp, err := controller.API.Request("GET", "/api/obj-templates/"+template, nil, http.StatusOK)
 	if err != nil {
 		return nil, err
 	}
@@ -177,8 +177,8 @@ func GetSlot(rack map[string]any, location string) (map[string]any, error) {
 	return nil, fmt.Errorf("the slot %s does not exist", location)
 }
 
-func UnsetAttribute(path string, attr string) error {
-	obj, err := C.GetObject(path)
+func (controller Controller) UnsetAttribute(path string, attr string) error {
+	obj, err := controller.GetObject(path)
 	if err != nil {
 		return err
 	}
@@ -190,16 +190,16 @@ func UnsetAttribute(path string, attr string) error {
 		return fmt.Errorf("object has no attributes")
 	}
 	delete(attributes, attr)
-	url, err := C.ObjectUrl(path, 0)
+	url, err := controller.ObjectUrl(path, 0)
 	if err != nil {
 		return err
 	}
-	_, err = API.Request("PUT", url, obj, http.StatusOK)
+	_, err = controller.API.Request("PUT", url, obj, http.StatusOK)
 	return err
 }
 
 // Specific update for deleting elements in an array of an obj
-func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
+func (controller Controller) UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
 	var arr []interface{}
 
 	//Check for valid idx
@@ -209,7 +209,7 @@ func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
 	}
 
 	//Get the object
-	obj, err := C.GetObject(Path)
+	obj, err := controller.GetObject(Path)
 	if err != nil {
 		return nil, err
 	}
@@ -266,12 +266,12 @@ func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
 		obj[attr] = arr
 	}
 
-	URL, err := C.ObjectUrl(Path, 0)
+	URL, err := controller.ObjectUrl(Path, 0)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = API.Request("PUT", URL, obj, http.StatusOK)
+	_, err = controller.API.Request("PUT", URL, obj, http.StatusOK)
 	if err != nil {
 		return nil, err
 	}
@@ -370,8 +370,8 @@ func Env(userVars, userFuncs map[string]interface{}) {
 	}
 }
 
-func GetByAttr(path string, u interface{}) error {
-	obj, err := C.GetObjectWithChildren(path, 1)
+func (controller Controller) GetByAttr(path string, u interface{}) error {
+	obj, err := controller.GetObjectWithChildren(path, 1)
 	if err != nil {
 		return err
 	}
@@ -475,28 +475,28 @@ func Disconnect3D() {
 	Ogree3D.Disconnect()
 }
 
-func UIDelay(time float64) error {
+func (controller Controller) UIDelay(time float64) error {
 	subdata := map[string]interface{}{"command": "delay", "data": time}
 	data := map[string]interface{}{"type": "ui", "data": subdata}
 	if State.DebugLvl > WARNING {
 		Disp(data)
 	}
 
-	return Ogree3D.Inform("HandleUI", -1, data)
+	return controller.Ogree3D.Inform("HandleUI", -1, data)
 }
 
-func UIToggle(feature string, enable bool) error {
+func (controller Controller) UIToggle(feature string, enable bool) error {
 	subdata := map[string]interface{}{"command": feature, "data": enable}
 	data := map[string]interface{}{"type": "ui", "data": subdata}
 	if State.DebugLvl > WARNING {
 		Disp(data)
 	}
 
-	return Ogree3D.Inform("HandleUI", -1, data)
+	return controller.Ogree3D.Inform("HandleUI", -1, data)
 }
 
-func UIHighlight(path string) error {
-	obj, err := C.GetObject(path)
+func (controller Controller) UIHighlight(path string) error {
+	obj, err := controller.GetObject(path)
 	if err != nil {
 		return err
 	}
@@ -507,20 +507,20 @@ func UIHighlight(path string) error {
 		Disp(data)
 	}
 
-	return Ogree3D.Inform("HandleUI", -1, data)
+	return controller.Ogree3D.Inform("HandleUI", -1, data)
 }
 
-func UIClearCache() error {
+func (controller Controller) UIClearCache() error {
 	subdata := map[string]interface{}{"command": "clearcache", "data": ""}
 	data := map[string]interface{}{"type": "ui", "data": subdata}
 	if State.DebugLvl > WARNING {
 		Disp(data)
 	}
 
-	return Ogree3D.Inform("HandleUI", -1, data)
+	return controller.Ogree3D.Inform("HandleUI", -1, data)
 }
 
-func CameraMove(command string, position []float64, rotation []float64) error {
+func (controller Controller) CameraMove(command string, position []float64, rotation []float64) error {
 	subdata := map[string]interface{}{"command": command}
 	subdata["position"] = map[string]interface{}{"x": position[0], "y": position[1], "z": position[2]}
 	subdata["rotation"] = map[string]interface{}{"x": rotation[0], "y": rotation[1]}
@@ -529,10 +529,10 @@ func CameraMove(command string, position []float64, rotation []float64) error {
 		Disp(data)
 	}
 
-	return Ogree3D.Inform("HandleUI", -1, data)
+	return controller.Ogree3D.Inform("HandleUI", -1, data)
 }
 
-func CameraWait(time float64) error {
+func (controller Controller) CameraWait(time float64) error {
 	subdata := map[string]interface{}{"command": "wait"}
 	subdata["position"] = map[string]interface{}{"x": 0, "y": 0, "z": 0}
 	subdata["rotation"] = map[string]interface{}{"x": 999, "y": time}
@@ -541,13 +541,13 @@ func CameraWait(time float64) error {
 		Disp(data)
 	}
 
-	return Ogree3D.Inform("HandleUI", -1, data)
+	return controller.Ogree3D.Inform("HandleUI", -1, data)
 }
 
-func FocusUI(path string) error {
+func (controller Controller) FocusUI(path string) error {
 	var id string
 	if path != "" {
-		obj, err := C.GetObject(path)
+		obj, err := controller.GetObject(path)
 		if err != nil {
 			return err
 		}
@@ -564,13 +564,13 @@ func FocusUI(path string) error {
 	}
 
 	data := map[string]interface{}{"type": "focus", "data": id}
-	err := Ogree3D.Inform("FocusUI", -1, data)
+	err := controller.Ogree3D.Inform("FocusUI", -1, data)
 	if err != nil {
 		return err
 	}
 
 	if path != "" {
-		return C.CD(path)
+		return controller.CD(path)
 	} else {
 		fmt.Println("Focus is now empty")
 	}
@@ -578,12 +578,12 @@ func FocusUI(path string) error {
 	return nil
 }
 
-func LinkObject(source string, destination string, attrs []string, values []any, slots []string) error {
-	sourceUrl, err := C.ObjectUrl(source, 0)
+func (controller Controller) LinkObject(source string, destination string, attrs []string, values []any, slots []string) error {
+	sourceUrl, err := controller.ObjectUrl(source, 0)
 	if err != nil {
 		return err
 	}
-	destPath, err := C.SplitPath(destination)
+	destPath, err := controller.SplitPath(destination)
 	if err != nil {
 		return err
 	}
@@ -599,24 +599,24 @@ func LinkObject(source string, destination string, attrs []string, values []any,
 		payload["slot"] = slots
 	}
 
-	_, err = API.Request("PATCH", sourceUrl+"/link", payload, http.StatusOK)
+	_, err = controller.API.Request("PATCH", sourceUrl+"/link", payload, http.StatusOK)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func UnlinkObject(path string) error {
-	sourceUrl, err := C.ObjectUrl(path, 0)
+func (controller Controller) UnlinkObject(path string) error {
+	sourceUrl, err := controller.ObjectUrl(path, 0)
 	if err != nil {
 		return err
 	}
-	_, err = API.Request("PATCH", sourceUrl+"/unlink", nil, http.StatusOK)
+	_, err = controller.API.Request("PATCH", sourceUrl+"/unlink", nil, http.StatusOK)
 	return err
 }
 
-func IsEntityDrawable(path string) (bool, error) {
-	obj, err := C.GetObject(path)
+func (controller Controller) IsEntityDrawable(path string) (bool, error) {
+	obj, err := controller.GetObject(path)
 	if err != nil {
 		return false, err
 	}
@@ -657,8 +657,8 @@ func IsCategoryAttrDrawable(category string, attr string) bool {
 	}
 }
 
-func IsAttrDrawable(path string, attr string) (bool, error) {
-	obj, err := C.GetObject(path)
+func (controller Controller) IsAttrDrawable(path string, attr string) (bool, error) {
+	obj, err := controller.GetObject(path)
 	if err != nil {
 		return false, err
 	}
@@ -717,9 +717,9 @@ func randPassword(n int) string {
 	return string(b)
 }
 
-func CreateUser(email string, role string, domain string) error {
+func (controller Controller) CreateUser(email string, role string, domain string) error {
 	password := randPassword(14)
-	response, err := API.Request(
+	response, err := controller.API.Request(
 		"POST",
 		"/api/users",
 		map[string]any{
@@ -739,8 +739,8 @@ func CreateUser(email string, role string, domain string) error {
 	return nil
 }
 
-func AddRole(email string, role string, domain string) error {
-	response, err := API.Request("GET", "/api/users", nil, http.StatusOK)
+func (controller Controller) AddRole(email string, role string, domain string) error {
+	response, err := controller.API.Request("GET", "/api/users", nil, http.StatusOK)
 	if err != nil {
 		return err
 	}
@@ -764,7 +764,7 @@ func AddRole(email string, role string, domain string) error {
 	if userID == "" {
 		return fmt.Errorf("user not found")
 	}
-	response, err = API.Request("PATCH", fmt.Sprintf("/api/users/%s", userID),
+	response, err = controller.API.Request("PATCH", fmt.Sprintf("/api/users/%s", userID),
 		map[string]any{
 			"roles": map[string]any{
 				domain: role,

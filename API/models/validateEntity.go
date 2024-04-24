@@ -386,7 +386,7 @@ func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 			for _, entStr := range entities {
 				if entStr != u.EntityToString(u.GROUP) {
 					// Get objects
-					entData, err := GetManyObjects(entStr, bson.M{"id": t["id"]}, u.RequestFilters{}, nil, nil)
+					entData, err := GetManyObjects(entStr, bson.M{"id": t["id"]}, u.RequestFilters{}, "", nil)
 					if err != nil {
 						err.Message = "Error while check id unicity at " + entStr + ":" + err.Message
 						return err
@@ -403,7 +403,7 @@ func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 				idPattern := primitive.Regex{Pattern: "^" + t["parentId"].(string) +
 					"(." + u.NAME_REGEX + "){1}$", Options: ""} // find siblings
 				if siblings, err := GetManyObjects(u.EntityToString(u.DEVICE), bson.M{"id": idPattern},
-					u.RequestFilters{}, nil, nil); err != nil {
+					u.RequestFilters{}, "", nil); err != nil {
 					return err
 				} else {
 					for _, obj := range siblings {

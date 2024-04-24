@@ -23,7 +23,7 @@ import (
 //   in: query
 //   description: 'Email of the user whose projects are being requested.
 //   Example: /api/projects?user=user@test.com'
-//   required: false
+//   required: true
 //   type: string
 //   default: user@test.com
 // responses:

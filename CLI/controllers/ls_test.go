@@ -108,13 +108,7 @@ func TestLsWithComplexFilters(t *testing.T) {
 		mockAPI,
 		"id=BASIC.A.R1.%2A&namespace=physical.hierarchy",
 		map[string]any{
-			"$or": []map[string]any{
-				{"category": "corridor"},
-				{"$and": []map[string]any{
-					{"category": "rack"},
-					{"name": map[string]any{"$not": "A01"}},
-				}},
-			},
+			"filter": "(category=corridor) | (category=rack & name!=A01) ",
 		},
 		[]any{corridor, rack2},
 	)

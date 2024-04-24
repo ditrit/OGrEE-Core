@@ -78,6 +78,8 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 										res = int((val / 1000) / RACKUNIT)
 									} else if val, ok := sizeInf[2].(int); ok {
 										res = int((float64(val) / 1000) / RACKUNIT)
+									} else {
+										return errors.New("invalid size vector on given template")
 									}
 									attr["sizeU"] = res
 								}
@@ -156,6 +158,7 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 			}
 		} else {
 			println("Warning, invalid size value in template.")
+			return errors.New("invalid size vector on given template")
 		}
 	} else {
 		//Serialise size and posXY if given

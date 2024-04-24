@@ -141,6 +141,38 @@ func TestErrorValidateJsonSchema(t *testing.T) {
 	}
 }
 
+func TestSlotStrToSliceError(t *testing.T) {
+	attributes := map[string]any{
+		"slot": "",
+	}
+
+	_, err := slotStrToSlice(attributes)
+	if err == nil {
+		t.Error("Slot with lenght less than 3 should return error")
+	}
+
+	attributes["slot"] = "slot]"
+	_, err = slotStrToSlice(attributes)
+	if err == nil {
+		t.Error("Slot should start with [")
+	}
+
+	attributes["slot"] = "[slot"
+	_, err = slotStrToSlice(attributes)
+	if err == nil {
+		t.Error("Slot should end with ]")
+	}
+
+	attributes["slot"] = "[1,2]"
+	slot, err := slotStrToSlice(attributes)
+	if err != nil {
+		t.Error("There should be no error")
+	}
+	if len(slot) != 2 {
+		t.Error("There should be 2 elements in the list")
+	}
+}
+
 // helper functions
 func contains(slice []string, elem string) bool {
 	for _, e := range slice {

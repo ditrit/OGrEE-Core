@@ -478,14 +478,6 @@ class _ObjectPopupState extends State<ObjectPopup> {
                 // layers
                 _objCategory = LogCategories.layer.name;
                 objData = value;
-                objDataAttrs = Map<String, String>.from(objData["filters"]);
-                for (var attr in objDataAttrs.entries) {
-                  // add filters
-                  customAttributesRows.add(CustomAttrRow(
-                      customAttributesRows.length,
-                      givenAttrName: attr.key,
-                      givenAttrValue: attr.value));
-                }
                 if (objData["applicability"].toString().endsWith(".**.*")) {
                   objData["applicability"] = objData["applicability"]
                       .toString()
@@ -840,6 +832,20 @@ class _ObjectPopupState extends State<ObjectPopup> {
 
   getLayerForm() {
     final localeMsg = AppLocalizations.of(context)!;
+    checkBoxWrapper(Checkbox checkbox, String text) => Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            SizedBox(height: 24, width: 24, child: checkbox),
+            const SizedBox(width: 3),
+            Text(
+              text,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.black,
+              ),
+            ),
+          ],
+        );
     return ListView(padding: EdgeInsets.zero, children: [
       CustomFormField(
           save: (newValue) => objData["slug"] = newValue,
@@ -850,7 +856,9 @@ class _ObjectPopupState extends State<ObjectPopup> {
           save: (newValue) => objData["applicability"] = newValue,
           label: localeMsg.applicability,
           icon: Icons.edit,
+          tipStr: localeMsg.applicabilityTooltip,
           initialValue: objData["applicability"]),
+      const SizedBox(height: 3),
       Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
         Text(
           localeMsg.applyAlso,
@@ -859,75 +867,33 @@ class _ObjectPopupState extends State<ObjectPopup> {
             color: Colors.black,
           ),
         ),
-        Wrap(
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            SizedBox(
-              height: 24,
-              width: 24,
-              child: Checkbox(
-                value: _applyDirectChild,
-                onChanged: _applyAllChild
-                    ? null
-                    : (bool? value) =>
-                        setState(() => _applyDirectChild = value!),
-              ),
-            ),
-            const SizedBox(width: 3),
-            Text(
-              localeMsg.directChildren,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.black,
-              ),
-            ),
-          ],
+        checkBoxWrapper(
+          Checkbox(
+            value: _applyDirectChild,
+            onChanged: _applyAllChild
+                ? null
+                : (bool? value) => setState(() => _applyDirectChild = value!),
+          ),
+          localeMsg.directChildren,
         ),
-        Wrap(
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            SizedBox(
-              height: 24,
-              width: 24,
-              child: Checkbox(
-                value: _applyAllChild,
-                onChanged: (bool? value) => setState(() {
-                  _applyAllChild = value!;
-                  _applyDirectChild = value!;
-                }),
-              ),
-            ),
-            const SizedBox(width: 3),
-            Text(
-              localeMsg.allChildren,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.black,
-              ),
-            ),
-          ],
+        checkBoxWrapper(
+          Checkbox(
+            value: _applyAllChild,
+            onChanged: (bool? value) => setState(() {
+              _applyAllChild = value!;
+              _applyDirectChild = value;
+            }),
+          ),
+          localeMsg.allChildren,
         ),
       ]),
-      Padding(
-          padding: const EdgeInsets.only(top: 10.0, left: 6, bottom: 6),
-          child: Text(localeMsg.filtersTwo)),
-      Padding(
-        padding: const EdgeInsets.only(left: 4),
-        child: Column(children: customAttributesRows),
-      ),
-      Padding(
-        padding: const EdgeInsets.only(left: 6),
-        child: Align(
-          alignment: Alignment.bottomLeft,
-          child: TextButton.icon(
-              onPressed: () => setState(() {
-                    customAttributesRows
-                        .add(CustomAttrRow(customAttributesRows.length));
-                  }),
-              icon: const Icon(Icons.add),
-              label: Text(localeMsg.filter)),
-        ),
-      ),
+      const SizedBox(height: 10),
+      CustomFormField(
+          save: (newValue) => objData["filter"] = newValue,
+          label: localeMsg.filter,
+          icon: Icons.filter_alt,
+          tipStr: localeMsg.filterLayerTooltip,
+          initialValue: objData["filter"]),
     ]);
   }
 
@@ -1030,7 +996,6 @@ class _ObjectPopupState extends State<ObjectPopup> {
       _formKey.currentState!.save();
 
       if (_objCategory == LogCategories.layer.name) {
-        objData["filters"] = objDataAttrs;
         if (_applyAllChild) {
           objData["applicability"] = objData["applicability"] + ".**.*";
         } else if (_applyDirectChild) {
@@ -1053,7 +1018,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
           showSnackBar(errorMessenger, exception.toString(),
               isError: true,
               copyTextTap: exception.toString(),
-              duration: Duration(seconds: 30));
+              duration: const Duration(seconds: 30));
       }
     }
   }
@@ -1064,7 +1029,6 @@ class _ObjectPopupState extends State<ObjectPopup> {
       _formKey.currentState!.save();
 
       if (_objCategory == LogCategories.layer.name) {
-        objData["filters"] = objDataAttrs;
         if (_applyAllChild) {
           objData["applicability"] = objData["applicability"] + ".**.*";
         } else if (_applyDirectChild) {

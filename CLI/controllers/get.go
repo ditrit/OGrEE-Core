@@ -37,7 +37,7 @@ func (controller Controller) GetObjectsWildcard(pathStr string, filters map[stri
 	}
 
 	if complexFilter, ok := filters["filter"]; ok {
-		body := utils.ComplexFilterToMap(complexFilter)
+		body := map[string]any{"filter": complexFilter}
 		method = "POST "
 		resp, err = controller.API.Request(http.MethodPost, url, body, http.StatusOK)
 	} else {

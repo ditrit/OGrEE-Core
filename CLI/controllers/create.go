@@ -42,7 +42,6 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 		l.GetWarningLogger().Println("Invalid path name provided for OCLI object creation")
 		return fmt.Errorf("Invalid path name provided for OCLI object creation")
 	}
-
 	data["name"] = name
 	data["category"] = models.EntityToString(ent)
 	data["description"] = ""
@@ -289,7 +288,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 				if len(slots) != 1 {
 					return fmt.Errorf("Invalid device syntax: only one slot can be provided if no template")
 				}
-				slot, err = GetSlot(parent, slots[0])
+				slot, err = C.GetSlot(parent, slots[0])
 				if err != nil {
 					return err
 				}
@@ -342,8 +341,8 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 	return controller.PostObj(ent, data["category"].(string), data, path)
 }
 
-func CreateTag(slug, color string) error {
-	return C.PostObj(models.TAG, models.EntityToString(models.TAG), map[string]any{
+func (controller Controller) CreateTag(slug, color string) error {
+	return controller.PostObj(models.TAG, models.EntityToString(models.TAG), map[string]any{
 		"slug":        slug,
 		"description": slug, // the description is initially set with the value of the slug
 		"color":       color,
