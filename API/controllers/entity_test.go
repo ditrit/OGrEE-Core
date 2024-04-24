@@ -654,13 +654,13 @@ func TestValidateEntityNonExistentDomain(t *testing.T) {
 	requestBody := []byte(`{
 		"attributes": {
 			"floorUnit": "t",
-			"height": "2.8",
+			"height": 2.8,
 			"heightUnit": "m",
 			"axisOrientation": "+x+y",
-			"rotation": "-90",
-			"posXY": "[0, 0]",
+			"rotation": -90,
+			"posXY": [0, 0],
 			"posXYUnit": "m",
-			"size": "[-13, -2.9]",
+			"size": [-13, -2.9],
 			"sizeUnit": "m",
 			"template": ""
 		},
@@ -685,13 +685,13 @@ func TestValidateEntityInvalidDomain(t *testing.T) {
 	requestBody := []byte(`{
 		"attributes": {
 			"floorUnit": "t",
-			"height": "2.8",
+			"height": 2.8,
 			"heightUnit": "m",
 			"axisOrientation": "+x+y",
-			"rotation": "-90",
-			"posXY": "[0, 0]",
+			"rotation": -90,
+			"posXY": [0, 0],
 			"posXYUnit": "m",
-			"size": "[-13, -2.9]",
+			"size": [-13, -2.9],
 			"sizeUnit": "m",
 			"template": ""
 		},
@@ -716,13 +716,13 @@ func TestValidateValidRoomEntity(t *testing.T) {
 	requestBody := []byte(`{
 		"attributes": {
 			"floorUnit": "t",
-			"height": "2.8",
+			"height": 2.8,
 			"heightUnit": "m",
 			"axisOrientation": "+x+y",
-			"rotation": "-90",
-			"posXY": "[0, 0]",
+			"rotation": -90,
+			"posXY": [0, 0],
 			"posXYUnit": "m",
-			"size": "[-13, -2.9]",
+			"size": [-13, -2.9],
 			"sizeUnit": "m",
 			"template": ""
 		},
@@ -747,13 +747,13 @@ func TestErrorValidateValidRoomEntityNotEnoughPermissions(t *testing.T) {
 	requestBody := []byte(`{
 		"attributes": {
 			"floorUnit": "t",
-			"height": "2.8",
+			"height": 2.8,
 			"heightUnit": "m",
 			"axisOrientation": "+x+y",
-			"rotation": "-90",
-			"posXY": "[0, 0]",
+			"rotation": -90,
+			"posXY": [0, 0],
 			"posXYUnit": "m",
-			"size": "[-13, -2.9]",
+			"size": [-13, -2.9],
 			"sizeUnit": "m",
 			"template": ""
 		},

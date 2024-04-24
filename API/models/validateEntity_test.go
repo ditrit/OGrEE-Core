@@ -143,28 +143,16 @@ func TestErrorValidateJsonSchema(t *testing.T) {
 
 func TestSlotStrToSliceError(t *testing.T) {
 	attributes := map[string]any{
-		"slot": "",
+		"slot": []any{},
 	}
 
-	_, err := slotStrToSlice(attributes)
+	_, err := slotToValidSlice(attributes)
 	if err == nil {
-		t.Error("Slot with lenght less than 3 should return error")
+		t.Error("Empty slot vector should return error")
 	}
 
-	attributes["slot"] = "slot]"
-	_, err = slotStrToSlice(attributes)
-	if err == nil {
-		t.Error("Slot should start with [")
-	}
-
-	attributes["slot"] = "[slot"
-	_, err = slotStrToSlice(attributes)
-	if err == nil {
-		t.Error("Slot should end with ]")
-	}
-
-	attributes["slot"] = "[1,2]"
-	slot, err := slotStrToSlice(attributes)
+	attributes["slot"] = []any{"1", "2"}
+	slot, err := slotToValidSlice(attributes)
 	if err != nil {
 		t.Error("There should be no error")
 	}
