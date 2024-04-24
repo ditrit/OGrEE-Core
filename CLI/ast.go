@@ -396,6 +396,7 @@ type getObjectNode struct {
 	path      *pathNode
 	filters   map[string]node
 	recursive recursiveArgs
+	attrs     []string
 }
 
 func (n *getObjectNode) execute() (interface{}, error) {
@@ -433,8 +434,21 @@ func (n *getObjectNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	for _, obj := range objs {
-		views.Object(path, obj)
+	if len(n.attrs) > 0 {
+		var relativePath *views.RelativePathArgs
+		if n.recursive.isRecursive {
+			relativePath = &views.RelativePathArgs{
+				FromPath: path,
+			}
+		}
+		toPrint, err := views.LsWithFormat(objs, "", relativePath, n.attrs)
+		if err == nil {
+			fmt.Print(toPrint)
+		}
+	} else {
+		for _, obj := range objs {
+			views.Object(path, obj)
+		}
 	}
 
 	return objs, nil

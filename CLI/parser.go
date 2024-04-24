@@ -744,6 +744,15 @@ func (p *parser) parseGet() node {
 	_, isRecursive := args["r"]
 
 	path := p.parsePath("")
+	attrs := []string{}
+	if p.parseExact(":") {
+		for {
+			attrs = append(attrs, p.parseComplexWord("attribute"))
+			if !p.parseExact(",") {
+				break
+			}
+		}
+	}
 	p.skipWhiteSpaces()
 
 	var filters map[string]node
@@ -761,6 +770,7 @@ func (p *parser) parseGet() node {
 			minDepth:    args["m"],
 			maxDepth:    args["M"],
 		},
+		attrs: attrs,
 	}
 }
 
