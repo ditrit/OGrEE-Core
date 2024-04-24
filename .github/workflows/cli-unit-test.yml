@@ -23,6 +23,9 @@ jobs:
 
     - name: Checkout code
       uses: actions/checkout@v4
+
+    - name: Install gotestsum
+      run: go install gotest.tools/gotestsum@latest
       
     - name: Build
       run: make
