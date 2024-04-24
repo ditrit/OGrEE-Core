@@ -88,7 +88,7 @@ func TestNewStackTraceError(t *testing.T) {
 }
 
 func TestLoadFile(t *testing.T) {
-	_, _, deferFunction := setMainEnvironmentMock(t)
+	_, _, _, deferFunction := setMainEnvironmentMock(t)
 	defer deferFunction()
 
 	basePath := t.TempDir() // temporary directory that will be deleted after the tests have finished
@@ -112,7 +112,7 @@ func TestLoadFile(t *testing.T) {
 }
 
 func TestLoadFileParseError(t *testing.T) {
-	_, _, deferFunction := setMainEnvironmentMock(t)
+	_, _, _, deferFunction := setMainEnvironmentMock(t)
 	defer deferFunction()
 
 	basePath := t.TempDir() // temporary directory that will be deleted after the tests have finished
@@ -135,7 +135,7 @@ func TestLoadFileParseError(t *testing.T) {
 }
 
 func TestLoadFileStackError(t *testing.T) {
-	_, _, deferFunction := setMainEnvironmentMock(t)
+	_, _, _, deferFunction := setMainEnvironmentMock(t)
 	defer deferFunction()
 
 	basePath := t.TempDir() // temporary directory that will be deleted after the tests have finished

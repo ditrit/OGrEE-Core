@@ -28,7 +28,7 @@ func TestIfNodeExecute(t *testing.T) {
 }
 
 func TestWhileNodeExecute(t *testing.T) {
-	_, _, deferFunction := setMainEnvironmentMock(t)
+	_, _, _, deferFunction := setMainEnvironmentMock(t)
 	defer deferFunction()
 	variable := &assignNode{"i", &valueNode{"0"}}
 	variable.execute()
@@ -45,7 +45,7 @@ func TestWhileNodeExecute(t *testing.T) {
 }
 
 func TestForNodeExecute(t *testing.T) {
-	_, _, deferFunction := setMainEnvironmentMock(t)
+	_, _, _, deferFunction := setMainEnvironmentMock(t)
 	defer deferFunction()
 
 	// "for i=0;i<10;i=i+1 { print $i }"
@@ -86,7 +86,7 @@ func TestForNodeExecute(t *testing.T) {
 // }
 
 func TestForArrayNodeExecuteError(t *testing.T) {
-	_, _, deferFunction := setMainEnvironmentMock(t)
+	_, _, _, deferFunction := setMainEnvironmentMock(t)
 	defer deferFunction()
 
 	// "for i in 2 { print $i }"
@@ -102,7 +102,7 @@ func TestForArrayNodeExecuteError(t *testing.T) {
 }
 
 func TestForRangeNodeExecute(t *testing.T) {
-	_, _, deferFunction := setMainEnvironmentMock(t)
+	_, _, _, deferFunction := setMainEnvironmentMock(t)
 	defer deferFunction()
 
 	// "for i in 0..3 { print $i }"
@@ -121,7 +121,7 @@ func TestForRangeNodeExecute(t *testing.T) {
 }
 
 func TestForRangeNodeExecuteError(t *testing.T) {
-	_, _, deferFunction := setMainEnvironmentMock(t)
+	_, _, _, deferFunction := setMainEnvironmentMock(t)
 	defer deferFunction()
 
 	// Start value higher than end value

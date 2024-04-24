@@ -3,17 +3,25 @@ package main
 import (
 	"cli/controllers"
 	mocks "cli/mocks/controllers"
+	"cli/models"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/exp/maps"
 )
 
-func setMainEnvironmentMock(t *testing.T) (*mocks.APIPort, *mocks.ClockPort, func()) {
+func setMainEnvironmentMock(t *testing.T) (*mocks.APIPort, *mocks.Ogree3DPort, *mocks.ClockPort, func()) {
 	oldDynamicSymbolTable := controllers.State.DynamicSymbolTable
 	oldFuncTable := controllers.State.FuncTable
+	oldClipboard := controllers.State.ClipBoard
+	oldPrevPath := controllers.State.PrevPath
+	oldCurrPath := controllers.State.CurrPath
+	oldDrawableObjs := controllers.State.DrawableObjs
 	controllers.State.DynamicSymbolTable = map[string]any{}
 	controllers.State.FuncTable = map[string]any{}
+	controllers.State.ClipBoard = []string{}
+	controllers.State.DrawableObjs = []int{}
 
 	mockAPI := mocks.NewAPIPort(t)
 	mockOgree3D := mocks.NewOgree3DPort(t)
@@ -33,8 +41,12 @@ func setMainEnvironmentMock(t *testing.T) (*mocks.APIPort, *mocks.ClockPort, fun
 		controllers.State.FuncTable = oldFuncTable
 		controllers.C = oldControllerValue
 		controllers.State.Hierarchy = oldHierarchy
+		controllers.State.ClipBoard = oldClipboard
+		controllers.State.DrawableObjs = oldDrawableObjs
+		controllers.State.PrevPath = oldPrevPath
+		controllers.State.CurrPath = oldCurrPath
 	}
-	return mockAPI, mockClock, deferFunction
+	return mockAPI, mockOgree3D, mockClock, deferFunction
 }
 
 func TestValueNodeExecute(t *testing.T) {
@@ -46,7 +58,7 @@ func TestValueNodeExecute(t *testing.T) {
 }
 
 func TestAstExecute(t *testing.T) {
-	_, _, deferFunction := setMainEnvironmentMock(t)
+	_, _, _, deferFunction := setMainEnvironmentMock(t)
 	defer deferFunction()
 
 	commands := ast{
@@ -67,7 +79,7 @@ func TestAstExecute(t *testing.T) {
 }
 
 func TestFuncDefNodeExecute(t *testing.T) {
-	_, _, deferFunction := setMainEnvironmentMock(t)
+	_, _, _, deferFunction := setMainEnvironmentMock(t)
 	defer deferFunction()
 
 	// alias my_function { print $i }
@@ -86,7 +98,7 @@ func TestFuncDefNodeExecute(t *testing.T) {
 }
 
 func TestFuncCallNodeExecute(t *testing.T) {
-	_, _, deferFunction := setMainEnvironmentMock(t)
+	_, _, _, deferFunction := setMainEnvironmentMock(t)
 	defer deferFunction()
 
 	// we define the function
@@ -112,7 +124,7 @@ func TestFuncCallNodeExecute(t *testing.T) {
 }
 
 func TestFuncCallNodeExecuteUndefinedFunction(t *testing.T) {
-	_, _, deferFunction := setMainEnvironmentMock(t)
+	_, _, _, deferFunction := setMainEnvironmentMock(t)
 	defer deferFunction()
 
 	functionName := "my_function"
@@ -133,7 +145,7 @@ func TestArrNodeExecute(t *testing.T) {
 }
 
 func TestLenNodeExecute(t *testing.T) {
-	_, _, deferFunction := setMainEnvironmentMock(t)
+	_, _, _, deferFunction := setMainEnvironmentMock(t)
 	defer deferFunction()
 
 	controllers.State.DynamicSymbolTable["myArray"] = []float64{1, 2, 3, 4}
@@ -151,7 +163,7 @@ func TestLenNodeExecute(t *testing.T) {
 }
 
 func TestCdNodeExecute(t *testing.T) {
-	mockAPI, _, deferFunction := setMainEnvironmentMock(t)
+	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
 	defer deferFunction()
 
 	mockAPI.On(
@@ -179,7 +191,7 @@ func TestCdNodeExecute(t *testing.T) {
 }
 
 func TestLsNodeExecute(t *testing.T) {
-	mockAPI, mockClock, deferFunction := setMainEnvironmentMock(t)
+	mockAPI, _, mockClock, deferFunction := setMainEnvironmentMock(t)
 	defer deferFunction()
 
 	mockAPI.On(
@@ -223,7 +235,7 @@ func TestLsNodeExecute(t *testing.T) {
 }
 
 func TestGetUNodeExecute(t *testing.T) {
-	mockAPI, _, deferFunction := setMainEnvironmentMock(t)
+	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
 	defer deferFunction()
 
 	mockAPI.On(
@@ -265,7 +277,7 @@ func TestGetUNodeExecute(t *testing.T) {
 }
 
 func TestGetSlotNodeExecute(t *testing.T) {
-	mockAPI, _, deferFunction := setMainEnvironmentMock(t)
+	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
 	defer deferFunction()
 
 	mockAPI.On(
@@ -326,4 +338,668 @@ func TestPrintNodeExecute(t *testing.T) {
 
 	assert.Nil(t, value)
 	assert.Nil(t, err)
+}
+
+func TestDeleteObjNodeExecute(t *testing.T) {
+	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
+	defer deferFunction()
+	mockAPI.On(
+		"Request", "DELETE",
+		"/api/objects?id=site.building.room.rack&namespace=physical.hierarchy",
+		"mock.Anything", 200,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"data": []any{
+					map[string]any{
+						"category": "rack",
+						"children": []any{},
+						"id":       "site.building.room.rack",
+						"name":     "rack",
+						"parentId": "site.building.room",
+					},
+				},
+			},
+		}, nil,
+	).Once()
+
+	executable := deleteObjNode{&pathNode{path: &valueNode{"/Physical/site/building/room/rack"}}}
+	value, err := executable.execute()
+
+	assert.Nil(t, value)
+	assert.Nil(t, err)
+}
+
+func TestDeleteSelectionNodeExecute(t *testing.T) {
+	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
+	defer deferFunction()
+	controllers.State.ClipBoard = []string{"/Physical/site/building/room/rack", "/Physical/site/building/room2/rack2"}
+
+	mockAPI.On(
+		"Request", "DELETE",
+		"/api/objects?id=site.building.room.rack&namespace=physical.hierarchy",
+		"mock.Anything", 200,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"data": []any{
+					map[string]any{
+						"category": "rack",
+						"children": []any{},
+						"id":       "site.building.room.rack",
+						"name":     "rack",
+						"parentId": "site.building.room",
+					},
+				},
+			},
+		}, nil,
+	).Once()
+
+	mockAPI.On(
+		"Request", "DELETE",
+		"/api/objects?id=site.building.room2.rack2&namespace=physical.hierarchy",
+		"mock.Anything", 200,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"data": []any{
+					map[string]any{
+						"category": "rack",
+						"children": []any{},
+						"id":       "site.building.room2.rack2",
+						"name":     "rack2",
+						"parentId": "site.building.room2",
+					},
+				},
+			},
+		}, nil,
+	).Once()
+
+	executable := deleteSelectionNode{}
+	value, err := executable.execute()
+
+	assert.Nil(t, value)
+	assert.Nil(t, err)
+}
+
+func TestIsEntityDrawableNodeExecute(t *testing.T) {
+	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
+	defer deferFunction()
+	rack := map[string]any{
+		"category": "rack",
+		"children": []any{},
+		"id":       "site.building.room.rack",
+		"name":     "rack",
+		"parentId": "site.building.room",
+	}
+
+	mockAPI.On(
+		"Request", "GET",
+		"/api/hierarchy-objects/site.building.room.rack",
+		"mock.Anything", 200,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"data": rack,
+			},
+		}, nil,
+	).Once()
+
+	executable := isEntityDrawableNode{&pathNode{path: &valueNode{"/Physical/site/building/room/rack"}}}
+	value, err := executable.execute()
+
+	assert.False(t, value.(bool))
+	assert.Nil(t, err)
+
+	// We add the Rack to the drawable objects list
+	controllers.State.DrawableObjs = []int{models.RACK}
+	mockAPI.On(
+		"Request", "GET",
+		"/api/hierarchy-objects/site.building.room.rack",
+		"mock.Anything", 200,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"data": rack,
+			},
+		}, nil,
+	).Once()
+
+	value, err = executable.execute()
+
+	assert.True(t, value.(bool))
+	assert.Nil(t, err)
+}
+
+func TestIsAttrDrawableNodeExecute(t *testing.T) {
+	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
+	defer deferFunction()
+	rack := map[string]any{
+		"category": "rack",
+		"children": []any{},
+		"id":       "site.building.room.rack",
+		"name":     "rack",
+		"parentId": "site.building.room",
+	}
+
+	mockAPI.On(
+		"Request", "GET",
+		"/api/hierarchy-objects/site.building.room.rack",
+		"mock.Anything", 200,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"data": rack,
+			},
+		}, nil,
+	).Once()
+
+	executable := isAttrDrawableNode{&pathNode{path: &valueNode{"/Physical/site/building/room/rack"}}, "sdsdasd"}
+	value, err := executable.execute()
+
+	assert.Nil(t, err)
+	assert.True(t, value.(bool))
+}
+
+func TestGetObjectNodeExecute(t *testing.T) {
+	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
+	defer deferFunction()
+	rack := map[string]any{
+		"category": "rack",
+		"children": []any{},
+		"id":       "site.building.room.rack",
+		"name":     "rack",
+		"parentId": "site.building.room",
+	}
+
+	mockAPI.On(
+		"Request", "POST",
+		"/api/objects/search?id=%2A%2A.site.building.room&namespace=physical.hierarchy",
+		map[string]interface{}{"filter": "(category=rack) & (name=rack)"}, 200,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"data": []any{rack},
+			},
+		}, nil,
+	).Once()
+
+	executable := getObjectNode{
+		path:      &pathNode{path: &valueNode{"/Physical/site/building/room"}},
+		filters:   map[string]node{"filter": &valueNode{"(category=rack) & (name=rack)"}},
+		recursive: recursiveArgs{isRecursive: true},
+	}
+	value, err := executable.execute()
+
+	assert.Nil(t, err)
+	assert.Len(t, value, 1)
+	assert.Equal(t, rack["id"], value.([]map[string]any)[0]["id"])
+}
+
+func TestSelectObjectNodeExecuteOnePath(t *testing.T) {
+	mockAPI, mockOgree3D, _, deferFunction := setMainEnvironmentMock(t)
+	defer deferFunction()
+	rack := map[string]any{
+		"category": "rack",
+		"children": []any{},
+		"id":       "site.building.room.rack",
+		"name":     "rack",
+		"parentId": "site.building.room",
+	}
+	mockAPI.On(
+		"Request", "GET",
+		"/api/hierarchy-objects/site.building.room.rack",
+		"mock.Anything", 200,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"data": rack,
+			},
+		}, nil,
+	).Twice()
+	mockOgree3D.On(
+		"InformOptional", "SetClipBoard",
+		-1, map[string]interface{}{"data": "[\"site.building.room.rack\"]", "type": "select"},
+	).Return(nil)
+
+	executable := selectObjectNode{&pathNode{path: &valueNode{"/Physical/site/building/room/rack"}}}
+	value, err := executable.execute()
+
+	assert.Nil(t, err)
+	assert.Nil(t, value)
+	assert.Len(t, controllers.State.ClipBoard, 1)
+	assert.Equal(t, []string{"/Physical/site/building/room/rack"}, controllers.State.ClipBoard)
+}
+
+func TestSelectObjectNodeExecuteReset(t *testing.T) {
+	_, mockOgree3D, _, deferFunction := setMainEnvironmentMock(t)
+	defer deferFunction()
+	controllers.State.ClipBoard = []string{"/Physical/site/building/room/rack"}
+	mockOgree3D.On(
+		"InformOptional", "SetClipBoard",
+		-1, map[string]interface{}{"data": "[]", "type": "select"},
+	).Return(nil)
+
+	executable := selectObjectNode{&valueNode{""}}
+	value, err := executable.execute()
+
+	assert.Nil(t, err)
+	assert.Nil(t, value)
+	assert.Len(t, controllers.State.ClipBoard, 0)
+}
+
+func TestSetRoomAreas(t *testing.T) {
+	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
+	defer deferFunction()
+
+	room := map[string]any{
+		"category": "room",
+		"children": []any{},
+		"id":       "site.building.room",
+		"name":     "room",
+		"parentId": "site.building",
+	}
+	roomResponse := maps.Clone(room)
+	mockAPI.On(
+		"Request", "GET",
+		"/api/hierarchy-objects/site.building.room",
+		"mock.Anything", 200,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"data": room,
+			},
+		}, nil,
+	).Once()
+
+	roomResponse["attributes"] = map[string]any{
+		"reserved":  "[1, 2, 3, 4]",
+		"technical": "[1, 2, 3, 4]",
+	}
+	mockAPI.On(
+		"Request", "PATCH",
+		"/api/hierarchy-objects/site.building.room",
+		map[string]interface{}{"attributes": map[string]interface{}{"reserved": "[1, 2, 3, 4]", "technical": "[1, 2, 3, 4]"}},
+		200,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"data": roomResponse,
+			},
+		}, nil,
+	).Once()
+
+	reservedArea := []float64{1, 2, 3, 4}
+	technicalArea := []float64{1, 2, 3, 4}
+	value, err := setRoomAreas("/Physical/site/building/room", []any{reservedArea, technicalArea})
+
+	assert.Nil(t, err)
+	assert.NotNil(t, value)
+}
+
+func TestSetLabel(t *testing.T) {
+	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
+	defer deferFunction()
+
+	room := map[string]any{
+		"category": "rack",
+		"children": []any{},
+		"id":       "site.building.room.rack",
+		"name":     "rack",
+		"parentId": "site.building.room",
+	}
+	mockAPI.On(
+		"Request", "GET",
+		"/api/hierarchy-objects/site.building.room.rack",
+		"mock.Anything", 200,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"data": room,
+			},
+		}, nil,
+	).Once()
+	value, err := setLabel("/Physical/site/building/room/rack", []any{"myLabel"}, false)
+
+	assert.Nil(t, err)
+	assert.Nil(t, value)
+}
+
+func TestAddToStringMap(t *testing.T) {
+	newMap, replaced := addToStringMap[int]("{\"a\":3}", "b", 10)
+
+	assert.Equal(t, "{\"a\":3,\"b\":10}", newMap)
+	assert.False(t, replaced)
+
+	newMap, replaced = addToStringMap[int](newMap, "b", 15)
+	assert.Equal(t, "{\"a\":3,\"b\":15}", newMap)
+	assert.True(t, replaced)
+}
+
+func TestRemoveFromStringMap(t *testing.T) {
+	newMap, deleted := removeFromStringMap[int]("{\"a\":3,\"b\":10}", "b")
+
+	assert.Equal(t, "{\"a\":3}", newMap)
+	assert.True(t, deleted)
+
+	newMap, deleted = removeFromStringMap[int](newMap, "b")
+	assert.Equal(t, "{\"a\":3}", newMap)
+	assert.False(t, deleted)
+}
+
+func TestAddRoomSeparatorError(t *testing.T) {
+	obj, err := addRoomSeparator("/Physical/site/building/room", []any{"mySeparator"})
+
+	assert.Nil(t, obj)
+	assert.NotNil(t, err)
+	assert.ErrorContains(t, err, "4 values (name, startPos, endPos, type) expected to add a separator")
+}
+
+func TestAddRoomSeparator(t *testing.T) {
+	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
+	defer deferFunction()
+
+	room := map[string]any{
+		"category":   "room",
+		"children":   []any{},
+		"id":         "site.building.room",
+		"name":       "room",
+		"parentId":   "site.building",
+		"attributes": map[string]any{},
+	}
+	mockAPI.On(
+		"Request", "GET",
+		"/api/hierarchy-objects/site.building.room",
+		"mock.Anything", 200,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"data": room,
+			},
+		}, nil,
+	).Twice()
+
+	newAttributes := map[string]interface{}{
+		"separators": "{\"mySeparator\":{\"startPosXYm\":[1,2],\"endPosXYm\":[1,2],\"type\":\"wireframe\"}}",
+	}
+	room["attributes"] = newAttributes
+	mockAPI.On(
+		"Request", "PATCH",
+		"/api/hierarchy-objects/site.building.room",
+		map[string]interface{}{
+			"attributes": newAttributes,
+		},
+		200,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"data": room,
+			},
+		}, nil,
+	).Once()
+
+	obj, err := addRoomSeparator("/Physical/site/building/room", []any{"mySeparator", []float64{1., 2.}, []float64{1., 2.}, "wireframe"})
+
+	assert.Nil(t, err)
+	assert.NotNil(t, obj)
+
+}
+
+func TestAddRoomPillarError(t *testing.T) {
+	obj, err := addRoomPillar("/Physical/site/building/room", []any{"myPillar"})
+
+	assert.Nil(t, obj)
+	assert.NotNil(t, err)
+	assert.ErrorContains(t, err, "4 values (name, centerXY, sizeXY, rotation) expected to add a pillar")
+}
+
+func TestAddRoomPillar(t *testing.T) {
+	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
+	defer deferFunction()
+
+	room := map[string]any{
+		"category":   "room",
+		"children":   []any{},
+		"id":         "site.building.room",
+		"name":       "room",
+		"parentId":   "site.building",
+		"attributes": map[string]any{},
+	}
+	mockAPI.On(
+		"Request", "GET",
+		"/api/hierarchy-objects/site.building.room",
+		"mock.Anything", 200,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"data": room,
+			},
+		}, nil,
+	).Twice()
+
+	newAttributes := map[string]interface{}{
+		"pillars": "{\"myPillar\":{\"centerXY\":[1,2],\"sizeXY\":[1,2],\"rotation\":\"2.5\"}}",
+	}
+	room["attributes"] = newAttributes
+	mockAPI.On(
+		"Request", "PATCH",
+		"/api/hierarchy-objects/site.building.room",
+		map[string]interface{}{
+			"attributes": newAttributes,
+		},
+		200,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"data": room,
+			},
+		}, nil,
+	).Once()
+
+	obj, err := addRoomPillar("/Physical/site/building/room", []any{"myPillar", []float64{1., 2.}, []float64{1., 2.}, 2.5})
+
+	assert.Nil(t, err)
+	assert.NotNil(t, obj)
+}
+
+func TestDeleteRoomPillarOrSeparatorInvalidArgument(t *testing.T) {
+	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
+	defer deferFunction()
+
+	room := map[string]any{
+		"category":   "room",
+		"children":   []any{},
+		"id":         "site.building.room",
+		"name":       "room",
+		"parentId":   "site.building",
+		"attributes": map[string]any{},
+	}
+	mockAPI.On(
+		"Request", "GET",
+		"/api/hierarchy-objects/site.building.room",
+		"mock.Anything", 200,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"data": room,
+			},
+		}, nil,
+	).Once()
+	obj, err := deleteRoomPillarOrSeparator("/Physical/site/building/room", "other", "separator")
+
+	assert.Nil(t, obj)
+	assert.NotNil(t, err)
+	assert.ErrorContains(t, err, "\"separator\" or \"pillar\" expected")
+}
+
+func TestDeleteRoomPillarOrSeparatorSeparatorDoesNotExist(t *testing.T) {
+	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
+	defer deferFunction()
+
+	room := map[string]any{
+		"category":   "room",
+		"children":   []any{},
+		"id":         "site.building.room",
+		"name":       "room",
+		"parentId":   "site.building",
+		"attributes": map[string]any{},
+	}
+	mockAPI.On(
+		"Request", "GET",
+		"/api/hierarchy-objects/site.building.room",
+		"mock.Anything", 200,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"data": room,
+			},
+		}, nil,
+	).Once()
+	obj, err := deleteRoomPillarOrSeparator("/Physical/site/building/room", "separator", "mySeparator")
+
+	assert.Nil(t, obj)
+	assert.NotNil(t, err)
+	assert.ErrorContains(t, err, "separator mySeparator does not exist")
+}
+
+func TestDeleteRoomPillarOrSeparatorSeparator(t *testing.T) {
+	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
+	defer deferFunction()
+
+	room := map[string]any{
+		"category": "room",
+		"children": []any{},
+		"id":       "site.building.room",
+		"name":     "room",
+		"parentId": "site.building",
+		"attributes": map[string]any{
+			"separators": "{\"mySeparator\":{\"startPosXYm\":[1,2],\"endPosXYm\":[1,2],\"type\":\"wireframe\"}}",
+		},
+	}
+	updatedRoom := maps.Clone(room)
+	updatedRoom["attributes"] = map[string]any{"separators": "{}"}
+
+	mockAPI.On(
+		"Request", "GET",
+		"/api/hierarchy-objects/site.building.room",
+		"mock.Anything", 200,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"data": room,
+			},
+		}, nil,
+	).Twice()
+	mockAPI.On(
+		"Request", "PATCH",
+		"/api/hierarchy-objects/site.building.room",
+		map[string]interface{}{"attributes": map[string]interface{}{"separators": "{}"}},
+		200,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"data": updatedRoom,
+			},
+		}, nil,
+	).Once()
+	obj, err := deleteRoomPillarOrSeparator("/Physical/site/building/room", "separator", "mySeparator")
+
+	assert.Nil(t, err)
+	assert.NotNil(t, obj)
+}
+
+func TestDeleteRoomPillarOrSeparatorPillar(t *testing.T) {
+	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
+	defer deferFunction()
+
+	room := map[string]any{
+		"category": "room",
+		"children": []any{},
+		"id":       "site.building.room",
+		"name":     "room",
+		"parentId": "site.building",
+		"attributes": map[string]any{
+			"pillars": "{\"myPillar\":{\"centerXY\":[1,2],\"sizeXY\":[1,2],\"rotation\":\"2.5\"}}",
+		},
+	}
+	updatedRoom := maps.Clone(room)
+	updatedRoom["attributes"] = map[string]any{"pillars": "{}"}
+
+	mockAPI.On(
+		"Request", "GET",
+		"/api/hierarchy-objects/site.building.room",
+		"mock.Anything", 200,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"data": room,
+			},
+		}, nil,
+	).Twice()
+	mockAPI.On(
+		"Request", "PATCH",
+		"/api/hierarchy-objects/site.building.room",
+		map[string]interface{}{"attributes": map[string]interface{}{"pillars": "{}"}},
+		200,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"data": updatedRoom,
+			},
+		}, nil,
+	).Once()
+	obj, err := deleteRoomPillarOrSeparator("/Physical/site/building/room", "pillar", "myPillar")
+
+	assert.Nil(t, err)
+	assert.NotNil(t, obj)
+}
+
+func TestUpdateObjNodeExecuteUpdateDescription(t *testing.T) {
+	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
+	defer deferFunction()
+
+	room := map[string]any{
+		"category":    "room",
+		"children":    []any{},
+		"id":          "site.building.room",
+		"name":        "room",
+		"parentId":    "site.building",
+		"description": "description 1",
+	}
+
+	mockAPI.On(
+		"Request", "GET",
+		"/api/hierarchy-objects/site.building.room",
+		"mock.Anything", 200,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"data": room,
+			},
+		}, nil,
+	).Once()
+	room["description"] = "newDescription"
+	mockAPI.On(
+		"Request", "PATCH",
+		"/api/hierarchy-objects/site.building.room",
+		map[string]interface{}{"description": "newDescription"},
+		200,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"data": room,
+			},
+		}, nil,
+	).Once()
+
+	array := updateObjNode{
+		path:      &pathNode{path: &valueNode{"/Physical/site/building/room"}},
+		attr:      "description",
+		values:    []node{&valueNode{"newDescription"}},
+		hasSharpe: false,
+	}
+	value, err := array.execute()
+
+	assert.Nil(t, err)
+	assert.Nil(t, value)
 }
