@@ -12,6 +12,7 @@ deploy/mdb/*
 *.DS_Store
 API/.env
 gin-bin
+API/coverage
 
 # CLI Ignore
 .idea/
@@ -22,6 +23,7 @@ cli.mac
 *.ocli
 log.txt
 unitylog.txt
+CLI/coverage
 
 # APP Ignore
 deploy/docker/*.env

@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"cli/models"
-	"cli/utils"
 	"net/http"
 )
 
@@ -22,7 +21,7 @@ func (controller Controller) DeleteObj(path string) ([]string, error) {
 		if pathSplit.Layer != nil {
 			pathSplit.Layer.ApplyFilters(filters)
 		}
-		body := utils.ComplexFilterToMap(filters["filter"])
+		body := map[string]any{"filter": filters["filter"]}
 		resp, err = controller.API.Request(http.MethodDelete, url, body, http.StatusOK)
 	} else {
 		resp, err = controller.API.Request(http.MethodDelete, url, nil, http.StatusOK)

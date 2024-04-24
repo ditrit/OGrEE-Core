@@ -9,7 +9,6 @@ import (
 	"net/url"
 	"os"
 	"p3/models"
-	"p3/utils"
 	u "p3/utils"
 	"strconv"
 	"strings"
@@ -275,9 +274,9 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 		}
 		domainObj["category"] = "domain"
 		if desc, ok := domain["description"].(string); ok {
-			domainObj["description"] = []string{desc}
+			domainObj["description"] = desc
 		} else {
-			domainObj["description"] = []string{name}
+			domainObj["description"] = name
 		}
 		domainObj["attributes"] = map[string]string{}
 		if color, ok := domain["color"].(string); ok {
@@ -456,7 +455,7 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 
 	for _, entStr := range entities {
 		// Get objects
-		entData, err := models.GetManyObjects(entStr, req, filters, nil, user.Roles)
+		entData, err := models.GetManyObjects(entStr, req, filters, "", user.Roles)
 		if err != nil {
 			u.ErrLog("Error while looking for objects at  "+entStr, "HandleGenericObjects", err.Message, r)
 			u.RespondWithError(w, err)
@@ -635,6 +634,8 @@ func HandleComplexFilters(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
 	var complexFilters map[string]interface{}
+	var complexFilterExp string
+	var ok bool
 	matchingObjects := []map[string]interface{}{}
 
 	// Get user roles for permissions
@@ -649,8 +650,12 @@ func HandleComplexFilters(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.Message("Error while decoding request body"))
 		u.ErrLog("Error while decoding request body", "HANDLE COMPLEX FILTERS", "", r)
 		return
+	} else if complexFilterExp, ok = complexFilters["filter"].(string); !ok || len(complexFilterExp) == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message("Invalid body format: must contain a filter key with a not empty string as value"))
+		u.ErrLog("Error while decoding request body", "HANDLE COMPLEX FILTERS", "", r)
+		return
 	}
-	utils.ApplyWildcardsOnComplexFilter(complexFilters)
 
 	// Get objects
 	filters := getFiltersFromQueryParams(r)
@@ -659,7 +664,7 @@ func HandleComplexFilters(w http.ResponseWriter, r *http.Request) {
 
 	for _, entStr := range entities {
 		// Get objects
-		entData, err := models.GetManyObjects(entStr, req, filters, complexFilters, user.Roles)
+		entData, err := models.GetManyObjects(entStr, req, filters, complexFilterExp, user.Roles)
 		if err != nil {
 			u.ErrLog("Error while looking for objects at "+entStr, "HandleComplexFilters", err.Message, r)
 			u.RespondWithError(w, err)
@@ -810,7 +815,7 @@ func GetEntity(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// swagger:operation GET /api/layers/{id}/objects Objects GetLayerObjects
+// swagger:operation GET /api/layers/{slug}/objects Objects GetLayerObjects
 // Gets the object of a given layer.
 // Apply the layer filters to get children objects of a given root query param.
 // ---
@@ -819,7 +824,7 @@ func GetEntity(w http.ResponseWriter, r *http.Request) {
 // produces:
 // - application/json
 // parameters:
-//   - name: id
+//   - name: slug
 //     in: path
 //     description: 'ID of desired layer.'
 //     required: true
@@ -873,11 +878,14 @@ func GetLayerObjects(w http.ResponseWriter, r *http.Request) {
 		data, modelErr = models.GetObject(bson.M{"slug": id}, u.EntityToString(u.LAYER), u.RequestFilters{}, user.Roles)
 		if modelErr != nil {
 			u.RespondWithError(w, modelErr)
+			return
+		} else if len(data) == 0 {
+			w.WriteHeader(http.StatusNotFound)
+			return
 		}
 
 		// Apply layer to get objects request
 		req := bson.M{}
-		u.AddFilterToReq(req, "filter", data["filter"].(string))
 		var searchId string
 		if filters.IsRecursive {
 			searchId = filters.Root + ".**.*"
@@ -889,8 +897,10 @@ func GetLayerObjects(w http.ResponseWriter, r *http.Request) {
 		// Get objects
 		matchingObjects := []map[string]interface{}{}
 		entities := u.GetEntitiesByNamespace(u.Any, searchId)
+		fmt.Println(req)
+		fmt.Println(entities)
 		for _, entStr := range entities {
-			entData, err := models.GetManyObjects(entStr, req, u.RequestFilters{}, nil, user.Roles)
+			entData, err := models.GetManyObjects(entStr, req, u.RequestFilters{}, data["filter"].(string), user.Roles)
 			if err != nil {
 				u.RespondWithError(w, err)
 				return
@@ -981,7 +991,7 @@ func GetAllEntities(w http.ResponseWriter, r *http.Request) {
 
 	// Get entities
 	req := bson.M{}
-	data, e := models.GetManyObjects(entStr, req, u.RequestFilters{}, nil, user.Roles)
+	data, e := models.GetManyObjects(entStr, req, u.RequestFilters{}, "", user.Roles)
 
 	// Respond
 	if e != nil {
@@ -1339,7 +1349,7 @@ func GetEntityByQuery(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	data, modelErr = models.GetManyObjects(entStr, bsonMap, filters, nil, user.Roles)
+	data, modelErr = models.GetManyObjects(entStr, bsonMap, filters, "", user.Roles)
 
 	if modelErr != nil {
 		u.ErrLog("Error while getting "+entStr, "GET ENTITYQUERY", modelErr.Message, r)
@@ -1415,19 +1425,19 @@ func GetTempUnit(w http.ResponseWriter, r *http.Request) {
 // - application/json
 // parameters:
 // - name: entity
-//   in: query
+//   in: path
 //   description: 'Indicates the entity.'
 //   required: true
 //   type: string
 //   default: sites
 // - name: ID
-//   in: query
+//   in: path
 //   description: ID of object
 //   required: true
-//   type: int
+//   type: string
 //   default: siteA
 // - name: subent
-//   in: query
+//   in: path
 //   description: 'Indicates the subentity to search for children.'
 //   required: true
 //   type: string
@@ -1716,7 +1726,7 @@ func GetCompleteHierarchyAttributes(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// swagger:operation POST /api/{entity}/{id}/unlink Objects UnlinkObject
+// swagger:operation PATCH /api/{entity}/{id}/unlink Objects UnlinkObject
 // Removes the object from its original entity and hierarchy tree to make it stray.
 // The object will no longer have a parent, its id will change as well as the id of all its children.
 // The object will then belong to the stray-objects entity.
@@ -1753,7 +1763,7 @@ func GetCompleteHierarchyAttributes(w http.ResponseWriter, r *http.Request) {
 //     '500':
 //         description: 'Internal error. Unable to remove object from entity and create it as stray.'
 
-// swagger:operation POST /api/stray-objects/{id}/link Objects LinkObject
+// swagger:operation PATCH /api/stray-objects/{id}/link Objects LinkObject
 // Removes the object from stray and add it to the entity of its category attribute.
 // The object will again have a parent, its id will change as well as the id of all its children.
 // The object will then belong to the given entity.

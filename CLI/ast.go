@@ -154,7 +154,7 @@ func (n *focusNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return nil, cmd.FocusUI(path)
+	return nil, cmd.C.FocusUI(path)
 }
 
 type cdNode struct {
@@ -247,7 +247,7 @@ func (n *getUNode) execute() (interface{}, error) {
 		return nil, fmt.Errorf("The U value must be positive")
 	}
 
-	return nil, cmd.GetByAttr(path, u)
+	return nil, cmd.C.GetByAttr(path, u)
 }
 
 type getSlotNode struct {
@@ -265,7 +265,7 @@ func (n *getSlotNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	return nil, cmd.GetByAttr(path, slot)
+	return nil, cmd.C.GetByAttr(path, slot)
 }
 
 type loadNode struct {
@@ -367,7 +367,7 @@ func (n *isEntityDrawableNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	drawable, err := cmd.IsEntityDrawable(path)
+	drawable, err := cmd.C.IsEntityDrawable(path)
 	if err != nil {
 		return nil, err
 	}
@@ -385,7 +385,7 @@ func (n *isAttrDrawableNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	drawable, err := cmd.IsAttrDrawable(path, n.attr)
+	drawable, err := cmd.C.IsAttrDrawable(path, n.attr)
 	if err != nil {
 		return nil, err
 	}
@@ -970,9 +970,9 @@ func (n *unsetAttrNode) execute() (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-		return cmd.UnsetInObj(path, n.attr, idx)
+		return cmd.C.UnsetInObj(path, n.attr, idx)
 	}
-	return nil, cmd.UnsetAttribute(path, n.attr)
+	return nil, cmd.C.UnsetAttribute(path, n.attr)
 }
 
 type setEnvNode struct {
@@ -1295,7 +1295,7 @@ func (n *createTagNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	return nil, cmd.CreateTag(slug, color)
+	return nil, cmd.C.CreateTag(slug, color)
 }
 
 type createLayerNode struct {
@@ -1408,7 +1408,7 @@ func (n *createUserNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	return nil, cmd.CreateUser(email, role, domain)
+	return nil, cmd.C.CreateUser(email, role, domain)
 }
 
 type addRoleNode struct {
@@ -1431,7 +1431,7 @@ func (n *addRoleNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	return nil, cmd.AddRole(email, role, domain)
+	return nil, cmd.C.AddRole(email, role, domain)
 }
 
 type changePasswordNode struct{}
@@ -1460,7 +1460,7 @@ type uiDelayNode struct {
 }
 
 func (n *uiDelayNode) execute() (interface{}, error) {
-	return nil, cmd.UIDelay(n.time)
+	return nil, cmd.C.UIDelay(n.time)
 }
 
 type uiToggleNode struct {
@@ -1469,7 +1469,7 @@ type uiToggleNode struct {
 }
 
 func (n *uiToggleNode) execute() (interface{}, error) {
-	return nil, cmd.UIToggle(n.feature, n.enable)
+	return nil, cmd.C.UIToggle(n.feature, n.enable)
 }
 
 type uiHighlightNode struct {
@@ -1481,14 +1481,14 @@ func (n *uiHighlightNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return nil, cmd.UIHighlight(path)
+	return nil, cmd.C.UIHighlight(path)
 }
 
 type uiClearCacheNode struct {
 }
 
 func (n *uiClearCacheNode) execute() (interface{}, error) {
-	return nil, cmd.UIClearCache()
+	return nil, cmd.C.UIClearCache()
 }
 
 type cameraMoveNode struct {
@@ -1507,7 +1507,7 @@ func (n *cameraMoveNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	return nil, cmd.CameraMove(n.command, position, rotation)
+	return nil, cmd.C.CameraMove(n.command, position, rotation)
 }
 
 type cameraWaitNode struct {
@@ -1515,7 +1515,7 @@ type cameraWaitNode struct {
 }
 
 func (n *cameraWaitNode) execute() (interface{}, error) {
-	return nil, cmd.CameraWait(n.time)
+	return nil, cmd.C.CameraWait(n.time)
 }
 
 type linkObjectNode struct {
@@ -1557,7 +1557,7 @@ func (n *linkObjectNode) execute() (interface{}, error) {
 		}
 	}
 
-	return nil, cmd.LinkObject(source, dest, n.attrs, values, slots)
+	return nil, cmd.C.LinkObject(source, dest, n.attrs, values, slots)
 }
 
 type unlinkObjectNode struct {
@@ -1569,7 +1569,7 @@ func (n *unlinkObjectNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return nil, cmd.UnlinkObject(source)
+	return nil, cmd.C.UnlinkObject(source)
 }
 
 type symbolReferenceNode struct {
