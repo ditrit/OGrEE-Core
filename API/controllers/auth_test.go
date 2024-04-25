@@ -18,6 +18,7 @@ import (
 const (
 	REQUEST_WITH_USER = iota
 	REQUEST_WITH_TOKEN
+	MANAGED_REQUEST
 )
 
 func getUserToken(email string, password string) string {
@@ -29,6 +30,7 @@ func getUserToken(email string, password string) string {
 }
 
 func createTestUser(t *testing.T, role string) (string, string) {
+	// It creates a temporary user that will be deleted at the end of the test t
 	email := "temporary_user@test.com"
 	password := "fake_password"
 	requestBody := fmt.Sprintf(`{
@@ -49,15 +51,19 @@ func createTestUser(t *testing.T, role string) (string, string) {
 	return email, password
 }
 
-func validateRequest(t *testing.T, requestType int, httpMethod string, endpoint string, requestBody []byte, authId string, expectedStatus int, expectedMessage string) {
+func validateRequest(t *testing.T, requestType int, httpMethod string, endpoint string, requestBody []byte, authId string, expectedStatus int, expectedMessage string) map[string]interface{} {
+	// It executes a request and verifies the status code and the response message
 	var recorder *httptest.ResponseRecorder
-	// authId is the user name if requestType is REQUEST_WITH_USER. If notit should be the auth token
 	if requestType == REQUEST_WITH_USER {
+		// authId is the user name
 		recorder = e2e.MakeRequestWithUser(httpMethod, endpoint, requestBody, authId)
+	} else if requestType == MANAGED_REQUEST {
+		// authId is ignored. The auth token is added by the method
+		recorder = e2e.MakeRequest(httpMethod, endpoint, requestBody)
 	} else {
+		// authId is the auth token
 		recorder = e2e.MakeRequestWithToken(httpMethod, endpoint, requestBody, authId)
 	}
-	// recorder := e2e.MakeRequestWithToken(httpMethod, endpoint, requestBody, token)
 	assert.Equal(t, expectedStatus, recorder.Code)
 
 	var response map[string]interface{}
@@ -66,6 +72,11 @@ func validateRequest(t *testing.T, requestType int, httpMethod string, endpoint 
 	message, exists := response["message"].(string)
 	assert.True(t, exists)
 	assert.Equal(t, expectedMessage, message)
+	return response
+}
+
+func validateManagedRequest(t *testing.T, httpMethod string, endpoint string, requestBody []byte, expectedStatus int, expectedMessage string) map[string]interface{} {
+	return validateRequest(t, MANAGED_REQUEST, httpMethod, endpoint, requestBody, "", expectedStatus, expectedMessage)
 }
 
 func TestCreateBulkUsers(t *testing.T) {

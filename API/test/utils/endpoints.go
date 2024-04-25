@@ -3,14 +3,21 @@ package utils
 import "fmt"
 
 const usersEndpoint = "/api/users"
+const domainsEndpoint = "/api/domains"
 
 var endpoints = map[string]string{
-	"login":          "/api/login",
-	"users":          usersEndpoint,
-	"usersInstance":  usersEndpoint + "/%s",
-	"usersBulk":      usersEndpoint + "/bulk",
-	"changePassword": usersEndpoint + "/password/change",
-	"resetPassword":  usersEndpoint + "/password/reset",
+	"login":               "/api/login",
+	"users":               usersEndpoint,
+	"usersInstance":       usersEndpoint + "/%s",
+	"usersBulk":           usersEndpoint + "/bulk",
+	"changePassword":      usersEndpoint + "/password/change",
+	"resetPassword":       usersEndpoint + "/password/reset",
+	"entity":              "/api/%s",
+	"domains":             "/api/domains",
+	"domainsBulk":         domainsEndpoint + "/bulk",
+	"complexFilterSearch": "/api/objects/search",
+	"validateEntity":      "/api/validate/%s",
+	"layersObjects":       "/api/layers/%s/objects",
 }
 
 func GetEndpoint(endpointName string, pathParams ...string) string {

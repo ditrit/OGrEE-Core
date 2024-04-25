@@ -7,6 +7,7 @@ import (
 	"p3/models"
 	"p3/test/e2e"
 	"p3/test/integration"
+	test_utils "p3/test/utils"
 	"p3/utils"
 	"slices"
 	"strings"
@@ -54,19 +55,52 @@ func init() {
 	models.CreateEntity(utils.LAYER, layer2, ManagerUserRoles)
 }
 
-func testInvalidBody(t *testing.T, httpMethod string, endpoint string) {
-	e2e.TestInvalidBody(t, httpMethod, endpoint, "Error while decoding request body")
+func getTestEntity(entity string) map[string]any {
+	// returns an entity to use in tests
+	if entity == "room" {
+		return map[string]any{
+			"attributes": map[string]any{
+				"floorUnit":       "t",
+				"height":          "2.8",
+				"heightUnit":      "m",
+				"axisOrientation": "+x+y",
+				"rotation":        "-90",
+				"posXY":           "[0, 0]",
+				"posXYUnit":       "m",
+				"size":            "[-13, -2.9]",
+				"sizeUnit":        "m",
+				"template":        "",
+			},
+			"category":    "room",
+			"description": "room",
+			"domain":      "domain",
+			"name":        "roomA",
+			"parentId":    "site-no-temperature.building-1",
+		}
+	}
+	return nil
 }
 
-func TestCreateEntityInvalidBody(t *testing.T) {
-	testInvalidBody(t, "POST", "/api/sites")
+// Tests with invalid body
+func TestEntityRequestsWithInvalidBody(t *testing.T) {
+	tests := []struct {
+		name          string
+		requestMethod string
+		endpoint      string
+	}{
+		{"CreateEntity", "POST", test_utils.GetEndpoint("entity", "sites")},
+		{"CreateBulkDomains", "POST", test_utils.GetEndpoint("domainsBulk")},
+		{"ComplexFilterSearch", "POST", test_utils.GetEndpoint("complexFilterSearch")},
+		{"validateEntity", "POST", test_utils.GetEndpoint("validateEntity", "rooms")},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e2e.TestInvalidBody(t, tt.requestMethod, tt.endpoint, "Error while decoding request body")
+		})
+	}
 }
 
 // Tests domain bulk creation (/api/domains/bulk)
-func TestCreateBulkInvalidBody(t *testing.T) {
-	testInvalidBody(t, "POST", "/api/domains/bulk")
-}
-
 func TestCreateBulkDomains(t *testing.T) {
 	// Test create two separate domains
 	requestBody := []byte(`[
@@ -82,7 +116,7 @@ func TestCreateBulkDomains(t *testing.T) {
 		}
 	]`)
 
-	recorder := e2e.MakeRequest("POST", "/api/domains/bulk", requestBody)
+	recorder := e2e.MakeRequest("POST", test_utils.GetEndpoint("domainsBulk"), requestBody)
 	assert.Equal(t, http.StatusOK, recorder.Code)
 
 	var response map[string]interface{}
@@ -130,7 +164,7 @@ func TestCreateBulkDomainWithSubdomains(t *testing.T) {
 		}
 	]`)
 
-	recorder := e2e.MakeRequest("POST", "/api/domains/bulk", requestBody)
+	recorder := e2e.MakeRequest("POST", test_utils.GetEndpoint("domainsBulk"), requestBody)
 	assert.Equal(t, http.StatusOK, recorder.Code)
 
 	var response map[string]interface{}
@@ -166,7 +200,7 @@ func TestCreateBulkDomainWithDuplicateError(t *testing.T) {
 		}
 	]`)
 
-	recorder := e2e.MakeRequest("POST", "/api/domains/bulk", requestBody)
+	recorder := e2e.MakeRequest("POST", test_utils.GetEndpoint("domainsBulk"), requestBody)
 	assert.Equal(t, http.StatusOK, recorder.Code)
 
 	var response map[string]interface{}
@@ -200,14 +234,10 @@ func TestDeleteSubdomains(t *testing.T) {
 }
 
 // Tests handle complex filters (/api/objects/search)
-func TestComplexFilterSearchInvalidBody(t *testing.T) {
-	testInvalidBody(t, "POST", "/api/objects/search")
-}
-
 func TestComplexFilterWithNoFilterInput(t *testing.T) {
 	requestBody := []byte(`{}`)
 
-	recorder := e2e.MakeRequest("POST", "/api/objects/search", requestBody)
+	recorder := e2e.MakeRequest("POST", test_utils.GetEndpoint("complexFilterSearch"), requestBody)
 	assert.Equal(t, http.StatusBadRequest, recorder.Code)
 
 	var response map[string]interface{}
@@ -223,7 +253,7 @@ func TestComplexFilterSearch(t *testing.T) {
 		"filter": "id=domain4.* & color=00ED00"
 	}`)
 
-	recorder := e2e.MakeRequest("POST", "/api/objects/search", requestBody)
+	recorder := e2e.MakeRequest("POST", test_utils.GetEndpoint("complexFilterSearch"), requestBody)
 	assert.Equal(t, http.StatusOK, recorder.Code)
 
 	var response map[string]interface{}
@@ -250,7 +280,7 @@ func TestComplexFilterSearchWithStartDateFilter(t *testing.T) {
 
 	yesterday := time.Now().Add(-24 * time.Hour)
 	tomorrow := time.Now().Add(24 * time.Hour)
-	recorder := e2e.MakeRequest("POST", "/api/objects/search?startDate="+yesterday.Format("2006-01-02"), requestBody)
+	recorder := e2e.MakeRequest("POST", test_utils.GetEndpoint("complexFilterSearch")+"?startDate="+yesterday.Format("2006-01-02"), requestBody)
 	assert.Equal(t, http.StatusOK, recorder.Code)
 
 	var response map[string]interface{}
@@ -263,7 +293,7 @@ func TestComplexFilterSearchWithStartDateFilter(t *testing.T) {
 	assert.True(t, exists)
 	assert.Equal(t, 1, len(data))
 
-	recorder = e2e.MakeRequest("POST", "/api/objects/search?startDate="+tomorrow.Format("2006-01-02"), requestBody)
+	recorder = e2e.MakeRequest("POST", test_utils.GetEndpoint("complexFilterSearch")+"?startDate="+tomorrow.Format("2006-01-02"), requestBody)
 	assert.Equal(t, http.StatusOK, recorder.Code)
 
 	json.Unmarshal(recorder.Body.Bytes(), &response)
@@ -284,7 +314,7 @@ func TestComplexFilterSearchWithEndtDateFilter(t *testing.T) {
 
 	yesterday := time.Now().Add(-24 * time.Hour)
 	tomorrow := time.Now().Add(24 * time.Hour)
-	recorder := e2e.MakeRequest("POST", "/api/objects/search?endDate="+tomorrow.Format("2006-01-02"), requestBody)
+	recorder := e2e.MakeRequest("POST", test_utils.GetEndpoint("complexFilterSearch")+"?endDate="+tomorrow.Format("2006-01-02"), requestBody)
 	assert.Equal(t, http.StatusOK, recorder.Code)
 
 	var response map[string]interface{}
@@ -297,7 +327,7 @@ func TestComplexFilterSearchWithEndtDateFilter(t *testing.T) {
 	assert.True(t, exists)
 	assert.Equal(t, 1, len(data))
 
-	recorder = e2e.MakeRequest("POST", "/api/objects/search?endDate="+yesterday.Format("2006-01-02"), requestBody)
+	recorder = e2e.MakeRequest("POST", test_utils.GetEndpoint("complexFilterSearch")+"?endDate="+yesterday.Format("2006-01-02"), requestBody)
 	assert.Equal(t, http.StatusOK, recorder.Code)
 
 	json.Unmarshal(recorder.Body.Bytes(), &response)
@@ -317,7 +347,7 @@ func TestComplexFilterDelete(t *testing.T) {
 		"filter": "id=domain4.* & color=00ED00"
 	}`)
 
-	recorder := e2e.MakeRequest("DELETE", "/api/objects/search", requestBody)
+	recorder := e2e.MakeRequest("DELETE", test_utils.GetEndpoint("complexFilterSearch"), requestBody)
 	assert.Equal(t, http.StatusOK, recorder.Code)
 
 	var response map[string]interface{}
@@ -338,7 +368,7 @@ func TestComplexFilterDelete(t *testing.T) {
 
 // Tests get different entities
 func TestGetDomainEntity(t *testing.T) {
-	recorder := e2e.MakeRequest("GET", "/api/domains", nil)
+	recorder := e2e.MakeRequest("GET", test_utils.GetEndpoint("domains"), nil)
 	assert.Equal(t, http.StatusOK, recorder.Code)
 
 	var response map[string]interface{}
@@ -370,7 +400,7 @@ func TestGetDomainEntity(t *testing.T) {
 }
 
 func TestGetBuildingsEntity(t *testing.T) {
-	recorder := e2e.MakeRequest("GET", "/api/buildings", nil)
+	recorder := e2e.MakeRequest("GET", test_utils.GetEndpoint("entity", "buildings"), nil)
 	assert.Equal(t, http.StatusOK, recorder.Code)
 
 	var response map[string]interface{}
@@ -620,14 +650,10 @@ func TestLinkRoom(t *testing.T) {
 }
 
 // Tests entity validation
-func TestValidateInvalidBody(t *testing.T) {
-	testInvalidBody(t, "POST", "/api/validate/rooms")
-}
-
 func TestValidateNonExistentEntity(t *testing.T) {
 	requestBody := []byte(`{}`)
 
-	recorder := e2e.MakeRequest("POST", "/api/validate/invalid", requestBody)
+	recorder := e2e.MakeRequest("POST", test_utils.GetEndpoint("validateEntity", "invalid"), requestBody)
 	assert.Equal(t, http.StatusNotFound, recorder.Code)
 }
 
@@ -640,137 +666,41 @@ func TestValidateEntityWithoutAttributes(t *testing.T) {
 		"parentId": "site-no-temperature.building-1"
 	}`)
 
-	recorder := e2e.MakeRequest("POST", "/api/validate/rooms", requestBody)
-	assert.Equal(t, http.StatusBadRequest, recorder.Code)
-
-	var response map[string]interface{}
-	json.Unmarshal(recorder.Body.Bytes(), &response)
-	message, exists := response["message"].(string)
-	assert.True(t, exists)
-	assert.Equal(t, "JSON body doesn't validate with the expected JSON schema", message)
+	endpoint := test_utils.GetEndpoint("validateEntity", "rooms")
+	expectedMessage := "JSON body doesn't validate with the expected JSON schema"
+	validateManagedRequest(t, "POST", endpoint, requestBody, http.StatusBadRequest, expectedMessage)
 }
 
-func TestValidateEntityNonExistentDomain(t *testing.T) {
-	requestBody := []byte(`{
-		"attributes": {
-			"floorUnit": "t",
-			"height": "2.8",
-			"heightUnit": "m",
-			"axisOrientation": "+x+y",
-			"rotation": "-90",
-			"posXY": "[0, 0]",
-			"posXYUnit": "m",
-			"size": "[-13, -2.9]",
-			"sizeUnit": "m",
-			"template": ""
-		},
-		"category": "room",
-		"description": "room",
-		"domain": "invalid",
-		"name": "roomA",
-		"parentId": "site-no-temperature.building-1"
-	}`)
-
-	recorder := e2e.MakeRequest("POST", "/api/validate/rooms", requestBody)
-	assert.Equal(t, http.StatusNotFound, recorder.Code)
-
-	var response map[string]interface{}
-	json.Unmarshal(recorder.Body.Bytes(), &response)
-	message, exists := response["message"].(string)
-	assert.True(t, exists)
-	assert.Equal(t, "Domain not found: invalid", message)
-}
-
-func TestValidateEntityInvalidDomain(t *testing.T) {
-	requestBody := []byte(`{
-		"attributes": {
-			"floorUnit": "t",
-			"height": "2.8",
-			"heightUnit": "m",
-			"axisOrientation": "+x+y",
-			"rotation": "-90",
-			"posXY": "[0, 0]",
-			"posXYUnit": "m",
-			"size": "[-13, -2.9]",
-			"sizeUnit": "m",
-			"template": ""
-		},
-		"category": "room",
-		"description": "room",
-		"domain": "domain1",
-		"name": "roomA",
-		"parentId": "site-no-temperature.building-1"
-	}`)
-
-	recorder := e2e.MakeRequest("POST", "/api/validate/rooms", requestBody)
-	assert.Equal(t, http.StatusBadRequest, recorder.Code)
-
-	var response map[string]interface{}
-	json.Unmarshal(recorder.Body.Bytes(), &response)
-	message, exists := response["message"].(string)
-	assert.True(t, exists)
-	assert.Equal(t, "Object domain is not equal or child of parent's domain", message)
-}
-
-func TestValidateValidRoomEntity(t *testing.T) {
-	requestBody := []byte(`{
-		"attributes": {
-			"floorUnit": "t",
-			"height": "2.8",
-			"heightUnit": "m",
-			"axisOrientation": "+x+y",
-			"rotation": "-90",
-			"posXY": "[0, 0]",
-			"posXYUnit": "m",
-			"size": "[-13, -2.9]",
-			"sizeUnit": "m",
-			"template": ""
-		},
-		"category": "room",
-		"description": "room",
-		"domain": "` + integration.TestDBName + `",
-		"name": "roomA",
-		"parentId": "site-no-temperature.building-1"
-	}`)
-
-	recorder := e2e.MakeRequest("POST", "/api/validate/rooms", requestBody)
-	assert.Equal(t, http.StatusOK, recorder.Code)
-
-	var response map[string]interface{}
-	json.Unmarshal(recorder.Body.Bytes(), &response)
-	message, exists := response["message"].(string)
-	assert.True(t, exists)
-	assert.Equal(t, "This object can be created", message)
+func TestValidateEntity(t *testing.T) {
+	room := getTestEntity("room")
+	endpoint := test_utils.GetEndpoint("validateEntity", "rooms")
+	tests := []struct {
+		name       string
+		domain     string
+		statusCode int
+		message    string
+	}{
+		{"NonExistentDomain", "invalid", http.StatusNotFound, "Domain not found: invalid"},
+		{"InvalidDomain", "domain1", http.StatusBadRequest, "Object domain is not equal or child of parent's domain"},
+		{"ValidRoomEntity", integration.TestDBName, http.StatusOK, "This object can be created"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			room["domain"] = tt.domain
+			requestBody, _ := json.Marshal(room)
+			validateManagedRequest(t, "POST", endpoint, requestBody, tt.statusCode, tt.message)
+		})
+	}
 }
 
 func TestErrorValidateValidRoomEntityNotEnoughPermissions(t *testing.T) {
-	requestBody := []byte(`{
-		"attributes": {
-			"floorUnit": "t",
-			"height": "2.8",
-			"heightUnit": "m",
-			"axisOrientation": "+x+y",
-			"rotation": "-90",
-			"posXY": "[0, 0]",
-			"posXYUnit": "m",
-			"size": "[-13, -2.9]",
-			"sizeUnit": "m",
-			"template": ""
-		},
-		"category": "room",
-		"description": "room",
-		"domain": "` + integration.TestDBName + `",
-		"name": "roomA",
-		"parentId": "site-no-temperature.building-1"
-	}`)
-	recorder := e2e.MakeRequestWithUser("POST", "/api/validate/rooms", requestBody, "viewer")
-	assert.Equal(t, http.StatusUnauthorized, recorder.Code)
+	room := getTestEntity("room")
+	room["domain"] = integration.TestDBName
+	requestBody, _ := json.Marshal(room)
 
-	var response map[string]interface{}
-	json.Unmarshal(recorder.Body.Bytes(), &response)
-	message, exists := response["message"].(string)
-	assert.True(t, exists)
-	assert.Equal(t, "This user does not have sufficient permissions to create this object under this domain ", message)
+	endpoint := test_utils.GetEndpoint("validateEntity", "rooms")
+	expectedMessage := "This user does not have sufficient permissions to create this object under this domain "
+	validateRequest(t, REQUEST_WITH_USER, "POST", endpoint, requestBody, "viewer", http.StatusUnauthorized, expectedMessage)
 }
 
 func TestGetStats(t *testing.T) {
@@ -803,14 +733,9 @@ func TestGetApiVersion(t *testing.T) {
 
 // Tests layers objects
 func TestGetLayersObjectsRootRequired(t *testing.T) {
-	recorder := e2e.MakeRequest("GET", "/api/layers/racks-layer/objects", nil)
-	assert.Equal(t, http.StatusBadRequest, recorder.Code)
-
-	var response map[string]interface{}
-	json.Unmarshal(recorder.Body.Bytes(), &response)
-	message, exists := response["message"].(string)
-	assert.True(t, exists)
-	assert.Equal(t, "Query param root is mandatory", message)
+	endpoint := test_utils.GetEndpoint("layersObjects", "racks-layer")
+	expectedMessage := "Query param root is mandatory"
+	validateManagedRequest(t, "GET", endpoint, nil, http.StatusBadRequest, expectedMessage)
 }
 
 func TestGetLayersObjectsLayerUnknown(t *testing.T) {
@@ -819,14 +744,9 @@ func TestGetLayersObjectsLayerUnknown(t *testing.T) {
 }
 
 func TestGetLayersObjectsWithSimpleFilter(t *testing.T) {
-	recorder := e2e.MakeRequest("GET", "/api/layers/racks-layer/objects?root=site-no-temperature.building-1.room-1", nil)
-	assert.Equal(t, http.StatusOK, recorder.Code)
-
-	var response map[string]interface{}
-	json.Unmarshal(recorder.Body.Bytes(), &response)
-	message, exists := response["message"].(string)
-	assert.True(t, exists)
-	assert.Equal(t, "successfully processed request", message)
+	endpoint := test_utils.GetEndpoint("layersObjects", "racks-layer")
+	expectedMessage := "successfully processed request"
+	response := validateManagedRequest(t, "GET", endpoint+"?root=site-no-temperature.building-1.room-1", nil, http.StatusOK, expectedMessage)
 
 	data, exists := response["data"].([]any)
 	assert.True(t, exists)
@@ -842,14 +762,9 @@ func TestGetLayersObjectsWithSimpleFilter(t *testing.T) {
 }
 
 func TestGetLayersObjectsWithDoubleFilter(t *testing.T) {
-	recorder := e2e.MakeRequest("GET", "/api/layers/racks-1-layer/objects?root=site-no-temperature.building-1.room-*", nil)
-	assert.Equal(t, http.StatusOK, recorder.Code)
-
-	var response map[string]interface{}
-	json.Unmarshal(recorder.Body.Bytes(), &response)
-	message, exists := response["message"].(string)
-	assert.True(t, exists)
-	assert.Equal(t, "successfully processed request", message)
+	endpoint := test_utils.GetEndpoint("layersObjects", "racks-1-layer")
+	expectedMessage := "successfully processed request"
+	response := validateManagedRequest(t, "GET", endpoint+"?root=site-no-temperature.building-1.room-*", nil, http.StatusOK, expectedMessage)
 
 	data, exists := response["data"].([]any)
 	assert.True(t, exists)
