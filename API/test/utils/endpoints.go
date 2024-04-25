@@ -18,6 +18,7 @@ var endpoints = map[string]string{
 	"complexFilterSearch": "/api/objects/search",
 	"validateEntity":      "/api/validate/%s",
 	"layersObjects":       "/api/layers/%s/objects",
+	"tokenValid":          "/api/token/valid",
 }
 
 func GetEndpoint(endpointName string, pathParams ...string) string {

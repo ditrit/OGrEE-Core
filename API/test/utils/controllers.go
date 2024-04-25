@@ -13,10 +13,12 @@ import (
 const (
 	REQUEST_WITH_USER = iota
 	REQUEST_WITH_TOKEN
+	REQUEST_WITH_HEADERS
 	MANAGED_REQUEST
 )
 
 func GetUserToken(email string, password string) string {
+	// It executes the user login and returns tha auth token
 	acc, e := models.Login(email, password)
 	if e != nil {
 		return ""
@@ -33,6 +35,11 @@ func ValidateRequest(t *testing.T, requestType int, httpMethod string, endpoint 
 	} else if requestType == MANAGED_REQUEST {
 		// authId is ignored. The auth token is added by the method
 		recorder = e2e.MakeRequest(httpMethod, endpoint, requestBody)
+	} else if requestType == REQUEST_WITH_HEADERS {
+		// authId is the header encoded in json format
+		var headers map[string]string
+		json.Unmarshal([]byte(authId), &headers)
+		recorder = e2e.MakeRequestWithHeaders(httpMethod, endpoint, requestBody, headers)
 	} else {
 		// authId is the auth token
 		recorder = e2e.MakeRequestWithToken(httpMethod, endpoint, requestBody, authId)
