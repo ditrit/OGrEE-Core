@@ -2,9 +2,7 @@ package controllers_test
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"net/http/httptest"
 	"p3/models"
 	"p3/test/e2e"
 	test_utils "p3/test/utils"
@@ -14,70 +12,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 )
-
-const (
-	REQUEST_WITH_USER = iota
-	REQUEST_WITH_TOKEN
-	MANAGED_REQUEST
-)
-
-func getUserToken(email string, password string) string {
-	acc, e := models.Login(email, password)
-	if e != nil {
-		return ""
-	}
-	return acc.Token
-}
-
-func createTestUser(t *testing.T, role string) (string, string) {
-	// It creates a temporary user that will be deleted at the end of the test t
-	email := "temporary_user@test.com"
-	password := "fake_password"
-	requestBody := fmt.Sprintf(`{
-		"password": "%s",
-		"roles": {"*": "%s"},
-		"email": "%s"
-	}`, password, role, email)
-	recorder := e2e.MakeRequest("POST", test_utils.GetEndpoint("users"), []byte(requestBody))
-	assert.Equal(t, http.StatusCreated, recorder.Code)
-
-	t.Cleanup(func() {
-		userId := models.GetUserByEmail(email)
-		if userId != nil {
-			err := models.DeleteUser(userId.ID)
-			assert.Nil(t, err)
-		}
-	})
-	return email, password
-}
-
-func validateRequest(t *testing.T, requestType int, httpMethod string, endpoint string, requestBody []byte, authId string, expectedStatus int, expectedMessage string) map[string]interface{} {
-	// It executes a request and verifies the status code and the response message
-	var recorder *httptest.ResponseRecorder
-	if requestType == REQUEST_WITH_USER {
-		// authId is the user name
-		recorder = e2e.MakeRequestWithUser(httpMethod, endpoint, requestBody, authId)
-	} else if requestType == MANAGED_REQUEST {
-		// authId is ignored. The auth token is added by the method
-		recorder = e2e.MakeRequest(httpMethod, endpoint, requestBody)
-	} else {
-		// authId is the auth token
-		recorder = e2e.MakeRequestWithToken(httpMethod, endpoint, requestBody, authId)
-	}
-	assert.Equal(t, expectedStatus, recorder.Code)
-
-	var response map[string]interface{}
-	json.Unmarshal(recorder.Body.Bytes(), &response)
-
-	message, exists := response["message"].(string)
-	assert.True(t, exists)
-	assert.Equal(t, expectedMessage, message)
-	return response
-}
-
-func validateManagedRequest(t *testing.T, httpMethod string, endpoint string, requestBody []byte, expectedStatus int, expectedMessage string) map[string]interface{} {
-	return validateRequest(t, MANAGED_REQUEST, httpMethod, endpoint, requestBody, "", expectedStatus, expectedMessage)
-}
 
 func TestCreateBulkUsers(t *testing.T) {
 	// Test create two separate users
@@ -131,7 +65,7 @@ func TestCreateBulkUsers(t *testing.T) {
 
 // Tests Login
 func TestLoginWrongPassword(t *testing.T) {
-	email, _ := createTestUser(t, "manager")
+	email, _ := test_utils.CreateTestUser(t, "manager")
 	requestBody := []byte(`{
 		"email": "` + email + `",
 		"password": "wrong_password"
@@ -148,7 +82,7 @@ func TestLoginWrongPassword(t *testing.T) {
 }
 
 func TestLoginSuccess(t *testing.T) {
-	userEmail, password := createTestUser(t, "manager")
+	userEmail, password := test_utils.CreateTestUser(t, "manager")
 	requestBody := []byte(`{
 		"email": "` + userEmail + `",
 		"password": "` + password + `"
@@ -246,8 +180,8 @@ func TestGetAllUsers(t *testing.T) {
 }
 
 func TestGetUsersWithNormalUser(t *testing.T) {
-	userEmail, password := createTestUser(t, "user")
-	userToken := getUserToken(userEmail, password)
+	userEmail, password := test_utils.CreateTestUser(t, "user")
+	userToken := test_utils.GetUserToken(userEmail, password)
 	assert.NotEmpty(t, userToken)
 
 	recorder := e2e.MakeRequestWithToken("GET", test_utils.GetEndpoint("users"), nil, userToken)
@@ -266,10 +200,10 @@ func TestGetUsersWithNormalUser(t *testing.T) {
 }
 
 func TestDeleteWithoutEnoughPermissions(t *testing.T) {
-	userEmail, password := createTestUser(t, "user")
+	userEmail, password := test_utils.CreateTestUser(t, "user")
 	userId := models.GetUserByEmail("admin@admin.com").ID.Hex()
 	assert.NotEmpty(t, userId)
-	userToken := getUserToken(userEmail, password)
+	userToken := test_utils.GetUserToken(userEmail, password)
 	assert.NotEmpty(t, userToken)
 
 	recorder := e2e.MakeRequestWithToken("DELETE", test_utils.GetEndpoint("usersInstance", userId), nil, userToken)
@@ -285,7 +219,7 @@ func TestDeleteWithoutEnoughPermissions(t *testing.T) {
 
 func TestDeleteUser(t *testing.T) {
 	// we get the user ID
-	userEmail, _ := createTestUser(t, "user")
+	userEmail, _ := test_utils.CreateTestUser(t, "user")
 	userId := models.GetUserByEmail(userEmail).ID.Hex()
 	assert.NotEmpty(t, userId)
 
@@ -324,9 +258,9 @@ func TestDeleteWithInvalidIdReturnsError(t *testing.T) {
 
 // Tests modify user role
 func TestModifyRole(t *testing.T) {
-	email, password := createTestUser(t, "manager")
+	email, password := test_utils.CreateTestUser(t, "manager")
 	userId := models.GetUserByEmail(email).ID.Hex()
-	userToken := getUserToken(email, password)
+	userToken := test_utils.GetUserToken(email, password)
 	tests := []struct {
 		name        string
 		requestType int
@@ -336,25 +270,25 @@ func TestModifyRole(t *testing.T) {
 		statusCode  int
 		message     string
 	}{
-		{"ExtraDataReturnsError", REQUEST_WITH_TOKEN, userToken, userId, `{"roles": {"*": "user"},"name": "other name"}`, http.StatusBadRequest, "Only 'roles' should be provided to patch"},
-		{"InvalidRole", REQUEST_WITH_TOKEN, userToken, userId, `{"roles": {"*": "invalid"}}`, http.StatusInternalServerError, "Role assigned is not valid: "},
-		{"InvalidId", REQUEST_WITH_TOKEN, userToken, "invalid", `{"roles": {"*": "user"}}`, http.StatusBadRequest, "User ID is not valid"},
-		{"ModifyRoleWithNormalUser", REQUEST_WITH_USER, "user", userId, `{"roles": {"*": "manager"}}`, http.StatusUnauthorized, "Caller does not have permission to modify this user"},
-		{"Success", REQUEST_WITH_TOKEN, userToken, userId, `{"roles": {"*": "viewer"}}`, http.StatusOK, "successfully updated user roles"},
+		{"ExtraDataReturnsError", test_utils.REQUEST_WITH_TOKEN, userToken, userId, `{"roles": {"*": "user"},"name": "other name"}`, http.StatusBadRequest, "Only 'roles' should be provided to patch"},
+		{"InvalidRole", test_utils.REQUEST_WITH_TOKEN, userToken, userId, `{"roles": {"*": "invalid"}}`, http.StatusInternalServerError, "Role assigned is not valid: "},
+		{"InvalidId", test_utils.REQUEST_WITH_TOKEN, userToken, "invalid", `{"roles": {"*": "user"}}`, http.StatusBadRequest, "User ID is not valid"},
+		{"ModifyRoleWithNormalUser", test_utils.REQUEST_WITH_USER, "user", userId, `{"roles": {"*": "manager"}}`, http.StatusUnauthorized, "Caller does not have permission to modify this user"},
+		{"Success", test_utils.REQUEST_WITH_TOKEN, userToken, userId, `{"roles": {"*": "viewer"}}`, http.StatusOK, "successfully updated user roles"},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			changePasswordEndpoint := test_utils.GetEndpoint("usersInstance", tt.userId)
-			validateRequest(t, tt.requestType, "PATCH", changePasswordEndpoint, []byte(tt.requestBody), tt.authId, tt.statusCode, tt.message)
+			test_utils.ValidateRequest(t, tt.requestType, "PATCH", changePasswordEndpoint, []byte(tt.requestBody), tt.authId, tt.statusCode, tt.message)
 		})
 	}
 }
 
 // Tests modify and reset user password
 func TestModifyPassword(t *testing.T) {
-	email, password := createTestUser(t, "manager")
-	userToken := getUserToken(email, password)
+	email, password := test_utils.CreateTestUser(t, "manager")
+	userToken := test_utils.GetUserToken(email, password)
 	correctRequestBody := `{
 		"currentPassword": "` + password + `",
 		"newPassword": "fake_password2"
@@ -373,13 +307,13 @@ func TestModifyPassword(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			validateRequest(t, REQUEST_WITH_TOKEN, "POST", changePasswordEndpoint, []byte(tt.requestBody), userToken, tt.statusCode, tt.message)
+			test_utils.ValidateRequest(t, test_utils.REQUEST_WITH_TOKEN, "POST", changePasswordEndpoint, []byte(tt.requestBody), userToken, tt.statusCode, tt.message)
 		})
 	}
 }
 
 func TestResetPassword(t *testing.T) {
-	email, password := createTestUser(t, "manager")
+	email, password := test_utils.CreateTestUser(t, "manager")
 	userId := models.GetUserByEmail(email).ID
 	correctRequestBody := `{"newPassword": "fake_password"}`
 	tests := []struct {
@@ -389,7 +323,7 @@ func TestResetPassword(t *testing.T) {
 		statusCode  int
 		message     string
 	}{
-		{"InvalidResetToken", getUserToken(email, password), correctRequestBody, http.StatusForbidden, "Token is not valid."}, // User token is not a reset token
+		{"InvalidResetToken", test_utils.GetUserToken(email, password), correctRequestBody, http.StatusForbidden, "Token is not valid."}, // User token is not a reset token
 		{"NotEnoughArguments", models.GenerateToken(u.RESET_TAG, userId, time.Minute), `{}`, http.StatusBadRequest, "Invalid request: wrong body format"},
 		{"Success", models.GenerateToken(u.RESET_TAG, userId, time.Minute), correctRequestBody, http.StatusOK, "successfully updated user password"},
 	}
@@ -398,14 +332,14 @@ func TestResetPassword(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			validateRequest(t, REQUEST_WITH_TOKEN, "POST", resetPasswordEndpoint, []byte(tt.requestBody), tt.token, tt.statusCode, tt.message)
+			test_utils.ValidateRequest(t, test_utils.REQUEST_WITH_TOKEN, "POST", resetPasswordEndpoint, []byte(tt.requestBody), tt.token, tt.statusCode, tt.message)
 		})
 	}
 }
 
 // Tests with invalid body
 func TestRequestsWithInvalidBody(t *testing.T) {
-	email, _ := createTestUser(t, "manager")
+	email, _ := test_utils.CreateTestUser(t, "manager")
 	userId := models.GetUserByEmail(email).ID.Hex()
 	tests := []struct {
 		name          string

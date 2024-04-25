@@ -668,7 +668,7 @@ func TestValidateEntityWithoutAttributes(t *testing.T) {
 
 	endpoint := test_utils.GetEndpoint("validateEntity", "rooms")
 	expectedMessage := "JSON body doesn't validate with the expected JSON schema"
-	validateManagedRequest(t, "POST", endpoint, requestBody, http.StatusBadRequest, expectedMessage)
+	test_utils.ValidateManagedRequest(t, "POST", endpoint, requestBody, http.StatusBadRequest, expectedMessage)
 }
 
 func TestValidateEntity(t *testing.T) {
@@ -688,7 +688,7 @@ func TestValidateEntity(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			room["domain"] = tt.domain
 			requestBody, _ := json.Marshal(room)
-			validateManagedRequest(t, "POST", endpoint, requestBody, tt.statusCode, tt.message)
+			test_utils.ValidateManagedRequest(t, "POST", endpoint, requestBody, tt.statusCode, tt.message)
 		})
 	}
 }
@@ -700,7 +700,7 @@ func TestErrorValidateValidRoomEntityNotEnoughPermissions(t *testing.T) {
 
 	endpoint := test_utils.GetEndpoint("validateEntity", "rooms")
 	expectedMessage := "This user does not have sufficient permissions to create this object under this domain "
-	validateRequest(t, REQUEST_WITH_USER, "POST", endpoint, requestBody, "viewer", http.StatusUnauthorized, expectedMessage)
+	test_utils.ValidateRequest(t, test_utils.REQUEST_WITH_USER, "POST", endpoint, requestBody, "viewer", http.StatusUnauthorized, expectedMessage)
 }
 
 func TestGetStats(t *testing.T) {
@@ -735,7 +735,7 @@ func TestGetApiVersion(t *testing.T) {
 func TestGetLayersObjectsRootRequired(t *testing.T) {
 	endpoint := test_utils.GetEndpoint("layersObjects", "racks-layer")
 	expectedMessage := "Query param root is mandatory"
-	validateManagedRequest(t, "GET", endpoint, nil, http.StatusBadRequest, expectedMessage)
+	test_utils.ValidateManagedRequest(t, "GET", endpoint, nil, http.StatusBadRequest, expectedMessage)
 }
 
 func TestGetLayersObjectsLayerUnknown(t *testing.T) {
@@ -746,7 +746,7 @@ func TestGetLayersObjectsLayerUnknown(t *testing.T) {
 func TestGetLayersObjectsWithSimpleFilter(t *testing.T) {
 	endpoint := test_utils.GetEndpoint("layersObjects", "racks-layer")
 	expectedMessage := "successfully processed request"
-	response := validateManagedRequest(t, "GET", endpoint+"?root=site-no-temperature.building-1.room-1", nil, http.StatusOK, expectedMessage)
+	response := test_utils.ValidateManagedRequest(t, "GET", endpoint+"?root=site-no-temperature.building-1.room-1", nil, http.StatusOK, expectedMessage)
 
 	data, exists := response["data"].([]any)
 	assert.True(t, exists)
@@ -764,7 +764,7 @@ func TestGetLayersObjectsWithSimpleFilter(t *testing.T) {
 func TestGetLayersObjectsWithDoubleFilter(t *testing.T) {
 	endpoint := test_utils.GetEndpoint("layersObjects", "racks-1-layer")
 	expectedMessage := "successfully processed request"
-	response := validateManagedRequest(t, "GET", endpoint+"?root=site-no-temperature.building-1.room-*", nil, http.StatusOK, expectedMessage)
+	response := test_utils.ValidateManagedRequest(t, "GET", endpoint+"?root=site-no-temperature.building-1.room-*", nil, http.StatusOK, expectedMessage)
 
 	data, exists := response["data"].([]any)
 	assert.True(t, exists)
