@@ -434,7 +434,7 @@ func (n *getObjectNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	if len(n.attrs) > 0 {
+	if n.attrs != nil && len(n.attrs) > 0 {
 		var relativePath *views.RelativePathArgs
 		if n.recursive.isRecursive {
 			relativePath = &views.RelativePathArgs{

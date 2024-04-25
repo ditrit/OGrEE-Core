@@ -744,8 +744,9 @@ func (p *parser) parseGet() node {
 	_, isRecursive := args["r"]
 
 	path := p.parsePath("")
-	attrs := []string{}
+	var attrs []string
 	if p.parseExact(":") {
+		attrs = []string{}
 		for {
 			attrs = append(attrs, p.parseComplexWord("attribute"))
 			if !p.parseExact(",") {
