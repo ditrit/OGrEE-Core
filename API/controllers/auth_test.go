@@ -2,14 +2,22 @@ package controllers_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"net/http/httptest"
 	"p3/models"
 	"p3/test/e2e"
+	test_utils "p3/test/utils"
 	u "p3/utils"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+)
+
+const (
+	REQUEST_WITH_USER = iota
+	REQUEST_WITH_TOKEN
 )
 
 func getUserToken(email string, password string) string {
@@ -20,27 +28,44 @@ func getUserToken(email string, password string) string {
 	return acc.Token
 }
 
-func TestCreateUserInvalidBody(t *testing.T) {
-	e2e.TestInvalidBody(t, "POST", "/api/users", "Invalid request: wrong format body")
+func createTestUser(t *testing.T, role string) (string, string) {
+	email := "temporary_user@test.com"
+	password := "fake_password"
+	requestBody := fmt.Sprintf(`{
+		"password": "%s",
+		"roles": {"*": "%s"},
+		"email": "%s"
+	}`, password, role, email)
+	recorder := e2e.MakeRequest("POST", test_utils.GetEndpoint("users"), []byte(requestBody))
+	assert.Equal(t, http.StatusCreated, recorder.Code)
+
+	t.Cleanup(func() {
+		userId := models.GetUserByEmail(email)
+		if userId != nil {
+			err := models.DeleteUser(userId.ID)
+			assert.Nil(t, err)
+		}
+	})
+	return email, password
 }
 
-// Tests domain bulk creation (/api/users/bulk)
-func TestCreateBulkUsersInvalidBody(t *testing.T) {
-	requestBody := []byte(`[
-		{
-			"name": "invalid json body"",
-		},
-	]`)
-
-	recorder := e2e.MakeRequest("POST", "/api/users/bulk", requestBody)
-	assert.Equal(t, http.StatusBadRequest, recorder.Code)
+func validateRequest(t *testing.T, requestType int, httpMethod string, endpoint string, requestBody []byte, authId string, expectedStatus int, expectedMessage string) {
+	var recorder *httptest.ResponseRecorder
+	// authId is the user name if requestType is REQUEST_WITH_USER. If notit should be the auth token
+	if requestType == REQUEST_WITH_USER {
+		recorder = e2e.MakeRequestWithUser(httpMethod, endpoint, requestBody, authId)
+	} else {
+		recorder = e2e.MakeRequestWithToken(httpMethod, endpoint, requestBody, authId)
+	}
+	// recorder := e2e.MakeRequestWithToken(httpMethod, endpoint, requestBody, token)
+	assert.Equal(t, expectedStatus, recorder.Code)
 
 	var response map[string]interface{}
 	json.Unmarshal(recorder.Body.Bytes(), &response)
 
 	message, exists := response["message"].(string)
 	assert.True(t, exists)
-	assert.Equal(t, "Invalid request", message)
+	assert.Equal(t, expectedMessage, message)
 }
 
 func TestCreateBulkUsers(t *testing.T) {
@@ -63,7 +88,7 @@ func TestCreateBulkUsers(t *testing.T) {
 		}
 	]`)
 
-	recorder := e2e.MakeRequest("POST", "/api/users/bulk", requestBody)
+	recorder := e2e.MakeRequest("POST", test_utils.GetEndpoint("usersBulk"), requestBody)
 	assert.Equal(t, http.StatusOK, recorder.Code)
 
 	var response map[string]interface{}
@@ -86,20 +111,22 @@ func TestCreateBulkUsers(t *testing.T) {
 	assert.Equal(t, "successfully created", status)
 	_, exists = userWithPassword["password"]
 	assert.False(t, exists)
+
+	// we delete the created users
+	for _, userEmail := range []string{"user_with_password@test.com", "user_no_password@test.com"} {
+		models.DeleteUser(models.GetUserByEmail(userEmail).ID)
+	}
 }
 
 // Tests Login
-func TestLoginInvalidBody(t *testing.T) {
-	e2e.TestInvalidBody(t, "POST", "/api/login", "Invalid request")
-}
-
 func TestLoginWrongPassword(t *testing.T) {
+	email, _ := createTestUser(t, "manager")
 	requestBody := []byte(`{
-		"email": "user_with_password@test.com",
+		"email": "` + email + `",
 		"password": "wrong_password"
 	}`)
 
-	recorder := e2e.MakeRequest("POST", "/api/login", requestBody)
+	recorder := e2e.MakeRequest("POST", test_utils.GetEndpoint("login"), requestBody)
 	assert.Equal(t, http.StatusUnauthorized, recorder.Code)
 
 	var response map[string]interface{}
@@ -110,12 +137,13 @@ func TestLoginWrongPassword(t *testing.T) {
 }
 
 func TestLoginSuccess(t *testing.T) {
+	userEmail, password := createTestUser(t, "manager")
 	requestBody := []byte(`{
-		"email": "user_with_password@test.com",
-		"password": "fake_password"
+		"email": "` + userEmail + `",
+		"password": "` + password + `"
 	}`)
 
-	recorder := e2e.MakeRequest("POST", "/api/login", requestBody)
+	recorder := e2e.MakeRequest("POST", test_utils.GetEndpoint("login"), requestBody)
 	assert.Equal(t, http.StatusOK, recorder.Code)
 
 	var response map[string]interface{}
@@ -128,7 +156,7 @@ func TestLoginSuccess(t *testing.T) {
 	assert.True(t, exists)
 	email, exists := account["email"].(string)
 	assert.True(t, exists)
-	assert.Equal(t, "user_with_password@test.com", email)
+	assert.Equal(t, userEmail, email)
 	token, exists := account["token"].(string)
 	assert.True(t, exists)
 	assert.NotEmpty(t, token)
@@ -150,7 +178,7 @@ func TestRequestWithEmptyAuthorizationHeader(t *testing.T) {
 	header := map[string]string{
 		"Authorization": "",
 	}
-	recorder := e2e.MakeRequestWithHeaders("GET", "/api/users", nil, header)
+	recorder := e2e.MakeRequestWithHeaders("GET", test_utils.GetEndpoint("users"), nil, header)
 	assert.Equal(t, http.StatusForbidden, recorder.Code)
 
 	var response map[string]interface{}
@@ -165,7 +193,7 @@ func TestRequestWithNoToken(t *testing.T) {
 	header := map[string]string{
 		"Authorization": "Basic",
 	}
-	recorder := e2e.MakeRequestWithHeaders("GET", "/api/users", nil, header)
+	recorder := e2e.MakeRequestWithHeaders("GET", test_utils.GetEndpoint("users"), nil, header)
 	assert.Equal(t, http.StatusForbidden, recorder.Code)
 
 	var response map[string]interface{}
@@ -177,7 +205,7 @@ func TestRequestWithNoToken(t *testing.T) {
 }
 
 func TestRequestWithInvalidToken(t *testing.T) {
-	recorder := e2e.MakeRequestWithToken("GET", "/api/users", nil, "invalid")
+	recorder := e2e.MakeRequestWithToken("GET", test_utils.GetEndpoint("users"), nil, "invalid")
 	assert.Equal(t, http.StatusForbidden, recorder.Code)
 
 	var response map[string]interface{}
@@ -191,7 +219,7 @@ func TestRequestWithInvalidToken(t *testing.T) {
 func TestGetAllUsers(t *testing.T) {
 	// As admin, we get all users
 
-	recorder := e2e.MakeRequest("GET", "/api/users", nil)
+	recorder := e2e.MakeRequest("GET", test_utils.GetEndpoint("users"), nil)
 	assert.Equal(t, http.StatusOK, recorder.Code)
 
 	var response map[string]interface{}
@@ -203,14 +231,15 @@ func TestGetAllUsers(t *testing.T) {
 
 	data, exists := response["data"].([]interface{})
 	assert.True(t, exists)
-	assert.Equal(t, 5, len(data))
+	assert.Equal(t, 3, len(data))
 }
 
 func TestGetUsersWithNormalUser(t *testing.T) {
-	userToken := getUserToken("user_with_password@test.com", "fake_password")
+	userEmail, password := createTestUser(t, "user")
+	userToken := getUserToken(userEmail, password)
 	assert.NotEmpty(t, userToken)
 
-	recorder := e2e.MakeRequestWithToken("GET", "/api/users", nil, userToken)
+	recorder := e2e.MakeRequestWithToken("GET", test_utils.GetEndpoint("users"), nil, userToken)
 	assert.Equal(t, http.StatusOK, recorder.Code)
 
 	var response map[string]interface{}
@@ -226,12 +255,13 @@ func TestGetUsersWithNormalUser(t *testing.T) {
 }
 
 func TestDeleteWithoutEnoughPermissions(t *testing.T) {
-	userId := models.GetUserByEmail("user_no_password@test.com").ID.Hex()
+	userEmail, password := createTestUser(t, "user")
+	userId := models.GetUserByEmail("admin@admin.com").ID.Hex()
 	assert.NotEmpty(t, userId)
-	userToken := getUserToken("user_with_password@test.com", "fake_password")
+	userToken := getUserToken(userEmail, password)
 	assert.NotEmpty(t, userToken)
 
-	recorder := e2e.MakeRequestWithToken("DELETE", "/api/users/"+userId, nil, userToken)
+	recorder := e2e.MakeRequestWithToken("DELETE", test_utils.GetEndpoint("usersInstance", userId), nil, userToken)
 	assert.Equal(t, http.StatusUnauthorized, recorder.Code)
 
 	var response map[string]interface{}
@@ -244,10 +274,11 @@ func TestDeleteWithoutEnoughPermissions(t *testing.T) {
 
 func TestDeleteUser(t *testing.T) {
 	// we get the user ID
-	userId := models.GetUserByEmail("user_no_password@test.com").ID.Hex()
+	userEmail, _ := createTestUser(t, "user")
+	userId := models.GetUserByEmail(userEmail).ID.Hex()
 	assert.NotEmpty(t, userId)
 
-	recorder := e2e.MakeRequest("DELETE", "/api/users/"+userId, nil)
+	recorder := e2e.MakeRequest("DELETE", test_utils.GetEndpoint("usersInstance", userId), nil)
 	assert.Equal(t, http.StatusOK, recorder.Code)
 
 	var response map[string]interface{}
@@ -258,7 +289,7 @@ func TestDeleteUser(t *testing.T) {
 	assert.Equal(t, "successfully removed user", message)
 
 	// We get a Not Found if we try to delete again
-	recorder = e2e.MakeRequest("DELETE", "/api/users/"+userId, nil)
+	recorder = e2e.MakeRequest("DELETE", test_utils.GetEndpoint("usersInstance", userId), nil)
 	assert.Equal(t, http.StatusNotFound, recorder.Code)
 
 	json.Unmarshal(recorder.Body.Bytes(), &response)
@@ -269,7 +300,7 @@ func TestDeleteUser(t *testing.T) {
 }
 
 func TestDeleteWithInvalidIdReturnsError(t *testing.T) {
-	recorder := e2e.MakeRequest("DELETE", "/api/users/unknown", nil)
+	recorder := e2e.MakeRequest("DELETE", test_utils.GetEndpoint("usersInstance", "unknown"), nil)
 	assert.Equal(t, http.StatusBadRequest, recorder.Code)
 
 	var response map[string]interface{}
@@ -281,212 +312,106 @@ func TestDeleteWithInvalidIdReturnsError(t *testing.T) {
 }
 
 // Tests modify user role
-func TestModifyUserInvalidBody(t *testing.T) {
-	userId := models.GetUserByEmail("user_with_password@test.com").ID.Hex()
-	e2e.TestInvalidBody(t, "PATCH", "/api/users/"+userId, "Invalid request")
-}
+func TestModifyRole(t *testing.T) {
+	email, password := createTestUser(t, "manager")
+	userId := models.GetUserByEmail(email).ID.Hex()
+	userToken := getUserToken(email, password)
+	tests := []struct {
+		name        string
+		requestType int
+		authId      string
+		userId      string
+		requestBody string
+		statusCode  int
+		message     string
+	}{
+		{"ExtraDataReturnsError", REQUEST_WITH_TOKEN, userToken, userId, `{"roles": {"*": "user"},"name": "other name"}`, http.StatusBadRequest, "Only 'roles' should be provided to patch"},
+		{"InvalidRole", REQUEST_WITH_TOKEN, userToken, userId, `{"roles": {"*": "invalid"}}`, http.StatusInternalServerError, "Role assigned is not valid: "},
+		{"InvalidId", REQUEST_WITH_TOKEN, userToken, "invalid", `{"roles": {"*": "user"}}`, http.StatusBadRequest, "User ID is not valid"},
+		{"ModifyRoleWithNormalUser", REQUEST_WITH_USER, "user", userId, `{"roles": {"*": "manager"}}`, http.StatusUnauthorized, "Caller does not have permission to modify this user"},
+		{"Success", REQUEST_WITH_TOKEN, userToken, userId, `{"roles": {"*": "viewer"}}`, http.StatusOK, "successfully updated user roles"},
+	}
 
-func TestModifyRoleWithMoreDataReturnsError(t *testing.T) {
-	// we get the user ID
-	userId := models.GetUserByEmail("user_with_password@test.com").ID.Hex()
-	assert.NotEmpty(t, userId)
-
-	requestBody := []byte(`{
-		"roles": {
-			"*": "user"
-		},
-		"name": "other name"
-	}`)
-
-	recorder := e2e.MakeRequest("PATCH", "/api/users/"+userId, requestBody)
-	assert.Equal(t, http.StatusBadRequest, recorder.Code)
-
-	var response map[string]interface{}
-	json.Unmarshal(recorder.Body.Bytes(), &response)
-
-	message, exists := response["message"].(string)
-	assert.True(t, exists)
-	assert.Equal(t, "Only 'roles' should be provided to patch", message)
-}
-
-func TestModifyRoleWithInvalidRole(t *testing.T) {
-	// we get the user ID
-	userId := models.GetUserByEmail("user_with_password@test.com").ID.Hex()
-	assert.NotEmpty(t, userId)
-
-	requestBody := []byte(`{
-		"roles": {
-			"*": "invalid"
-		}
-	}`)
-
-	recorder := e2e.MakeRequest("PATCH", "/api/users/"+userId, requestBody)
-	assert.Equal(t, http.StatusInternalServerError, recorder.Code)
-
-	var response map[string]interface{}
-	json.Unmarshal(recorder.Body.Bytes(), &response)
-
-	message, exists := response["message"].(string)
-	assert.True(t, exists)
-	assert.Equal(t, "Role assigned is not valid: ", message)
-}
-
-func TestModifyRoleWithInvalidId(t *testing.T) {
-	requestBody := []byte(`{
-		"roles": {
-			"*": "user"
-		}
-	}`)
-
-	recorder := e2e.MakeRequest("PATCH", "/api/users/invalid", requestBody)
-	assert.Equal(t, http.StatusBadRequest, recorder.Code)
-
-	var response map[string]interface{}
-	json.Unmarshal(recorder.Body.Bytes(), &response)
-
-	message, exists := response["message"].(string)
-	assert.True(t, exists)
-	assert.Equal(t, "User ID is not valid", message)
-}
-
-func TestModifyRoleWithNormalUser(t *testing.T) {
-	userId := models.GetUserByEmail("user_with_password@test.com").ID.Hex()
-	assert.NotEmpty(t, userId)
-	userToken := getUserToken("user_with_password@test.com", "fake_password")
-	assert.NotEmpty(t, userToken)
-
-	requestBody := []byte(`{
-		"roles": {
-			"*": "manager"
-		}
-	}`)
-
-	recorder := e2e.MakeRequestWithToken("PATCH", "/api/users/"+userId, requestBody, userToken)
-	assert.Equal(t, http.StatusUnauthorized, recorder.Code)
-
-	var response map[string]interface{}
-	json.Unmarshal(recorder.Body.Bytes(), &response)
-
-	message, exists := response["message"].(string)
-	assert.True(t, exists)
-	assert.Equal(t, "Caller does not have permission to modify this user", message)
-}
-
-func TestModifyRoleSuccess(t *testing.T) {
-	// we get the user ID
-	userId := models.GetUserByEmail("user_with_password@test.com").ID.Hex()
-	assert.NotEmpty(t, userId)
-
-	requestBody := []byte(`{
-		"roles": {
-			"*": "viewer"
-		}
-	}`)
-
-	recorder := e2e.MakeRequest("PATCH", "/api/users/"+userId, requestBody)
-	assert.Equal(t, http.StatusOK, recorder.Code)
-
-	var response map[string]interface{}
-	json.Unmarshal(recorder.Body.Bytes(), &response)
-
-	message, exists := response["message"].(string)
-	assert.True(t, exists)
-	assert.Equal(t, "successfully updated user roles", message)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			changePasswordEndpoint := test_utils.GetEndpoint("usersInstance", tt.userId)
+			validateRequest(t, tt.requestType, "PATCH", changePasswordEndpoint, []byte(tt.requestBody), tt.authId, tt.statusCode, tt.message)
+		})
+	}
 }
 
 // Tests modify and reset user password
-func TestModifyPasswordInvalidBody(t *testing.T) {
-	e2e.TestInvalidBody(t, "POST", "/api/users/password/change", "Invalid request")
-}
-
-func TestModifyPasswordNotEnoughArguments(t *testing.T) {
-	userToken := getUserToken("user_with_password@test.com", "fake_password")
-	requestBody := []byte(`{
-		"newPassword": "fake_password"
-	}`)
-
-	recorder := e2e.MakeRequestWithToken("POST", "/api/users/password/change", requestBody, userToken)
-	assert.Equal(t, http.StatusBadRequest, recorder.Code)
-
-	var response map[string]interface{}
-	json.Unmarshal(recorder.Body.Bytes(), &response)
-
-	message, exists := response["message"].(string)
-	assert.True(t, exists)
-	assert.Equal(t, "Invalid request: wrong body format", message)
-}
-
-func TestModifyPasswordSuccess(t *testing.T) {
-	userToken := getUserToken("user_with_password@test.com", "fake_password")
-	requestBody := []byte(`{
-		"currentPassword": "fake_password",
+func TestModifyPassword(t *testing.T) {
+	email, password := createTestUser(t, "manager")
+	userToken := getUserToken(email, password)
+	correctRequestBody := `{
+		"currentPassword": "` + password + `",
 		"newPassword": "fake_password2"
-	}`)
+	}`
+	tests := []struct {
+		name        string
+		requestBody string
+		statusCode  int
+		message     string
+	}{
+		{"NotEnoughArguments", `{"newPassword": "fake_password"}`, http.StatusBadRequest, "Invalid request: wrong body format"},
+		{"Success", correctRequestBody, http.StatusOK, "successfully updated user password"},
+	}
 
-	recorder := e2e.MakeRequestWithToken("POST", "/api/users/password/change", requestBody, userToken)
-	assert.Equal(t, http.StatusOK, recorder.Code)
+	changePasswordEndpoint := test_utils.GetEndpoint("changePassword")
 
-	var response map[string]interface{}
-	json.Unmarshal(recorder.Body.Bytes(), &response)
-
-	message, exists := response["message"].(string)
-	assert.True(t, exists)
-	assert.Equal(t, "successfully updated user password", message)
-
-	token, exists := response["token"].(string)
-	assert.True(t, exists)
-	assert.NotEmpty(t, token)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			validateRequest(t, REQUEST_WITH_TOKEN, "POST", changePasswordEndpoint, []byte(tt.requestBody), userToken, tt.statusCode, tt.message)
+		})
+	}
 }
 
-func TestResetPasswordErrorWhenResetTokenIsNotValid(t *testing.T) {
-	// User token is not a reset token
-	userToken := getUserToken("user_with_password@test.com", "fake_password2")
-	requestBody := []byte(`{
-		"newPassword": "fake_password"
-	}`)
+func TestResetPassword(t *testing.T) {
+	email, password := createTestUser(t, "manager")
+	userId := models.GetUserByEmail(email).ID
+	correctRequestBody := `{"newPassword": "fake_password"}`
+	tests := []struct {
+		name        string
+		token       string
+		requestBody string
+		statusCode  int
+		message     string
+	}{
+		{"InvalidResetToken", getUserToken(email, password), correctRequestBody, http.StatusForbidden, "Token is not valid."}, // User token is not a reset token
+		{"NotEnoughArguments", models.GenerateToken(u.RESET_TAG, userId, time.Minute), `{}`, http.StatusBadRequest, "Invalid request: wrong body format"},
+		{"Success", models.GenerateToken(u.RESET_TAG, userId, time.Minute), correctRequestBody, http.StatusOK, "successfully updated user password"},
+	}
 
-	recorder := e2e.MakeRequestWithToken("POST", "/api/users/password/reset", requestBody, userToken)
-	assert.Equal(t, http.StatusForbidden, recorder.Code)
+	resetPasswordEndpoint := test_utils.GetEndpoint("resetPassword")
 
-	var response map[string]interface{}
-	json.Unmarshal(recorder.Body.Bytes(), &response)
-
-	message, exists := response["message"].(string)
-	assert.True(t, exists)
-	assert.Equal(t, "Token is not valid.", message)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			validateRequest(t, REQUEST_WITH_TOKEN, "POST", resetPasswordEndpoint, []byte(tt.requestBody), tt.token, tt.statusCode, tt.message)
+		})
+	}
 }
 
-func TestResetPasswordNotEnoughArguments(t *testing.T) {
-	userId := models.GetUserByEmail("user_with_password@test.com").ID
-	resetToken := models.GenerateToken(u.RESET_TAG, userId, time.Minute)
-	requestBody := []byte(`{}`)
+// Tests with invalid body
+func TestRequestsWithInvalidBody(t *testing.T) {
+	email, _ := createTestUser(t, "manager")
+	userId := models.GetUserByEmail(email).ID.Hex()
+	tests := []struct {
+		name          string
+		requestMethod string
+		endpoint      string
+		message       string
+	}{
+		{"CreateUser", "POST", test_utils.GetEndpoint("users"), "Invalid request: wrong format body"},
+		{"CreateBulkUsers", "POST", test_utils.GetEndpoint("usersBulk"), "Invalid request"},
+		{"Login", "POST", test_utils.GetEndpoint("login"), "Invalid request"},
+		{"ModifyUser", "PATCH", test_utils.GetEndpoint("usersInstance", userId), "Invalid request"},
+		{"ModifyPassword", "POST", test_utils.GetEndpoint("changePassword"), "Invalid request"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e2e.TestInvalidBody(t, tt.requestMethod, tt.endpoint, tt.message)
+		})
+	}
 
-	recorder := e2e.MakeRequestWithToken("POST", "/api/users/password/reset", requestBody, resetToken)
-	assert.Equal(t, http.StatusBadRequest, recorder.Code)
-
-	var response map[string]interface{}
-	json.Unmarshal(recorder.Body.Bytes(), &response)
-
-	message, exists := response["message"].(string)
-	assert.True(t, exists)
-	assert.Equal(t, "Invalid request: wrong body format", message)
-}
-
-func TestResetPasswordSuccess(t *testing.T) {
-	userId := models.GetUserByEmail("user_with_password@test.com").ID
-	resetToken := models.GenerateToken(u.RESET_TAG, userId, time.Minute)
-	//current password is not needed
-	requestBody := []byte(`{
-		"newPassword": "fake_password"
-	}`)
-
-	recorder := e2e.MakeRequestWithToken("POST", "/api/users/password/reset", requestBody, resetToken)
-	assert.Equal(t, http.StatusOK, recorder.Code)
-
-	var response map[string]interface{}
-	json.Unmarshal(recorder.Body.Bytes(), &response)
-
-	message, exists := response["message"].(string)
-	assert.True(t, exists)
-	assert.Equal(t, "successfully updated user password", message)
 }
