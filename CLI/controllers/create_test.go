@@ -3,6 +3,7 @@ package controllers_test
 import (
 	"cli/controllers"
 	"cli/models"
+	"maps"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -229,8 +230,8 @@ func TestCreateDomain(t *testing.T) {
 
 func TestCreateBuildingInvalidSize(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
-	buildingInvalidSize := copyMap(baseBuilding)
-	buildingInvalidSize["attributes"].(map[string]any)["size"] = []float64{}
+	buildingInvalidSize := maps.Clone(baseBuilding)
+	buildingInvalidSize["attributes"].(map[string]any)["size"] = "[1,2,3]"
 
 	mockGetObject(mockAPI, baseSite)
 
@@ -250,16 +251,17 @@ func TestCreateBuildingInvalidSize(t *testing.T) {
 		" for more details on how to create objects "+
 		"using this syntax")
 	controllers.State.DebugLvl = 0
+	buildingInvalidSize["attributes"].(map[string]any)["size"] = []float64{3, 3, 5}
 }
 
 func TestCreateBuildingInvalidPosXY(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
-	buildingInvalidPosXY := copyMap(baseBuilding)
+	buildingInvalidPosXY := maps.Clone(baseBuilding)
 	buildingInvalidPosXY["attributes"].(map[string]any)["posXY"] = []float64{}
 
 	// with state.DebugLvl = 0
 	mockGetObject(mockAPI, baseSite)
-	err := controller.CreateObject("/Physical/BASIC/A", models.BLDG, copyMap(buildingInvalidPosXY))
+	err := controller.CreateObject("/Physical/BASIC/A", models.BLDG, maps.Clone(buildingInvalidPosXY))
 	// returns nil but the object is not created
 	assert.Nil(t, err)
 
@@ -274,6 +276,7 @@ func TestCreateBuildingInvalidPosXY(t *testing.T) {
 		" for more details on how to create objects "+
 		"using this syntax")
 	controllers.State.DebugLvl = 0
+	buildingInvalidPosXY["attributes"].(map[string]any)["posXY"] = []float64{4.6666666666667, -2}
 }
 
 func TestCreateBuilding(t *testing.T) {
@@ -288,23 +291,23 @@ func TestCreateBuilding(t *testing.T) {
 		"domain":      "test-domain",
 		"description": "",
 		"attributes": map[string]any{
-			"height":     "5",
+			"height":     float64(5),
 			"heightUnit": "m",
-			"rotation":   `30.5`,
-			"posXY":      `[4.6666666666667, -2]`,
+			"rotation":   30.5,
+			"posXY":      []float64{4.6666666666667, -2},
 			"posXYUnit":  "m",
-			"size":       `[3, 3]`,
+			"size":       []float64{3, 3},
 			"sizeUnit":   "m",
 		},
 	})
 
-	err := controller.CreateObject("/Physical/BASIC/A", models.BLDG, copyMap(baseBuilding))
+	err := controller.CreateObject("/Physical/BASIC/A", models.BLDG, maps.Clone(baseBuilding))
 	assert.Nil(t, err)
 }
 
 func TestCreateRoomInvalidSize(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
-	roomsBuilding := copyMap(baseBuilding)
+	roomsBuilding := maps.Clone(baseBuilding)
 	room := map[string]any{
 		"category": "room",
 		"id":       "BASIC.A.R1",
@@ -384,7 +387,7 @@ func TestCreateRoomInvalidPosXY(t *testing.T) {
 func TestCreateRoom(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	mockGetObject(mockAPI, copyMap(baseBuilding))
+	mockGetObject(mockAPI, maps.Clone(baseBuilding))
 
 	mockCreateObject(mockAPI, "room", map[string]any{
 		"category":    "room",
@@ -395,13 +398,13 @@ func TestCreateRoom(t *testing.T) {
 		"description": "",
 		"attributes": map[string]any{
 			"floorUnit":       "t",
-			"height":          "5",
+			"height":          float64(5),
 			"heightUnit":      "m",
 			"axisOrientation": "+x+y",
-			"rotation":        `30.5`,
-			"posXY":           `[4.6666666666667, -2]`,
+			"rotation":        30.5,
+			"posXY":           []float64{4.6666666666667, -2},
 			"posXYUnit":       "m",
-			"size":            `[3, 3]`,
+			"size":            []float64{3, 3},
 			"sizeUnit":        "m",
 		},
 	})
@@ -494,12 +497,12 @@ func TestCreateRack(t *testing.T) {
 		"domain":      "test-domain",
 		"description": "",
 		"attributes": map[string]any{
-			"height":     "47",
+			"height":     float64(47),
 			"heightUnit": "U",
-			"rotation":   `[45, 45, 45]`,
-			"posXYZ":     `[4.6666666666667, -2, 0]`,
+			"rotation":   []float64{45, 45, 45},
+			"posXYZ":     []float64{4.6666666666667, -2, 0},
 			"posXYUnit":  "m",
-			"size":       `[1, 1]`,
+			"size":       []float64{1, 1},
 			"sizeUnit":   "cm",
 		},
 	})
@@ -542,10 +545,10 @@ func TestCreateDevice(t *testing.T) {
 		"domain":      "test-domain",
 		"description": "",
 		"attributes": map[string]any{
-			"height":      "47",
+			"height":      47,
 			"heightUnit":  "U",
 			"orientation": "front",
-			"size":        `[1,1]`,
+			"size":        []float64{1, 1},
 			"sizeUnit":    "cm",
 		},
 	})
@@ -557,7 +560,7 @@ func TestCreateDevice(t *testing.T) {
 		"parentId": "BASIC.A.R1.A01",
 		"domain":   "test-domain",
 		"attributes": map[string]any{
-			"height":      "47",
+			"height":      47,
 			"heightUnit":  "U",
 			"orientation": "front",
 			"size":        []float64{1, 1},
@@ -587,11 +590,11 @@ func TestCreateDeviceWithSizeU(t *testing.T) {
 		"domain":      "test-domain",
 		"description": "",
 		"attributes": map[string]any{
-			"height":      "89",
-			"sizeU":       "2",
+			"height":      float64(89),
+			"sizeU":       float64(2),
 			"heightUnit":  "U",
 			"orientation": "front",
-			"size":        `[1,1]`,
+			"size":        []float64{1, 1},
 			"sizeUnit":    "cm",
 		},
 	}
@@ -606,7 +609,7 @@ func TestCreateDeviceWithSizeU(t *testing.T) {
 		"parentId": "BASIC.A.R1.A01",
 		"domain":   "test-domain",
 		"attributes": map[string]any{
-			"sizeU":       2,
+			"sizeU":       float64(2),
 			"heightUnit":  "U",
 			"orientation": "front",
 			"size":        []float64{1, 1},
@@ -642,7 +645,7 @@ func TestCreateGroup(t *testing.T) {
 
 	mockCreateObject(mockAPI, "group", map[string]any{
 		"attributes": map[string]any{
-			"content": "R1,R2",
+			"content": []string{"R1", "R2"},
 		},
 		"category":    "group",
 		"description": "",

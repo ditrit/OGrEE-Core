@@ -3,7 +3,7 @@ package controllers_test
 import (
 	"cli/controllers"
 	"cli/models"
-	"strconv"
+	"maps"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -33,13 +33,13 @@ func TestCreateTemplateOfTypeGenericWorks(t *testing.T) {
 func TestApplyTemplateOfTypeDeviceWorks(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	device := copyMap(chassis)
+	device := maps.Clone(chassis)
 	attributes := map[string]any{
 		"template":    "device-template",
 		"TDP":         "",
 		"TDPmax":      "",
 		"fbxModel":    "https://github.com/test.fbx",
-		"height":      "40.1",
+		"height":      40.1,
 		"heightUnit":  "mm",
 		"model":       "TNF2LTX",
 		"orientation": "front",
@@ -70,11 +70,11 @@ func TestApplyTemplateOfTypeDeviceWorks(t *testing.T) {
 	assert.Nil(t, err)
 
 	// we verify if the template was applied
-	assert.Equal(t, "100", device["attributes"].(map[string]any)["height"])
+	assert.Equal(t, 100, device["attributes"].(map[string]any)["height"])
 	assert.Equal(t, template["attributes"].(map[string]any)["type"], device["attributes"].(map[string]any)["type"])
 	assert.Equal(t, template["attributes"].(map[string]any)["vendor"], device["attributes"].(map[string]any)["vendor"])
-	assert.Equal(t, "[216, 659]", device["attributes"].(map[string]any)["size"])
-	assert.Equal(t, strconv.Itoa(sizeU), device["attributes"].(map[string]any)["sizeU"])
+	assert.Equal(t, []any{216, 659}, device["attributes"].(map[string]any)["size"])
+	assert.Equal(t, sizeU, device["attributes"].(map[string]any)["sizeU"])
 }
 
 func TestApplyTemplateOfTypeDeviceError(t *testing.T) {
@@ -164,12 +164,12 @@ func TestApplyTemplateOfTypeRoomWorks(t *testing.T) {
 	assert.Nil(t, err)
 
 	// we verify if the template was applied
-	assert.Equal(t, "41", room["attributes"].(map[string]any)["height"])
-	assert.Equal(t, "[216, 659]", room["attributes"].(map[string]any)["size"])
+	assert.Equal(t, 41, room["attributes"].(map[string]any)["height"])
+	assert.Equal(t, []any{216, 659}, room["attributes"].(map[string]any)["size"])
 	assert.Equal(t, template["axisOrientation"], room["attributes"].(map[string]any)["axisOrientation"])
 	assert.Equal(t, template["floorUnit"], room["attributes"].(map[string]any)["floorUnit"])
-	assert.Equal(t, "[0,0,0]", room["attributes"].(map[string]any)["vertices"])
-	assert.Equal(t, "[\"my-color\"]", room["attributes"].(map[string]any)["colors"])
+	assert.Equal(t, []any{0, 0, 0}, room["attributes"].(map[string]any)["vertices"])
+	assert.Equal(t, []any{"my-color"}, room["attributes"].(map[string]any)["colors"])
 }
 
 func TestLoadTemplateRoom(t *testing.T) {

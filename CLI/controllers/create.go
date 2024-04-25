@@ -93,11 +93,10 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 		} else {
 			//Serialise size and posXY manually instead
 			attr["size"] = serialiseVector(attr, "size")
-			fmt.Println(attr)
 		}
 
 		if _, ok := attr["size"].([]any); !ok {
-			if _, ok = attr["size"].([]float64); !ok {
+			if size, ok := attr["size"].([]float64); !ok || len(size) == 0 {
 				if State.DebugLvl > 0 {
 					l.GetErrorLogger().Println(
 						"User gave invalid size value for creating building")
@@ -112,7 +111,6 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 		}
 
 		attr["posXY"] = serialiseVector(attr, "posXY")
-
 		if posXY, ok := attr["posXY"].([]float64); !ok || len(posXY) != 2 {
 			if State.DebugLvl > 0 {
 				l.GetErrorLogger().Println(
@@ -166,7 +164,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 		}
 
 		if _, ok := attr["size"].([]any); !ok {
-			if _, ok = attr["size"].([]float64); !ok {
+			if size, ok := attr["size"].([]float64); !ok || len(size) == 0 {
 				if State.DebugLvl > 0 {
 					l.GetErrorLogger().Println(
 						"User gave invalid size value for creating room")
@@ -205,7 +203,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 		}
 
 		if _, ok := attr["size"].([]any); !ok {
-			if _, ok = attr["size"].([]float64); !ok {
+			if size, ok := attr["size"].([]float64); !ok || len(size) == 0 {
 				if State.DebugLvl > 0 {
 					l.GetErrorLogger().Println(
 						"User gave invalid size value for creating rack")
