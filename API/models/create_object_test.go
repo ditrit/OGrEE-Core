@@ -56,12 +56,12 @@ func init() {
 	}
 	rack := map[string]any{
 		"attributes": map[string]any{
-			"height":     "47",
+			"height":     47,
 			"heightUnit": "U",
-			"rotation":   "[45, 45, 45]",
-			"posXYZ":     "[4.6666666666667,  -2, 0]",
+			"rotation":   []any{45, 45, 45},
+			"posXYZ":     []any{4.6666666666667, -2, 0},
 			"posXYUnit":  "m",
-			"size":       "[80, 100.532442]",
+			"size":       []any{80, 100.532442},
 			"sizeUnit":   "cm",
 			"template":   "rack-with-slots",
 		},
@@ -103,13 +103,13 @@ func TestValidateEntityRoomParent(t *testing.T) {
 		"domain":      integration.TestDBName,
 		"attributes": map[string]any{
 			"floorUnit":       "t",
-			"height":          "2.8",
+			"height":          2.8,
 			"heightUnit":      "m",
 			"axisOrientation": "+x+y",
-			"rotation":        "-90",
-			"posXY":           "[0, 0]",
+			"rotation":        -90,
+			"posXY":           []any{0, 0},
 			"posXYUnit":       "m",
-			"size":            "[-13, -2.9]",
+			"size":            []any{-13, -2.9},
 			"sizeUnit":        "m",
 			"template":        "",
 		},
@@ -134,12 +134,12 @@ func TestValidateEntityDeviceParent(t *testing.T) {
 			"TDP":         "",
 			"TDPmax":      "",
 			"fbxModel":    "https://github.com/test.fbx",
-			"height":      "40.1",
+			"height":      40.1,
 			"heightUnit":  "mm",
 			"model":       "TNF2LTX",
 			"orientation": "front",
 			"partNumber":  "0303XXXX",
-			"size":        "[388.4, 205.9]",
+			"size":        []any{388.4, 205.9},
 			"sizeUnit":    "mm",
 			"template":    "huawei-xxxxxx",
 			"type":        "blade",
@@ -170,16 +170,16 @@ func TestValidateEntityDeviceSlot(t *testing.T) {
 		"description": "deviceA",
 		"domain":      integration.TestDBName,
 		"attributes": map[string]any{
-			"slot":        "[unknown]",
+			"slot":        []any{"unknown"},
 			"TDP":         "",
 			"TDPmax":      "",
 			"fbxModel":    "https://github.com/test.fbx",
-			"height":      "40.1",
+			"height":      40.1,
 			"heightUnit":  "mm",
 			"model":       "TNF2LTX",
 			"orientation": "front",
 			"partNumber":  "0303XXXX",
-			"size":        "[388.4, 205.9]",
+			"size":        []any{388.4, 205.9},
 			"sizeUnit":    "mm",
 			"template":    "huawei-xxxxxx",
 			"type":        "blade",
@@ -192,7 +192,7 @@ func TestValidateEntityDeviceSlot(t *testing.T) {
 	assert.Equal(t, "Invalid slot: parent does not have all the requested slots", err.Message)
 
 	// We add a valid slot
-	template["attributes"].(map[string]any)["slot"] = "[u01]"
+	template["attributes"].(map[string]any)["slot"] = []any{"u01"}
 	err = models.ValidateEntity(u.DEVICE, template)
 	assert.Nil(t, err)
 
@@ -205,7 +205,7 @@ func TestValidateEntityDeviceSlot(t *testing.T) {
 	assert.Nil(t, err, "The device")
 
 	// we verify if we can add another device in the same slot
-	template["attributes"].(map[string]any)["slot"] = "[u01]"
+	template["attributes"].(map[string]any)["slot"] = []any{"u01"}
 	template["name"] = "deviceB"
 	delete(template, "id")
 	delete(template, "createdDate")
@@ -223,7 +223,7 @@ func TestValidateEntityGroupParent(t *testing.T) {
 		"description": "groupA",
 		"domain":      integration.TestDBName,
 		"attributes": map[string]any{
-			"content": "device-1,device-1.device-2",
+			"content": []any{"device-1", "device-1.device-2"},
 		},
 	}
 	err := models.ValidateEntity(u.GROUP, template)
@@ -238,14 +238,14 @@ func TestValidateEntityGroupParent(t *testing.T) {
 
 	template["parentId"] = "siteA.building-1.room-1"
 	template["name"] = "groupA"
-	template["attributes"].(map[string]any)["content"] = "rack-1"
+	template["attributes"].(map[string]any)["content"] = []any{"rack-1"}
 	delete(template, "id")
 	err = models.ValidateEntity(u.GROUP, template)
 	assert.Nil(t, err)
 
 	template["parentId"] = "siteA.building-1.room-1.rack-1"
 	template["name"] = "groupA"
-	template["attributes"].(map[string]any)["content"] = "device-1,device-2"
+	template["attributes"].(map[string]any)["content"] = []any{"device-1", "device-2"}
 	delete(template, "id")
 	err = models.ValidateEntity(u.GROUP, template)
 	assert.Nil(t, err)
@@ -316,7 +316,7 @@ func TestCreateGenericWithSameNameAsCorridorReturnsError(t *testing.T) {
 func TestCreateGroupWithObjectThatNotExistsReturnsError(t *testing.T) {
 	room := integration.RequireCreateRoom("", "create-object-6-room")
 
-	_, err := integration.CreateGroup(room["id"].(string), "create-object-6", []string{"not-exists"})
+	_, err := integration.CreateGroup(room["id"].(string), "create-object-6", []any{"not-exists"})
 	assert.NotNil(t, err)
 	assert.Equal(t, u.ErrBadFormat, err.Type)
 	assert.Equal(t, "Some object(s) could not be found. Please check and try again", err.Message)
@@ -331,10 +331,10 @@ func TestCreateGroupWithCorridorsRacksAndGenericWorks(t *testing.T) {
 	group, err := integration.CreateGroup(
 		room["id"].(string),
 		"create-object-7",
-		[]string{rack["name"].(string), corridor["name"].(string), generic["name"].(string)},
+		[]any{rack["name"].(string), corridor["name"].(string), generic["name"].(string)},
 	)
 	assert.Nil(t, err)
-	unit.HasAttribute(t, group, "content", "create-object-7-rack,create-object-7-corridor,create-object-7-generic")
+	unit.HasAttribute(t, group, "content", []any{"create-object-7-rack", "create-object-7-corridor", "create-object-7-generic"})
 }
 
 func TestCreateGenericWithParentNotRoomReturnsError(t *testing.T) {

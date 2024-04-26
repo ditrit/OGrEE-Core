@@ -335,7 +335,7 @@ func LSEnterprise() error {
 	if err != nil {
 		return err
 	}
-	views.DisplayJson(resp.Body)
+	views.DisplayJson("", resp.Body)
 	return nil
 }
 
@@ -387,7 +387,7 @@ func (controller Controller) GetByAttr(path string, u interface{}) error {
 			if attr, ok := devices[i]["attributes"].(map[string]interface{}); ok {
 				uStr := strconv.Itoa(u.(int))
 				if attr["height"] == uStr {
-					views.DisplayJson(devices[i])
+					views.DisplayJson("", devices[i])
 					return nil //What if the user placed multiple devices at same height?
 				}
 			}
@@ -399,7 +399,7 @@ func (controller Controller) GetByAttr(path string, u interface{}) error {
 		for i := range devices {
 			if attr, ok := devices[i]["attributes"].(map[string]interface{}); ok {
 				if attr["slot"] == u.(string) {
-					views.DisplayJson(devices[i])
+					views.DisplayJson("", devices[i])
 					return nil //What if the user placed multiple devices at same slot?
 				}
 			}
@@ -592,15 +592,11 @@ func (controller Controller) LinkObject(source string, destination string, attrs
 	}
 	payload := map[string]any{"parentId": destPath.ObjectID}
 
-	for i, attr := range attrs {
-		payload[attr] = Stringify(values[i])
-	}
-
 	if slots != nil {
-		if slots, err = ExpandSlotVector(slots); err != nil {
+		if slots, err = ExpandStrVector(slots); err != nil {
 			return err
 		}
-		payload["slot"] = "[" + strings.Join(slots, ",") + "]"
+		payload["slot"] = slots
 	}
 
 	_, err = controller.API.Request("PATCH", sourceUrl+"/link", payload, http.StatusOK)

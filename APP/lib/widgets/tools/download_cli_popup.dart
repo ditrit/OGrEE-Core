@@ -58,6 +58,7 @@ class _DownloadCliPopupState extends State<DownloadCliPopup> {
                                   height: 35,
                                   width: 165,
                                   child: DropdownButtonFormField<CliOS>(
+                                    borderRadius: BorderRadius.circular(12.0),
                                     decoration: GetFormInputDecoration(
                                       false,
                                       null,

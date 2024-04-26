@@ -613,13 +613,13 @@ func TestSetRoomAreas(t *testing.T) {
 	).Once()
 
 	roomResponse["attributes"] = map[string]any{
-		"reserved":  "[1, 2, 3, 4]",
-		"technical": "[1, 2, 3, 4]",
+		"reserved":  []float64{1, 2, 3, 4},
+		"technical": []float64{1, 2, 3, 4},
 	}
 	mockAPI.On(
 		"Request", "PATCH",
 		"/api/hierarchy-objects/site.building.room",
-		map[string]interface{}{"attributes": map[string]interface{}{"reserved": "[1, 2, 3, 4]", "technical": "[1, 2, 3, 4]"}},
+		map[string]interface{}{"attributes": map[string]interface{}{"reserved": []float64{1, 2, 3, 4}, "technical": []float64{1, 2, 3, 4}}},
 		200,
 	).Return(
 		&controllers.Response{

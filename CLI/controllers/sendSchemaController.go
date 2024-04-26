@@ -4,7 +4,6 @@ package controllers
 // before the CLI sends off to API
 
 import (
-	"bytes"
 	l "cli/logger"
 	"cli/models"
 	"fmt"
@@ -12,42 +11,18 @@ import (
 	"strings"
 )
 
-func serialiseVector(attr map[string]interface{}, want string) string {
-	var vector, newVector string
-
-	if vec, ok := attr[want]; !ok {
-		return ""
+func serialiseVector(attr map[string]interface{}, want string) []float64 {
+	if vector, ok := attr[want].([]float64); ok {
+		if want == "size" && len(vector) == 3 {
+			attr["height"] = vector[2]
+			vector = vector[:len(vector)-1]
+		} else if want == "posXYZ" && len(vector) == 2 {
+			vector = append(vector, 0)
+		}
+		return vector
 	} else {
-		vector = Stringify(vec)
+		return []float64{}
 	}
-
-	left := strings.Index(vector, "[")
-	right := strings.Index(vector, "]")
-	if left == -1 || right == -1 {
-		return ""
-	}
-
-	nums := stringSplitter(vector[left+1:right], ",", want)
-	if nums == nil {
-		return ""
-	}
-	//nums := strings.Split(subStr, ",")
-
-	length := len(nums)
-	if want == "size" {
-		length = 2
-	} else if want == "posXYZ" && length == 2 {
-		nums = append(nums, "0")
-		length++
-	}
-
-	newVector = "[" + strings.Join(nums[:length], ", ") + "]"
-
-	if want == "size" {
-		attr["height"] = nums[2]
-	}
-
-	return newVector
 }
 
 // Auxillary function for serialiseAttr
@@ -136,43 +111,6 @@ func checkNumeric(x interface{}) bool {
 	}
 }
 
-// Hack function for the reserved and technical areas
-// which copies that room areas function in ast.go
-// [room]:areas=[r1,r2,r3,r4]@[t1,t2,t3,t4]
-func parseReservedTech(x map[string]interface{}) map[string]interface{} {
-	var reservedStr string
-	var techStr string
-	if reserved, ok := x["reserved"].([]interface{}); ok {
-		if tech, ok := x["technical"].([]interface{}); ok {
-			if len(reserved) == 4 && len(tech) == 4 {
-				r4 := bytes.NewBufferString("")
-				fmt.Fprintf(r4, "%v", reserved[3].(float64))
-				r3 := bytes.NewBufferString("")
-				fmt.Fprintf(r3, "%v", reserved[2].(float64))
-				r2 := bytes.NewBufferString("")
-				fmt.Fprintf(r2, "%v", reserved[1].(float64))
-				r1 := bytes.NewBufferString("")
-				fmt.Fprintf(r1, "%v", reserved[0].(float64))
-
-				t4 := bytes.NewBufferString("")
-				fmt.Fprintf(t4, "%v", tech[3].(float64))
-				t3 := bytes.NewBufferString("")
-				fmt.Fprintf(t3, "%v", tech[2].(float64))
-				t2 := bytes.NewBufferString("")
-				fmt.Fprintf(t2, "%v", tech[1].(float64))
-				t1 := bytes.NewBufferString("")
-				fmt.Fprintf(t1, "%v", tech[0].(float64))
-				// [front/top, back/bottom, right, left]
-				reservedStr = "[" + r1.String() + ", " + r2.String() + ", " + r3.String() + ", " + r4.String() + "]"
-				techStr = "[" + t1.String() + ", " + t2.String() + ", " + t3.String() + ", " + t4.String() + "]"
-				x["reserved"] = reservedStr
-				x["technical"] = techStr
-			}
-		}
-	}
-	return x
-}
-
 // Helper func that safely deletes a string key in a map
 func DeleteAttr(x map[string]interface{}, key string) {
 	if _, ok := x[key]; ok {
@@ -219,9 +157,9 @@ func Stringify(x interface{}) string {
 	return ""
 }
 
-// ExpandSlotVector: allow usage of .. on slot vector, converting as bellow:
-// [slot01..slot03] => [slot01,slot02,slot03]
-func ExpandSlotVector(slotVector []string) ([]string, error) {
+// ExpandStrVector: allow usage of .. on device slot and group content vector
+// converting [slot01..slot03] on [slot01,slot02,slot03]
+func ExpandStrVector(slotVector []string) ([]string, error) {
 	slots := []string{}
 	for _, slot := range slotVector {
 		if strings.Contains(slot, "..") {
