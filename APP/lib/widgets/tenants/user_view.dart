@@ -81,6 +81,7 @@ class _UserViewState extends State<UserView> {
                       height: isSmallDisplay ? 30 : 35,
                       width: isSmallDisplay ? 115 : 145,
                       child: DropdownButtonFormField<UserSearchFields>(
+                        borderRadius: BorderRadius.circular(12.0),
                         decoration: GetFormInputDecoration(
                           isSmallDisplay,
                           null,

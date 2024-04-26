@@ -2,11 +2,9 @@ package controllers
 
 import (
 	"cli/models"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
 )
 
 // GetTemplate gets a template for "entity" with "name".
@@ -51,27 +49,6 @@ func (controller Controller) GetTemplate(name string, entity int) (map[string]an
 	return template, nil
 }
 
-// Used for importing data from templates
-func attrSerialiser(someVal interface{}, idx string, ent int) string {
-	if x, ok := someVal.(int); ok {
-		if ent == models.DEVICE || ent == models.ROOM || ent == models.BLDG {
-			return strconv.Itoa(x)
-		}
-		return strconv.FormatFloat(float64(x)/10, 'G', -1, 64)
-	} else if x, ok := someVal.(float64); ok {
-		if ent == models.DEVICE || ent == models.ROOM || ent == models.BLDG {
-			return strconv.FormatFloat(x, 'G', -1, 64)
-		}
-		return strconv.FormatFloat(x/10, 'G', -1, 64)
-	} else {
-		msg := "Warning: Invalid " + idx +
-			" value detected in size." +
-			" Resorting to default"
-		println(msg)
-		return "5"
-	}
-}
-
 // If user provided templates, get the JSON
 // and parse into templates
 func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, ent int) error {
@@ -81,16 +58,11 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 			return err
 		}
 
-		//MergeMaps(attr, tmpl, true)
 		key := determineStrKey(tmpl, []string{"sizeWDHmm", "sizeWDHm"})
 
-		if sizeInf, hasSize := tmpl[key].([]interface{}); hasSize && len(sizeInf) == 3 {
-			var xS, yS, zS string
-			xS = attrSerialiser(sizeInf[0], "x", ent)
-			yS = attrSerialiser(sizeInf[1], "y", ent)
-			zS = attrSerialiser(sizeInf[2], "height", ent)
-			attr["size"] = "[" + xS + ", " + yS + "]"
-			attr["height"] = zS
+		if sizeInf, hasSize := tmpl[key].([]any); hasSize && len(sizeInf) == 3 {
+			attr["size"] = sizeInf[:2]
+			attr["height"] = sizeInf[2]
 			CopyAttr(attr, tmpl, "shape")
 
 			if ent == models.DEVICE {
@@ -109,7 +81,7 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 									} else {
 										return errors.New("invalid size vector on given template")
 									}
-									attr["sizeU"] = strconv.Itoa(res)
+									attr["sizeU"] = res
 								}
 							}
 						}
@@ -121,10 +93,8 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 				attr["heightUnit"] = "m"
 
 				//Copy additional Room specific attributes
-				var tmp []byte
 				CopyAttr(attr, tmpl, "technicalArea")
 				if _, ok := attr["technicalArea"]; ok {
-					//tmp, _ := json.Marshal(attr["technicalArea"])
 					attr["technical"] = attr["technicalArea"]
 					delete(attr, "technicalArea")
 				}
@@ -133,81 +103,27 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 
 				CopyAttr(attr, tmpl, "reservedArea")
 				if _, ok := attr["reservedArea"]; ok {
-					//tmp, _ = json.Marshal(attr["reservedArea"])
 					attr["reserved"] = attr["reservedArea"]
 					delete(attr, "reservedArea")
 				}
 
-				parseReservedTech(attr)
-
 				CopyAttr(attr, tmpl, "separators")
-				if _, ok := attr["separators"]; ok {
-					tmp, _ = json.Marshal(attr["separators"])
-					attr["separators"] = string(tmp)
-				}
-
 				CopyAttr(attr, tmpl, "pillars")
-				if _, ok := attr["pillars"]; ok {
-					tmp, _ = json.Marshal(attr["pillars"])
-					attr["pillars"] = string(tmp)
-				}
-
 				CopyAttr(attr, tmpl, "floorUnit")
-				if _, ok := attr["floorUnit"]; ok {
-					if floorUnit, ok := attr["floorUnit"].(string); ok {
-						attr["floorUnit"] = floorUnit
-					}
-				}
-
 				CopyAttr(attr, tmpl, "tiles")
-				if _, ok := attr["tiles"]; ok {
-					tmp, _ = json.Marshal(attr["tiles"])
-					attr["tiles"] = string(tmp)
-				}
-
 				CopyAttr(attr, tmpl, "rows")
-				if _, ok := attr["rows"]; ok {
-					tmp, _ = json.Marshal(attr["rows"])
-					attr["rows"] = string(tmp)
-				}
-
 				CopyAttr(attr, tmpl, "aisles")
-				if _, ok := attr["aisles"]; ok {
-					tmp, _ = json.Marshal(attr["aisles"])
-					attr["aisles"] = string(tmp)
-				}
-
 				CopyAttr(attr, tmpl, "vertices")
-				if _, ok := attr["vertices"]; ok {
-					tmp, _ = json.Marshal(attr["vertices"])
-					attr["vertices"] = string(tmp)
-				}
-
 				CopyAttr(attr, tmpl, "colors")
-				if _, ok := attr["colors"]; ok {
-					tmp, _ = json.Marshal(attr["colors"])
-					attr["colors"] = string(tmp)
-				}
-
 				CopyAttr(attr, tmpl, "tileAngle")
-				if _, ok := attr["tileAngle"]; ok {
-					if tileAngle, ok := attr["tileAngle"].(int); ok {
-						attr["tileAngle"] = strconv.Itoa(tileAngle)
-					}
-
-					if tileAngleF, ok := attr["tileAngle"].(float64); ok {
-						tileAngleStr := strconv.FormatFloat(tileAngleF, 'f', -1, 64)
-						attr["tileAngle"] = tileAngleStr
-					}
-				}
 
 			} else if ent == models.BLDG {
 				attr["sizeUnit"] = "m"
 				attr["heightUnit"] = "m"
 
 			} else {
-				attr["sizeUnit"] = "cm"
-				attr["heightUnit"] = "cm"
+				attr["sizeUnit"] = "mm"
+				attr["heightUnit"] = "mm"
 			}
 
 			//Copy Description
@@ -229,7 +145,6 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 				if ent != models.BLDG {
 					attr["fbxModel"] = ""
 				}
-
 			}
 
 			//Copy orientation if available
@@ -242,9 +157,7 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 				}
 			}
 		} else {
-			if State.DebugLvl > 1 {
-				println("Warning, invalid size value in template.")
-			}
+			println("Warning, invalid size value in template.")
 			return errors.New("invalid size vector on given template")
 		}
 	} else {

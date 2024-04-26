@@ -949,7 +949,7 @@ Future<Result<void, Exception>> importNetboxDump() async {
 }
 
 Future<Result<Map<String, dynamic>, Exception>> fetchSchema(String id) async {
-  print("API fetch Schema");
+  print("API fetch Schema $id");
   try {
     Uri url = Uri.parse('$apiUrl/api/schemas/$id');
     final response = await http.get(url, headers: getHeader(token));

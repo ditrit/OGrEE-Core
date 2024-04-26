@@ -21,12 +21,12 @@ func interactTestSetup(t *testing.T) (cmd.Controller, *mocks.APIPort, *mocks.Ogr
 		"domain":      createRoom["domain"],
 		"parentId":    createRoom["id"],
 		"attributes": map[string]any{
-			"height":     "1",
+			"height":     float64(1),
 			"heightUnit": "cm",
-			"rotation":   `[0, 0, 0]`,
-			"posXYZ":     `[1, 1, 1]`,
+			"rotation":   []float64{0, 0, 0},
+			"posXYZ":     []float64{1, 1, 1},
 			"posXYUnit":  "m",
-			"size":       `[1, 1]`,
+			"size":       []float64{1, 1},
 			"sizeUnit":   "cm",
 			"shape":      "cube",
 			"type":       "box",
@@ -148,7 +148,7 @@ func TestLabelBackgroundOk(t *testing.T) {
 
 func TestContentOk(t *testing.T) {
 	controller, _, _ := interactLabelTestSetup(t)
-	err := controller.InteractObject("/Physical/BASIC/A/R1/A01", "content", true, false)
+	err := controller.InteractObject("/Physical/BASIC/A/R1/A01", "displayContent", true, false)
 	assert.Nil(t, err)
 }
 

@@ -176,7 +176,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 
 func validateDeviceSlotExists(deviceData map[string]interface{}, parentData map[string]interface{}) *u.Error {
 	fmt.Println(deviceData["attributes"].(map[string]any)["slot"])
-	if deviceSlots, err := slotStrToSlice(deviceData["attributes"].(map[string]any)); err == nil && len(deviceSlots) > 0 {
+	if deviceSlots, err := slotToValidSlice(deviceData["attributes"].(map[string]any)); err == nil {
 		// check if requested slots exist in parent device
 		countFound := 0
 		if templateSlug, ok := parentData["attributes"].(map[string]any)["template"].(string); ok {
@@ -325,7 +325,7 @@ func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 				attributes["color"] = "000099"
 			}
 		case u.GROUP:
-			objects := strings.Split(attributes["content"].(string), ",")
+			objects := attributes["content"].([]interface{})
 			if len(objects) <= 1 && objects[0] == "" {
 				return &u.Error{
 					Type:    u.ErrBadFormat,
@@ -344,13 +344,13 @@ func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 			// Ensure objects all exist
 			orReq := bson.A{}
 			for _, objectName := range objects {
-				if strings.Contains(objectName, u.HN_DELIMETER) {
+				if strings.Contains(objectName.(string), u.HN_DELIMETER) {
 					return &u.Error{
 						Type:    u.ErrBadFormat,
 						Message: "All group objects must be directly under the parent (no . allowed)",
 					}
 				}
-				orReq = append(orReq, bson.M{"id": t["parentId"].(string) + u.HN_DELIMETER + objectName})
+				orReq = append(orReq, bson.M{"id": t["parentId"].(string) + u.HN_DELIMETER + objectName.(string)})
 			}
 			filter := bson.M{"$or": orReq}
 
@@ -398,7 +398,7 @@ func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 				}
 			}
 		case u.DEVICE:
-			if deviceSlots, err := slotStrToSlice(attributes); err == nil && len(deviceSlots) > 0 {
+			if deviceSlots, err := slotToValidSlice(attributes); err == nil {
 				// check if all requested slots are free
 				idPattern := primitive.Regex{Pattern: "^" + t["parentId"].(string) +
 					"(." + u.NAME_REGEX + "){1}$", Options: ""} // find siblings
@@ -408,8 +408,7 @@ func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 				} else {
 					for _, obj := range siblings {
 						if obj["name"] != t["name"] { // do not check itself
-							if siblingSlots, err := slotStrToSlice(obj["attributes"].(map[string]any)); err == nil &&
-								len(siblingSlots) > 0 {
+							if siblingSlots, err := slotToValidSlice(obj["attributes"].(map[string]any)); err == nil {
 								for _, requestedSlot := range deviceSlots {
 									if pie.Contains(siblingSlots, requestedSlot) {
 										return &u.Error{Type: u.ErrBadFormat,
@@ -451,16 +450,24 @@ func ObjectsHaveAttribute(entities []int, attribute, value string) (bool, *u.Err
 	return false, nil
 }
 
-func slotStrToSlice(attributes map[string]any) ([]string, *u.Error) {
-	if slotStr, ok := attributes["slot"].(string); ok {
-		if len(slotStr) < 3 || string(slotStr[0]) != "[" || string(slotStr[len(slotStr)-1]) != "]" {
+func slotToValidSlice(attributes map[string]any) ([]string, *u.Error) {
+	slotAttr := attributes["slot"]
+	if pa, ok := slotAttr.(primitive.A); ok {
+		slotAttr = []interface{}(pa)
+	}
+	if arr, ok := slotAttr.([]interface{}); ok {
+		if len(arr) < 1 {
 			return []string{}, &u.Error{Type: u.ErrInvalidValue,
 				Message: "Invalid slot: must be a vector [] with at least one element"}
 		}
-		deviceSlots := strings.Split(slotStr[1:len(slotStr)-1], ",")
-		return deviceSlots, nil
+		slotSlice := make([]string, len(arr))
+		for i := range arr {
+			slotSlice[i] = arr[i].(string)
+		}
+		return slotSlice, nil
+	} else { // no slot provided (just posU is valid)
+		return []string{}, nil
 	}
-	return []string{}, nil
 }
 
 // Returns single-quoted string

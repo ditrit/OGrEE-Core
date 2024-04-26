@@ -54,10 +54,10 @@ class _ObjectPopupState extends State<ObjectPopup> {
   String _objId = "";
   List<StatefulBuilder> customAttributesRows = [];
   Map<String, List<String>> categoryAttrs = {};
-  Map<String, Map<String, String>> examplesAttrs = {};
+  Map<String, Map<String, dynamic>> examplesAttrs = {};
   List<String> domainList = [];
   Map<String, dynamic> objData = {};
-  Map<String, String> objDataAttrs = {};
+  Map<String, dynamic> objDataAttrs = {};
   bool _isEdit = false;
 
   // Physical
@@ -398,7 +398,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
         // Get examples
         var examples = List<Map<String, dynamic>>.from(jsonResult["examples"]);
         examplesAttrs[obj] =
-            Map<String, String>.from(examples[0]["attributes"]);
+            Map<String, dynamic>.from(examples[0]["attributes"]);
         for (var attr in categoryAttrs[obj]!) {
           attr = attr.replaceFirst(starSymbol, ""); // use original name
           if (attrs[attr]["\$ref"] != null) {
@@ -504,7 +504,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
           } else {
             // physical or organisational
             objData = value;
-            objDataAttrs = Map<String, String>.from(objData["attributes"]);
+            objDataAttrs = Map<String, dynamic>.from(objData["attributes"]);
             _objCategory = value["category"];
             for (var attr in objDataAttrs.entries) {
               if (!categoryAttrs[_objCategory]!.contains(attr.key) &&
@@ -548,7 +548,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
             controller: textEditingController,
             focusNode: focusNode,
             decoration: GetFormInputDecoration(
-                false, AppLocalizations.of(context)!.domain,
+                false, "$starSymbol${AppLocalizations.of(context)!.domain}",
                 icon: Icons.edit),
             onFieldSubmitted: (String value) {
               objData["domain"] = value;
@@ -700,7 +700,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
                     objData["parentId"] = newValue;
                   }
                 },
-                label: "Parent ID",
+                label: "${starSymbol}Parent ID",
                 icon: Icons.family_restroom,
                 initialValue: objData["parentId"],
                 tipStr: localeMsg.parentIdTip,
@@ -708,7 +708,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
             : Container(),
         CustomFormField(
             save: (newValue) => objData["name"] = newValue,
-            label: localeMsg.name,
+            label: "$starSymbol${localeMsg.name}",
             icon: Icons.edit,
             tipStr: localeMsg.nameTip,
             initialValue: objData["name"]),
@@ -716,7 +716,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
             ? (domainList.isEmpty
                 ? CustomFormField(
                     save: (newValue) => objData["domain"] = newValue,
-                    label: localeMsg.domain,
+                    label: "$starSymbol${localeMsg.domain}",
                     icon: Icons.edit,
                     initialValue: objData["domain"])
                 : domainAutoFillField())
@@ -762,9 +762,32 @@ class _ObjectPopupState extends State<ObjectPopup> {
                           ?[attributes[index].replaceFirst(starSymbol, "")] ??
                       "",
                   save: (newValue) {
+                    var attrKey =
+                        attributes[index].replaceFirst(starSymbol, "");
                     if (newValue != null && newValue.isNotEmpty) {
-                      objDataAttrs[attributes[index]
-                          .replaceFirst(starSymbol, "")] = newValue;
+                      // check type
+                      var numValue = num.tryParse(newValue);
+                      if (numValue != null) {
+                        // is number
+                        objDataAttrs[attrKey] = numValue.toDouble();
+                      } else if (newValue.length >= 2 &&
+                          newValue[0] == "[" &&
+                          newValue[newValue.length - 1] == "]") {
+                        // is array
+                        var arrStr = newValue
+                            .substring(1, newValue.length - 1)
+                            .split(",");
+                        try {
+                          List<double> arrNum =
+                              arrStr.map(double.parse).toList();
+                          objDataAttrs[attrKey] = arrNum;
+                        } on Exception catch (_) {
+                          objDataAttrs[attrKey] = arrStr;
+                        }
+                      } else {
+                        // is string
+                        objDataAttrs[attrKey] = newValue;
+                      }
                     }
                   },
                   label: attributes[index],
@@ -775,13 +798,14 @@ class _ObjectPopupState extends State<ObjectPopup> {
                   colorTextController: colorTextControllers[attributes[index]],
                   checkListController:
                       _objCategory == PhyCategories.group.name &&
-                              attributes[index] == "*content" &&
+                              attributes[index] == "${starSymbol}content" &&
                               groupCheckListContent.isNotEmpty
                           ? checkListController
                           : null,
                   checkListValues: groupCheckListContent,
                   initialValue: objDataAttrs[
-                      attributes[index].replaceFirst(starSymbol, "")]);
+                          attributes[index].replaceFirst(starSymbol, "")]
+                      ?.toString());
             }),
           ),
         ),

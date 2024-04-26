@@ -87,32 +87,32 @@ func TestStringify(t *testing.T) {
 }
 
 func TestExpandSlotVector(t *testing.T) {
-	slots, err := controllers.ExpandSlotVector([]string{"slot1..slot3", "slot4"})
+	slots, err := controllers.ExpandStrVector([]string{"slot1..slot3", "slot4"})
 	assert.Nil(t, slots)
 	assert.NotNil(t, err)
 	assert.ErrorContains(t, err, "Invalid device syntax: .. can only be used in a single element vector")
 
-	slots, err = controllers.ExpandSlotVector([]string{"slot1..slot3..slot7"})
+	slots, err = controllers.ExpandStrVector([]string{"slot1..slot3..slot7"})
 	assert.Nil(t, slots)
 	assert.NotNil(t, err)
 	assert.ErrorContains(t, err, "Invalid device syntax: incorrect use of .. for slot")
 
-	slots, err = controllers.ExpandSlotVector([]string{"slot1..slots3"})
+	slots, err = controllers.ExpandStrVector([]string{"slot1..slots3"})
 	assert.Nil(t, slots)
 	assert.NotNil(t, err)
 	assert.ErrorContains(t, err, "Invalid device syntax: incorrect use of .. for slot")
 
-	slots, err = controllers.ExpandSlotVector([]string{"slot1..slotE"})
+	slots, err = controllers.ExpandStrVector([]string{"slot1..slotE"})
 	assert.Nil(t, slots)
 	assert.NotNil(t, err)
 	assert.ErrorContains(t, err, "Invalid device syntax: incorrect use of .. for slot")
 
-	slots, err = controllers.ExpandSlotVector([]string{"slot1..slot3"})
+	slots, err = controllers.ExpandStrVector([]string{"slot1..slot3"})
 	assert.Nil(t, err)
 	assert.NotNil(t, slots)
 	assert.EqualValues(t, []string{"slot1", "slot2", "slot3"}, slots)
 
-	slots, err = controllers.ExpandSlotVector([]string{"slot1", "slot3"})
+	slots, err = controllers.ExpandStrVector([]string{"slot1", "slot3"})
 	assert.Nil(t, err)
 	assert.NotNil(t, slots)
 	assert.EqualValues(t, []string{"slot1", "slot3"}, slots)

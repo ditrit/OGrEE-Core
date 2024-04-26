@@ -58,13 +58,13 @@ func getTestEntity(entity string) map[string]any {
 		return map[string]any{
 			"attributes": map[string]any{
 				"floorUnit":       "t",
-				"height":          "2.8",
+				"height":          2.8,
 				"heightUnit":      "m",
 				"axisOrientation": "+x+y",
-				"rotation":        "-90",
-				"posXY":           "[0, 0]",
+				"rotation":        -90,
+				"posXY":           []float64{0, 0},
 				"posXYUnit":       "m",
-				"size":            "[-13, -2.9]",
+				"size":            []float64{-13, -2.9},
 				"sizeUnit":        "m",
 				"template":        "",
 			},

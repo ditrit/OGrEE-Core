@@ -661,7 +661,7 @@ func TestLinkObjectWithoutSlots(t *testing.T) {
 	delete(strayDevice, "id")
 	delete(strayDevice, "parentId")
 	response := map[string]any{"message": "successfully linked"}
-	body := map[string]any{"parentId": "BASIC.A.R1.A01", "slot": "[]", "type": "chassis"}
+	body := map[string]any{"parentId": "BASIC.A.R1.A01", "slot": []string{}}
 
 	mockUpdateObject(mockAPI, body, response)
 
@@ -702,7 +702,7 @@ func TestLinkObjectWithValidSlots(t *testing.T) {
 	delete(strayDevice, "id")
 	delete(strayDevice, "parentId")
 	response := map[string]any{"message": "successfully linked"}
-	body := map[string]any{"parentId": "BASIC.A.R1.A01", "slot": "[slot01]", "type": "chassis"}
+	body := map[string]any{"parentId": "BASIC.A.R1.A01", "slot": []string{"slot01"}}
 
 	mockUpdateObject(mockAPI, body, response)
 

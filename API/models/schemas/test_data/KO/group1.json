@@ -1,6 +1,6 @@
 {
     "attributes": {
-        "contents": "B11,B12,C11,C12"
+        "contents": ["B11","B12","C11","C12"]
     },
     "category": "group",
     "description": "ERROR\nNOT VALID\nTESTING",

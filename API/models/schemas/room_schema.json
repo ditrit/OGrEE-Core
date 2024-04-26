@@ -12,7 +12,6 @@
           "enum": ["m", "t", "f"]
         },
         "height": {
-          "type": "string",
           "$ref": "refs/types.json#/definitions/float"
         },
         "heightUnit": {
@@ -29,11 +28,9 @@
           ]
         },
         "rotation": {
-          "type": "string",
           "$ref": "refs/types.json#/definitions/float"
         },
         "posXY": {
-          "type": "string",
           "$ref": "refs/types.json#/definitions/vector2"
         },
         "posXYUnit": {
@@ -41,7 +38,6 @@
           "$ref": "refs/types.json#/definitions/metricImperialUnit"
         },
         "size": {
-          "type": "string",
           "$ref": "refs/types.json#/definitions/vector2"
         },
         "sizeUnit": {
@@ -50,6 +46,22 @@
         },
         "template": {
           "type": "string"
+        },
+        "reserved": {
+          "type": "array",
+          "items": {
+              "type": "integer"
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "technical": {
+          "type": "array",
+          "items": {
+              "type": "integer"
+          },
+          "minItems": 4,
+          "maxItems": 4
         }
       },
       "required": [
@@ -69,21 +81,21 @@
     {
       "attributes": {
         "floorUnit": "t",
-        "height": "2.8",
+        "height": 2.8,
         "heightUnit": "m",
         "axisOrientation": "+x+y",
-        "rotation": "-90",
-        "posXY": "[0, 0]",
+        "rotation": -90,
+        "posXY": [0, 0],
         "posXYUnit": "m",
-        "size": "[-13, -2.9]",
+        "size": [-13, -2.9],
         "sizeUnit": "m",
         "template": ""
       },
       "category": "room",
-      "description": "room",
+      "description": "room test",
       "domain": "domainTest",
       "name": "RoomA",
-      "parentId": "xxxx5a101ac5f3b6f313eebc"
+      "parentId": "site.building"
     }
   ]
 }

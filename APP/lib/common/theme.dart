@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:ogree_app/common/definitions.dart';
 
 GetFormInputDecoration(isSmallDisplay, String? labelText,
         {IconData? icon,
@@ -30,13 +31,30 @@ GetFormInputDecoration(isSmallDisplay, String? labelText,
                 )),
       prefixText: prefixText,
       suffixText: suffixText,
-      labelText: labelText,
+      label: labelText == null || labelText.isEmpty
+          ? null
+          : (labelText[0] == starSymbol
+              ? Row(
+                  children: [
+                    RichText(
+                      text: TextSpan(
+                          text: labelText.replaceFirst(starSymbol, ""),
+                          style: const TextStyle(color: Colors.black),
+                          children: const [
+                            TextSpan(
+                                text: starSymbol,
+                                style: TextStyle(color: Colors.red))
+                          ]),
+                    ),
+                  ],
+                )
+              : Text(labelText)),
       hintText: hint,
       enabled: isEnabled,
       labelStyle: const TextStyle(
         fontSize: 14.0,
       ),
-      errorStyle: isCompact ? TextStyle(fontSize: 9, height: 0.25) : null,
+      errorStyle: isCompact ? const TextStyle(fontSize: 9, height: 0.25) : null,
       filled: true,
       fillColor: const Color.fromARGB(255, 248, 247, 247),
       contentPadding: contentPadding,
