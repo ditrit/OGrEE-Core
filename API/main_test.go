@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"os"
 	"p3/test/e2e"
@@ -66,7 +65,6 @@ func TestObjects(t *testing.T) {
 
 		assert.Equal(t, http.StatusCreated, recorder.Code)
 		json.Unmarshal(recorder.Body.Bytes(), &response)
-		fmt.Println(response)
 		id, exists := response["data"].(map[string]interface{})["id"].(string)
 		assert.True(t, exists)
 

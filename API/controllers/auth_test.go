@@ -101,16 +101,16 @@ func TestVerifyToken(t *testing.T) {
 
 func TestRequestWithEmptyAuthorizationHeader(t *testing.T) {
 	header := `{"Authorization": ""}`
-	test_utils.ValidateRequest(t, test_utils.REQUEST_WITH_HEADERS, "GET", test_utils.GetEndpoint("users"), nil, header, http.StatusForbidden, "Missing auth token")
+	test_utils.ValidateRequestWithHeaders(t, "GET", test_utils.GetEndpoint("users"), nil, header, http.StatusForbidden, "Missing auth token")
 }
 
 func TestRequestWithNoToken(t *testing.T) {
 	header := `{"Authorization": "Basic"}`
-	test_utils.ValidateRequest(t, test_utils.REQUEST_WITH_HEADERS, "GET", test_utils.GetEndpoint("users"), nil, header, http.StatusForbidden, "Invalid/Malformed auth token")
+	test_utils.ValidateRequestWithHeaders(t, "GET", test_utils.GetEndpoint("users"), nil, header, http.StatusForbidden, "Invalid/Malformed auth token")
 }
 
 func TestRequestWithInvalidToken(t *testing.T) {
-	test_utils.ValidateRequest(t, test_utils.REQUEST_WITH_TOKEN, "GET", test_utils.GetEndpoint("users"), nil, "invalid", http.StatusForbidden, "Malformed authentication token")
+	test_utils.ValidateRequestWithToken(t, "GET", test_utils.GetEndpoint("users"), nil, "invalid", http.StatusForbidden, "Malformed authentication token")
 }
 
 func TestGetAllUsers(t *testing.T) {
@@ -127,7 +127,7 @@ func TestGetUsersWithNormalUser(t *testing.T) {
 	userToken := test_utils.GetUserToken(userEmail, password)
 	assert.NotEmpty(t, userToken)
 
-	response := test_utils.ValidateRequest(t, test_utils.REQUEST_WITH_TOKEN, "GET", test_utils.GetEndpoint("users"), nil, userToken, http.StatusOK, "successfully got users")
+	response := test_utils.ValidateRequestWithToken(t, "GET", test_utils.GetEndpoint("users"), nil, userToken, http.StatusOK, "successfully got users")
 
 	data, exists := response["data"].([]interface{})
 	assert.True(t, exists)
@@ -142,7 +142,7 @@ func TestDeleteWithoutEnoughPermissions(t *testing.T) {
 	assert.NotEmpty(t, userToken)
 
 	endpoint := test_utils.GetEndpoint("usersInstance", userId)
-	test_utils.ValidateRequest(t, test_utils.REQUEST_WITH_TOKEN, "DELETE", endpoint, nil, userToken, http.StatusUnauthorized, "Caller does not have permission to delete this user")
+	test_utils.ValidateRequestWithToken(t, "DELETE", endpoint, nil, userToken, http.StatusUnauthorized, "Caller does not have permission to delete this user")
 }
 
 func TestDeleteUser(t *testing.T) {
@@ -168,25 +168,25 @@ func TestModifyRole(t *testing.T) {
 	userId := models.GetUserByEmail(email).ID.Hex()
 	userToken := test_utils.GetUserToken(email, password)
 	tests := []struct {
-		name        string
-		requestType int
-		authId      string
-		userId      string
-		requestBody string
-		statusCode  int
-		message     string
+		name               string
+		validationFunction func(*testing.T, string, string, []byte, string, int, string) map[string]interface{}
+		authId             string
+		userId             string
+		requestBody        string
+		statusCode         int
+		message            string
 	}{
-		{"ExtraDataReturnsError", test_utils.REQUEST_WITH_TOKEN, userToken, userId, `{"roles": {"*": "user"},"name": "other name"}`, http.StatusBadRequest, "Only 'roles' should be provided to patch"},
-		{"InvalidRole", test_utils.REQUEST_WITH_TOKEN, userToken, userId, `{"roles": {"*": "invalid"}}`, http.StatusInternalServerError, "Role assigned is not valid: "},
-		{"InvalidId", test_utils.REQUEST_WITH_TOKEN, userToken, "invalid", `{"roles": {"*": "user"}}`, http.StatusBadRequest, "User ID is not valid"},
-		{"ModifyRoleWithNormalUser", test_utils.REQUEST_WITH_USER, "user", userId, `{"roles": {"*": "manager"}}`, http.StatusUnauthorized, "Caller does not have permission to modify this user"},
-		{"Success", test_utils.REQUEST_WITH_TOKEN, userToken, userId, `{"roles": {"*": "viewer"}}`, http.StatusOK, "successfully updated user roles"},
+		{"ExtraDataReturnsError", test_utils.ValidateRequestWithToken, userToken, userId, `{"roles": {"*": "user"},"name": "other name"}`, http.StatusBadRequest, "Only 'roles' should be provided to patch"},
+		{"InvalidRole", test_utils.ValidateRequestWithToken, userToken, userId, `{"roles": {"*": "invalid"}}`, http.StatusInternalServerError, "Role assigned is not valid: "},
+		{"InvalidId", test_utils.ValidateRequestWithToken, userToken, "invalid", `{"roles": {"*": "user"}}`, http.StatusBadRequest, "User ID is not valid"},
+		{"ModifyRoleWithNormalUser", test_utils.ValidateRequestWithUser, "user", userId, `{"roles": {"*": "manager"}}`, http.StatusUnauthorized, "Caller does not have permission to modify this user"},
+		{"Success", test_utils.ValidateRequestWithToken, userToken, userId, `{"roles": {"*": "viewer"}}`, http.StatusOK, "successfully updated user roles"},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			changePasswordEndpoint := test_utils.GetEndpoint("usersInstance", tt.userId)
-			test_utils.ValidateRequest(t, tt.requestType, "PATCH", changePasswordEndpoint, []byte(tt.requestBody), tt.authId, tt.statusCode, tt.message)
+			tt.validationFunction(t, "PATCH", changePasswordEndpoint, []byte(tt.requestBody), tt.authId, tt.statusCode, tt.message)
 		})
 	}
 }
@@ -213,7 +213,7 @@ func TestModifyPassword(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			test_utils.ValidateRequest(t, test_utils.REQUEST_WITH_TOKEN, "POST", changePasswordEndpoint, []byte(tt.requestBody), userToken, tt.statusCode, tt.message)
+			test_utils.ValidateRequestWithToken(t, "POST", changePasswordEndpoint, []byte(tt.requestBody), userToken, tt.statusCode, tt.message)
 		})
 	}
 }
@@ -238,7 +238,7 @@ func TestResetPassword(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			test_utils.ValidateRequest(t, test_utils.REQUEST_WITH_TOKEN, "POST", resetPasswordEndpoint, []byte(tt.requestBody), tt.token, tt.statusCode, tt.message)
+			test_utils.ValidateRequestWithToken(t, "POST", resetPasswordEndpoint, []byte(tt.requestBody), tt.token, tt.statusCode, tt.message)
 		})
 	}
 }

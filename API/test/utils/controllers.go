@@ -26,7 +26,7 @@ func GetUserToken(email string, password string) string {
 	return acc.Token
 }
 
-func ValidateRequest(t *testing.T, requestType int, httpMethod string, endpoint string, requestBody []byte, authId string, expectedStatus int, expectedMessage string) map[string]interface{} {
+func validateRequest(t *testing.T, requestType int, httpMethod string, endpoint string, requestBody []byte, authId string, expectedStatus int, expectedMessage string) map[string]interface{} {
 	// It executes a request and verifies the status code and the response message
 	var recorder *httptest.ResponseRecorder
 	if requestType == REQUEST_WITH_USER {
@@ -56,5 +56,17 @@ func ValidateRequest(t *testing.T, requestType int, httpMethod string, endpoint 
 }
 
 func ValidateManagedRequest(t *testing.T, httpMethod string, endpoint string, requestBody []byte, expectedStatus int, expectedMessage string) map[string]interface{} {
-	return ValidateRequest(t, MANAGED_REQUEST, httpMethod, endpoint, requestBody, "", expectedStatus, expectedMessage)
+	return validateRequest(t, MANAGED_REQUEST, httpMethod, endpoint, requestBody, "", expectedStatus, expectedMessage)
+}
+
+func ValidateRequestWithUser(t *testing.T, httpMethod string, endpoint string, requestBody []byte, user string, expectedStatus int, expectedMessage string) map[string]interface{} {
+	return validateRequest(t, REQUEST_WITH_USER, httpMethod, endpoint, requestBody, user, expectedStatus, expectedMessage)
+}
+
+func ValidateRequestWithToken(t *testing.T, httpMethod string, endpoint string, requestBody []byte, token string, expectedStatus int, expectedMessage string) map[string]interface{} {
+	return validateRequest(t, REQUEST_WITH_TOKEN, httpMethod, endpoint, requestBody, token, expectedStatus, expectedMessage)
+}
+
+func ValidateRequestWithHeaders(t *testing.T, httpMethod string, endpoint string, requestBody []byte, header string, expectedStatus int, expectedMessage string) map[string]interface{} {
+	return validateRequest(t, REQUEST_WITH_HEADERS, httpMethod, endpoint, requestBody, header, expectedStatus, expectedMessage)
 }

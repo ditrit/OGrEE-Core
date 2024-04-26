@@ -4,6 +4,9 @@ import "fmt"
 
 const usersEndpoint = "/api/users"
 const domainsEndpoint = "/api/domains"
+const objectsEndpoint = "/api/objects"
+const hierarchyEdnpoint = "/api/hierarchy"
+const entityEndpoint = "/api/%s"
 
 var endpoints = map[string]string{
 	"login":               "/api/login",
@@ -12,22 +15,30 @@ var endpoints = map[string]string{
 	"usersBulk":           usersEndpoint + "/bulk",
 	"changePassword":      usersEndpoint + "/password/change",
 	"resetPassword":       usersEndpoint + "/password/reset",
-	"entity":              "/api/%s",
-	"domains":             "/api/domains",
+	"entity":              entityEndpoint,
+	"entityInstance":      entityEndpoint + "/%s",
+	"entityAncestors":     entityEndpoint + "/%s/%s",
+	"entityUnlink":        entityEndpoint + "/%s/unlink",
+	"entityLink":          entityEndpoint + "/%s/link",
+	"domains":             domainsEndpoint,
 	"domainsBulk":         domainsEndpoint + "/bulk",
-	"complexFilterSearch": "/api/objects/search",
+	"getObject":           objectsEndpoint,
+	"complexFilterSearch": objectsEndpoint + "/search",
 	"validateEntity":      "/api/validate/%s",
 	"layersObjects":       "/api/layers/%s/objects",
 	"tokenValid":          "/api/token/valid",
+	"hierarchy":           hierarchyEdnpoint,
+	"hierarchyAttributes": hierarchyEdnpoint + "/attributes",
+	"tempunits":           "/api/tempunits/%s",
 }
 
-func GetEndpoint(endpointName string, pathParams ...string) string {
+func GetEndpoint(endpointName string, pathParams ...any) string {
 	endpoint, exists := endpoints[endpointName]
 	if !exists {
 		return ""
 	}
-	for _, pathParam := range pathParams {
-		endpoint = fmt.Sprintf(endpoint, pathParam)
+	if len(pathParams) > 0 {
+		endpoint = fmt.Sprintf(endpoint, pathParams...)
 	}
 	return endpoint
 }
