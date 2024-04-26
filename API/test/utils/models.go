@@ -4,6 +4,7 @@ import (
 	"p3/models"
 	"p3/test/integration"
 	"p3/utils"
+	"slices"
 	"strings"
 	"testing"
 
@@ -97,4 +98,38 @@ func CreateTestPhysicalEntity(t *testing.T, entityType int, name string, parentI
 			assert.Nil(t, err)
 		}
 	})
+}
+
+func CreateTestProject(t *testing.T, name string) (models.Project, string) {
+	adminUser := "admin@admin.com"
+	project := models.Project{
+		Name:        name,
+		Attributes:  []string{"domain"},
+		Namespace:   "physical",
+		Permissions: []string{adminUser},
+		ShowAvg:     false,
+		ShowSum:     false,
+	}
+	err := models.AddProject(project)
+	assert.Nil(t, err)
+
+	// we get the project ID
+	projects, _ := models.GetProjectsByUserEmail(adminUser)
+	projectIndex := slices.IndexFunc(projects, func(p models.Project) bool {
+		return p.Name == project.Name
+	})
+	projectId := projects[projectIndex].Id
+
+	t.Cleanup(func() {
+		// we get the room again as it may have been deleted in a test
+		projects, _ := models.GetProjectsByUserEmail(adminUser)
+		projectExists := slices.ContainsFunc(projects, func(p models.Project) bool {
+			return p.Id == projectId
+		})
+		if projectExists {
+			err := models.DeleteProject(projectId)
+			assert.Nil(t, err)
+		}
+	})
+	return project, projectId
 }
