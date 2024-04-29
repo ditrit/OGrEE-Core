@@ -8,6 +8,7 @@ import (
 	"p3/test/e2e"
 	"p3/test/integration"
 	"p3/test/unit"
+	test_utils "p3/test/utils"
 	u "p3/utils"
 	"testing"
 
@@ -18,10 +19,9 @@ import (
 )
 
 func TestAddTagThatNotExistReturnsError(t *testing.T) {
-	err := createSite("add-tag-1-site", nil)
-	require.Nil(t, err)
+	test_utils.CreateTestPhysicalEntity(t, u.SITE, "add-tag-1-site", "", false)
 
-	_, err = addTagToObject("add-tag-1-site", "not-exists")
+	_, err := addTagToObject("add-tag-1-site", "not-exists")
 	assert.NotNil(t, err)
 	assert.Equal(t, "Tag \"not-exists\" not found", err.Message)
 }
@@ -30,8 +30,7 @@ func TestAddTagToObjectAddsItToList(t *testing.T) {
 	err := createTag("add-tag-2")
 	require.Nil(t, err)
 
-	err = createSite("add-tag-2-site", nil)
-	require.Nil(t, err)
+	test_utils.CreateTestPhysicalEntity(t, u.SITE, "add-tag-2-site", "", false)
 
 	site, err := addTagToObject("add-tag-2-site", "add-tag-2")
 	assert.Nil(t, err)
@@ -53,8 +52,7 @@ func TestAddDuplicatedTagDoesNothing(t *testing.T) {
 }
 
 func TestRemoveTagThatIsNotInListDoesNothing(t *testing.T) {
-	err := createSite("remove-tag-1-site", nil)
-	require.Nil(t, err)
+	test_utils.CreateTestPhysicalEntity(t, u.SITE, "remove-tag-1-site", "", false)
 
 	site, err := removeTagFromObject("remove-tag-1-site", "not-present")
 	assert.Nil(t, err)
@@ -407,20 +405,11 @@ func TestFilterByTagMultipleMatches(t *testing.T) {
 }
 
 func TestCreateObjectWithTagsThatNotExistsReturnsError(t *testing.T) {
+	site := test_utils.GetEntityMap("site", "create-object-tags-1", "", integration.TestDBName)
+	site["tags"] = []any{"not-exists"}
 	_, err := models.CreateEntity(
 		u.SITE,
-		map[string]any{
-			"attributes": map[string]any{
-				"reservedColor":  "AAAAAA",
-				"technicalColor": "D0FF78",
-				"usableColor":    "5BDCFF",
-			},
-			"category":    "site",
-			"description": "site",
-			"domain":      integration.TestDBName,
-			"name":        "create-object-tags-1",
-			"tags":        []any{"not-exists"},
-		},
+		site,
 		integration.ManagerUserRoles,
 	)
 	assert.NotNil(t, err)
@@ -429,20 +418,11 @@ func TestCreateObjectWithTagsThatNotExistsReturnsError(t *testing.T) {
 }
 
 func TestCreateObjectWithDuplicatedTagsReturnsError(t *testing.T) {
+	site := test_utils.GetEntityMap("site", "create-object-tags-1", "", integration.TestDBName)
+	site["tags"] = []any{"tag1", "tag1"}
 	_, err := models.CreateEntity(
 		u.SITE,
-		map[string]any{
-			"attributes": map[string]any{
-				"reservedColor":  "AAAAAA",
-				"technicalColor": "D0FF78",
-				"usableColor":    "5BDCFF",
-			},
-			"category":    "site",
-			"description": "site",
-			"domain":      integration.TestDBName,
-			"name":        "create-object-tags-1",
-			"tags":        []any{"tag1", "tag1"},
-		},
+		site,
 		integration.ManagerUserRoles,
 	)
 	assert.NotNil(t, err)
@@ -475,20 +455,11 @@ func TestPatchObjectWithTagsReturnsError(t *testing.T) {
 }
 
 func TestCreateObjectWithTagsAsStringReturnsError(t *testing.T) {
+	site := test_utils.GetEntityMap("site", "create-objects-tags-string", "", integration.TestDBName)
+	site["tags"] = "a string that is not an array"
 	_, err := models.CreateEntity(
 		u.SITE,
-		map[string]any{
-			"attributes": map[string]any{
-				"reservedColor":  "AAAAAA",
-				"technicalColor": "D0FF78",
-				"usableColor":    "5BDCFF",
-			},
-			"category":    "site",
-			"description": "site",
-			"domain":      integration.TestDBName,
-			"name":        "create-objects-tags-string",
-			"tags":        "a string that is not an array",
-		},
+		site,
 		integration.ManagerUserRoles,
 	)
 	assert.NotNil(t, err)
@@ -525,20 +496,11 @@ func createTagWithImage(slug, image string) *u.Error {
 }
 
 func createSite(name string, tags any) *u.Error {
+	site := test_utils.GetEntityMap("site", name, "", integration.TestDBName)
+	site["tags"] = tags
 	_, err := models.CreateEntity(
 		u.SITE,
-		map[string]any{
-			"attributes": map[string]any{
-				"reservedColor":  "AAAAAA",
-				"technicalColor": "D0FF78",
-				"usableColor":    "5BDCFF",
-			},
-			"category":    "site",
-			"description": "site",
-			"domain":      integration.TestDBName,
-			"name":        name,
-			"tags":        tags,
-		},
+		site,
 		integration.ManagerUserRoles,
 	)
 	if err != nil {

@@ -52,32 +52,6 @@ func init() {
 	models.CreateEntity(utils.LAYER, layer2, integration.ManagerUserRoles)
 }
 
-func getTestEntity(entity string) map[string]any {
-	// returns an entity to use in tests
-	if entity == "room" {
-		return map[string]any{
-			"attributes": map[string]any{
-				"floorUnit":       "t",
-				"height":          2.8,
-				"heightUnit":      "m",
-				"axisOrientation": "+x+y",
-				"rotation":        -90,
-				"posXY":           []float64{0, 0},
-				"posXYUnit":       "m",
-				"size":            []float64{-13, -2.9},
-				"sizeUnit":        "m",
-				"template":        "",
-			},
-			"category":    "room",
-			"description": "room",
-			"domain":      "domain",
-			"name":        "roomA",
-			"parentId":    "site-no-temperature.building-1",
-		}
-	}
-	return nil
-}
-
 // Tests with invalid body
 func TestEntityRequestsWithInvalidBody(t *testing.T) {
 	tests := []struct {
@@ -512,7 +486,9 @@ func TestValidateEntityWithoutAttributes(t *testing.T) {
 
 func TestValidateEntity(t *testing.T) {
 	test_utils.CreateTestDomain(t, "temporaryDomain", "", "")
-	room := getTestEntity("room")
+	test_utils.CreateTestPhysicalEntity(t, utils.BLDG, "tempBldg", "tempSite", true)
+	room := test_utils.GetEntityMap("room", "roomA", "tempSite.tempBldg", "")
+
 	endpoint := test_utils.GetEndpoint("validateEntity", "rooms")
 	tests := []struct {
 		name       string
@@ -534,8 +510,8 @@ func TestValidateEntity(t *testing.T) {
 }
 
 func TestErrorValidateValidRoomEntityNotEnoughPermissions(t *testing.T) {
-	room := getTestEntity("room")
-	room["domain"] = integration.TestDBName
+	test_utils.CreateTestPhysicalEntity(t, utils.BLDG, "tempBldg", "tempSite", true)
+	room := test_utils.GetEntityMap("room", "roomA", "tempSite.tempBldg", integration.TestDBName)
 	requestBody, _ := json.Marshal(room)
 
 	endpoint := test_utils.GetEndpoint("validateEntity", "rooms")

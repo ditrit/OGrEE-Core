@@ -5,6 +5,7 @@ import (
 	"p3/models"
 	"p3/test/integration"
 	"p3/test/unit"
+	test_utils "p3/test/utils"
 	u "p3/utils"
 	"testing"
 
@@ -12,14 +13,11 @@ import (
 )
 
 func init() {
+	// we create a rack with slots and all its parents
 	integration.RequireCreateSite("siteA")
 	integration.RequireCreateBuilding("siteA", "building-1")
 	integration.RequireCreateRoom("siteA.building-1", "room-1")
-	integration.RequireCreateRack("siteA.building-1.room-1", "rack-1")
-	integration.RequireCreateDevice("siteA.building-1.room-1.rack-1", "device-1")
-	integration.RequireCreateDevice("siteA.building-1.room-1.rack-1", "device-2")
-	integration.RequireCreateDevice("siteA.building-1.room-1.rack-1.device-1", "device-2")
-	ManagerUserRoles := map[string]models.Role{
+	managerUserRoles := map[string]models.Role{
 		models.ROOT_DOMAIN: models.Manager,
 	}
 	rackTemplate := map[string]any{
@@ -54,29 +52,14 @@ func init() {
 			},
 		},
 	}
-	rack := map[string]any{
-		"attributes": map[string]any{
-			"height":     47,
-			"heightUnit": "U",
-			"rotation":   []any{45, 45, 45},
-			"posXYZ":     []any{4.6666666666667, -2, 0},
-			"posXYUnit":  "m",
-			"size":       []any{80, 100.532442},
-			"sizeUnit":   "cm",
-			"template":   "rack-with-slots",
-		},
-		"category":    "rack",
-		"description": "rack with slots",
-		"domain":      integration.TestDBName,
-		"name":        "rack-slots",
-		"parentId":    "siteA.building-1.room-1",
-	}
+	rack := test_utils.GetEntityMap("rack", "rack-slots", "siteA.building-1.room-1", integration.TestDBName)
+	rack["attributes"].(map[string]any)["template"] = "rack-with-slots"
 
-	_, err := models.CreateEntity(u.OBJTMPL, rackTemplate, ManagerUserRoles)
+	_, err := models.CreateEntity(u.OBJTMPL, rackTemplate, managerUserRoles)
 	if err != nil {
 		log.Fatalln("Error while creating template", err.Error())
 	}
-	_, err = models.CreateEntity(u.RACK, rack, ManagerUserRoles)
+	_, err = models.CreateEntity(u.RACK, rack, managerUserRoles)
 	if err != nil {
 		log.Fatalln("Error while creating rack", err.Error())
 	}
@@ -95,67 +78,31 @@ func TestValidateEntityDomainParent(t *testing.T) {
 }
 
 func TestValidateEntityRoomParent(t *testing.T) {
-	template := map[string]any{
-		"parentId":    "siteA",
-		"name":        "roomA",
-		"category":    "room",
-		"description": "roomA",
-		"domain":      integration.TestDBName,
-		"attributes": map[string]any{
-			"floorUnit":       "t",
-			"height":          2.8,
-			"heightUnit":      "m",
-			"axisOrientation": "+x+y",
-			"rotation":        -90,
-			"posXY":           []any{0, 0},
-			"posXYUnit":       "m",
-			"size":            []any{-13, -2.9},
-			"sizeUnit":        "m",
-			"template":        "",
-		},
-	}
+	test_utils.CreateTestPhysicalEntity(t, u.BLDG, "temporaryBuilding", "temporarySite", true)
+	template := test_utils.GetEntityMap("room", "roomA", "temporarySite", integration.TestDBName)
+
 	err := models.ValidateEntity(u.ROOM, template)
 	assert.NotNil(t, err)
 	assert.Equal(t, "ParentID should correspond to existing building ID", err.Message)
 
-	template["parentId"] = "siteA.building-1"
+	template["parentId"] = "temporarySite.temporaryBuilding"
 	err = models.ValidateEntity(u.ROOM, template)
 	assert.Nil(t, err)
 }
 
 func TestValidateEntityDeviceParent(t *testing.T) {
-	template := map[string]any{
-		"parentId":    "siteA",
-		"name":        "deviceA",
-		"category":    "device",
-		"description": "deviceA",
-		"domain":      integration.TestDBName,
-		"attributes": map[string]any{
-			"TDP":         "",
-			"TDPmax":      "",
-			"fbxModel":    "https://github.com/test.fbx",
-			"height":      40.1,
-			"heightUnit":  "mm",
-			"model":       "TNF2LTX",
-			"orientation": "front",
-			"partNumber":  "0303XXXX",
-			"size":        []any{388.4, 205.9},
-			"sizeUnit":    "mm",
-			"template":    "huawei-xxxxxx",
-			"type":        "blade",
-			"vendor":      "Huawei",
-			"weightKg":    "1.81",
-		},
-	}
+	test_utils.CreateTestPhysicalEntity(t, u.DEVICE, "temporaryDevice", "temporarySite.temporaryBuilding.temporaryRoom.temporaryRack", true)
+	template := test_utils.GetEntityMap("device", "deviceA", "temporarySite", integration.TestDBName)
+
 	err := models.ValidateEntity(u.DEVICE, template)
 	assert.NotNil(t, err)
 	assert.Equal(t, "ParentID should correspond to existing rack or device ID", err.Message)
 
-	template["parentId"] = "siteA.building-1.room-1.rack-1"
+	template["parentId"] = "temporarySite.temporaryBuilding.temporaryRoom.temporaryRack"
 	err = models.ValidateEntity(u.DEVICE, template)
 	assert.Nil(t, err)
 
-	template["parentId"] = "siteA.building-1.room-1.rack-1.device-1"
+	template["parentId"] = "temporarySite.temporaryBuilding.temporaryRoom.temporaryRack.temporaryDevice"
 	template["name"] = "deviceA"
 	delete(template, "id")
 	err = models.ValidateEntity(u.DEVICE, template)
@@ -163,30 +110,9 @@ func TestValidateEntityDeviceParent(t *testing.T) {
 }
 
 func TestValidateEntityDeviceSlot(t *testing.T) {
-	template := map[string]any{
-		"parentId":    "siteA.building-1.room-1.rack-slots",
-		"name":        "deviceA",
-		"category":    "device",
-		"description": "deviceA",
-		"domain":      integration.TestDBName,
-		"attributes": map[string]any{
-			"slot":        []any{"unknown"},
-			"TDP":         "",
-			"TDPmax":      "",
-			"fbxModel":    "https://github.com/test.fbx",
-			"height":      40.1,
-			"heightUnit":  "mm",
-			"model":       "TNF2LTX",
-			"orientation": "front",
-			"partNumber":  "0303XXXX",
-			"size":        []any{388.4, 205.9},
-			"sizeUnit":    "mm",
-			"template":    "huawei-xxxxxx",
-			"type":        "blade",
-			"vendor":      "Huawei",
-			"weightKg":    "1.81",
-		},
-	}
+	template := test_utils.GetEntityMap("device", "deviceA", "siteA.building-1.room-1.rack-slots", integration.TestDBName)
+	template["attributes"].(map[string]any)["slot"] = []any{"unknown"}
+
 	err := models.ValidateEntity(u.DEVICE, template)
 	assert.NotNil(t, err)
 	assert.Equal(t, "Invalid slot: parent does not have all the requested slots", err.Message)
@@ -198,10 +124,7 @@ func TestValidateEntityDeviceSlot(t *testing.T) {
 
 	// We add a device to the slot
 	delete(template, "id")
-	ManagerUserRoles := map[string]models.Role{
-		models.ROOT_DOMAIN: models.Manager,
-	}
-	_, err = models.CreateEntity(u.DEVICE, template, ManagerUserRoles)
+	_, err = models.CreateEntity(u.DEVICE, template, integration.ManagerUserRoles)
 	assert.Nil(t, err, "The device")
 
 	// we verify if we can add another device in the same slot
@@ -216,8 +139,11 @@ func TestValidateEntityDeviceSlot(t *testing.T) {
 }
 
 func TestValidateEntityGroupParent(t *testing.T) {
+	test_utils.CreateTestPhysicalEntity(t, u.DEVICE, "device-1", "temporarySite.temporaryBuilding.temporaryRoom.temporaryRack", true)
+	test_utils.CreateTestPhysicalEntity(t, u.DEVICE, "device-2", "temporarySite.temporaryBuilding.temporaryRoom.temporaryRack", false)
+	test_utils.CreateTestPhysicalEntity(t, u.DEVICE, "device-2", "temporarySite.temporaryBuilding.temporaryRoom.temporaryRack.device-1", false)
 	template := map[string]any{
-		"parentId":    "siteA",
+		"parentId":    "temporarySite",
 		"name":        "groupA",
 		"category":    "group",
 		"description": "groupA",
@@ -230,20 +156,20 @@ func TestValidateEntityGroupParent(t *testing.T) {
 	assert.NotNil(t, err)
 	assert.Equal(t, "Group parent should correspond to existing rack or room", err.Message)
 
-	template["parentId"] = "siteA.building-1.room-1"
+	template["parentId"] = "temporarySite.temporaryBuilding.temporaryRoom"
 	template["name"] = "groupA"
 	err = models.ValidateEntity(u.GROUP, template)
 	assert.NotNil(t, err)
 	assert.Equal(t, "All group objects must be directly under the parent (no . allowed)", err.Message)
 
-	template["parentId"] = "siteA.building-1.room-1"
+	template["parentId"] = "temporarySite.temporaryBuilding.temporaryRoom"
 	template["name"] = "groupA"
-	template["attributes"].(map[string]any)["content"] = []any{"rack-1"}
+	template["attributes"].(map[string]any)["content"] = []any{"temporaryRack"}
 	delete(template, "id")
 	err = models.ValidateEntity(u.GROUP, template)
 	assert.Nil(t, err)
 
-	template["parentId"] = "siteA.building-1.room-1.rack-1"
+	template["parentId"] = "temporarySite.temporaryBuilding.temporaryRoom.temporaryRack"
 	template["name"] = "groupA"
 	template["attributes"].(map[string]any)["content"] = []any{"device-1", "device-2"}
 	delete(template, "id")
@@ -269,18 +195,21 @@ func TestCreateRackWithoutAttributesReturnsError(t *testing.T) {
 }
 
 func TestCreateObjectWithDuplicatedNameReturnsError(t *testing.T) {
-	site := integration.RequireCreateSite("create-object-1")
+	siteName := "existingSite"
+	test_utils.CreateTestPhysicalEntity(t, u.SITE, siteName, "", false)
 
-	_, err := integration.CreateSite(site["name"].(string))
+	_, err := integration.CreateSite(siteName)
 	assert.NotNil(t, err)
 	assert.Equal(t, u.ErrDuplicate, err.Type)
 	assert.Equal(t, "Error while creating site: Duplicates not allowed", err.Message)
 }
 
 func TestCreateCorridorWithSameNameAsRackReturnsError(t *testing.T) {
-	rack := integration.RequireCreateRack("", "create-object-2")
+	rackName := "tempRack"
+	rackParentId := "tempSite.tempBuilding.tempRoom"
+	test_utils.CreateTestPhysicalEntity(t, u.RACK, rackName, rackParentId, true)
 
-	_, err := integration.CreateCorridor(rack["parentId"].(string), "create-object-2")
+	_, err := integration.CreateCorridor(rackParentId, rackName)
 	assert.NotNil(t, err)
 	assert.Equal(t, u.ErrBadFormat, err.Type)
 	assert.Equal(t, "Object name must be unique among corridors, racks and generic objects", err.Message)
@@ -296,9 +225,11 @@ func TestCreateRackWithSameNameAsCorridorReturnsError(t *testing.T) {
 }
 
 func TestCreateGenericWithSameNameAsRackReturnsError(t *testing.T) {
-	rack := integration.RequireCreateRack("", "create-object-4")
+	rackName := "tempRack"
+	rackParentId := "tempSite.tempBuilding.tempRoom"
+	test_utils.CreateTestPhysicalEntity(t, u.RACK, rackName, rackParentId, true)
 
-	_, err := integration.CreateGeneric(rack["parentId"].(string), "create-object-4")
+	_, err := integration.CreateGeneric(rackParentId, rackName)
 	assert.NotNil(t, err)
 	assert.Equal(t, u.ErrBadFormat, err.Type)
 	assert.Equal(t, "Object name must be unique among corridors, racks and generic objects", err.Message)
@@ -314,9 +245,9 @@ func TestCreateGenericWithSameNameAsCorridorReturnsError(t *testing.T) {
 }
 
 func TestCreateGroupWithObjectThatNotExistsReturnsError(t *testing.T) {
-	room := integration.RequireCreateRoom("", "create-object-6-room")
+	test_utils.CreateTestPhysicalEntity(t, u.ROOM, "tempRoom", "tempSite.tempBuilding", true)
 
-	_, err := integration.CreateGroup(room["id"].(string), "create-object-6", []any{"not-exists"})
+	_, err := integration.CreateGroup("tempSite.tempBuilding.tempRoom", "create-object-6", []any{"not-exists"})
 	assert.NotNil(t, err)
 	assert.Equal(t, u.ErrBadFormat, err.Type)
 	assert.Equal(t, "Some object(s) could not be found. Please check and try again", err.Message)
