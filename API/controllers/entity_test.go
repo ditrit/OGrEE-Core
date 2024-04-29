@@ -189,7 +189,7 @@ func TestComplexFilterWithNoFilterInput(t *testing.T) {
 	test_utils.ValidateManagedRequest(t, "POST", test_utils.GetEndpoint("complexFilterSearch"), requestBody, http.StatusBadRequest, message)
 }
 
-func TestComplexFilterSearch(t *testing.T) {
+func TestComplexFilterSearchAndDelete(t *testing.T) {
 	// Test get subdomains with color 00ED00
 	test_utils.CreateTestDomain(t, "temporaryFatherDomain", "", "")
 	test_utils.CreateTestDomain(t, "temporaryChildDomain", "temporaryFatherDomain", "00ED00")
@@ -197,18 +197,31 @@ func TestComplexFilterSearch(t *testing.T) {
 	requestBody := []byte(`{
 		"filter": "id=temporaryFatherDomain.* & color=00ED00"
 	}`)
+	endpoint := test_utils.GetEndpoint("complexFilterSearch")
 
-	message := "successfully processed request"
-	response := test_utils.ValidateManagedRequest(t, "POST", test_utils.GetEndpoint("complexFilterSearch"), requestBody, http.StatusOK, message)
+	tests := []struct {
+		name       string
+		httpMethod string
+		message    string
+	}{
+		{"Search", "POST", "successfully processed request"},
+		{"Delete", "DELETE", "successfully deleted objects"},
+	}
 
-	data, exists := response["data"].([]interface{})
-	assert.True(t, exists)
-	assert.Equal(t, 1, len(data))
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			response := test_utils.ValidateManagedRequest(t, tt.httpMethod, endpoint, requestBody, http.StatusOK, tt.message)
 
-	domain := data[0].(map[string]interface{})
-	id, exists := domain["id"].(string)
-	assert.True(t, exists)
-	assert.Equal(t, "temporaryFatherDomain.temporaryChildDomain", id)
+			data, exists := response["data"].([]interface{})
+			assert.True(t, exists)
+			assert.Equal(t, 1, len(data))
+
+			domain := data[0].(map[string]interface{})
+			id, exists := domain["id"].(string)
+			assert.True(t, exists)
+			assert.Equal(t, "temporaryFatherDomain.temporaryChildDomain", id)
+		})
+	}
 }
 
 func TestComplexFilterSearchWithDateFilter(t *testing.T) {
@@ -244,29 +257,6 @@ func TestComplexFilterSearchWithDateFilter(t *testing.T) {
 			assert.Equal(t, tt.resultLenght, len(data))
 		})
 	}
-}
-
-// Tests handle delete with complex filters (/api/objects/search)
-func TestComplexFilterDelete(t *testing.T) {
-	// Test delete subdomains with color 00ED00
-	test_utils.CreateTestDomain(t, "temporaryFatherDomain", "", "")
-	test_utils.CreateTestDomain(t, "temporaryChildDomain", "temporaryFatherDomain", "00ED00")
-	test_utils.CreateTestDomain(t, "temporarySecondChildDomain", "temporaryFatherDomain", "ffffff")
-	requestBody := []byte(`{
-		"filter": "id=temporaryFatherDomain.* & color=00ED00"
-	}`)
-
-	message := "successfully deleted objects"
-	response := test_utils.ValidateManagedRequest(t, "DELETE", test_utils.GetEndpoint("complexFilterSearch"), requestBody, http.StatusOK, message)
-
-	data, exists := response["data"].([]interface{})
-	assert.True(t, exists)
-	assert.Equal(t, 1, len(data))
-
-	domain := data[0].(map[string]interface{})
-	id, exists := domain["id"].(string)
-	assert.True(t, exists)
-	assert.Equal(t, "temporaryFatherDomain.temporaryChildDomain", id)
 }
 
 // Tests get different entities
@@ -347,16 +337,22 @@ func TestGetTemperature(t *testing.T) {
 }
 
 // Tests get subentities
-func TestErrorGetRoomsBuildingsInvalidHierarchy(t *testing.T) {
-	endpoint := test_utils.GetEndpoint("entityAncestors", "rooms", "site-no-temperature.building-1.room-1", "buildings")
-	message := "Invalid set of entities in URL: first entity should be parent of the second entity"
-	test_utils.ValidateManagedRequest(t, "GET", endpoint, nil, http.StatusBadRequest, message)
-}
+func TestErrorEntityHierarchyErrors(t *testing.T) {
+	tests := []struct {
+		name       string
+		endpoint   string
+		statusCode int
+		message    string
+	}{
+		{"GetRoomsBuildingsInvalidHierarchy", test_utils.GetEndpoint("entityAncestors", "rooms", "site-no-temperature.building-1.room-1", "buildings"), http.StatusBadRequest, "Invalid set of entities in URL: first entity should be parent of the second entity"},
+		{"GetSiteRoomsUnknownEntity", test_utils.GetEndpoint("entityAncestors", "sites", "unknown", "rooms"), http.StatusNotFound, "Nothing matches this request"},
+	}
 
-func TestErrorGetSiteRoomsUnknownEntity(t *testing.T) {
-	endpoint := test_utils.GetEndpoint("entityAncestors", "sites", "unknown", "rooms")
-	message := "Nothing matches this request"
-	test_utils.ValidateManagedRequest(t, "GET", endpoint, nil, http.StatusNotFound, message)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			test_utils.ValidateManagedRequest(t, "GET", tt.endpoint, nil, tt.statusCode, tt.message)
+		})
+	}
 }
 
 func TestGetSitesRooms(t *testing.T) {

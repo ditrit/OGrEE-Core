@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"p3/test/e2e"
+	test_utils "p3/test/utils"
 	u "p3/utils"
 	"reflect"
 	"strings"
@@ -20,7 +21,8 @@ func TestCreateLoginAccount(t *testing.T) {
 		"password": "pass123secret",
 		"roles":{"*":"manager"}
 	}`)
-	recorder := e2e.MakeRequest("POST", "/api/users", requestBody)
+	usersEndpoint := test_utils.GetEndpoint("users")
+	recorder := e2e.MakeRequest("POST", usersEndpoint, requestBody)
 	assert.Equal(t, http.StatusCreated, recorder.Code)
 
 	var response map[string]interface{}
@@ -29,12 +31,12 @@ func TestCreateLoginAccount(t *testing.T) {
 	assert.True(t, exists)
 
 	// Test recreate existing account
-	recorder = e2e.MakeRequest("POST", "/api/users", requestBody)
+	recorder = e2e.MakeRequest("POST", usersEndpoint, requestBody)
 	println(recorder.Body.String())
 	assert.Equal(t, http.StatusBadRequest, recorder.Code)
 
 	// Test login
-	recorder = e2e.MakeRequest("POST", "/api/login", requestBody)
+	recorder = e2e.MakeRequest("POST", test_utils.GetEndpoint("login"), requestBody)
 	assert.Equal(t, http.StatusOK, recorder.Code)
 
 	json.Unmarshal(recorder.Body.Bytes(), &response)
@@ -60,16 +62,18 @@ func TestObjects(t *testing.T) {
 		}
 		data, _ = json.Marshal(obj)
 
+		endpoint := "/api/" + entStr + "s"
 		// Create (POST)
-		recorder := e2e.MakeRequest("POST", "/api/"+entStr+"s", data)
+		recorder := e2e.MakeRequest("POST", endpoint, data)
 
 		assert.Equal(t, http.StatusCreated, recorder.Code)
 		json.Unmarshal(recorder.Body.Bytes(), &response)
 		id, exists := response["data"].(map[string]interface{})["id"].(string)
 		assert.True(t, exists)
 
+		instanceEndpoint := endpoint + "/" + id
 		// Verify create with GET
-		recorder = e2e.MakeRequest("GET", "/api/"+entStr+"s/"+id, nil)
+		recorder = e2e.MakeRequest("GET", instanceEndpoint, nil)
 		assert.Equal(t, http.StatusOK, recorder.Code)
 		var responseGET map[string]interface{}
 		json.Unmarshal(recorder.Body.Bytes(), &responseGET)
@@ -81,12 +85,13 @@ func TestObjects(t *testing.T) {
 		oldName := obj["name"].(string)
 		obj["name"] = entStr + "Test"
 		data, _ = json.Marshal(obj)
-		recorder = e2e.MakeRequest("PUT", "/api/"+entStr+"s/"+id, data)
+		recorder = e2e.MakeRequest("PUT", instanceEndpoint, data)
 		assert.Equal(t, http.StatusOK, recorder.Code)
 
 		// Verify it
 		id = strings.Replace(id, oldName, obj["name"].(string), 1)
-		recorder = e2e.MakeRequest("GET", "/api/"+entStr+"s/"+id, nil)
+		instanceEndpoint = endpoint + "/" + id
+		recorder = e2e.MakeRequest("GET", instanceEndpoint, nil)
 		assert.Equal(t, http.StatusOK, recorder.Code)
 		if entInt != u.CORRIDOR { // corridor has no child, but a rack brother
 			parentId = id
@@ -98,11 +103,13 @@ func TestObjects(t *testing.T) {
 	requestBody := []byte(`{
 		"name": "` + hierarchyName + `"
 	}`)
-	recorder := e2e.MakeRequest("PATCH", "/api/sites/siteTest", requestBody)
+	siteEndpoint := test_utils.GetEndpoint("entityInstance", "sites", "siteTest")
+	recorder := e2e.MakeRequest("PATCH", siteEndpoint, requestBody)
 	assert.Equal(t, http.StatusOK, recorder.Code)
 
 	// Verify the whole tree
-	recorder = e2e.MakeRequest("GET", "/api/sites/"+hierarchyName+"/all", nil)
+	siteEndpoint = test_utils.GetEndpoint("entityInstance", "sites", hierarchyName)
+	recorder = e2e.MakeRequest("GET", siteEndpoint+"/all", nil)
 	assert.Equal(t, http.StatusOK, recorder.Code)
 	json.Unmarshal(recorder.Body.Bytes(), &response)
 	response = response["data"].(map[string]interface{})
@@ -118,9 +125,9 @@ func TestObjects(t *testing.T) {
 	}
 
 	// Delete everything
-	recorder = e2e.MakeRequest("DELETE", "/api/sites/TESTPATCH", nil)
+	recorder = e2e.MakeRequest("DELETE", siteEndpoint, nil)
 	assert.Equal(t, http.StatusNoContent, recorder.Code)
-	recorder = e2e.MakeRequest("GET", "/api/hierarchy", nil)
+	recorder = e2e.MakeRequest("GET", test_utils.GetEndpoint("hierarchy"), nil)
 	assert.Equal(t, http.StatusOK, recorder.Code)
 	json.Unmarshal(recorder.Body.Bytes(), &response)
 	assert.Nil(t, response["data"].(map[string]interface{})["tree"].(map[string]interface{})["physical"].(map[string]interface{})["TESTPATCH"])

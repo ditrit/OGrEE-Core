@@ -99,18 +99,23 @@ func TestVerifyToken(t *testing.T) {
 	test_utils.ValidateManagedRequest(t, "GET", test_utils.GetEndpoint("tokenValid"), nil, http.StatusOK, "working")
 }
 
-func TestRequestWithEmptyAuthorizationHeader(t *testing.T) {
-	header := `{"Authorization": ""}`
-	test_utils.ValidateRequestWithHeaders(t, "GET", test_utils.GetEndpoint("users"), nil, header, http.StatusForbidden, "Missing auth token")
-}
+func TestRequestWithInvalidAuthorizationHeader(t *testing.T) {
+	endpoint := test_utils.GetEndpoint("users")
+	tests := []struct {
+		name    string
+		header  string
+		message string
+	}{
+		{"EmptyAuthorizationHeader", `{"Authorization": ""}`, "Missing auth token"},
+		{"NoToken", `{"Authorization": "Basic"}`, "Invalid/Malformed auth token"},
+		{"InvalidToken", `{"Authorization": "Basic invalid"}`, "Malformed authentication token"},
+	}
 
-func TestRequestWithNoToken(t *testing.T) {
-	header := `{"Authorization": "Basic"}`
-	test_utils.ValidateRequestWithHeaders(t, "GET", test_utils.GetEndpoint("users"), nil, header, http.StatusForbidden, "Invalid/Malformed auth token")
-}
-
-func TestRequestWithInvalidToken(t *testing.T) {
-	test_utils.ValidateRequestWithToken(t, "GET", test_utils.GetEndpoint("users"), nil, "invalid", http.StatusForbidden, "Malformed authentication token")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			test_utils.ValidateRequestWithHeaders(t, "GET", endpoint, nil, tt.header, http.StatusForbidden, tt.message)
+		})
+	}
 }
 
 func TestGetAllUsers(t *testing.T) {
