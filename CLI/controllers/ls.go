@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"cli/models"
-	"cli/utils"
 	"errors"
 	"fmt"
 	"net/http"
@@ -69,7 +68,7 @@ func (controller Controller) lsObjectsWithFilters(path string, filters map[strin
 
 	var resp *Response
 	if complexFilter, ok := filters["filter"]; ok {
-		body := utils.ComplexFilterToMap(complexFilter)
+		body := map[string]any{"filter": complexFilter}
 		resp, err = controller.API.Request(http.MethodPost, url, body, http.StatusOK)
 	} else {
 		resp, err = controller.API.Request(http.MethodGet, url, map[string]any{}, http.StatusOK)

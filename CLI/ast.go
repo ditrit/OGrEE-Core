@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"cli/config"
 	"cli/controllers"
 	cmd "cli/controllers"
@@ -154,7 +153,7 @@ func (n *focusNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return nil, cmd.FocusUI(path)
+	return nil, cmd.C.FocusUI(path)
 }
 
 type cdNode struct {
@@ -247,7 +246,7 @@ func (n *getUNode) execute() (interface{}, error) {
 		return nil, fmt.Errorf("The U value must be positive")
 	}
 
-	return nil, cmd.GetByAttr(path, u)
+	return nil, cmd.C.GetByAttr(path, u)
 }
 
 type getSlotNode struct {
@@ -265,7 +264,7 @@ func (n *getSlotNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	return nil, cmd.GetByAttr(path, slot)
+	return nil, cmd.C.GetByAttr(path, slot)
 }
 
 type loadNode struct {
@@ -367,7 +366,7 @@ func (n *isEntityDrawableNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	drawable, err := cmd.IsEntityDrawable(path)
+	drawable, err := cmd.C.IsEntityDrawable(path)
 	if err != nil {
 		return nil, err
 	}
@@ -385,7 +384,7 @@ func (n *isAttrDrawableNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	drawable, err := cmd.IsAttrDrawable(path, n.attr)
+	drawable, err := cmd.C.IsAttrDrawable(path, n.attr)
 	if err != nil {
 		return nil, err
 	}
@@ -397,6 +396,7 @@ type getObjectNode struct {
 	path      *pathNode
 	filters   map[string]node
 	recursive recursiveArgs
+	attrs     []string
 }
 
 func (n *getObjectNode) execute() (interface{}, error) {
@@ -434,8 +434,21 @@ func (n *getObjectNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	for _, obj := range objs {
-		views.Object(path, obj)
+	if n.attrs != nil && len(n.attrs) > 0 {
+		var relativePath *views.RelativePathArgs
+		if n.recursive.isRecursive {
+			relativePath = &views.RelativePathArgs{
+				FromPath: path,
+			}
+		}
+		toPrint, err := views.LsWithFormat(objs, "", relativePath, n.attrs)
+		if err == nil {
+			fmt.Print(toPrint)
+		}
+	} else {
+		for _, obj := range objs {
+			views.Object(path, obj)
+		}
 	}
 
 	return objs, nil
@@ -466,9 +479,8 @@ func setRoomAreas(path string, values []any) (map[string]any, error) {
 	if len(values) != 2 {
 		return nil, fmt.Errorf("2 values (reserved, technical) expected to set room areas")
 	}
-	areas := map[string]any{"reserved": values[0], "technical": values[1]}
-	attributes, e := parseAreas(areas)
-	if e != nil {
+	attributes := map[string]any{"reserved": values[0], "technical": values[1]}
+	if e := validateAreas(attributes); e != nil {
 		return nil, e
 	}
 	return cmd.C.UpdateObj(path, map[string]any{"attributes": attributes}, false)
@@ -723,9 +735,14 @@ func (n *updateObjNode) execute() (interface{}, error) {
 
 	values := []any{}
 	for _, valueNode := range n.values {
-		val, err := valueNode.execute()
-		if err != nil {
-			return nil, err
+		var val any
+		if num, err := nodeToNum(valueNode, "update attribute"); err == nil {
+			val = num
+		} else {
+			val, err = valueNode.execute()
+			if err != nil {
+				return nil, err
+			}
 		}
 		values = append(values, val)
 	}
@@ -743,7 +760,7 @@ func (n *updateObjNode) execute() (interface{}, error) {
 			err = cmd.C.UpdateLayer(path, n.attr, values[0])
 		} else {
 			switch n.attr {
-			case "content", "alpha", "tilesName", "tilesColor", "U", "slots", "localCS":
+			case "displayContent", "alpha", "tilesName", "tilesColor", "U", "slots", "localCS":
 				var boolVal bool
 				boolVal, err = utils.ValToBool(values[0], n.attr)
 				if err != nil {
@@ -792,17 +809,16 @@ func (n *updateObjNode) execute() (interface{}, error) {
 
 func updateAttributes(path, attributeName string, values []any) (map[string]any, error) {
 	var attributes map[string]any
-	if attributeName == "slot" {
-		slots := []string{}
+	if attributeName == "slot" || attributeName == "content" {
+		vecStr := []string{}
 		for _, value := range values {
-			slots = append(slots, value.(string))
+			vecStr = append(vecStr, value.(string))
 		}
 		var err error
-		if slots, err = controllers.ExpandSlotVector(slots); err != nil {
+		if vecStr, err = controllers.ExpandStrVector(vecStr); err != nil {
 			return nil, err
 		}
-		value := "[" + strings.Join(slots, ",") + "]"
-		attributes = map[string]any{attributeName: value}
+		attributes = map[string]any{attributeName: vecStr}
 	} else {
 		if len(values) > 1 {
 			return nil, fmt.Errorf("attributes can only be assigned a single value")
@@ -970,9 +986,9 @@ func (n *unsetAttrNode) execute() (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-		return cmd.UnsetInObj(path, n.attr, idx)
+		return cmd.C.UnsetInObj(path, n.attr, idx)
 	}
-	return nil, cmd.UnsetAttribute(path, n.attr)
+	return nil, cmd.C.UnsetAttribute(path, n.attr)
 }
 
 type setEnvNode struct {
@@ -1237,11 +1253,7 @@ func (n *createDeviceNode) execute() (interface{}, error) {
 		attributes["template"] = template
 	}
 
-	if n.invertOffset {
-		attributes["invertOffset"] = "true"
-	} else {
-		attributes["invertOffset"] = "false"
-	}
+	attributes["invertOffset"] = n.invertOffset
 
 	if n.side != nil {
 		side, err := n.side.execute()
@@ -1295,7 +1307,7 @@ func (n *createTagNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	return nil, cmd.CreateTag(slug, color)
+	return nil, cmd.C.CreateTag(slug, color)
 }
 
 type createLayerNode struct {
@@ -1408,7 +1420,7 @@ func (n *createUserNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	return nil, cmd.CreateUser(email, role, domain)
+	return nil, cmd.C.CreateUser(email, role, domain)
 }
 
 type addRoleNode struct {
@@ -1431,7 +1443,7 @@ func (n *addRoleNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	return nil, cmd.AddRole(email, role, domain)
+	return nil, cmd.C.AddRole(email, role, domain)
 }
 
 type changePasswordNode struct{}
@@ -1460,7 +1472,7 @@ type uiDelayNode struct {
 }
 
 func (n *uiDelayNode) execute() (interface{}, error) {
-	return nil, cmd.UIDelay(n.time)
+	return nil, cmd.C.UIDelay(n.time)
 }
 
 type uiToggleNode struct {
@@ -1469,7 +1481,7 @@ type uiToggleNode struct {
 }
 
 func (n *uiToggleNode) execute() (interface{}, error) {
-	return nil, cmd.UIToggle(n.feature, n.enable)
+	return nil, cmd.C.UIToggle(n.feature, n.enable)
 }
 
 type uiHighlightNode struct {
@@ -1481,14 +1493,14 @@ func (n *uiHighlightNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return nil, cmd.UIHighlight(path)
+	return nil, cmd.C.UIHighlight(path)
 }
 
 type uiClearCacheNode struct {
 }
 
 func (n *uiClearCacheNode) execute() (interface{}, error) {
-	return nil, cmd.UIClearCache()
+	return nil, cmd.C.UIClearCache()
 }
 
 type cameraMoveNode struct {
@@ -1507,7 +1519,7 @@ func (n *cameraMoveNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	return nil, cmd.CameraMove(n.command, position, rotation)
+	return nil, cmd.C.CameraMove(n.command, position, rotation)
 }
 
 type cameraWaitNode struct {
@@ -1515,7 +1527,7 @@ type cameraWaitNode struct {
 }
 
 func (n *cameraWaitNode) execute() (interface{}, error) {
-	return nil, cmd.CameraWait(n.time)
+	return nil, cmd.C.CameraWait(n.time)
 }
 
 type linkObjectNode struct {
@@ -1557,7 +1569,7 @@ func (n *linkObjectNode) execute() (interface{}, error) {
 		}
 	}
 
-	return nil, cmd.LinkObject(source, dest, n.attrs, values, slots)
+	return nil, cmd.C.LinkObject(source, dest, n.attrs, values, slots)
 }
 
 type unlinkObjectNode struct {
@@ -1569,7 +1581,7 @@ func (n *unlinkObjectNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return nil, cmd.UnlinkObject(source)
+	return nil, cmd.C.UnlinkObject(source)
 }
 
 type symbolReferenceNode struct {
@@ -1634,44 +1646,27 @@ func (a *assignNode) execute() (interface{}, error) {
 	return nil, fmt.Errorf("Invalid type to assign variable %s", a.variable)
 }
 
-// Hack function for the [room]:areas=[r1,r2,r3,r4]@[t1,t2,t3,t4]
-// command
-func parseAreas(areas map[string]interface{}) (map[string]interface{}, error) {
-	var reservedStr string
-	var techStr string
-
+// Validate format for cmd [room]:areas=[r1,r2,r3,r4]@[t1,t2,t3,t4]
+func validateAreas(areas map[string]interface{}) error {
 	if reserved, ok := areas["reserved"].([]float64); ok {
 		if tech, ok := areas["technical"].([]float64); ok {
 			if len(reserved) == 4 && len(tech) == 4 {
-				var r [4]*bytes.Buffer
-				var t [4]*bytes.Buffer
-				for i := 3; i >= 0; i-- {
-					r[i] = bytes.NewBufferString("")
-					fmt.Fprintf(r[i], "%v", reserved[i])
-					t[i] = bytes.NewBufferString("")
-					fmt.Fprintf(t[i], "%v", tech[i])
-				}
-				// [front/top, back/bottom, right, left]
-				reservedStr = "[" + r[0].String() + ", " + r[1].String() + ", " + r[2].String() + ", " + r[3].String() + "]"
-				techStr = "[" + t[0].String() + ", " + t[1].String() + ", " + t[2].String() + ", " + t[3].String() + "]"
-				areas["reserved"] = reservedStr
-				areas["technical"] = techStr
+				return nil
 			} else {
 				if len(reserved) != 4 && len(tech) == 4 {
-					return nil, errorResponder("reserved", "4", false)
+					return errorResponder("reserved", "4", false)
 				} else if len(tech) != 4 && len(reserved) == 4 {
-					return nil, errorResponder("technical", "4", false)
+					return errorResponder("technical", "4", false)
 				} else { //Both invalid
-					return nil, errorResponder("reserved and technical", "4", true)
+					return errorResponder("reserved and technical", "4", true)
 				}
 			}
 		} else {
-			return nil, errorResponder("technical", "4", false)
+			return errorResponder("technical", "4", false)
 		}
 	} else {
-		return nil, errorResponder("reserved", "4", false)
+		return errorResponder("reserved", "4", false)
 	}
-	return areas, nil
 }
 
 type cpNode struct {

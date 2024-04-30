@@ -9,7 +9,6 @@
         "type": "object",
         "properties": {
           "clearance": {
-            "type": "string",
             "$ref": "refs/types.json#/definitions/clearanceVector"
           }
         }

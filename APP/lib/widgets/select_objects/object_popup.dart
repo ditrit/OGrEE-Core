@@ -54,10 +54,10 @@ class _ObjectPopupState extends State<ObjectPopup> {
   String _objId = "";
   List<StatefulBuilder> customAttributesRows = [];
   Map<String, List<String>> categoryAttrs = {};
-  Map<String, Map<String, String>> examplesAttrs = {};
+  Map<String, Map<String, dynamic>> examplesAttrs = {};
   List<String> domainList = [];
   Map<String, dynamic> objData = {};
-  Map<String, String> objDataAttrs = {};
+  Map<String, dynamic> objDataAttrs = {};
   bool _isEdit = false;
 
   // Physical
@@ -398,7 +398,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
         // Get examples
         var examples = List<Map<String, dynamic>>.from(jsonResult["examples"]);
         examplesAttrs[obj] =
-            Map<String, String>.from(examples[0]["attributes"]);
+            Map<String, dynamic>.from(examples[0]["attributes"]);
         for (var attr in categoryAttrs[obj]!) {
           attr = attr.replaceFirst(starSymbol, ""); // use original name
           if (attrs[attr]["\$ref"] != null) {
@@ -478,14 +478,6 @@ class _ObjectPopupState extends State<ObjectPopup> {
                 // layers
                 _objCategory = LogCategories.layer.name;
                 objData = value;
-                objDataAttrs = Map<String, String>.from(objData["filters"]);
-                for (var attr in objDataAttrs.entries) {
-                  // add filters
-                  customAttributesRows.add(CustomAttrRow(
-                      customAttributesRows.length,
-                      givenAttrName: attr.key,
-                      givenAttrValue: attr.value));
-                }
                 if (objData["applicability"].toString().endsWith(".**.*")) {
                   objData["applicability"] = objData["applicability"]
                       .toString()
@@ -512,7 +504,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
           } else {
             // physical or organisational
             objData = value;
-            objDataAttrs = Map<String, String>.from(objData["attributes"]);
+            objDataAttrs = Map<String, dynamic>.from(objData["attributes"]);
             _objCategory = value["category"];
             for (var attr in objDataAttrs.entries) {
               if (!categoryAttrs[_objCategory]!.contains(attr.key) &&
@@ -556,7 +548,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
             controller: textEditingController,
             focusNode: focusNode,
             decoration: GetFormInputDecoration(
-                false, AppLocalizations.of(context)!.domain,
+                false, "$starSymbol${AppLocalizations.of(context)!.domain}",
                 icon: Icons.edit),
             onFieldSubmitted: (String value) {
               objData["domain"] = value;
@@ -708,7 +700,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
                     objData["parentId"] = newValue;
                   }
                 },
-                label: "Parent ID",
+                label: "${starSymbol}Parent ID",
                 icon: Icons.family_restroom,
                 initialValue: objData["parentId"],
                 tipStr: localeMsg.parentIdTip,
@@ -716,7 +708,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
             : Container(),
         CustomFormField(
             save: (newValue) => objData["name"] = newValue,
-            label: localeMsg.name,
+            label: "$starSymbol${localeMsg.name}",
             icon: Icons.edit,
             tipStr: localeMsg.nameTip,
             initialValue: objData["name"]),
@@ -724,13 +716,13 @@ class _ObjectPopupState extends State<ObjectPopup> {
             ? (domainList.isEmpty
                 ? CustomFormField(
                     save: (newValue) => objData["domain"] = newValue,
-                    label: localeMsg.domain,
+                    label: "$starSymbol${localeMsg.domain}",
                     icon: Icons.edit,
                     initialValue: objData["domain"])
                 : domainAutoFillField())
             : Container(),
         CustomFormField(
-            save: (newValue) => objData["description"] = [newValue],
+            save: (newValue) => objData["description"] = newValue,
             label: localeMsg.description,
             icon: Icons.edit,
             shouldValidate: false,
@@ -770,9 +762,32 @@ class _ObjectPopupState extends State<ObjectPopup> {
                           ?[attributes[index].replaceFirst(starSymbol, "")] ??
                       "",
                   save: (newValue) {
+                    var attrKey =
+                        attributes[index].replaceFirst(starSymbol, "");
                     if (newValue != null && newValue.isNotEmpty) {
-                      objDataAttrs[attributes[index]
-                          .replaceFirst(starSymbol, "")] = newValue;
+                      // check type
+                      var numValue = num.tryParse(newValue);
+                      if (numValue != null) {
+                        // is number
+                        objDataAttrs[attrKey] = numValue.toDouble();
+                      } else if (newValue.length >= 2 &&
+                          newValue[0] == "[" &&
+                          newValue[newValue.length - 1] == "]") {
+                        // is array
+                        var arrStr = newValue
+                            .substring(1, newValue.length - 1)
+                            .split(",");
+                        try {
+                          List<double> arrNum =
+                              arrStr.map(double.parse).toList();
+                          objDataAttrs[attrKey] = arrNum;
+                        } on Exception catch (_) {
+                          objDataAttrs[attrKey] = arrStr;
+                        }
+                      } else {
+                        // is string
+                        objDataAttrs[attrKey] = newValue;
+                      }
                     }
                   },
                   label: attributes[index],
@@ -783,13 +798,14 @@ class _ObjectPopupState extends State<ObjectPopup> {
                   colorTextController: colorTextControllers[attributes[index]],
                   checkListController:
                       _objCategory == PhyCategories.group.name &&
-                              attributes[index] == "*content" &&
+                              attributes[index] == "${starSymbol}content" &&
                               groupCheckListContent.isNotEmpty
                           ? checkListController
                           : null,
                   checkListValues: groupCheckListContent,
                   initialValue: objDataAttrs[
-                      attributes[index].replaceFirst(starSymbol, "")]);
+                          attributes[index].replaceFirst(starSymbol, "")]
+                      ?.toString());
             }),
           ),
         ),
@@ -816,6 +832,20 @@ class _ObjectPopupState extends State<ObjectPopup> {
 
   getLayerForm() {
     final localeMsg = AppLocalizations.of(context)!;
+    checkBoxWrapper(Checkbox checkbox, String text) => Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            SizedBox(height: 24, width: 24, child: checkbox),
+            const SizedBox(width: 3),
+            Text(
+              text,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.black,
+              ),
+            ),
+          ],
+        );
     return ListView(padding: EdgeInsets.zero, children: [
       CustomFormField(
           save: (newValue) => objData["slug"] = newValue,
@@ -826,7 +856,9 @@ class _ObjectPopupState extends State<ObjectPopup> {
           save: (newValue) => objData["applicability"] = newValue,
           label: localeMsg.applicability,
           icon: Icons.edit,
+          tipStr: localeMsg.applicabilityTooltip,
           initialValue: objData["applicability"]),
+      const SizedBox(height: 3),
       Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
         Text(
           localeMsg.applyAlso,
@@ -835,75 +867,33 @@ class _ObjectPopupState extends State<ObjectPopup> {
             color: Colors.black,
           ),
         ),
-        Wrap(
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            SizedBox(
-              height: 24,
-              width: 24,
-              child: Checkbox(
-                value: _applyDirectChild,
-                onChanged: _applyAllChild
-                    ? null
-                    : (bool? value) =>
-                        setState(() => _applyDirectChild = value!),
-              ),
-            ),
-            const SizedBox(width: 3),
-            Text(
-              localeMsg.directChildren,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.black,
-              ),
-            ),
-          ],
+        checkBoxWrapper(
+          Checkbox(
+            value: _applyDirectChild,
+            onChanged: _applyAllChild
+                ? null
+                : (bool? value) => setState(() => _applyDirectChild = value!),
+          ),
+          localeMsg.directChildren,
         ),
-        Wrap(
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            SizedBox(
-              height: 24,
-              width: 24,
-              child: Checkbox(
-                value: _applyAllChild,
-                onChanged: (bool? value) => setState(() {
-                  _applyAllChild = value!;
-                  _applyDirectChild = value!;
-                }),
-              ),
-            ),
-            const SizedBox(width: 3),
-            Text(
-              localeMsg.allChildren,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.black,
-              ),
-            ),
-          ],
+        checkBoxWrapper(
+          Checkbox(
+            value: _applyAllChild,
+            onChanged: (bool? value) => setState(() {
+              _applyAllChild = value!;
+              _applyDirectChild = value;
+            }),
+          ),
+          localeMsg.allChildren,
         ),
       ]),
-      Padding(
-          padding: const EdgeInsets.only(top: 10.0, left: 6, bottom: 6),
-          child: Text(localeMsg.filtersTwo)),
-      Padding(
-        padding: const EdgeInsets.only(left: 4),
-        child: Column(children: customAttributesRows),
-      ),
-      Padding(
-        padding: const EdgeInsets.only(left: 6),
-        child: Align(
-          alignment: Alignment.bottomLeft,
-          child: TextButton.icon(
-              onPressed: () => setState(() {
-                    customAttributesRows
-                        .add(CustomAttrRow(customAttributesRows.length));
-                  }),
-              icon: const Icon(Icons.add),
-              label: Text(localeMsg.filter)),
-        ),
-      ),
+      const SizedBox(height: 10),
+      CustomFormField(
+          save: (newValue) => objData["filter"] = newValue,
+          label: localeMsg.filter,
+          icon: Icons.filter_alt,
+          tipStr: localeMsg.filterLayerTooltip,
+          initialValue: objData["filter"]),
     ]);
   }
 
@@ -1006,7 +996,6 @@ class _ObjectPopupState extends State<ObjectPopup> {
       _formKey.currentState!.save();
 
       if (_objCategory == LogCategories.layer.name) {
-        objData["filters"] = objDataAttrs;
         if (_applyAllChild) {
           objData["applicability"] = objData["applicability"] + ".**.*";
         } else if (_applyDirectChild) {
@@ -1029,7 +1018,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
           showSnackBar(errorMessenger, exception.toString(),
               isError: true,
               copyTextTap: exception.toString(),
-              duration: Duration(seconds: 30));
+              duration: const Duration(seconds: 30));
       }
     }
   }
@@ -1040,7 +1029,6 @@ class _ObjectPopupState extends State<ObjectPopup> {
       _formKey.currentState!.save();
 
       if (_objCategory == LogCategories.layer.name) {
-        objData["filters"] = objDataAttrs;
         if (_applyAllChild) {
           objData["applicability"] = objData["applicability"] + ".**.*";
         } else if (_applyDirectChild) {

@@ -8,7 +8,6 @@
       "type": "object",
       "properties": {
         "height": {
-          "type": "string",
           "$ref": "refs/types.json#/definitions/float"
         },
         "heightUnit": {
@@ -16,11 +15,9 @@
           "$ref": "refs/types.json#/definitions/metricImperialUUnit"
         },
         "rotation": {
-          "type": "string",
           "$ref": "refs/types.json#/definitions/vector3"
         },
         "posXYZ": {
-          "type": "string",
           "$ref": "refs/types.json#/definitions/vector3"
         },
         "posXYUnit": {
@@ -32,7 +29,6 @@
           "$ref": "refs/types.json#/definitions/metricImperialUnit"
         },
         "size": {
-          "type": "string",
           "$ref": "refs/types.json#/definitions/vector2"
         },
         "sizeUnit": {
@@ -47,7 +43,6 @@
           "$ref": "refs/types.json#/definitions/color"
         },
         "clearance": {
-          "type": "string",
           "$ref": "refs/types.json#/definitions/clearanceVector"
         }
       },
@@ -65,12 +60,12 @@
   "examples": [
     {
       "attributes": {
-        "height": "47",
+        "height": 47,
         "heightUnit": "U",
-        "rotation": "[45, 45, 45]",
-        "posXYZ": "[4.6666666666667,  -2, 0]",
+        "rotation": [45, 45, 45],
+        "posXYZ": [4.6666666666667,  -2, 0],
         "posXYUnit": "m",
-        "size": "[80, 100.532442]",
+        "size": [80, 100.532442],
         "sizeUnit": "cm",
         "template": ""
       },

@@ -11,7 +11,6 @@
             "type": "string"
           },
           "height": {
-            "type": "string",
             "$ref": "refs/types.json#/definitions/float"
           },
           "heightUnit": {
@@ -23,7 +22,6 @@
             "enum": ["front", "rear", "frontflipped", "rearflipped"]
           },
           "size": {
-            "type": "string",
             "format": "vector2"
           },
           "sizeUnit": {
@@ -31,7 +29,10 @@
             "$ref": "refs/types.json#/definitions/metricImperialUnit"
           },
           "slot": {
-            "type": "string"
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
           },
           "template": {
             "type": "string"
@@ -40,11 +41,9 @@
             "type": "string"
           },
           "posU": {
-            "type": "string",
             "$ref": "refs/types.json#/definitions/float"
           },
           "sizeU": {
-            "type": "string",
             "$ref": "refs/types.json#/definitions/float"
           },
           "color": {
@@ -52,13 +51,11 @@
             "$ref": "refs/types.json#/definitions/color"
           },
           "invertOffset": {
-            "type": "string",
-            "enum": ["true", "false"]
+            "type": "boolean"
           }
         },
         "patternProperties": {
           "^temperature_[0-9a-zA-Z_-]+$": {
-            "type": "string",
             "$ref": "refs/types.json#/definitions/float"
           }
         },
@@ -77,23 +74,23 @@
           "TDP": "",
           "TDPmax": "",
           "fbxModel": "https://github.com/test.fbx",
-          "height": "40.1",
+          "height": 40.1,
           "heightUnit": "mm",
           "model": "TNF2LTX",
           "orientation": "front",
           "partNumber": "0303XXXX",
-          "size": "[388.4, 205.9]",
+          "size": [388.4, 205.9],
           "sizeUnit": "mm",
           "template": "huawei-xxxxxx",
           "type": "blade",
           "vendor": "Huawei",
-          "weightKg": "1.81"
+          "weightKg": 1.81
       },
       "category": "device",
       "description": "Optix XXX - Dual 9-Port Wavelength Selective Switching Board",
       "domain": "domainTest",
       "name": "deviceName",
-      "parentId": "xxxx5a111ac5f3b6f313xxxx"
+      "parentId": "site.bldg.room.rack"
     }
   ]
 }

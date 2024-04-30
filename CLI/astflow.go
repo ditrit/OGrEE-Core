@@ -61,6 +61,7 @@ type forNode struct {
 	body        node
 }
 
+// ToDo: this expression is not possible to obtain. Add it to parser
 func (n *forNode) execute() (interface{}, error) {
 	_, err := n.init.execute()
 	if err != nil {
@@ -92,6 +93,7 @@ type forArrayNode struct {
 	body     node
 }
 
+// ToDo: this expression is not possible to obtain. Add it to parser
 func (n *forArrayNode) execute() (interface{}, error) {
 	val, err := n.arr.execute()
 	if err != nil {

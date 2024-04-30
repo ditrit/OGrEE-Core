@@ -18,7 +18,6 @@
             ],
             "properties": {
                 "height": {
-                    "type": "string",
                     "$ref": "refs/types.json#/definitions/float"
                 },
                 "heightUnit": {
@@ -26,7 +25,6 @@
                     "$ref": "refs/types.json#/definitions/metricImperialUnit"
                 },
                 "posXY": {
-                    "type": "string",
                     "$ref": "refs/types.json#/definitions/vector2"
                 },
                 "posXYUnit": {
@@ -34,7 +32,6 @@
                     "$ref": "refs/types.json#/definitions/metricImperialUnit"
                 },
                 "size": {
-                    "type": "string",
                     "$ref": "refs/types.json#/definitions/vector2"
                 },
                 "sizeUnit": {
@@ -42,7 +39,6 @@
                     "$ref": "refs/types.json#/definitions/metricImperialUnit"
                 },
                 "rotation": {
-                    "type": "string",
                     "$ref": "refs/types.json#/definitions/float"
                 },
                 "template": {
@@ -54,19 +50,19 @@
     "examples": [
         {
             "attributes": {
-                "height": "5",
+                "height": 5,
                 "heightUnit": "m",
-                "posXY": "[50, 0]",
+                "posXY": [50, 0],
                 "posXYUnit": "m",
-                "size": "[49, 46.6]",
+                "size": [49, 46.6],
                 "sizeUnit": "m",
-                "rotation": "30.5"
+                "rotation": 30.5
             },
             "category": "building",
             "description": "building",
             "domain": "domainTest",
             "name": "B1",
-            "parentId": "xxxx592b1ac5f3b6f313xxxx"
+            "parentId": "siteID"
         }
     ]
 }

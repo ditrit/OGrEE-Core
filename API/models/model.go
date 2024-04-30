@@ -9,6 +9,7 @@ import (
 	"os"
 	"p3/repository"
 	u "p3/utils"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -226,7 +227,7 @@ func GetObject(req bson.M, entityStr string, filters u.RequestFilters, userRoles
 	return object, nil
 }
 
-func GetManyObjects(entityStr string, req bson.M, filters u.RequestFilters, complexFilters map[string]any, userRoles map[string]Role) ([]map[string]interface{}, *u.Error) {
+func GetManyObjects(entityStr string, req bson.M, filters u.RequestFilters, complexFilterExp string, userRoles map[string]Role) ([]map[string]interface{}, *u.Error) {
 	ctx, cancel := u.Connect()
 	var err error
 	var c *mongo.Cursor
@@ -246,12 +247,17 @@ func GetManyObjects(entityStr string, req bson.M, filters u.RequestFilters, comp
 		return nil, &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
 	}
 
-	if complexFilters != nil {
-		err = getDatesFromComplexFilters(complexFilters)
-		if err != nil {
+	if complexFilterExp != "" {
+		if complexFilters, err := ComplexFilterToMap(complexFilterExp); err != nil {
 			return nil, &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
+		} else {
+			err = getDatesFromComplexFilters(complexFilters)
+			if err != nil {
+				return nil, &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
+			}
+			u.ApplyWildcardsOnComplexFilter(complexFilters)
+			maps.Copy(req, complexFilters)
 		}
-		maps.Copy(req, complexFilters)
 	}
 
 	if opts != nil {
@@ -288,11 +294,98 @@ func GetManyObjects(entityStr string, req bson.M, filters u.RequestFilters, comp
 	return data, nil
 }
 
+func ComplexFilterToMap(complexFilter string) (map[string]any, error) {
+	// Split the input string into individual filter expressions
+	chars := []string{"(", ")", "&", "|"}
+	for _, char := range chars {
+		complexFilter = strings.ReplaceAll(complexFilter, char, " "+char+" ")
+	}
+	return complexExpressionToMap(strings.Fields(complexFilter))
+}
+
+func complexExpressionToMap(expressions []string) (map[string]any, error) {
+	// Find the rightmost operator (AND, OR) outside of parentheses
+	parenCount := 0
+	for i := len(expressions) - 1; i >= 0; i-- {
+		switch expressions[i] {
+		case "(":
+			parenCount++
+		case ")":
+			parenCount--
+		case "&":
+			if parenCount == 0 {
+				first, _ := complexExpressionToMap(expressions[:i])
+				second, _ := complexExpressionToMap(expressions[i+1:])
+				return map[string]any{"$and": []map[string]any{
+					first,
+					second,
+				}}, nil
+			}
+		case "|":
+			if parenCount == 0 {
+				first, _ := complexExpressionToMap(expressions[:i])
+				second, _ := complexExpressionToMap(expressions[i+1:])
+				return map[string]any{"$or": []map[string]any{
+					first,
+					second,
+				}}, nil
+			}
+		}
+	}
+
+	// If there are no operators outside of parentheses, look for the innermost pair of parentheses
+	for i := 0; i < len(expressions); i++ {
+		if expressions[i] == "(" {
+			start, end := i+1, i+1
+			for parenCount := 1; end < len(expressions) && parenCount > 0; end++ {
+				switch expressions[end] {
+				case "(":
+					parenCount++
+				case ")":
+					parenCount--
+				}
+			}
+			return complexExpressionToMap(append(expressions[:start-1], expressions[start:end-1]...))
+		}
+	}
+
+	// Base case: single filter expression
+	re := regexp.MustCompile(`^([\w-.]+)\s*(<=|>=|<|>|!=|=)\s*([\w-.*]+)$`)
+
+	ops := map[string]string{"<=": "$lte", ">=": "$gte", "<": "$lt", ">": "$gt", "!=": "$not"}
+
+	if len(expressions) <= 3 {
+		expression := strings.Join(expressions[:], "")
+
+		if match := re.FindStringSubmatch(expression); match != nil {
+			switch match[1] {
+			case "startDate":
+				return map[string]any{"lastUpdated": map[string]any{"$gte": match[3]}}, nil
+			case "endDate":
+				return map[string]any{"lastUpdated": map[string]any{"$lte": match[3]}}, nil
+			case "id", "name", "category", "description", "domain", "createdDate", "lastUpdated", "slug":
+				if match[2] == "=" {
+					return map[string]any{match[1]: match[3]}, nil
+				}
+				return map[string]any{match[1]: map[string]any{ops[match[2]]: match[3]}}, nil
+			default:
+				if match[2] == "=" {
+					return map[string]any{"attributes." + match[1]: match[3]}, nil
+				}
+				return map[string]any{"attributes." + match[1]: map[string]any{ops[match[2]]: match[3]}}, nil
+			}
+		}
+	}
+
+	fmt.Println("Error: Invalid filter expression")
+	return nil, errors.New("invalid filter expression")
+}
+
 func getDatesFromComplexFilters(req map[string]any) error {
 	for k, v := range req {
 		if k == "$and" || k == "$or" {
-			for _, complexFilter := range v.([]any) {
-				err := getDatesFromComplexFilters(complexFilter.(map[string]any))
+			for _, complexFilter := range v.([]map[string]any) {
+				err := getDatesFromComplexFilters(complexFilter)
 				if err != nil {
 					return err
 				}
@@ -864,7 +957,7 @@ func getChildren(entity, hierarchyName string, limit int, filters u.RequestFilte
 		// Obj should include parentName and not surpass limit range
 		pattern := primitive.Regex{Pattern: "^" + hierarchyName +
 			"(." + u.NAME_REGEX + "){1," + strconv.Itoa(limit) + "}$", Options: ""}
-		children, e1 := GetManyObjects(checkEntName, bson.M{"id": pattern}, filters, nil, nil)
+		children, e1 := GetManyObjects(checkEntName, bson.M{"id": pattern}, filters, "", nil)
 		if e1 != nil {
 			println("SUBENT: ", checkEntName)
 			println("ERR: ", e1.Message)
@@ -906,7 +999,7 @@ func GetEntitiesOfAncestor(id string, entStr, wantedEnt string, userRoles map[st
 	// Get sub entity objects
 	pattern := primitive.Regex{Pattern: "^" + id + u.HN_DELIMETER, Options: ""}
 	req = bson.M{"id": pattern}
-	sub, e1 := GetManyObjects(wantedEnt, req, u.RequestFilters{}, nil, userRoles)
+	sub, e1 := GetManyObjects(wantedEnt, req, u.RequestFilters{}, "", userRoles)
 	if e1 != nil {
 		return nil, e1
 	}
