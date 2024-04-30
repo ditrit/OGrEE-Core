@@ -49,10 +49,10 @@ func CreateTestUser(t *testing.T, role models.Role) (string, string) {
 }
 
 func GetEntityMap(entity string, name string, parentId string, domain string) map[string]any {
+	// returns an entity to use in tests
 	if domain == "" {
 		domain = TestDBName
 	}
-	// returns an entity to use in tests
 	switch entity {
 	case "site":
 		return map[string]any{
