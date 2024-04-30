@@ -36,16 +36,16 @@ func TestCreateProject(t *testing.T) {
 		"permissions":      []string{"admin@admin.com"},
 	})
 
-	test_utils.ValidateManagedRequest(t, "POST", projectsEndpoint, requestBody, http.StatusOK, "successfully handled project request")
+	e2e.ValidateManagedRequest(t, "POST", projectsEndpoint, requestBody, http.StatusOK, "successfully handled project request")
 }
 
 func TestGetProjectsWithNoUserRespondsWithError(t *testing.T) {
-	test_utils.ValidateManagedRequest(t, "GET", projectsEndpoint, nil, http.StatusBadRequest, "Error: user should be sent as query param")
+	e2e.ValidateManagedRequest(t, "GET", projectsEndpoint, nil, http.StatusBadRequest, "Error: user should be sent as query param")
 }
 
 func TestGetProjectsFromUserWithNoProjects(t *testing.T) {
-	test_utils.CreateTestProject(t, "temporaryProject")
-	response := test_utils.ValidateManagedRequest(t, "GET", projectsEndpoint+"?user=someUser", nil, http.StatusOK, "successfully got projects")
+	integration.CreateTestProject(t, "temporaryProject")
+	response := e2e.ValidateManagedRequest(t, "GET", projectsEndpoint+"?user=someUser", nil, http.StatusOK, "successfully got projects")
 
 	data, exists := response["data"].(map[string]interface{})
 	assert.True(t, exists)
@@ -55,8 +55,8 @@ func TestGetProjectsFromUserWithNoProjects(t *testing.T) {
 }
 
 func TestGetProjects(t *testing.T) {
-	_, id := test_utils.CreateTestProject(t, "temporaryProject")
-	response := test_utils.ValidateManagedRequest(t, "GET", projectsEndpoint+"?user=admin@admin.com", nil, http.StatusOK, "successfully got projects")
+	_, id := integration.CreateTestProject(t, "temporaryProject")
+	response := e2e.ValidateManagedRequest(t, "GET", projectsEndpoint+"?user=admin@admin.com", nil, http.StatusOK, "successfully got projects")
 
 	data, exists := response["data"].(map[string]interface{})
 	assert.True(t, exists)
@@ -71,11 +71,11 @@ func TestGetProjects(t *testing.T) {
 }
 
 func TestUpdateProject(t *testing.T) {
-	temporaryProject, id := test_utils.CreateTestProject(t, "temporaryProject")
+	temporaryProject, id := integration.CreateTestProject(t, "temporaryProject")
 	temporaryProject.ShowAvg = true
 	requestBody, _ := json.Marshal(temporaryProject)
 
-	response := test_utils.ValidateManagedRequest(t, "PUT", projectsEndpoint+"/"+id, requestBody, http.StatusOK, "successfully handled project request")
+	response := e2e.ValidateManagedRequest(t, "PUT", projectsEndpoint+"/"+id, requestBody, http.StatusOK, "successfully handled project request")
 
 	data, exists := response["data"].(map[string]interface{})
 	assert.True(t, exists)
@@ -85,9 +85,9 @@ func TestUpdateProject(t *testing.T) {
 }
 
 func TestDeleteProject(t *testing.T) {
-	_, id := test_utils.CreateTestProject(t, "temporaryProject")
-	test_utils.ValidateManagedRequest(t, "DELETE", projectsEndpoint+"/"+id, nil, http.StatusOK, "successfully removed project")
+	_, id := integration.CreateTestProject(t, "temporaryProject")
+	e2e.ValidateManagedRequest(t, "DELETE", projectsEndpoint+"/"+id, nil, http.StatusOK, "successfully removed project")
 
 	// if we try to delete again we get an error
-	test_utils.ValidateManagedRequest(t, "DELETE", projectsEndpoint+"/"+id, nil, http.StatusNotFound, "Project not found")
+	e2e.ValidateManagedRequest(t, "DELETE", projectsEndpoint+"/"+id, nil, http.StatusNotFound, "Project not found")
 }

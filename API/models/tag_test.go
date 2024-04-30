@@ -19,7 +19,7 @@ import (
 )
 
 func TestAddTagThatNotExistReturnsError(t *testing.T) {
-	test_utils.CreateTestPhysicalEntity(t, u.SITE, "add-tag-1-site", "", false)
+	integration.CreateTestPhysicalEntity(t, u.SITE, "add-tag-1-site", "", false)
 
 	_, err := addTagToObject("add-tag-1-site", "not-exists")
 	assert.NotNil(t, err)
@@ -30,7 +30,7 @@ func TestAddTagToObjectAddsItToList(t *testing.T) {
 	err := createTag("add-tag-2")
 	require.Nil(t, err)
 
-	test_utils.CreateTestPhysicalEntity(t, u.SITE, "add-tag-2-site", "", false)
+	integration.CreateTestPhysicalEntity(t, u.SITE, "add-tag-2-site", "", false)
 
 	site, err := addTagToObject("add-tag-2-site", "add-tag-2")
 	assert.Nil(t, err)
@@ -52,7 +52,7 @@ func TestAddDuplicatedTagDoesNothing(t *testing.T) {
 }
 
 func TestRemoveTagThatIsNotInListDoesNothing(t *testing.T) {
-	test_utils.CreateTestPhysicalEntity(t, u.SITE, "remove-tag-1-site", "", false)
+	integration.CreateTestPhysicalEntity(t, u.SITE, "remove-tag-1-site", "", false)
 
 	site, err := removeTagFromObject("remove-tag-1-site", "not-present")
 	assert.Nil(t, err)

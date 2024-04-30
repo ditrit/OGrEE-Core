@@ -78,7 +78,7 @@ func TestValidateEntityDomainParent(t *testing.T) {
 }
 
 func TestValidateEntityRoomParent(t *testing.T) {
-	test_utils.CreateTestPhysicalEntity(t, u.BLDG, "temporaryBuilding", "temporarySite", true)
+	integration.CreateTestPhysicalEntity(t, u.BLDG, "temporaryBuilding", "temporarySite", true)
 	template := test_utils.GetEntityMap("room", "roomA", "temporarySite", integration.TestDBName)
 
 	err := models.ValidateEntity(u.ROOM, template)
@@ -91,7 +91,7 @@ func TestValidateEntityRoomParent(t *testing.T) {
 }
 
 func TestValidateEntityDeviceParent(t *testing.T) {
-	test_utils.CreateTestPhysicalEntity(t, u.DEVICE, "temporaryDevice", "temporarySite.temporaryBuilding.temporaryRoom.temporaryRack", true)
+	integration.CreateTestPhysicalEntity(t, u.DEVICE, "temporaryDevice", "temporarySite.temporaryBuilding.temporaryRoom.temporaryRack", true)
 	template := test_utils.GetEntityMap("device", "deviceA", "temporarySite", integration.TestDBName)
 
 	err := models.ValidateEntity(u.DEVICE, template)
@@ -139,9 +139,9 @@ func TestValidateEntityDeviceSlot(t *testing.T) {
 }
 
 func TestValidateEntityGroupParent(t *testing.T) {
-	test_utils.CreateTestPhysicalEntity(t, u.DEVICE, "device-1", "temporarySite.temporaryBuilding.temporaryRoom.temporaryRack", true)
-	test_utils.CreateTestPhysicalEntity(t, u.DEVICE, "device-2", "temporarySite.temporaryBuilding.temporaryRoom.temporaryRack", false)
-	test_utils.CreateTestPhysicalEntity(t, u.DEVICE, "device-2", "temporarySite.temporaryBuilding.temporaryRoom.temporaryRack.device-1", false)
+	integration.CreateTestPhysicalEntity(t, u.DEVICE, "device-1", "temporarySite.temporaryBuilding.temporaryRoom.temporaryRack", true)
+	integration.CreateTestPhysicalEntity(t, u.DEVICE, "device-2", "temporarySite.temporaryBuilding.temporaryRoom.temporaryRack", false)
+	integration.CreateTestPhysicalEntity(t, u.DEVICE, "device-2", "temporarySite.temporaryBuilding.temporaryRoom.temporaryRack.device-1", false)
 	template := map[string]any{
 		"parentId":    "temporarySite",
 		"name":        "groupA",
@@ -196,7 +196,7 @@ func TestCreateRackWithoutAttributesReturnsError(t *testing.T) {
 
 func TestCreateObjectWithDuplicatedNameReturnsError(t *testing.T) {
 	siteName := "existingSite"
-	test_utils.CreateTestPhysicalEntity(t, u.SITE, siteName, "", false)
+	integration.CreateTestPhysicalEntity(t, u.SITE, siteName, "", false)
 
 	_, err := integration.CreateSite(siteName)
 	assert.NotNil(t, err)
@@ -204,48 +204,34 @@ func TestCreateObjectWithDuplicatedNameReturnsError(t *testing.T) {
 	assert.Equal(t, "Error while creating site: Duplicates not allowed", err.Message)
 }
 
-func TestCreateCorridorWithSameNameAsRackReturnsError(t *testing.T) {
-	rackName := "tempRack"
-	rackParentId := "tempSite.tempBuilding.tempRoom"
-	test_utils.CreateTestPhysicalEntity(t, u.RACK, rackName, rackParentId, true)
-
-	_, err := integration.CreateCorridor(rackParentId, rackName)
-	assert.NotNil(t, err)
-	assert.Equal(t, u.ErrBadFormat, err.Type)
-	assert.Equal(t, "Object name must be unique among corridors, racks and generic objects", err.Message)
-}
-
-func TestCreateRackWithSameNameAsCorridorReturnsError(t *testing.T) {
-	corridor := integration.RequireCreateCorridor("", "create-object-3")
-
-	_, err := integration.CreateRack(corridor["parentId"].(string), "create-object-3")
-	assert.NotNil(t, err)
-	assert.Equal(t, u.ErrBadFormat, err.Type)
-	assert.Equal(t, "Object name must be unique among corridors, racks and generic objects", err.Message)
-}
-
-func TestCreateGenericWithSameNameAsRackReturnsError(t *testing.T) {
-	rackName := "tempRack"
-	rackParentId := "tempSite.tempBuilding.tempRoom"
-	test_utils.CreateTestPhysicalEntity(t, u.RACK, rackName, rackParentId, true)
-
-	_, err := integration.CreateGeneric(rackParentId, rackName)
-	assert.NotNil(t, err)
-	assert.Equal(t, u.ErrBadFormat, err.Type)
-	assert.Equal(t, "Object name must be unique among corridors, racks and generic objects", err.Message)
-}
-
-func TestCreateGenericWithSameNameAsCorridorReturnsError(t *testing.T) {
-	corridor := integration.RequireCreateCorridor("", "create-object-5")
-
-	_, err := integration.CreateGeneric(corridor["parentId"].(string), "create-object-5")
-	assert.NotNil(t, err)
-	assert.Equal(t, u.ErrBadFormat, err.Type)
-	assert.Equal(t, "Object name must be unique among corridors, racks and generic objects", err.Message)
+func TestCreateCorridorOrGenericWithSameNameAsRackReturnsError(t *testing.T) {
+	childName := "tempChild"
+	roomId := "tempSite.tempBuilding.tempRoom"
+	tests := []struct {
+		name           string
+		entityType     int
+		createFunction func(string, string) (map[string]any, *u.Error)
+	}{
+		{"CorridorWithSameNameAsRack", u.RACK, integration.CreateCorridor},
+		{"RackWithSameNameAsCorridor", u.CORRIDOR, integration.CreateRack},
+		{"GenericWithSameNameAsRack", u.RACK, integration.CreateGeneric},
+		{"RackWithSameNameAsGeneric", u.GENERIC, integration.CreateRack},
+		{"GenericWithSameNameAsCorridor", u.CORRIDOR, integration.CreateGeneric},
+		{"CorridorWithSameNameAsGeneric", u.GENERIC, integration.CreateCorridor},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			integration.CreateTestPhysicalEntity(t, tt.entityType, childName, roomId, true)
+			_, err := tt.createFunction(roomId, childName)
+			assert.NotNil(t, err)
+			assert.Equal(t, u.ErrBadFormat, err.Type)
+			assert.Equal(t, "Object name must be unique among corridors, racks and generic objects", err.Message)
+		})
+	}
 }
 
 func TestCreateGroupWithObjectThatNotExistsReturnsError(t *testing.T) {
-	test_utils.CreateTestPhysicalEntity(t, u.ROOM, "tempRoom", "tempSite.tempBuilding", true)
+	integration.CreateTestPhysicalEntity(t, u.ROOM, "tempRoom", "tempSite.tempBuilding", true)
 
 	_, err := integration.CreateGroup("tempSite.tempBuilding.tempRoom", "create-object-6", []any{"not-exists"})
 	assert.NotNil(t, err)
@@ -254,13 +240,13 @@ func TestCreateGroupWithObjectThatNotExistsReturnsError(t *testing.T) {
 }
 
 func TestCreateGroupWithCorridorsRacksAndGenericWorks(t *testing.T) {
-	room := integration.RequireCreateRoom("", "create-object-7-room")
-	rack := integration.RequireCreateRack(room["id"].(string), "create-object-7-rack")
-	corridor := integration.RequireCreateCorridor(room["id"].(string), "create-object-7-corridor")
-	generic := integration.RequireCreateGeneric(room["id"].(string), "create-object-7-generic")
+	roomId := "tempSite.tempBuilding.tempRoom"
+	rack := integration.CreateTestPhysicalEntity(t, u.RACK, "create-object-7-rack", roomId, true)
+	corridor := integration.CreateTestPhysicalEntity(t, u.CORRIDOR, "create-object-7-corridor", roomId, false)
+	generic := integration.CreateTestPhysicalEntity(t, u.GENERIC, "create-object-7-generic", roomId, false)
 
 	group, err := integration.CreateGroup(
-		room["id"].(string),
+		roomId,
 		"create-object-7",
 		[]any{rack["name"].(string), corridor["name"].(string), generic["name"].(string)},
 	)
@@ -269,7 +255,7 @@ func TestCreateGroupWithCorridorsRacksAndGenericWorks(t *testing.T) {
 }
 
 func TestCreateGenericWithParentNotRoomReturnsError(t *testing.T) {
-	rack := integration.RequireCreateRack("", "create-object-8-rack")
+	rack := integration.CreateTestPhysicalEntity(t, u.RACK, "create-object-8-rack", "tempSite.tempBuilding.tempRoom", true)
 
 	_, err := integration.CreateGeneric(rack["id"].(string), "create-object-8-generic")
 	assert.NotNil(t, err)
@@ -277,7 +263,7 @@ func TestCreateGenericWithParentNotRoomReturnsError(t *testing.T) {
 }
 
 func TestCreateGenericWithParentRoomWorks(t *testing.T) {
-	room := integration.RequireCreateRoom("", "create-object-9-room")
+	room := integration.CreateTestPhysicalEntity(t, u.ROOM, "create-object-9-room", "tempSite.tempBuilding", true)
 
 	_, err := integration.CreateGeneric(room["id"].(string), "create-object-9-generic")
 	assert.Nil(t, err)

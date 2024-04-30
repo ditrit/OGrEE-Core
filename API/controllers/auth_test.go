@@ -73,7 +73,7 @@ func TestLoginWrongPassword(t *testing.T) {
 		"password": "wrong_password"
 	}`)
 
-	test_utils.ValidateManagedRequest(t, "POST", test_utils.GetEndpoint("login"), requestBody, http.StatusUnauthorized, "Invalid login credentials")
+	e2e.ValidateManagedRequest(t, "POST", test_utils.GetEndpoint("login"), requestBody, http.StatusUnauthorized, "Invalid login credentials")
 }
 
 func TestLoginSuccess(t *testing.T) {
@@ -83,7 +83,7 @@ func TestLoginSuccess(t *testing.T) {
 		"password": "` + password + `"
 	}`)
 
-	response := test_utils.ValidateManagedRequest(t, "POST", test_utils.GetEndpoint("login"), requestBody, http.StatusOK, "Login succesful")
+	response := e2e.ValidateManagedRequest(t, "POST", test_utils.GetEndpoint("login"), requestBody, http.StatusOK, "Login succesful")
 
 	account, exists := response["account"].(map[string]interface{})
 	assert.True(t, exists)
@@ -96,7 +96,7 @@ func TestLoginSuccess(t *testing.T) {
 }
 
 func TestVerifyToken(t *testing.T) {
-	test_utils.ValidateManagedRequest(t, "GET", test_utils.GetEndpoint("tokenValid"), nil, http.StatusOK, "working")
+	e2e.ValidateManagedRequest(t, "GET", test_utils.GetEndpoint("tokenValid"), nil, http.StatusOK, "working")
 }
 
 func TestRequestWithInvalidAuthorizationHeader(t *testing.T) {
@@ -113,14 +113,14 @@ func TestRequestWithInvalidAuthorizationHeader(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			test_utils.ValidateRequestWithHeaders(t, "GET", endpoint, nil, tt.header, http.StatusForbidden, tt.message)
+			e2e.ValidateRequestWithHeaders(t, "GET", endpoint, nil, tt.header, http.StatusForbidden, tt.message)
 		})
 	}
 }
 
 func TestGetAllUsers(t *testing.T) {
 	// As admin, we get all users
-	response := test_utils.ValidateManagedRequest(t, "GET", test_utils.GetEndpoint("users"), nil, http.StatusOK, "successfully got users")
+	response := e2e.ValidateManagedRequest(t, "GET", test_utils.GetEndpoint("users"), nil, http.StatusOK, "successfully got users")
 
 	data, exists := response["data"].([]interface{})
 	assert.True(t, exists)
@@ -132,7 +132,7 @@ func TestGetUsersWithNormalUser(t *testing.T) {
 	userToken := test_utils.GetUserToken(userEmail, password)
 	assert.NotEmpty(t, userToken)
 
-	response := test_utils.ValidateRequestWithToken(t, "GET", test_utils.GetEndpoint("users"), nil, userToken, http.StatusOK, "successfully got users")
+	response := e2e.ValidateRequestWithToken(t, "GET", test_utils.GetEndpoint("users"), nil, userToken, http.StatusOK, "successfully got users")
 
 	data, exists := response["data"].([]interface{})
 	assert.True(t, exists)
@@ -147,7 +147,7 @@ func TestDeleteWithoutEnoughPermissions(t *testing.T) {
 	assert.NotEmpty(t, userToken)
 
 	endpoint := test_utils.GetEndpoint("usersInstance", userId)
-	test_utils.ValidateRequestWithToken(t, "DELETE", endpoint, nil, userToken, http.StatusUnauthorized, "Caller does not have permission to delete this user")
+	e2e.ValidateRequestWithToken(t, "DELETE", endpoint, nil, userToken, http.StatusUnauthorized, "Caller does not have permission to delete this user")
 }
 
 func TestDeleteUser(t *testing.T) {
@@ -157,14 +157,14 @@ func TestDeleteUser(t *testing.T) {
 	assert.NotEmpty(t, userId)
 
 	endpoint := test_utils.GetEndpoint("usersInstance", userId)
-	test_utils.ValidateManagedRequest(t, "DELETE", endpoint, nil, http.StatusOK, "successfully removed user")
+	e2e.ValidateManagedRequest(t, "DELETE", endpoint, nil, http.StatusOK, "successfully removed user")
 
 	// We get a Not Found if we try to delete again
-	test_utils.ValidateManagedRequest(t, "DELETE", endpoint, nil, http.StatusNotFound, "User not found")
+	e2e.ValidateManagedRequest(t, "DELETE", endpoint, nil, http.StatusNotFound, "User not found")
 }
 
 func TestDeleteWithInvalidIdReturnsError(t *testing.T) {
-	test_utils.ValidateManagedRequest(t, "DELETE", test_utils.GetEndpoint("usersInstance", "unknown"), nil, http.StatusBadRequest, "User ID is not valid")
+	e2e.ValidateManagedRequest(t, "DELETE", test_utils.GetEndpoint("usersInstance", "unknown"), nil, http.StatusBadRequest, "User ID is not valid")
 }
 
 // Tests modify user role
@@ -181,11 +181,11 @@ func TestModifyRole(t *testing.T) {
 		statusCode         int
 		message            string
 	}{
-		{"ExtraDataReturnsError", test_utils.ValidateRequestWithToken, userToken, userId, `{"roles": {"*": "user"},"name": "other name"}`, http.StatusBadRequest, "Only 'roles' should be provided to patch"},
-		{"InvalidRole", test_utils.ValidateRequestWithToken, userToken, userId, `{"roles": {"*": "invalid"}}`, http.StatusInternalServerError, "Role assigned is not valid: "},
-		{"InvalidId", test_utils.ValidateRequestWithToken, userToken, "invalid", `{"roles": {"*": "user"}}`, http.StatusBadRequest, "User ID is not valid"},
-		{"ModifyRoleWithNormalUser", test_utils.ValidateRequestWithUser, "user", userId, `{"roles": {"*": "manager"}}`, http.StatusUnauthorized, "Caller does not have permission to modify this user"},
-		{"Success", test_utils.ValidateRequestWithToken, userToken, userId, `{"roles": {"*": "viewer"}}`, http.StatusOK, "successfully updated user roles"},
+		{"ExtraDataReturnsError", e2e.ValidateRequestWithToken, userToken, userId, `{"roles": {"*": "user"},"name": "other name"}`, http.StatusBadRequest, "Only 'roles' should be provided to patch"},
+		{"InvalidRole", e2e.ValidateRequestWithToken, userToken, userId, `{"roles": {"*": "invalid"}}`, http.StatusInternalServerError, "Role assigned is not valid: "},
+		{"InvalidId", e2e.ValidateRequestWithToken, userToken, "invalid", `{"roles": {"*": "user"}}`, http.StatusBadRequest, "User ID is not valid"},
+		{"ModifyRoleWithNormalUser", e2e.ValidateRequestWithUser, "user", userId, `{"roles": {"*": "manager"}}`, http.StatusUnauthorized, "Caller does not have permission to modify this user"},
+		{"Success", e2e.ValidateRequestWithToken, userToken, userId, `{"roles": {"*": "viewer"}}`, http.StatusOK, "successfully updated user roles"},
 	}
 
 	for _, tt := range tests {
@@ -218,7 +218,7 @@ func TestModifyPassword(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			test_utils.ValidateRequestWithToken(t, "POST", changePasswordEndpoint, []byte(tt.requestBody), userToken, tt.statusCode, tt.message)
+			e2e.ValidateRequestWithToken(t, "POST", changePasswordEndpoint, []byte(tt.requestBody), userToken, tt.statusCode, tt.message)
 		})
 	}
 }
@@ -243,7 +243,7 @@ func TestResetPassword(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			test_utils.ValidateRequestWithToken(t, "POST", resetPasswordEndpoint, []byte(tt.requestBody), tt.token, tt.statusCode, tt.message)
+			e2e.ValidateRequestWithToken(t, "POST", resetPasswordEndpoint, []byte(tt.requestBody), tt.token, tt.statusCode, tt.message)
 		})
 	}
 }

@@ -144,7 +144,7 @@ func TestCreateBulkDomains(t *testing.T) {
 
 func TestCreateBulkDomainWithDuplicateError(t *testing.T) {
 	// Test try to create a domain that already exists
-	test_utils.CreateTestDomain(t, "temporaryDomain", "", "")
+	integration.CreateTestDomain(t, "temporaryDomain", "", "")
 	requestBody := []byte(`[
 		{
 			"name": "temporaryDomain",
@@ -166,11 +166,11 @@ func TestCreateBulkDomainWithDuplicateError(t *testing.T) {
 // Tests delete subdomains (/api/objects)
 func TestDeleteSubdomains(t *testing.T) {
 	// Test delete subdomain using a pattern
-	test_utils.CreateTestDomain(t, "temporaryFatherDomain", "", "")
-	test_utils.CreateTestDomain(t, "temporaryChildDomain", "temporaryFatherDomain", "")
+	integration.CreateTestDomain(t, "temporaryFatherDomain", "", "")
+	integration.CreateTestDomain(t, "temporaryChildDomain", "temporaryFatherDomain", "")
 	params, _ := url.ParseQuery("id=temporaryFatherDomain.*")
 	endpoint := test_utils.GetEndpoint("getObject") + "?" + params.Encode()
-	response := test_utils.ValidateManagedRequest(t, "DELETE", endpoint, nil, http.StatusOK, "successfully deleted objects")
+	response := e2e.ValidateManagedRequest(t, "DELETE", endpoint, nil, http.StatusOK, "successfully deleted objects")
 
 	data, exists := response["data"].([]interface{})
 	assert.True(t, exists)
@@ -186,14 +186,14 @@ func TestComplexFilterWithNoFilterInput(t *testing.T) {
 	requestBody := []byte(`{}`)
 
 	message := "Invalid body format: must contain a filter key with a not empty string as value"
-	test_utils.ValidateManagedRequest(t, "POST", test_utils.GetEndpoint("complexFilterSearch"), requestBody, http.StatusBadRequest, message)
+	e2e.ValidateManagedRequest(t, "POST", test_utils.GetEndpoint("complexFilterSearch"), requestBody, http.StatusBadRequest, message)
 }
 
 func TestComplexFilterSearchAndDelete(t *testing.T) {
 	// Test get subdomains with color 00ED00
-	test_utils.CreateTestDomain(t, "temporaryFatherDomain", "", "")
-	test_utils.CreateTestDomain(t, "temporaryChildDomain", "temporaryFatherDomain", "00ED00")
-	test_utils.CreateTestDomain(t, "temporarySecondChildDomain", "temporaryFatherDomain", "ffffff")
+	integration.CreateTestDomain(t, "temporaryFatherDomain", "", "")
+	integration.CreateTestDomain(t, "temporaryChildDomain", "temporaryFatherDomain", "00ED00")
+	integration.CreateTestDomain(t, "temporarySecondChildDomain", "temporaryFatherDomain", "ffffff")
 	requestBody := []byte(`{
 		"filter": "id=temporaryFatherDomain.* & color=00ED00"
 	}`)
@@ -210,7 +210,7 @@ func TestComplexFilterSearchAndDelete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			response := test_utils.ValidateManagedRequest(t, tt.httpMethod, endpoint, requestBody, http.StatusOK, tt.message)
+			response := e2e.ValidateManagedRequest(t, tt.httpMethod, endpoint, requestBody, http.StatusOK, tt.message)
 
 			data, exists := response["data"].([]interface{})
 			assert.True(t, exists)
@@ -226,9 +226,9 @@ func TestComplexFilterSearchAndDelete(t *testing.T) {
 
 func TestComplexFilterSearchWithDateFilter(t *testing.T) {
 	// Test get subdomains with color 00ED00 and different startDate
-	test_utils.CreateTestDomain(t, "temporaryFatherDomain", "", "")
-	test_utils.CreateTestDomain(t, "temporaryChildDomain", "temporaryFatherDomain", "00ED00")
-	test_utils.CreateTestDomain(t, "temporarySecondChildDomain", "temporaryFatherDomain", "ffffff")
+	integration.CreateTestDomain(t, "temporaryFatherDomain", "", "")
+	integration.CreateTestDomain(t, "temporaryChildDomain", "temporaryFatherDomain", "00ED00")
+	integration.CreateTestDomain(t, "temporarySecondChildDomain", "temporaryFatherDomain", "ffffff")
 	requestBody := []byte(`{
 		"filter": "id=temporaryFatherDomain.* & color=00ED00"
 	}`)
@@ -251,7 +251,7 @@ func TestComplexFilterSearchWithDateFilter(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			response := test_utils.ValidateManagedRequest(t, "POST", baseEndpoint+tt.queryParams, requestBody, http.StatusOK, message)
+			response := e2e.ValidateManagedRequest(t, "POST", baseEndpoint+tt.queryParams, requestBody, http.StatusOK, message)
 			data, exists := response["data"].([]interface{})
 			assert.True(t, exists)
 			assert.Equal(t, tt.resultLenght, len(data))
@@ -261,8 +261,8 @@ func TestComplexFilterSearchWithDateFilter(t *testing.T) {
 
 // Tests get different entities
 func TestGetDomainEntity(t *testing.T) {
-	test_utils.CreateTestDomain(t, "temporaryDomain", "", "")
-	response := test_utils.ValidateManagedRequest(t, "GET", test_utils.GetEndpoint("domains"), nil, http.StatusOK, "successfully got domains")
+	integration.CreateTestDomain(t, "temporaryDomain", "", "")
+	response := e2e.ValidateManagedRequest(t, "GET", test_utils.GetEndpoint("domains"), nil, http.StatusOK, "successfully got domains")
 
 	// we have multiple domains
 	data, exists := response["data"].(map[string]interface{})
@@ -280,7 +280,7 @@ func TestGetDomainEntity(t *testing.T) {
 }
 
 func TestGetBuildingsEntity(t *testing.T) {
-	response := test_utils.ValidateManagedRequest(t, "GET", test_utils.GetEndpoint("entity", "buildings"), nil, http.StatusOK, "successfully got buildings")
+	response := e2e.ValidateManagedRequest(t, "GET", test_utils.GetEndpoint("entity", "buildings"), nil, http.StatusOK, "successfully got buildings")
 
 	// we have multiple buildings
 	data, exists := response["data"].(map[string]interface{})
@@ -297,12 +297,12 @@ func TestGetUnknownEntity(t *testing.T) {
 }
 
 func TestGetDomainEntitiesFilteredByColor(t *testing.T) {
-	test_utils.CreateTestDomain(t, "temporaryDomain1", "", "ffff01")
-	test_utils.CreateTestDomain(t, "temporaryDomain2", "", "00ED00")
-	test_utils.CreateTestDomain(t, "temporaryDomain3", "", "00ED00")
+	integration.CreateTestDomain(t, "temporaryDomain1", "", "ffff01")
+	integration.CreateTestDomain(t, "temporaryDomain2", "", "00ED00")
+	integration.CreateTestDomain(t, "temporaryDomain3", "", "00ED00")
 
 	endpoint := test_utils.GetEndpoint("domains") + "?color=00ED00"
-	response := test_utils.ValidateManagedRequest(t, "GET", endpoint, nil, http.StatusOK, "successfully got query for domain")
+	response := e2e.ValidateManagedRequest(t, "GET", endpoint, nil, http.StatusOK, "successfully got query for domain")
 
 	// we have multiple domains
 	data, exists := response["data"].(map[string]interface{})
@@ -315,19 +315,19 @@ func TestGetDomainEntitiesFilteredByColor(t *testing.T) {
 
 // Test get temperature unit
 func TestGetTemperatureForDomain(t *testing.T) {
-	test_utils.CreateTestDomain(t, "temporaryDomain", "", "")
+	integration.CreateTestDomain(t, "temporaryDomain", "", "")
 	endpoint := test_utils.GetEndpoint("tempunits", "temporaryDomain")
-	test_utils.ValidateManagedRequest(t, "GET", endpoint, nil, http.StatusNotFound, "Could not find parent site for given object")
+	e2e.ValidateManagedRequest(t, "GET", endpoint, nil, http.StatusNotFound, "Could not find parent site for given object")
 }
 
 func TestGetTemperatureForParentWithNoTemperature(t *testing.T) {
 	endpoint := test_utils.GetEndpoint("tempunits", "site-no-temperature.building-1")
-	test_utils.ValidateManagedRequest(t, "GET", endpoint, nil, http.StatusNotFound, "Parent site has no temperatureUnit in attributes")
+	e2e.ValidateManagedRequest(t, "GET", endpoint, nil, http.StatusNotFound, "Parent site has no temperatureUnit in attributes")
 }
 
 func TestGetTemperature(t *testing.T) {
 	endpoint := test_utils.GetEndpoint("tempunits", "site-with-temperature.building-3")
-	response := test_utils.ValidateManagedRequest(t, "GET", endpoint, nil, http.StatusOK, "successfully got temperatureUnit from object's parent site")
+	response := e2e.ValidateManagedRequest(t, "GET", endpoint, nil, http.StatusOK, "successfully got temperatureUnit from object's parent site")
 
 	data, exists := response["data"].(map[string]interface{})
 	assert.True(t, exists)
@@ -350,7 +350,7 @@ func TestErrorEntityHierarchyErrors(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			test_utils.ValidateManagedRequest(t, "GET", tt.endpoint, nil, tt.statusCode, tt.message)
+			e2e.ValidateManagedRequest(t, "GET", tt.endpoint, nil, tt.statusCode, tt.message)
 		})
 	}
 }
@@ -358,7 +358,7 @@ func TestErrorEntityHierarchyErrors(t *testing.T) {
 func TestGetSitesRooms(t *testing.T) {
 	endpoint := test_utils.GetEndpoint("entityAncestors", "sites", "site-no-temperature", "rooms")
 	message := "successfully got object"
-	response := test_utils.ValidateManagedRequest(t, "GET", endpoint, nil, http.StatusOK, message)
+	response := e2e.ValidateManagedRequest(t, "GET", endpoint, nil, http.StatusOK, message)
 
 	data, exists := response["data"].(map[string]interface{})
 	assert.True(t, exists)
@@ -377,10 +377,10 @@ func TestGetSitesRooms(t *testing.T) {
 }
 
 func TestGetHierarchyAttributes(t *testing.T) {
-	test_utils.CreateTestDomain(t, "temporaryDomain", "", "ffff01")
+	integration.CreateTestDomain(t, "temporaryDomain", "", "ffff01")
 	endpoint := test_utils.GetEndpoint("hierarchyAttributes")
 	message := "successfully got attrs hierarchy"
-	response := test_utils.ValidateManagedRequest(t, "GET", endpoint, nil, http.StatusOK, message)
+	response := e2e.ValidateManagedRequest(t, "GET", endpoint, nil, http.StatusOK, message)
 
 	data, exists := response["data"].(map[string]interface{})
 	assert.True(t, exists)
@@ -401,7 +401,7 @@ func TestLinkUnlinkRoomss(t *testing.T) {
 	strayName := "StrayRoom"
 	parentId := "temporarySite.temporaryBuilding"
 	roomName := "temporaryRoom"
-	test_utils.CreateTestPhysicalEntity(t, utils.ROOM, roomName, parentId, true)
+	integration.CreateTestPhysicalEntity(t, utils.ROOM, roomName, parentId, true)
 
 	unlinkEndpoint := test_utils.GetEndpoint("entityUnlink", "rooms", parentId+"."+roomName)
 	linkEndpoint := test_utils.GetEndpoint("entityLink", "stray-objects", "StrayRoom")
@@ -441,14 +441,14 @@ func TestLinkUnlinkRoomss(t *testing.T) {
 				entitId = parentId + "." + roomName
 			}
 
-			test_utils.ValidateManagedRequest(t, "PATCH", patchEndpoint, tt.requestBody, tt.statusCode, tt.message)
+			e2e.ValidateManagedRequest(t, "PATCH", patchEndpoint, tt.requestBody, tt.statusCode, tt.message)
 
 			if tt.isSuccess {
 				// We verify the old entity does not exist
-				test_utils.ValidateManagedRequest(t, "GET", deletedInstanceEndpoint, nil, http.StatusNotFound, "Nothing matches this request")
+				e2e.ValidateManagedRequest(t, "GET", deletedInstanceEndpoint, nil, http.StatusNotFound, "Nothing matches this request")
 
 				// We verify the new entity exists
-				response := test_utils.ValidateManagedRequest(t, "GET", changedInstanceEndpoint, nil, http.StatusOK, changedInstanceMessage)
+				response := e2e.ValidateManagedRequest(t, "GET", changedInstanceEndpoint, nil, http.StatusOK, changedInstanceMessage)
 				data, exists := response["data"].(map[string]interface{})
 				assert.True(t, exists)
 				id := data["id"].(string)
@@ -477,12 +477,12 @@ func TestValidateEntityWithoutAttributes(t *testing.T) {
 
 	endpoint := test_utils.GetEndpoint("validateEntity", "rooms")
 	expectedMessage := "JSON body doesn't validate with the expected JSON schema"
-	test_utils.ValidateManagedRequest(t, "POST", endpoint, requestBody, http.StatusBadRequest, expectedMessage)
+	e2e.ValidateManagedRequest(t, "POST", endpoint, requestBody, http.StatusBadRequest, expectedMessage)
 }
 
 func TestValidateEntity(t *testing.T) {
-	test_utils.CreateTestDomain(t, "temporaryDomain", "", "")
-	test_utils.CreateTestPhysicalEntity(t, utils.BLDG, "tempBldg", "tempSite", true)
+	integration.CreateTestDomain(t, "temporaryDomain", "", "")
+	integration.CreateTestPhysicalEntity(t, utils.BLDG, "tempBldg", "tempSite", true)
 	room := test_utils.GetEntityMap("room", "roomA", "tempSite.tempBldg", "")
 
 	endpoint := test_utils.GetEndpoint("validateEntity", "rooms")
@@ -500,19 +500,19 @@ func TestValidateEntity(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			room["domain"] = tt.domain
 			requestBody, _ := json.Marshal(room)
-			test_utils.ValidateManagedRequest(t, "POST", endpoint, requestBody, tt.statusCode, tt.message)
+			e2e.ValidateManagedRequest(t, "POST", endpoint, requestBody, tt.statusCode, tt.message)
 		})
 	}
 }
 
 func TestErrorValidateValidRoomEntityNotEnoughPermissions(t *testing.T) {
-	test_utils.CreateTestPhysicalEntity(t, utils.BLDG, "tempBldg", "tempSite", true)
+	integration.CreateTestPhysicalEntity(t, utils.BLDG, "tempBldg", "tempSite", true)
 	room := test_utils.GetEntityMap("room", "roomA", "tempSite.tempBldg", integration.TestDBName)
 	requestBody, _ := json.Marshal(room)
 
 	endpoint := test_utils.GetEndpoint("validateEntity", "rooms")
 	expectedMessage := "This user does not have sufficient permissions to create this object under this domain "
-	test_utils.ValidateRequestWithUser(t, "POST", endpoint, requestBody, "viewer", http.StatusUnauthorized, expectedMessage)
+	e2e.ValidateRequestWithUser(t, "POST", endpoint, requestBody, "viewer", http.StatusUnauthorized, expectedMessage)
 }
 
 func TestGetStats(t *testing.T) {
@@ -547,7 +547,7 @@ func TestGetApiVersion(t *testing.T) {
 func TestGetLayersObjectsRootRequired(t *testing.T) {
 	endpoint := test_utils.GetEndpoint("layersObjects", "racks-layer")
 	expectedMessage := "Query param root is mandatory"
-	test_utils.ValidateManagedRequest(t, "GET", endpoint, nil, http.StatusBadRequest, expectedMessage)
+	e2e.ValidateManagedRequest(t, "GET", endpoint, nil, http.StatusBadRequest, expectedMessage)
 }
 
 func TestGetLayersObjectsLayerUnknown(t *testing.T) {
@@ -558,7 +558,7 @@ func TestGetLayersObjectsLayerUnknown(t *testing.T) {
 func TestGetLayersObjectsWithSimpleFilter(t *testing.T) {
 	endpoint := test_utils.GetEndpoint("layersObjects", "racks-layer")
 	expectedMessage := "successfully processed request"
-	response := test_utils.ValidateManagedRequest(t, "GET", endpoint+"?root=site-no-temperature.building-1.room-1", nil, http.StatusOK, expectedMessage)
+	response := e2e.ValidateManagedRequest(t, "GET", endpoint+"?root=site-no-temperature.building-1.room-1", nil, http.StatusOK, expectedMessage)
 
 	data, exists := response["data"].([]any)
 	assert.True(t, exists)
@@ -576,7 +576,7 @@ func TestGetLayersObjectsWithSimpleFilter(t *testing.T) {
 func TestGetLayersObjectsWithDoubleFilter(t *testing.T) {
 	endpoint := test_utils.GetEndpoint("layersObjects", "racks-1-layer")
 	expectedMessage := "successfully processed request"
-	response := test_utils.ValidateManagedRequest(t, "GET", endpoint+"?root=site-no-temperature.building-1.room-*", nil, http.StatusOK, expectedMessage)
+	response := e2e.ValidateManagedRequest(t, "GET", endpoint+"?root=site-no-temperature.building-1.room-*", nil, http.StatusOK, expectedMessage)
 
 	data, exists := response["data"].([]any)
 	assert.True(t, exists)
