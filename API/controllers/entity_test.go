@@ -443,7 +443,7 @@ func TestGetTemperature(t *testing.T) {
 	json.Unmarshal(recorder.Body.Bytes(), &response)
 	message, exists := response["message"].(string)
 	assert.True(t, exists)
-	assert.Equal(t, "successfully got temperatureUnit from object's parent site", message)
+	assert.Equal(t, "successfully got attribute from object's parent site", message)
 
 	data, exists := response["data"].(map[string]interface{})
 	assert.True(t, exists)
