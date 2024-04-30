@@ -7,9 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"regexp"
 	"strconv"
-	"strings"
 )
 
 func ExeDir() string {
@@ -256,87 +254,4 @@ func ObjectAttr(obj map[string]any, attr string) (any, bool) {
 		return nil, false
 	}
 	return val, true
-}
-
-func ComplexFilterToMap(complexFilter string) map[string]any {
-	// Split the input string into individual filter expressions
-	chars := []string{"(", ")", "&", "|"}
-	for _, char := range chars {
-		complexFilter = strings.ReplaceAll(complexFilter, char, " "+char+" ")
-	}
-	return complexExpressionToMap(strings.Fields(complexFilter))
-}
-
-func complexExpressionToMap(expressions []string) map[string]any {
-	// Find the rightmost operator (AND, OR) outside of parentheses
-	parenCount := 0
-	for i := len(expressions) - 1; i >= 0; i-- {
-		switch expressions[i] {
-		case "(":
-			parenCount++
-		case ")":
-			parenCount--
-		case "&":
-			if parenCount == 0 {
-				return map[string]any{"$and": []map[string]any{
-					complexExpressionToMap(expressions[:i]),
-					complexExpressionToMap(expressions[i+1:]),
-				}}
-			}
-		case "|":
-			if parenCount == 0 {
-				return map[string]any{"$or": []map[string]any{
-					complexExpressionToMap(expressions[:i]),
-					complexExpressionToMap(expressions[i+1:]),
-				}}
-			}
-		}
-	}
-
-	// If there are no operators outside of parentheses, look for the innermost pair of parentheses
-	for i := 0; i < len(expressions); i++ {
-		if expressions[i] == "(" {
-			start, end := i+1, i+1
-			for parenCount := 1; end < len(expressions) && parenCount > 0; end++ {
-				switch expressions[end] {
-				case "(":
-					parenCount++
-				case ")":
-					parenCount--
-				}
-			}
-			return complexExpressionToMap(append(expressions[:start-1], expressions[start:end-1]...))
-		}
-	}
-
-	// Base case: single filter expression
-	re := regexp.MustCompile(`^([\w-.]+)\s*(<=|>=|<|>|!=|=)\s*([\w-.*]+)$`)
-
-	ops := map[string]string{"<=": "$lte", ">=": "$gte", "<": "$lt", ">": "$gt", "!=": "$not"}
-
-	if len(expressions) <= 3 {
-		expression := strings.Join(expressions[:], "")
-
-		if match := re.FindStringSubmatch(expression); match != nil {
-			switch match[1] {
-			case "startDate":
-				return map[string]any{"lastUpdated": map[string]any{"$gte": match[3]}}
-			case "endDate":
-				return map[string]any{"lastUpdated": map[string]any{"$lte": match[3]}}
-			case "id", "name", "category", "description", "domain", "createdDate", "lastUpdated", "slug":
-				if match[2] == "=" {
-					return map[string]any{match[1]: match[3]}
-				}
-				return map[string]any{match[1]: map[string]any{ops[match[2]]: match[3]}}
-			default:
-				if match[2] == "=" {
-					return map[string]any{"attributes." + match[1]: match[3]}
-				}
-				return map[string]any{"attributes." + match[1]: map[string]any{ops[match[2]]: match[3]}}
-			}
-		}
-	}
-
-	fmt.Println("Error: Invalid filter expression")
-	return map[string]any{"error": "invalid filter expression"}
 }

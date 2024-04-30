@@ -55,13 +55,7 @@ func TestGetWithComplexFilters(t *testing.T) {
 		mockAPI,
 		"id=BASIC.A.R1&namespace=physical.hierarchy",
 		map[string]any{
-			"$and": []map[string]any{
-				{"category": "room"},
-				{"$or": []map[string]any{
-					{"name": "R1"},
-					{"attributes.height": map[string]any{"$gt": "3"}},
-				}},
-			},
+			"filter": "(category=room) & (name=R1 | height>3) ",
 		},
 		[]any{roomWithChildren},
 	)

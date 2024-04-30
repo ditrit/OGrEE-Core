@@ -154,7 +154,7 @@
         }
       }
     },
-    "/api/image/{id}": {
+    "/api/images/{id}": {
       "get": {
         "security": [
           {
@@ -632,6 +632,41 @@
           },
           "500": {
             "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/schemas/{id}": {
+      "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "Returns a HTTP response with the content of the schema in the body (json format).\nJSON schemas define the format of each entity of the API.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Gets a JSON schema by its file name (id).",
+        "operationId": "GetSchemaJSON",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Name of the JSON schema",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. A response body will be returned with the schema content."
+          },
+          "404": {
+            "description": "Not Found. An error message will be returned."
           }
         }
       }

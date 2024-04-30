@@ -1,13 +1,13 @@
 {
     "attributes": {
       "floorUnit": "t",
-      "height": "2.8",
+      "height": 2.8,
       "heightUnit": "m",
       "axisOrientation": "x+y",
-      "rotation": "-90",
-      "posXY": "[-46.25, -20]",
+      "rotation": -90,
+      "posXY": [-46.25, -20],
       "posXYUnit": "m",
-      "size": "[0.0, +2.9]",
+      "size": [0.0, 2.9],
       "sizeUnit": "m",
       "template": ""
     },

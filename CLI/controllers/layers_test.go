@@ -261,7 +261,7 @@ func TestLsOnRacksLayerShowsRacks(t *testing.T) {
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
-	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"category": "rack"}, []any{rack1, rack2})
+	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"filter": "category=rack"}, []any{rack1, rack2})
 
 	objects, err := controller.Ls("/Physical/BASIC/A/R1/#racks", map[string]string{}, nil)
 	assert.Nil(t, err)
@@ -275,7 +275,7 @@ func TestLsOnGroupLayerShowsGroups(t *testing.T) {
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
-	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"category": "group"}, []any{roomGroup})
+	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"filter": "category=group"}, []any{roomGroup})
 
 	objects, err := controller.Ls("/Physical/BASIC/A/R1/#groups", map[string]string{}, nil)
 	assert.Nil(t, err)
@@ -288,7 +288,7 @@ func TestLsOnCorridorsLayerShowsCorridors(t *testing.T) {
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
-	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"category": "corridor"}, []any{corridor})
+	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"filter": "category=corridor"}, []any{corridor})
 
 	objects, err := controller.Ls("/Physical/BASIC/A/R1/#corridors", map[string]string{}, nil)
 	assert.Nil(t, err)
@@ -301,7 +301,7 @@ func TestLsOnGenericLayerShowsGeneric(t *testing.T) {
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
-	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"category": "generic"}, []any{generic})
+	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"filter": "category=generic"}, []any{generic})
 
 	objects, err := controller.Ls("/Physical/BASIC/A/R1/#generics", map[string]string{}, nil)
 	assert.Nil(t, err)
@@ -317,7 +317,7 @@ func TestLsOnDeviceTypeLayerShowsDevicesOfThatType(t *testing.T) {
 	mockGetObjectsWithComplexFilters(
 		mockAPI,
 		"id=BASIC.A.R1.A01.*&namespace=physical.hierarchy",
-		map[string]any{"$and": []map[string]any{{"category": "device"}, {"attributes.type": "chassis"}}},
+		map[string]any{"filter": "category=device&type=chassis"},
 		[]any{chassis},
 	)
 
@@ -335,7 +335,7 @@ func TestLsOnGenericTypeLayerShowsDevicesOfThatType(t *testing.T) {
 	mockGetObjectsWithComplexFilters(
 		mockAPI,
 		"id=BASIC.A.R1.*&namespace=physical.hierarchy",
-		map[string]any{"$and": []map[string]any{{"category": "generic"}, {"attributes.type": "table"}}},
+		map[string]any{"filter": "category=generic&type=table"},
 		[]any{generic},
 	)
 
@@ -369,7 +369,7 @@ func TestLsOnNestedLayerWorks(t *testing.T) {
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
 	mockGetObjectHierarchy(mockAPI, rack1)
-	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.A01.*&namespace=physical.hierarchy", map[string]any{"category": "group"}, []any{rackGroup})
+	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.A01.*&namespace=physical.hierarchy", map[string]any{"filter": "category=group"}, []any{rackGroup})
 
 	objects, err := controller.Ls("/Physical/BASIC/A/R1/#racks/A01/#groups", map[string]string{}, nil)
 	assert.Nil(t, err)
@@ -382,7 +382,7 @@ func TestGetOnRacksLayerGetsRacksAttributes(t *testing.T) {
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
-	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"$and": []map[string]any{{"category": "rack"}, {"category": "rack"}}}, []any{rack1, rack2})
+	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"filter": "(category=rack) & (category=rack)"}, []any{rack1, rack2})
 
 	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/#racks", map[string]string{}, nil)
 	assert.Nil(t, err)
@@ -396,7 +396,7 @@ func TestGetOnCorridorsLayerGetsCorridorsAttributes(t *testing.T) {
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
-	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"$and": []map[string]any{{"category": "corridor"}, {"category": "corridor"}}}, []any{corridor})
+	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"filter": "(category=corridor) & (category=corridor)"}, []any{corridor})
 
 	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/#corridors", map[string]string{}, nil)
 	assert.Nil(t, err)
@@ -409,7 +409,7 @@ func TestGetOnGroupLayerGetsGroupsAttributes(t *testing.T) {
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
-	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"$and": []map[string]any{{"category": "group"}, {"category": "group"}}}, []any{roomGroup})
+	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"filter": "(category=group) & (category=group)"}, []any{roomGroup})
 
 	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/#groups", map[string]string{}, nil)
 	assert.Nil(t, err)
@@ -422,7 +422,7 @@ func TestGetOnAllLayerGetsAllAttributes(t *testing.T) {
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
-	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"$and": []map[string]any{{"category": "rack"}, {"category": "rack"}}}, []any{rack1, rack2})
+	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"filter": "(category=rack) & (category=rack)"}, []any{rack1, rack2})
 
 	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/#racks/*", map[string]string{}, nil)
 	assert.Nil(t, err)
@@ -436,7 +436,7 @@ func TestGetOnWildcardLayerGetsAttributes(t *testing.T) {
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
-	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.A*&namespace=physical.hierarchy", map[string]any{"$and": []map[string]any{{"category": "rack"}, {"category": "rack"}}}, []any{rack1})
+	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.A*&namespace=physical.hierarchy", map[string]any{"filter": "(category=rack) & (category=rack)"}, []any{rack1})
 
 	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/#racks/A*", map[string]string{}, nil)
 	assert.Nil(t, err)
@@ -449,7 +449,7 @@ func TestGetOnLayerChildGetsAttributes(t *testing.T) {
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
-	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.A01&namespace=physical.hierarchy", map[string]any{"$and": []map[string]any{{"category": "rack"}, {"category": "rack"}}}, []any{rack1})
+	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.A01&namespace=physical.hierarchy", map[string]any{"filter": "(category=rack) & (category=rack)"}, []any{rack1})
 
 	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/#racks/A01", map[string]string{}, nil)
 	assert.Nil(t, err)
@@ -463,7 +463,7 @@ func TestGetOnNestedLayerGetsAttributes(t *testing.T) {
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
 	mockGetObjectHierarchy(mockAPI, rack1)
-	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.A01.*&namespace=physical.hierarchy", map[string]any{"$and": []map[string]any{{"category": "group"}, {"category": "group"}}}, []any{rackGroup})
+	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.A01.*&namespace=physical.hierarchy", map[string]any{"filter": "(category=group) & (category=group)"}, []any{rackGroup})
 
 	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/#racks/A01/#groups", map[string]string{}, nil)
 	assert.Nil(t, err)
@@ -575,7 +575,7 @@ func TestSelectLayerSelectsAll(t *testing.T) {
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
-	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"category": "rack"}, []any{rack1, rack2})
+	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"filter": "category=rack"}, []any{rack1, rack2})
 	mockGetObject(mockAPI, rack1)
 	mockGetObject(mockAPI, rack2)
 
@@ -596,7 +596,7 @@ func TestSelectGroupsLayerSelectsAll(t *testing.T) {
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
-	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"category": "group"}, []any{roomGroup})
+	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"filter": "category=group"}, []any{roomGroup})
 	mockGetObject(mockAPI, roomGroup)
 
 	mockOgree3D.On(
@@ -615,7 +615,7 @@ func TestSelectLayerAllSelectsAll(t *testing.T) {
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
-	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"category": "rack"}, []any{rack1, rack2})
+	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"filter": "category=rack"}, []any{rack1, rack2})
 	mockGetObject(mockAPI, rack1)
 	mockGetObject(mockAPI, rack2)
 
@@ -636,7 +636,7 @@ func TestSelectLayerWildcardSelectsWildcard(t *testing.T) {
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
-	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.A*&namespace=physical.hierarchy", map[string]any{"category": "rack"}, []any{rack1})
+	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.A*&namespace=physical.hierarchy", map[string]any{"filter": "category=rack"}, []any{rack1})
 	mockGetObject(mockAPI, rack1)
 
 	mockOgree3D.On(
@@ -655,7 +655,7 @@ func TestSelectLayerChildSelectsChild(t *testing.T) {
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
-	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.A01&namespace=physical.hierarchy", map[string]any{"category": "rack"}, []any{rack1})
+	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.A01&namespace=physical.hierarchy", map[string]any{"filter": "category=rack"}, []any{rack1})
 	mockGetObject(mockAPI, rack1)
 
 	mockOgree3D.On(
@@ -675,7 +675,7 @@ func TestSelectNestedLayerSelectsAll(t *testing.T) {
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
 	mockGetObjectHierarchy(mockAPI, rack1)
-	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.A01.*&namespace=physical.hierarchy", map[string]any{"category": "group"}, []any{rackGroup})
+	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.A01.*&namespace=physical.hierarchy", map[string]any{"filter": "category=group"}, []any{rackGroup})
 	mockGetObject(mockAPI, rackGroup)
 
 	mockOgree3D.On(
@@ -694,7 +694,7 @@ func TestRemoveLayerRemovesAllObjectsOfTheLayer(t *testing.T) {
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
-	mockDeleteObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"category": "rack"}, []any{rack1, rack2})
+	mockDeleteObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"filter": "category=rack"}, []any{rack1, rack2})
 
 	controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
 
@@ -707,7 +707,7 @@ func TestDrawLayerDrawsAllObjectsOfTheLayer(t *testing.T) {
 
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
-	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"category": "rack"}, []any{rack1, rack2})
+	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"filter": "category=rack"}, []any{rack1, rack2})
 	mockGetObject(mockAPI, rack1)
 	mockGetObject(mockAPI, rack2)
 
@@ -731,7 +731,7 @@ func TestDrawLayerWithDepthDrawsAllObjectsOfTheLayerAndChildren(t *testing.T) {
 
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
-	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"category": "rack"}, []any{rack1, rack2})
+	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"filter": "category=rack"}, []any{rack1, rack2})
 	mockGetObjectHierarchy(mockAPI, rack1)
 	mockGetObjectHierarchy(mockAPI, rack2)
 
@@ -755,7 +755,7 @@ func TestUndrawLayerUndrawAllObjectsOfTheLayer(t *testing.T) {
 
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
-	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"category": "rack"}, []any{rack1, rack2})
+	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"filter": "category=rack"}, []any{rack1, rack2})
 	mockGetObject(mockAPI, rack1)
 	mockGetObject(mockAPI, rack2)
 
@@ -1277,7 +1277,7 @@ func TestLsOnLayerUpdatedAfterLastUpdateDoesUpdatedFilter(t *testing.T) {
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{testLayer})
 	mockGetObjectHierarchy(mockAPI, roomWithoutChildren)
-	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"category": "rack"}, []any{})
+	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"filter": "category = rack"}, []any{})
 
 	objects, err := controller.Ls("/Physical/BASIC/A/R1/#test", map[string]string{}, nil)
 	assert.Nil(t, err)
@@ -1295,7 +1295,7 @@ func TestLsOnLayerUpdatedAfterLastUpdateDoesUpdatedFilter(t *testing.T) {
 	err = controller.UpdateLayer("/Logical/Layers/test", models.LayerFiltersAdd, "category = device")
 	assert.Nil(t, err)
 
-	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"category": "device"}, []any{})
+	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"filter": "category = device"}, []any{})
 
 	objects, err = controller.Ls("/Physical/BASIC/A/R1/#test", map[string]string{}, nil)
 	assert.Nil(t, err)
@@ -1313,7 +1313,7 @@ func TestLsOnUserDefinedLayerAppliesFilters(t *testing.T) {
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{testLayer})
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
-	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"category": "rack"}, []any{rack1, rack2})
+	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.*&namespace=physical.hierarchy", map[string]any{"filter": "category = rack"}, []any{rack1, rack2})
 
 	objects, err := controller.Ls("/Physical/BASIC/A/R1/#test", map[string]string{}, nil)
 	assert.Nil(t, err)
@@ -1333,7 +1333,7 @@ func TestLsRecursiveOnLayerListLayerRecursive(t *testing.T) {
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{devices})
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
-	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.**.*&namespace=physical.hierarchy", map[string]any{"category": "device"}, []any{chassis, pdu})
+	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.**.*&namespace=physical.hierarchy", map[string]any{"filter": "category = device"}, []any{chassis, pdu})
 
 	objects, err := controller.Ls("/Physical/BASIC/A/R1/#devices", map[string]string{}, &controllers.RecursiveParams{MaxDepth: models.UnlimitedDepth})
 	assert.Nil(t, err)
@@ -1353,7 +1353,7 @@ func TestGetRecursiveOnLayerReturnsLayerRecursive(t *testing.T) {
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{devices})
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
-	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.**.*&namespace=physical.hierarchy", map[string]any{"category": "device"}, []any{chassis, pdu})
+	mockGetObjectsWithComplexFilters(mockAPI, "id=BASIC.A.R1.**.*&namespace=physical.hierarchy", map[string]any{"filter": "category = device"}, []any{chassis, pdu})
 
 	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/#devices", nil, &controllers.RecursiveParams{MaxDepth: models.UnlimitedDepth})
 	assert.Nil(t, err)
