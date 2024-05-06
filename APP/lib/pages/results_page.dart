@@ -37,7 +37,7 @@ class ResultsPage extends StatefulWidget {
 
 class _ResultsPageState extends State<ResultsPage> {
   final Set<String> _allAttributes = {};
-  Map<String, Map<String, String>>? _data;
+  Map<String, Map<String, dynamic>>? _data;
   List<DataColumn> columnLabels = [];
 
   // TODO: IMPLEMENT SORT
@@ -222,7 +222,7 @@ class _ResultsPageState extends State<ResultsPage> {
     return sampleData;
   }
 
-  getAllAttributes(Map<String, Map<String, String>> data) {
+  getAllAttributes(Map<String, Map<String, dynamic>> data) {
     for (var obj in widget.selectedObjects) {
       if (data.containsKey(obj)) {
         for (var attr in data[obj]!.keys) {
@@ -232,7 +232,7 @@ class _ResultsPageState extends State<ResultsPage> {
     }
   }
 
-  applyMathFunctions(Map<String, Map<String, String>> data) {
+  applyMathFunctions(Map<String, Map<String, dynamic>> data) {
     List<String> mathFunctions = [sumStr, avgStr];
     for (var func in mathFunctions) {
       data[func] = {};
@@ -382,7 +382,7 @@ class CustomRow {
 class _DataSource extends DataTableSource {
   List<String> selectedAttrs;
   List<String> selectedObjects;
-  Map<String, Map<String, String>>? data;
+  Map<String, Map<String, dynamic>>? data;
 
   _DataSource(
       this.context, this.selectedAttrs, this.selectedObjects, this.data) {
