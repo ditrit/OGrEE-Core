@@ -2,52 +2,14 @@ package main
 
 import (
 	"cli/controllers"
-	mocks "cli/mocks/controllers"
 	"cli/models"
+	test_utils "cli/test"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/exp/maps"
 )
-
-func setMainEnvironmentMock(t *testing.T) (*mocks.APIPort, *mocks.Ogree3DPort, *mocks.ClockPort, func()) {
-	oldDynamicSymbolTable := controllers.State.DynamicSymbolTable
-	oldFuncTable := controllers.State.FuncTable
-	oldClipboard := controllers.State.ClipBoard
-	oldPrevPath := controllers.State.PrevPath
-	oldCurrPath := controllers.State.CurrPath
-	oldDrawableObjs := controllers.State.DrawableObjs
-	controllers.State.DynamicSymbolTable = map[string]any{}
-	controllers.State.FuncTable = map[string]any{}
-	controllers.State.ClipBoard = []string{}
-	controllers.State.DrawableObjs = []int{}
-
-	mockAPI := mocks.NewAPIPort(t)
-	mockOgree3D := mocks.NewOgree3DPort(t)
-	mockClock := mocks.NewClockPort(t)
-	controller := controllers.Controller{
-		API:     mockAPI,
-		Ogree3D: mockOgree3D,
-		Clock:   mockClock,
-	}
-	oldControllerValue := controllers.C
-	controllers.C = controller
-	oldHierarchy := controllers.State.Hierarchy
-	controllers.State.Hierarchy = controllers.BuildBaseTree(controller)
-
-	deferFunction := func() {
-		controllers.State.DynamicSymbolTable = oldDynamicSymbolTable
-		controllers.State.FuncTable = oldFuncTable
-		controllers.C = oldControllerValue
-		controllers.State.Hierarchy = oldHierarchy
-		controllers.State.ClipBoard = oldClipboard
-		controllers.State.DrawableObjs = oldDrawableObjs
-		controllers.State.PrevPath = oldPrevPath
-		controllers.State.CurrPath = oldCurrPath
-	}
-	return mockAPI, mockOgree3D, mockClock, deferFunction
-}
 
 func TestValueNodeExecute(t *testing.T) {
 	valNode := valueNode{5}
@@ -58,8 +20,7 @@ func TestValueNodeExecute(t *testing.T) {
 }
 
 func TestAstExecute(t *testing.T) {
-	_, _, _, deferFunction := setMainEnvironmentMock(t)
-	defer deferFunction()
+	test_utils.SetMainEnvironmentMock(t)
 
 	commands := ast{
 		statements: []node{
@@ -79,8 +40,7 @@ func TestAstExecute(t *testing.T) {
 }
 
 func TestFuncDefNodeExecute(t *testing.T) {
-	_, _, _, deferFunction := setMainEnvironmentMock(t)
-	defer deferFunction()
+	test_utils.SetMainEnvironmentMock(t)
 
 	// alias my_function { print $i }
 	functionBody := printNode{&formatStringNode{&valueNode{"%v"}, []node{&symbolReferenceNode{"i"}}}}
@@ -98,8 +58,7 @@ func TestFuncDefNodeExecute(t *testing.T) {
 }
 
 func TestFuncCallNodeExecute(t *testing.T) {
-	_, _, _, deferFunction := setMainEnvironmentMock(t)
-	defer deferFunction()
+	test_utils.SetMainEnvironmentMock(t)
 
 	// we define the function
 	// alias my_function { .var: i = 5 }
@@ -124,8 +83,7 @@ func TestFuncCallNodeExecute(t *testing.T) {
 }
 
 func TestFuncCallNodeExecuteUndefinedFunction(t *testing.T) {
-	_, _, _, deferFunction := setMainEnvironmentMock(t)
-	defer deferFunction()
+	test_utils.SetMainEnvironmentMock(t)
 
 	functionName := "my_function"
 	callNode := funcCallNode{functionName}
@@ -145,8 +103,7 @@ func TestArrNodeExecute(t *testing.T) {
 }
 
 func TestLenNodeExecute(t *testing.T) {
-	_, _, _, deferFunction := setMainEnvironmentMock(t)
-	defer deferFunction()
+	test_utils.SetMainEnvironmentMock(t)
 
 	controllers.State.DynamicSymbolTable["myArray"] = []float64{1, 2, 3, 4}
 	array := lenNode{"myArray"}
@@ -163,8 +120,7 @@ func TestLenNodeExecute(t *testing.T) {
 }
 
 func TestCdNodeExecute(t *testing.T) {
-	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
-	defer deferFunction()
+	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
 
 	mockAPI.On(
 		"Request", "GET",
@@ -191,8 +147,7 @@ func TestCdNodeExecute(t *testing.T) {
 }
 
 func TestLsNodeExecute(t *testing.T) {
-	mockAPI, _, mockClock, deferFunction := setMainEnvironmentMock(t)
-	defer deferFunction()
+	_, mockAPI, _, mockClock := test_utils.SetMainEnvironmentMock(t)
 
 	mockAPI.On(
 		"Request", "GET",
@@ -235,8 +190,7 @@ func TestLsNodeExecute(t *testing.T) {
 }
 
 func TestGetUNodeExecute(t *testing.T) {
-	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
-	defer deferFunction()
+	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
 
 	mockAPI.On(
 		"Request", "GET",
@@ -277,8 +231,7 @@ func TestGetUNodeExecute(t *testing.T) {
 }
 
 func TestGetSlotNodeExecute(t *testing.T) {
-	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
-	defer deferFunction()
+	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
 
 	mockAPI.On(
 		"Request", "GET",
@@ -341,8 +294,7 @@ func TestPrintNodeExecute(t *testing.T) {
 }
 
 func TestDeleteObjNodeExecute(t *testing.T) {
-	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
-	defer deferFunction()
+	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
 	mockAPI.On(
 		"Request", "DELETE",
 		"/api/objects?id=site.building.room.rack&namespace=physical.hierarchy",
@@ -371,8 +323,7 @@ func TestDeleteObjNodeExecute(t *testing.T) {
 }
 
 func TestDeleteSelectionNodeExecute(t *testing.T) {
-	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
-	defer deferFunction()
+	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
 	controllers.State.ClipBoard = []string{"/Physical/site/building/room/rack", "/Physical/site/building/room2/rack2"}
 
 	mockAPI.On(
@@ -423,8 +374,7 @@ func TestDeleteSelectionNodeExecute(t *testing.T) {
 }
 
 func TestIsEntityDrawableNodeExecute(t *testing.T) {
-	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
-	defer deferFunction()
+	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
 	rack := map[string]any{
 		"category": "rack",
 		"children": []any{},
@@ -472,8 +422,7 @@ func TestIsEntityDrawableNodeExecute(t *testing.T) {
 }
 
 func TestIsAttrDrawableNodeExecute(t *testing.T) {
-	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
-	defer deferFunction()
+	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
 	rack := map[string]any{
 		"category": "rack",
 		"children": []any{},
@@ -502,8 +451,7 @@ func TestIsAttrDrawableNodeExecute(t *testing.T) {
 }
 
 func TestGetObjectNodeExecute(t *testing.T) {
-	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
-	defer deferFunction()
+	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
 	rack := map[string]any{
 		"category": "rack",
 		"children": []any{},
@@ -537,8 +485,7 @@ func TestGetObjectNodeExecute(t *testing.T) {
 }
 
 func TestSelectObjectNodeExecuteOnePath(t *testing.T) {
-	mockAPI, mockOgree3D, _, deferFunction := setMainEnvironmentMock(t)
-	defer deferFunction()
+	_, mockAPI, mockOgree3D, _ := test_utils.SetMainEnvironmentMock(t)
 	rack := map[string]any{
 		"category": "rack",
 		"children": []any{},
@@ -572,8 +519,7 @@ func TestSelectObjectNodeExecuteOnePath(t *testing.T) {
 }
 
 func TestSelectObjectNodeExecuteReset(t *testing.T) {
-	_, mockOgree3D, _, deferFunction := setMainEnvironmentMock(t)
-	defer deferFunction()
+	_, _, mockOgree3D, _ := test_utils.SetMainEnvironmentMock(t)
 	controllers.State.ClipBoard = []string{"/Physical/site/building/room/rack"}
 	mockOgree3D.On(
 		"InformOptional", "SetClipBoard",
@@ -589,8 +535,7 @@ func TestSelectObjectNodeExecuteReset(t *testing.T) {
 }
 
 func TestSetRoomAreas(t *testing.T) {
-	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
-	defer deferFunction()
+	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
 
 	room := map[string]any{
 		"category": "room",
@@ -638,8 +583,7 @@ func TestSetRoomAreas(t *testing.T) {
 }
 
 func TestSetLabel(t *testing.T) {
-	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
-	defer deferFunction()
+	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
 
 	room := map[string]any{
 		"category": "rack",
@@ -696,8 +640,7 @@ func TestAddRoomSeparatorError(t *testing.T) {
 }
 
 func TestAddRoomSeparator(t *testing.T) {
-	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
-	defer deferFunction()
+	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
 
 	room := map[string]any{
 		"category":   "room",
@@ -754,8 +697,7 @@ func TestAddRoomPillarError(t *testing.T) {
 }
 
 func TestAddRoomPillar(t *testing.T) {
-	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
-	defer deferFunction()
+	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
 
 	room := map[string]any{
 		"category":   "room",
@@ -803,8 +745,7 @@ func TestAddRoomPillar(t *testing.T) {
 }
 
 func TestDeleteRoomPillarOrSeparatorInvalidArgument(t *testing.T) {
-	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
-	defer deferFunction()
+	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
 
 	room := map[string]any{
 		"category":   "room",
@@ -833,8 +774,7 @@ func TestDeleteRoomPillarOrSeparatorInvalidArgument(t *testing.T) {
 }
 
 func TestDeleteRoomPillarOrSeparatorSeparatorDoesNotExist(t *testing.T) {
-	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
-	defer deferFunction()
+	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
 
 	room := map[string]any{
 		"category":   "room",
@@ -863,8 +803,7 @@ func TestDeleteRoomPillarOrSeparatorSeparatorDoesNotExist(t *testing.T) {
 }
 
 func TestDeleteRoomPillarOrSeparatorSeparator(t *testing.T) {
-	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
-	defer deferFunction()
+	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
 
 	room := map[string]any{
 		"category": "room",
@@ -909,8 +848,7 @@ func TestDeleteRoomPillarOrSeparatorSeparator(t *testing.T) {
 }
 
 func TestDeleteRoomPillarOrSeparatorPillar(t *testing.T) {
-	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
-	defer deferFunction()
+	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
 
 	room := map[string]any{
 		"category": "room",
@@ -955,8 +893,7 @@ func TestDeleteRoomPillarOrSeparatorPillar(t *testing.T) {
 }
 
 func TestUpdateObjNodeExecuteUpdateDescription(t *testing.T) {
-	mockAPI, _, _, deferFunction := setMainEnvironmentMock(t)
-	defer deferFunction()
+	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
 
 	room := map[string]any{
 		"category":    "room",

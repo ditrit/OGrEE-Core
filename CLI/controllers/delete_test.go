@@ -3,13 +3,14 @@ package controllers_test
 import (
 	"cli/controllers"
 	"cli/models"
+	test_utils "cli/test"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestDeleteTag(t *testing.T) {
-	controller, mockAPI, _, _ := newControllerWithMocks(t)
+	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
 
 	slug := "slug"
 	path := models.TagsPath + slug

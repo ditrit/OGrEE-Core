@@ -2,6 +2,7 @@ package main
 
 import (
 	"cli/controllers"
+	test_utils "cli/test"
 	"fmt"
 	"os"
 	"strings"
@@ -88,8 +89,7 @@ func TestNewStackTraceError(t *testing.T) {
 }
 
 func TestLoadFile(t *testing.T) {
-	_, _, _, deferFunction := setMainEnvironmentMock(t)
-	defer deferFunction()
+	test_utils.SetMainEnvironmentMock(t)
 
 	basePath := t.TempDir() // temporary directory that will be deleted after the tests have finished
 	fileContent := ".var:siteName=siteB\n"
@@ -112,8 +112,7 @@ func TestLoadFile(t *testing.T) {
 }
 
 func TestLoadFileParseError(t *testing.T) {
-	_, _, _, deferFunction := setMainEnvironmentMock(t)
-	defer deferFunction()
+	test_utils.SetMainEnvironmentMock(t)
 
 	basePath := t.TempDir() // temporary directory that will be deleted after the tests have finished
 	fileContent := "siteName=siteB\n"
@@ -135,8 +134,7 @@ func TestLoadFileParseError(t *testing.T) {
 }
 
 func TestLoadFileStackError(t *testing.T) {
-	_, _, _, deferFunction := setMainEnvironmentMock(t)
-	defer deferFunction()
+	test_utils.SetMainEnvironmentMock(t)
 
 	basePath := t.TempDir() // temporary directory that will be deleted after the tests have finished
 	fileContent := ".var: i = eval 10/0\n"
