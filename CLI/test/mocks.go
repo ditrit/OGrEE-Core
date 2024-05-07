@@ -11,70 +11,49 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func MockGetObjectHierarchy(mockAPI *mocks.APIPort, object map[string]any) {
+func mockResponse(mockAPI *mocks.APIPort, httpMethod string, url string, body map[string]any, responseStatus int, response interface{}) {
+	var requestBody interface{}
+	if body != nil {
+		requestBody = body
+	} else {
+		requestBody = mock.Anything
+	}
 	mockAPI.On(
-		"Request", http.MethodGet,
-		"/api/hierarchy-objects/"+object["id"].(string)+"/all?limit=1",
-		mock.Anything, http.StatusOK,
+		"Request", httpMethod,
+		url,
+		requestBody, responseStatus,
 	).Return(
 		&controllers.Response{
 			Body: map[string]any{
-				"data": KeepOnlyDirectChildren(object),
+				"data": response,
 			},
 		}, nil,
 	).Once()
+}
+
+func mockResponseWithParams(mockAPI *mocks.APIPort, httpMethod string, urlPath string, queryParams string, body map[string]any, responseStatus int, response interface{}) {
+	params, err := url.ParseQuery(queryParams)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+
+	mockResponse(mockAPI, httpMethod, urlPath+"?"+params.Encode(), body, responseStatus, response)
+}
+
+func MockGetObjectHierarchy(mockAPI *mocks.APIPort, object map[string]any) {
+	mockResponse(mockAPI, http.MethodGet, "/api/hierarchy-objects/"+object["id"].(string)+"/all?limit=1", nil, http.StatusOK, KeepOnlyDirectChildren(object))
 }
 
 func MockGetObject(mockAPI *mocks.APIPort, object map[string]any) {
-	mockAPI.On(
-		"Request", http.MethodGet,
-		"/api/hierarchy-objects/"+object["id"].(string),
-		mock.Anything, http.StatusOK,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": RemoveChildren(object),
-			},
-		}, nil,
-	).Once()
+	mockResponse(mockAPI, http.MethodGet, "/api/hierarchy-objects/"+object["id"].(string), nil, http.StatusOK, RemoveChildren(object))
 }
 
 func MockGetObjects(mockAPI *mocks.APIPort, queryParams string, result []any) {
-	params, err := url.ParseQuery(queryParams)
-	if err != nil {
-		log.Fatalln(err.Error())
-	}
-
-	mockAPI.On(
-		"Request", http.MethodGet,
-		"/api/objects?"+params.Encode(),
-		mock.Anything, http.StatusOK,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": RemoveChildrenFromList(result),
-			},
-		}, nil,
-	).Once()
+	mockResponseWithParams(mockAPI, http.MethodGet, "/api/objects", queryParams, nil, http.StatusOK, RemoveChildrenFromList(result))
 }
 
 func MockGetObjectsWithComplexFilters(mockAPI *mocks.APIPort, queryParams string, body map[string]any, result []any) {
-	params, err := url.ParseQuery(queryParams)
-	if err != nil {
-		log.Fatalln(err.Error())
-	}
-
-	mockAPI.On(
-		"Request", http.MethodPost,
-		"/api/objects/search?"+params.Encode(),
-		body, http.StatusOK,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": RemoveChildrenFromList(result),
-			},
-		}, nil,
-	).Once()
+	mockResponseWithParams(mockAPI, http.MethodPost, "/api/objects/search", queryParams, body, http.StatusOK, RemoveChildrenFromList(result))
 }
 
 func MockGetObjectByEntity(mockAPI *mocks.APIPort, entity string, object map[string]any) {
@@ -83,105 +62,33 @@ func MockGetObjectByEntity(mockAPI *mocks.APIPort, entity string, object map[str
 		idOrSlug = object["slug"].(string)
 	}
 
-	mockAPI.On(
-		"Request", http.MethodGet,
-		"/api/"+entity+"/"+idOrSlug,
-		mock.Anything, http.StatusOK,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": RemoveChildren(object),
-			},
-		}, nil,
-	).Once()
+	mockResponse(mockAPI, http.MethodGet, "/api/"+entity+"/"+idOrSlug, nil, http.StatusOK, RemoveChildren(object))
 }
 
 func MockDeleteObjects(mockAPI *mocks.APIPort, queryParams string, result []any) {
-	params, err := url.ParseQuery(queryParams)
-	if err != nil {
-		log.Fatalln(err.Error())
-	}
-
-	mockAPI.On(
-		"Request", http.MethodDelete,
-		"/api/objects?"+params.Encode(),
-		mock.Anything, http.StatusOK,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": RemoveChildrenFromList(result),
-			},
-		}, nil,
-	).Once()
+	mockResponseWithParams(mockAPI, http.MethodDelete, "/api/objects", queryParams, nil, http.StatusOK, RemoveChildrenFromList(result))
 }
 
 func MockDeleteObjectsWithComplexFilters(mockAPI *mocks.APIPort, queryParams string, body map[string]any, result []any) {
-	params, err := url.ParseQuery(queryParams)
-	if err != nil {
-		log.Fatalln(err.Error())
-	}
-
-	mockAPI.On(
-		"Request", http.MethodDelete,
-		"/api/objects/search?"+params.Encode(),
-		body, http.StatusOK,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": RemoveChildrenFromList(result),
-			},
-		}, nil,
-	).Once()
+	mockResponseWithParams(mockAPI, http.MethodDelete, "/api/objects/search", queryParams, body, http.StatusOK, RemoveChildrenFromList(result))
 }
 
 func MockGetObjectsByEntity(mockAPI *mocks.APIPort, entity string, objects []any) {
-	mockAPI.On(
-		"Request", http.MethodGet,
-		"/api/"+entity,
-		mock.Anything, http.StatusOK,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": map[string]any{
-					"objects": RemoveChildrenFromList(objects),
-				},
-			},
-		}, nil,
-	).Once()
+	mockResponse(mockAPI, http.MethodGet, "/api/"+entity, nil, http.StatusOK, map[string]any{
+		"objects": RemoveChildrenFromList(objects),
+	})
 }
 
 func MockCreateObject(mockAPI *mocks.APIPort, entity string, data map[string]any) {
-	mockAPI.On(
-		"Request", http.MethodPost,
-		"/api/"+entity+"s",
-		data, http.StatusCreated,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": data,
-			},
-		}, nil,
-	).Once()
+	mockResponse(mockAPI, http.MethodPost, "/api/"+entity+"s", data, http.StatusCreated, data)
 }
 
 func MockUpdateObject(mockAPI *mocks.APIPort, dataUpdate map[string]any, dataUpdated map[string]any) {
-	mockAPI.On("Request", http.MethodPatch, mock.Anything, dataUpdate, http.StatusOK).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": dataUpdated,
-			},
-		}, nil,
-	)
+	mockResponse(mockAPI, http.MethodPatch, mock.Anything, dataUpdate, http.StatusOK, dataUpdated)
 }
 
 func MockPutObject(mockAPI *mocks.APIPort, dataUpdate map[string]any, dataUpdated map[string]any) {
-	mockAPI.On("Request", http.MethodPut, mock.Anything, dataUpdate, http.StatusOK).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": dataUpdated,
-			},
-		}, nil,
-	)
+	mockResponse(mockAPI, http.MethodPut, mock.Anything, dataUpdate, http.StatusOK, dataUpdated)
 }
 
 func MockObjectNotFound(mockAPI *mocks.APIPort, path string) {
@@ -197,29 +104,9 @@ func MockObjectNotFound(mockAPI *mocks.APIPort, path string) {
 }
 
 func MockGetObjTemplate(mockAPI *mocks.APIPort, template map[string]any) {
-	mockAPI.On(
-		"Request", http.MethodGet,
-		"/api/obj-templates/"+template["slug"].(string),
-		mock.Anything, http.StatusOK,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": template,
-			},
-		}, nil,
-	).Once()
+	mockResponse(mockAPI, http.MethodGet, "/api/obj-templates/"+template["slug"].(string), nil, http.StatusOK, template)
 }
 
 func MockGetRoomTemplate(mockAPI *mocks.APIPort, template map[string]any) {
-	mockAPI.On(
-		"Request", http.MethodGet,
-		"/api/room-templates/"+template["slug"].(string),
-		mock.Anything, http.StatusOK,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": template,
-			},
-		}, nil,
-	).Once()
+	mockResponse(mockAPI, http.MethodGet, "/api/room-templates/"+template["slug"].(string), nil, http.StatusOK, template)
 }

@@ -122,22 +122,8 @@ func TestLenNodeExecute(t *testing.T) {
 func TestCdNodeExecute(t *testing.T) {
 	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
 
-	mockAPI.On(
-		"Request", "GET",
-		"/api/hierarchy-objects/site",
-		"mock.Anything", 200,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": map[string]any{
-					"category": "site",
-					"id":       "site",
-					"name":     "site",
-					"parentId": "",
-				},
-			},
-		}, nil,
-	).Once()
+	site := test_utils.GetEntity("site", "site", "", "domain")
+	test_utils.MockGetObject(mockAPI, site)
 
 	array := cdNode{&pathNode{path: &valueNode{"/Physical/site"}}}
 	value, err := array.execute()
@@ -149,22 +135,8 @@ func TestCdNodeExecute(t *testing.T) {
 func TestLsNodeExecute(t *testing.T) {
 	_, mockAPI, _, mockClock := test_utils.SetMainEnvironmentMock(t)
 
-	mockAPI.On(
-		"Request", "GET",
-		"/api/hierarchy-objects/site/all?limit=1",
-		"mock.Anything", 200,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": map[string]any{
-					"category": "site",
-					"id":       "site",
-					"name":     "site",
-					"parentId": "",
-				},
-			},
-		}, nil,
-	).Once()
+	site := test_utils.GetEntity("site", "site", "", "domain")
+	test_utils.MockGetObjectHierarchy(mockAPI, site)
 	mockAPI.On(
 		"Request", "GET",
 		"/api/layers",
@@ -192,23 +164,8 @@ func TestLsNodeExecute(t *testing.T) {
 func TestGetUNodeExecute(t *testing.T) {
 	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
 
-	mockAPI.On(
-		"Request", "GET",
-		"/api/hierarchy-objects/site.building.room.rack/all?limit=1",
-		"mock.Anything", 200,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": map[string]any{
-					"category": "rack",
-					"children": []any{},
-					"id":       "site.building.room.rack",
-					"name":     "rack",
-					"parentId": "site.building.room",
-				},
-			},
-		}, nil,
-	).Once()
+	rack := test_utils.GetEntity("rack", "rack", "site.building.room", "domain")
+	test_utils.MockGetObjectHierarchy(mockAPI, rack)
 
 	uNode := getUNode{
 		path: &pathNode{path: &valueNode{"/Physical/site/building/room/rack"}},
@@ -233,47 +190,33 @@ func TestGetUNodeExecute(t *testing.T) {
 func TestGetSlotNodeExecute(t *testing.T) {
 	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
 
-	mockAPI.On(
-		"Request", "GET",
-		"/api/hierarchy-objects/site.building.room.rack/all?limit=1",
-		"mock.Anything", 200,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": map[string]any{
-					"category": "rack",
-					"children": []any{map[string]any{
-						"category": "device",
-						"attributes": map[string]any{
-							"type": "chassis",
-							"slot": "slot",
-						},
-						"children": []any{},
-						"id":       "BASIC.A.R1.A01.chT",
-						"name":     "chT",
-						"parentId": "BASIC.A.R1.A01",
-					}},
-					"id":       "site.building.room.rack",
-					"name":     "rack",
-					"parentId": "site.building.room",
-					"attributes": map[string]any{
-						"slot": []any{
-							map[string]any{
-								"location":   "slot",
-								"type":       "u",
-								"elemOrient": []any{33.3, -44.4, 107},
-								"elemPos":    []any{58, 51, 44.45},
-								"elemSize":   []any{482.6, 1138, 44.45},
-								"mandatory":  "no",
-								"labelPos":   "frontrear",
-								"color":      "@color1",
-							},
-						},
-					},
-				},
+	rack := test_utils.GetEntity("rack", "rack", "site.building.room", "domain")
+	rack["children"] = []any{map[string]any{
+		"category": "device",
+		"attributes": map[string]any{
+			"type": "chassis",
+			"slot": "slot",
+		},
+		"children": []any{},
+		"id":       "BASIC.A.R1.A01.chT",
+		"name":     "chT",
+		"parentId": "BASIC.A.R1.A01",
+	}}
+	rack["attributes"] = map[string]any{
+		"slot": []any{
+			map[string]any{
+				"location":   "slot",
+				"type":       "u",
+				"elemOrient": []any{33.3, -44.4, 107},
+				"elemPos":    []any{58, 51, 44.45},
+				"elemSize":   []any{482.6, 1138, 44.45},
+				"mandatory":  "no",
+				"labelPos":   "frontrear",
+				"color":      "@color1",
 			},
-		}, nil,
-	).Once()
+		},
+	}
+	test_utils.MockGetObjectHierarchy(mockAPI, rack)
 
 	slotNode := getSlotNode{
 		path: &pathNode{path: &valueNode{"/Physical/site/building/room/rack"}},
@@ -295,25 +238,8 @@ func TestPrintNodeExecute(t *testing.T) {
 
 func TestDeleteObjNodeExecute(t *testing.T) {
 	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
-	mockAPI.On(
-		"Request", "DELETE",
-		"/api/objects?id=site.building.room.rack&namespace=physical.hierarchy",
-		"mock.Anything", 200,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": []any{
-					map[string]any{
-						"category": "rack",
-						"children": []any{},
-						"id":       "site.building.room.rack",
-						"name":     "rack",
-						"parentId": "site.building.room",
-					},
-				},
-			},
-		}, nil,
-	).Once()
+	rack := test_utils.GetEntity("rack", "rack", "site.building.room", "domain")
+	test_utils.MockDeleteObjects(mockAPI, "id=site.building.room.rack&namespace=physical.hierarchy", []any{rack})
 
 	executable := deleteObjNode{&pathNode{path: &valueNode{"/Physical/site/building/room/rack"}}}
 	value, err := executable.execute()
@@ -326,45 +252,11 @@ func TestDeleteSelectionNodeExecute(t *testing.T) {
 	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
 	controllers.State.ClipBoard = []string{"/Physical/site/building/room/rack", "/Physical/site/building/room2/rack2"}
 
-	mockAPI.On(
-		"Request", "DELETE",
-		"/api/objects?id=site.building.room.rack&namespace=physical.hierarchy",
-		"mock.Anything", 200,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": []any{
-					map[string]any{
-						"category": "rack",
-						"children": []any{},
-						"id":       "site.building.room.rack",
-						"name":     "rack",
-						"parentId": "site.building.room",
-					},
-				},
-			},
-		}, nil,
-	).Once()
+	rack := test_utils.GetEntity("rack", "rack", "site.building.room", "domain")
+	test_utils.MockDeleteObjects(mockAPI, "id=site.building.room.rack&namespace=physical.hierarchy", []any{rack})
 
-	mockAPI.On(
-		"Request", "DELETE",
-		"/api/objects?id=site.building.room2.rack2&namespace=physical.hierarchy",
-		"mock.Anything", 200,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": []any{
-					map[string]any{
-						"category": "rack",
-						"children": []any{},
-						"id":       "site.building.room2.rack2",
-						"name":     "rack2",
-						"parentId": "site.building.room2",
-					},
-				},
-			},
-		}, nil,
-	).Once()
+	secondRack := test_utils.GetEntity("rack", "rack2", "site.building.room2", "domain")
+	test_utils.MockDeleteObjects(mockAPI, "id=site.building.room2.rack2&namespace=physical.hierarchy", []any{secondRack})
 
 	executable := deleteSelectionNode{}
 	value, err := executable.execute()
@@ -375,25 +267,9 @@ func TestDeleteSelectionNodeExecute(t *testing.T) {
 
 func TestIsEntityDrawableNodeExecute(t *testing.T) {
 	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
-	rack := map[string]any{
-		"category": "rack",
-		"children": []any{},
-		"id":       "site.building.room.rack",
-		"name":     "rack",
-		"parentId": "site.building.room",
-	}
+	rack := test_utils.GetEntity("rack", "rack", "site.building.room", "domain")
 
-	mockAPI.On(
-		"Request", "GET",
-		"/api/hierarchy-objects/site.building.room.rack",
-		"mock.Anything", 200,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": rack,
-			},
-		}, nil,
-	).Once()
+	test_utils.MockGetObject(mockAPI, rack)
 
 	executable := isEntityDrawableNode{&pathNode{path: &valueNode{"/Physical/site/building/room/rack"}}}
 	value, err := executable.execute()
@@ -403,17 +279,7 @@ func TestIsEntityDrawableNodeExecute(t *testing.T) {
 
 	// We add the Rack to the drawable objects list
 	controllers.State.DrawableObjs = []int{models.RACK}
-	mockAPI.On(
-		"Request", "GET",
-		"/api/hierarchy-objects/site.building.room.rack",
-		"mock.Anything", 200,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": rack,
-			},
-		}, nil,
-	).Once()
+	test_utils.MockGetObject(mockAPI, rack)
 
 	value, err = executable.execute()
 
@@ -423,25 +289,9 @@ func TestIsEntityDrawableNodeExecute(t *testing.T) {
 
 func TestIsAttrDrawableNodeExecute(t *testing.T) {
 	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
-	rack := map[string]any{
-		"category": "rack",
-		"children": []any{},
-		"id":       "site.building.room.rack",
-		"name":     "rack",
-		"parentId": "site.building.room",
-	}
+	rack := test_utils.GetEntity("rack", "rack", "site.building.room", "domain")
 
-	mockAPI.On(
-		"Request", "GET",
-		"/api/hierarchy-objects/site.building.room.rack",
-		"mock.Anything", 200,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": rack,
-			},
-		}, nil,
-	).Once()
+	test_utils.MockGetObject(mockAPI, rack)
 
 	executable := isAttrDrawableNode{&pathNode{path: &valueNode{"/Physical/site/building/room/rack"}}, "sdsdasd"}
 	value, err := executable.execute()
@@ -452,25 +302,9 @@ func TestIsAttrDrawableNodeExecute(t *testing.T) {
 
 func TestGetObjectNodeExecute(t *testing.T) {
 	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
-	rack := map[string]any{
-		"category": "rack",
-		"children": []any{},
-		"id":       "site.building.room.rack",
-		"name":     "rack",
-		"parentId": "site.building.room",
-	}
+	rack := test_utils.GetEntity("rack", "rack", "site.building.room", "domain")
 
-	mockAPI.On(
-		"Request", "POST",
-		"/api/objects/search?id=%2A%2A.site.building.room&namespace=physical.hierarchy",
-		map[string]interface{}{"filter": "(category=rack) & (name=rack)"}, 200,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": []any{rack},
-			},
-		}, nil,
-	).Once()
+	test_utils.MockGetObjectsWithComplexFilters(mockAPI, "id=%2A%2A.site.building.room&namespace=physical.hierarchy", map[string]interface{}{"filter": "(category=rack) & (name=rack)"}, []any{rack})
 
 	executable := getObjectNode{
 		path:      &pathNode{path: &valueNode{"/Physical/site/building/room"}},
@@ -486,24 +320,10 @@ func TestGetObjectNodeExecute(t *testing.T) {
 
 func TestSelectObjectNodeExecuteOnePath(t *testing.T) {
 	_, mockAPI, mockOgree3D, _ := test_utils.SetMainEnvironmentMock(t)
-	rack := map[string]any{
-		"category": "rack",
-		"children": []any{},
-		"id":       "site.building.room.rack",
-		"name":     "rack",
-		"parentId": "site.building.room",
-	}
-	mockAPI.On(
-		"Request", "GET",
-		"/api/hierarchy-objects/site.building.room.rack",
-		"mock.Anything", 200,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": rack,
-			},
-		}, nil,
-	).Twice()
+	rack := test_utils.GetEntity("rack", "rack", "site.building.room", "domain")
+
+	test_utils.MockGetObject(mockAPI, rack)
+	test_utils.MockGetObject(mockAPI, rack)
 	mockOgree3D.On(
 		"InformOptional", "SetClipBoard",
 		-1, map[string]interface{}{"data": "[\"site.building.room.rack\"]", "type": "select"},
@@ -537,42 +357,16 @@ func TestSelectObjectNodeExecuteReset(t *testing.T) {
 func TestSetRoomAreas(t *testing.T) {
 	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
 
-	room := map[string]any{
-		"category": "room",
-		"children": []any{},
-		"id":       "site.building.room",
-		"name":     "room",
-		"parentId": "site.building",
-	}
-	roomResponse := maps.Clone(room)
-	mockAPI.On(
-		"Request", "GET",
-		"/api/hierarchy-objects/site.building.room",
-		"mock.Anything", 200,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": room,
-			},
-		}, nil,
-	).Once()
+	room := test_utils.GetEntity("room", "room", "site.building", "domain")
+
+	roomResponse := test_utils.GetEntity("room", "room", "site.building", "domain")
+	test_utils.MockGetObject(mockAPI, room)
 
 	roomResponse["attributes"] = map[string]any{
 		"reserved":  []float64{1, 2, 3, 4},
 		"technical": []float64{1, 2, 3, 4},
 	}
-	mockAPI.On(
-		"Request", "PATCH",
-		"/api/hierarchy-objects/site.building.room",
-		map[string]interface{}{"attributes": map[string]interface{}{"reserved": []float64{1, 2, 3, 4}, "technical": []float64{1, 2, 3, 4}}},
-		200,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": roomResponse,
-			},
-		}, nil,
-	).Once()
+	test_utils.MockUpdateObject(mockAPI, map[string]interface{}{"attributes": map[string]interface{}{"reserved": []float64{1, 2, 3, 4}, "technical": []float64{1, 2, 3, 4}}}, roomResponse)
 
 	reservedArea := []float64{1, 2, 3, 4}
 	technicalArea := []float64{1, 2, 3, 4}
@@ -585,24 +379,8 @@ func TestSetRoomAreas(t *testing.T) {
 func TestSetLabel(t *testing.T) {
 	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
 
-	room := map[string]any{
-		"category": "rack",
-		"children": []any{},
-		"id":       "site.building.room.rack",
-		"name":     "rack",
-		"parentId": "site.building.room",
-	}
-	mockAPI.On(
-		"Request", "GET",
-		"/api/hierarchy-objects/site.building.room.rack",
-		"mock.Anything", 200,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": room,
-			},
-		}, nil,
-	).Once()
+	room := test_utils.GetEntity("rack", "rack", "site.building.room", "domain")
+	test_utils.MockGetObject(mockAPI, room)
 	value, err := setLabel("/Physical/site/building/room/rack", []any{"myLabel"}, false)
 
 	assert.Nil(t, err)
@@ -642,44 +420,15 @@ func TestAddRoomSeparatorError(t *testing.T) {
 func TestAddRoomSeparator(t *testing.T) {
 	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
 
-	room := map[string]any{
-		"category":   "room",
-		"children":   []any{},
-		"id":         "site.building.room",
-		"name":       "room",
-		"parentId":   "site.building",
-		"attributes": map[string]any{},
-	}
-	mockAPI.On(
-		"Request", "GET",
-		"/api/hierarchy-objects/site.building.room",
-		"mock.Anything", 200,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": room,
-			},
-		}, nil,
-	).Twice()
+	room := test_utils.GetEntity("room", "room", "site.building", "domain")
+	test_utils.MockGetObject(mockAPI, room)
+	test_utils.MockGetObject(mockAPI, room)
 
 	newAttributes := map[string]interface{}{
 		"separators": "{\"mySeparator\":{\"startPosXYm\":[1,2],\"endPosXYm\":[1,2],\"type\":\"wireframe\"}}",
 	}
 	room["attributes"] = newAttributes
-	mockAPI.On(
-		"Request", "PATCH",
-		"/api/hierarchy-objects/site.building.room",
-		map[string]interface{}{
-			"attributes": newAttributes,
-		},
-		200,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": room,
-			},
-		}, nil,
-	).Once()
+	test_utils.MockUpdateObject(mockAPI, map[string]interface{}{"attributes": newAttributes}, room)
 
 	obj, err := addRoomSeparator("/Physical/site/building/room", []any{"mySeparator", []float64{1., 2.}, []float64{1., 2.}, "wireframe"})
 
@@ -699,44 +448,15 @@ func TestAddRoomPillarError(t *testing.T) {
 func TestAddRoomPillar(t *testing.T) {
 	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
 
-	room := map[string]any{
-		"category":   "room",
-		"children":   []any{},
-		"id":         "site.building.room",
-		"name":       "room",
-		"parentId":   "site.building",
-		"attributes": map[string]any{},
-	}
-	mockAPI.On(
-		"Request", "GET",
-		"/api/hierarchy-objects/site.building.room",
-		"mock.Anything", 200,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": room,
-			},
-		}, nil,
-	).Twice()
+	room := test_utils.GetEntity("room", "room", "site.building", "domain")
+	test_utils.MockGetObject(mockAPI, room)
+	test_utils.MockGetObject(mockAPI, room)
 
 	newAttributes := map[string]interface{}{
-		"pillars": "{\"myPillar\":{\"centerXY\":[1,2],\"sizeXY\":[1,2],\"rotation\":\"2.5\"}}",
+		"pillars": "{\"myPillar\":{\"centerXY\":[1,2],\"sizeXY\":[1,2],\"rotation\":2.5}}",
 	}
 	room["attributes"] = newAttributes
-	mockAPI.On(
-		"Request", "PATCH",
-		"/api/hierarchy-objects/site.building.room",
-		map[string]interface{}{
-			"attributes": newAttributes,
-		},
-		200,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": room,
-			},
-		}, nil,
-	).Once()
+	test_utils.MockUpdateObject(mockAPI, map[string]interface{}{"attributes": newAttributes}, room)
 
 	obj, err := addRoomPillar("/Physical/site/building/room", []any{"myPillar", []float64{1., 2.}, []float64{1., 2.}, 2.5})
 
@@ -744,103 +464,45 @@ func TestAddRoomPillar(t *testing.T) {
 	assert.NotNil(t, obj)
 }
 
-func TestDeleteRoomPillarOrSeparatorInvalidArgument(t *testing.T) {
-	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
-
-	room := map[string]any{
-		"category":   "room",
-		"children":   []any{},
-		"id":         "site.building.room",
-		"name":       "room",
-		"parentId":   "site.building",
-		"attributes": map[string]any{},
+func TestDeleteRoomPillarOrSeparatorWithError(t *testing.T) {
+	tests := []struct {
+		name          string
+		attributeName string
+		separatorName string
+		errorMessage  string
+	}{
+		{"InvalidArgument", "other", "separator", "\"separator\" or \"pillar\" expected"},
+		{"SeparatorDoesNotExist", "separator", "mySeparator", "separator mySeparator does not exist"},
 	}
-	mockAPI.On(
-		"Request", "GET",
-		"/api/hierarchy-objects/site.building.room",
-		"mock.Anything", 200,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": room,
-			},
-		}, nil,
-	).Once()
-	obj, err := deleteRoomPillarOrSeparator("/Physical/site/building/room", "other", "separator")
 
-	assert.Nil(t, obj)
-	assert.NotNil(t, err)
-	assert.ErrorContains(t, err, "\"separator\" or \"pillar\" expected")
-}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
 
-func TestDeleteRoomPillarOrSeparatorSeparatorDoesNotExist(t *testing.T) {
-	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
+			room := test_utils.GetEntity("room", "room", "site.building", "domain")
+			test_utils.MockGetObject(mockAPI, room)
+			obj, err := deleteRoomPillarOrSeparator("/Physical/site/building/room", tt.attributeName, tt.separatorName)
 
-	room := map[string]any{
-		"category":   "room",
-		"children":   []any{},
-		"id":         "site.building.room",
-		"name":       "room",
-		"parentId":   "site.building",
-		"attributes": map[string]any{},
+			assert.Nil(t, obj)
+			assert.NotNil(t, err)
+			assert.ErrorContains(t, err, tt.errorMessage)
+		})
 	}
-	mockAPI.On(
-		"Request", "GET",
-		"/api/hierarchy-objects/site.building.room",
-		"mock.Anything", 200,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": room,
-			},
-		}, nil,
-	).Once()
-	obj, err := deleteRoomPillarOrSeparator("/Physical/site/building/room", "separator", "mySeparator")
-
-	assert.Nil(t, obj)
-	assert.NotNil(t, err)
-	assert.ErrorContains(t, err, "separator mySeparator does not exist")
 }
 
 func TestDeleteRoomPillarOrSeparatorSeparator(t *testing.T) {
 	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
 
-	room := map[string]any{
-		"category": "room",
-		"children": []any{},
-		"id":       "site.building.room",
-		"name":     "room",
-		"parentId": "site.building",
-		"attributes": map[string]any{
-			"separators": "{\"mySeparator\":{\"startPosXYm\":[1,2],\"endPosXYm\":[1,2],\"type\":\"wireframe\"}}",
-		},
-	}
-	updatedRoom := maps.Clone(room)
+	room := test_utils.GetEntity("room", "room", "site.building", "domain")
+	room["attributes"].(map[string]any)["separators"] = "{\"mySeparator\":{\"startPosXYm\":[1,2],\"endPosXYm\":[1,2],\"type\":\"wireframe\"}}"
+
+	updatedRoom := test_utils.GetEntity("room", "room", "site.building", "domain")
 	updatedRoom["attributes"] = map[string]any{"separators": "{}"}
 
-	mockAPI.On(
-		"Request", "GET",
-		"/api/hierarchy-objects/site.building.room",
-		"mock.Anything", 200,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": room,
-			},
-		}, nil,
-	).Twice()
-	mockAPI.On(
-		"Request", "PATCH",
-		"/api/hierarchy-objects/site.building.room",
-		map[string]interface{}{"attributes": map[string]interface{}{"separators": "{}"}},
-		200,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": updatedRoom,
-			},
-		}, nil,
-	).Once()
+	test_utils.MockGetObject(mockAPI, room)
+	test_utils.MockGetObject(mockAPI, room)
+
+	test_utils.MockUpdateObject(mockAPI, map[string]interface{}{"attributes": map[string]interface{}{"separators": "{}"}}, updatedRoom)
 	obj, err := deleteRoomPillarOrSeparator("/Physical/site/building/room", "separator", "mySeparator")
 
 	assert.Nil(t, err)
@@ -850,42 +512,15 @@ func TestDeleteRoomPillarOrSeparatorSeparator(t *testing.T) {
 func TestDeleteRoomPillarOrSeparatorPillar(t *testing.T) {
 	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
 
-	room := map[string]any{
-		"category": "room",
-		"children": []any{},
-		"id":       "site.building.room",
-		"name":     "room",
-		"parentId": "site.building",
-		"attributes": map[string]any{
-			"pillars": "{\"myPillar\":{\"centerXY\":[1,2],\"sizeXY\":[1,2],\"rotation\":\"2.5\"}}",
-		},
-	}
+	room := test_utils.GetEntity("room", "room", "site.building", "domain")
+	room["attributes"].(map[string]any)["pillars"] = "{\"myPillar\":{\"centerXY\":[1,2],\"sizeXY\":[1,2],\"rotation\":\"2.5\"}}"
+
 	updatedRoom := maps.Clone(room)
 	updatedRoom["attributes"] = map[string]any{"pillars": "{}"}
 
-	mockAPI.On(
-		"Request", "GET",
-		"/api/hierarchy-objects/site.building.room",
-		"mock.Anything", 200,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": room,
-			},
-		}, nil,
-	).Twice()
-	mockAPI.On(
-		"Request", "PATCH",
-		"/api/hierarchy-objects/site.building.room",
-		map[string]interface{}{"attributes": map[string]interface{}{"pillars": "{}"}},
-		200,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": updatedRoom,
-			},
-		}, nil,
-	).Once()
+	test_utils.MockGetObject(mockAPI, room)
+	test_utils.MockGetObject(mockAPI, room)
+	test_utils.MockUpdateObject(mockAPI, map[string]interface{}{"attributes": map[string]interface{}{"pillars": "{}"}}, updatedRoom)
 	obj, err := deleteRoomPillarOrSeparator("/Physical/site/building/room", "pillar", "myPillar")
 
 	assert.Nil(t, err)
@@ -895,39 +530,11 @@ func TestDeleteRoomPillarOrSeparatorPillar(t *testing.T) {
 func TestUpdateObjNodeExecuteUpdateDescription(t *testing.T) {
 	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
 
-	room := map[string]any{
-		"category":    "room",
-		"children":    []any{},
-		"id":          "site.building.room",
-		"name":        "room",
-		"parentId":    "site.building",
-		"description": "description 1",
-	}
+	room := test_utils.GetEntity("room", "room", "site.building", "domain")
 
-	mockAPI.On(
-		"Request", "GET",
-		"/api/hierarchy-objects/site.building.room",
-		"mock.Anything", 200,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": room,
-			},
-		}, nil,
-	).Once()
+	test_utils.MockGetObject(mockAPI, room)
 	room["description"] = "newDescription"
-	mockAPI.On(
-		"Request", "PATCH",
-		"/api/hierarchy-objects/site.building.room",
-		map[string]interface{}{"description": "newDescription"},
-		200,
-	).Return(
-		&controllers.Response{
-			Body: map[string]any{
-				"data": room,
-			},
-		}, nil,
-	).Once()
+	test_utils.MockUpdateObject(mockAPI, map[string]interface{}{"description": "newDescription"}, room)
 
 	array := updateObjNode{
 		path:      &pathNode{path: &valueNode{"/Physical/site/building/room"}},

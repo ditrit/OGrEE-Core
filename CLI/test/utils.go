@@ -126,14 +126,34 @@ func GetEntity(entityName string, name string, parentId string, domain string) m
 			"description": "",
 			"attributes":  map[string]any{},
 		}
+	case "site":
+		return map[string]any{
+			"category": "site",
+			"children": []any{},
+			"id":       name,
+			"name":     name,
+			"parentId": "",
+			"domain":   domain,
+		}
+	case "room":
+		return map[string]any{
+			"category":   "room",
+			"children":   []any{},
+			"id":         id,
+			"name":       name,
+			"parentId":   parentId,
+			"domain":     domain,
+			"attributes": map[string]any{},
+		}
 	case "rack":
 		return map[string]any{
-			"category": "rack",
-			"children": []any{},
-			"id":       id,
-			"name":     name,
-			"parentId": parentId,
-			"domain":   domain,
+			"category":   "rack",
+			"children":   []any{},
+			"id":         id,
+			"name":       name,
+			"parentId":   parentId,
+			"domain":     domain,
+			"attributes": map[string]any{},
 		}
 	case "device":
 		return map[string]any{
