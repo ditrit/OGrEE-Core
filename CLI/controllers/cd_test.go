@@ -2,6 +2,7 @@ package controllers_test
 
 import (
 	"cli/controllers"
+	test_utils "cli/test"
 	"strings"
 	"testing"
 
@@ -26,7 +27,7 @@ func TestCdObjectNotFound(t *testing.T) {
 
 	path := "/Physical/" + strings.Replace(rack1["id"].(string), ".", "/", -1)
 	oldCurrentPath := controllers.State.CurrPath
-	mockObjectNotFound(mockAPI, "/api/hierarchy-objects/"+rack1["id"].(string))
+	test_utils.MockObjectNotFound(mockAPI, "/api/hierarchy-objects/"+rack1["id"].(string))
 
 	err := controller.CD(path)
 	assert.NotNil(t, err)
@@ -38,7 +39,7 @@ func TestCdObjectNotFound(t *testing.T) {
 func TestCdWorks(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	mockGetObject(mockAPI, rack1)
+	test_utils.MockGetObject(mockAPI, rack1)
 	path := "/Physical/" + strings.Replace(rack1["id"].(string), ".", "/", -1)
 	oldCurrentPath := controllers.State.CurrPath
 

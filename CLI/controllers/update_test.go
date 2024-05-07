@@ -16,7 +16,7 @@ func TestUpdateTagColor(t *testing.T) {
 	oldSlug := "slug"
 	path := models.TagsPath + oldSlug
 
-	mockGetObjectByEntity(mockAPI, "tags", map[string]any{
+	test_utils.MockGetObjectByEntity(mockAPI, "tags", map[string]any{
 		"slug":        oldSlug,
 		"description": "description",
 		"color":       "aaaaaa",
@@ -31,7 +31,7 @@ func TestUpdateTagColor(t *testing.T) {
 		"color":       "aaaaab",
 	}
 
-	mockUpdateObject(mockAPI, dataUpdate, dataUpdated)
+	test_utils.MockUpdateObject(mockAPI, dataUpdate, dataUpdated)
 
 	controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
 
@@ -47,7 +47,7 @@ func TestUpdateTagSlug(t *testing.T) {
 
 	path := models.TagsPath + oldSlug
 
-	mockGetObjectByEntity(mockAPI, "tags", map[string]any{
+	test_utils.MockGetObjectByEntity(mockAPI, "tags", map[string]any{
 		"slug":        oldSlug,
 		"description": "description",
 		"color":       "aaaaaa",
@@ -62,7 +62,7 @@ func TestUpdateTagSlug(t *testing.T) {
 		"color":       "aaaaaa",
 	}
 
-	mockUpdateObject(mockAPI, dataUpdate, dataUpdated)
+	test_utils.MockUpdateObject(mockAPI, dataUpdate, dataUpdated)
 
 	controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
 
@@ -73,12 +73,12 @@ func TestUpdateTagSlug(t *testing.T) {
 func TestUpdateRoomTilesColor(t *testing.T) {
 	controller, mockAPI, mockOgree3D, _ := test_utils.NewControllerWithMocks(t)
 
-	room := copyMap(roomWithoutChildren)
+	room := test_utils.CopyMap(roomWithoutChildren)
 	room["attributes"] = map[string]any{
 		"tilesColor": "aaaaaa",
 	}
 	newColor := "aaaaab"
-	updatedRoom := copyMap(room)
+	updatedRoom := test_utils.CopyMap(room)
 	updatedRoom["attributes"].(map[string]any)["tilesColor"] = newColor
 	dataUpdate := updatedRoom["attributes"].(map[string]any)
 	entity := models.ROOM
@@ -95,12 +95,12 @@ func TestUpdateRoomTilesColor(t *testing.T) {
 
 	mockOgree3D.On("InformOptional", "UpdateObj", entity, message).Return(nil)
 
-	mockGetObject(mockAPI, room)
+	test_utils.MockGetObject(mockAPI, room)
 
-	dataUpdated := copyMap(room)
+	dataUpdated := test_utils.CopyMap(room)
 	dataUpdated["attributes"].(map[string]any)["tilesColor"] = newColor
 
-	mockUpdateObject(mockAPI, dataUpdate, dataUpdated)
+	test_utils.MockUpdateObject(mockAPI, dataUpdate, dataUpdated)
 
 	controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
 
@@ -113,12 +113,12 @@ func TestUpdateRoomTilesColor(t *testing.T) {
 func TestUpdateRoomTilesName(t *testing.T) {
 	controller, mockAPI, mockOgree3D, _ := test_utils.NewControllerWithMocks(t)
 
-	room := copyMap(roomWithoutChildren)
+	room := test_utils.CopyMap(roomWithoutChildren)
 	room["attributes"] = map[string]any{
 		"tilesName": "t1",
 	}
 	newName := "t2"
-	updatedRoom := copyMap(room)
+	updatedRoom := test_utils.CopyMap(room)
 	updatedRoom["attributes"].(map[string]any)["tilesName"] = newName
 	dataUpdate := updatedRoom["attributes"].(map[string]any)
 	entity := models.ROOM
@@ -135,12 +135,12 @@ func TestUpdateRoomTilesName(t *testing.T) {
 
 	mockOgree3D.On("InformOptional", "UpdateObj", entity, message).Return(nil)
 
-	mockGetObject(mockAPI, room)
+	test_utils.MockGetObject(mockAPI, room)
 
-	dataUpdated := copyMap(room)
+	dataUpdated := test_utils.CopyMap(room)
 	dataUpdated["attributes"].(map[string]any)["tilesName"] = newName
 
-	mockUpdateObject(mockAPI, dataUpdate, dataUpdated)
+	test_utils.MockUpdateObject(mockAPI, dataUpdate, dataUpdated)
 
 	controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
 
@@ -152,11 +152,11 @@ func TestUpdateRoomTilesName(t *testing.T) {
 
 func TestUpdateRackU(t *testing.T) {
 	controller, mockAPI, mockOgree3D, _ := test_utils.NewControllerWithMocks(t)
-	rack := copyMap(rack2)
+	rack := test_utils.CopyMap(rack2)
 	rack["attributes"] = map[string]any{
 		"U": true,
 	}
-	updatedRack := copyMap(rack)
+	updatedRack := test_utils.CopyMap(rack)
 	updatedRack["attributes"].(map[string]any)["U"] = false
 	dataUpdate := updatedRack["attributes"].(map[string]any)
 	entity := models.RACK
@@ -173,8 +173,8 @@ func TestUpdateRackU(t *testing.T) {
 
 	mockOgree3D.On("InformOptional", "UpdateObj", entity, message).Return(nil)
 
-	mockGetObject(mockAPI, rack)
-	mockUpdateObject(mockAPI, dataUpdate, updatedRack)
+	test_utils.MockGetObject(mockAPI, rack)
+	test_utils.MockUpdateObject(mockAPI, dataUpdate, updatedRack)
 
 	controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
 
@@ -186,9 +186,9 @@ func TestUpdateRackU(t *testing.T) {
 
 func TestUpdateDeviceAlpha(t *testing.T) {
 	controller, mockAPI, mockOgree3D, _ := test_utils.NewControllerWithMocks(t)
-	device := copyMap(chassis)
+	device := test_utils.CopyMap(chassis)
 	device["attributes"].(map[string]any)["alpha"] = true
-	updatedDevice := copyMap(device)
+	updatedDevice := test_utils.CopyMap(device)
 	updatedDevice["attributes"].(map[string]any)["alpha"] = false
 	dataUpdate := updatedDevice["attributes"].(map[string]any)
 	entity := models.DEVICE
@@ -205,8 +205,8 @@ func TestUpdateDeviceAlpha(t *testing.T) {
 
 	mockOgree3D.On("InformOptional", "UpdateObj", entity, message).Return(nil)
 
-	mockGetObject(mockAPI, device)
-	mockUpdateObject(mockAPI, dataUpdate, updatedDevice)
+	test_utils.MockGetObject(mockAPI, device)
+	test_utils.MockUpdateObject(mockAPI, dataUpdate, updatedDevice)
 
 	controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
 
@@ -218,12 +218,12 @@ func TestUpdateDeviceAlpha(t *testing.T) {
 
 func TestUpdateGroupContent(t *testing.T) {
 	controller, mockAPI, mockOgree3D, _ := test_utils.NewControllerWithMocks(t)
-	group := copyMap(rackGroup)
+	group := test_utils.CopyMap(rackGroup)
 	group["attributes"] = map[string]any{
 		"content": "A,B",
 	}
 	newValue := "A,B,C"
-	updatedGroup := copyMap(group)
+	updatedGroup := test_utils.CopyMap(group)
 	updatedGroup["attributes"].(map[string]any)["content"] = newValue
 	dataUpdate := updatedGroup["attributes"].(map[string]any)
 	entity := models.GROUP
@@ -240,8 +240,8 @@ func TestUpdateGroupContent(t *testing.T) {
 
 	mockOgree3D.On("InformOptional", "UpdateObj", entity, message).Return(nil)
 
-	mockGetObject(mockAPI, group)
-	mockUpdateObject(mockAPI, dataUpdate, updatedGroup)
+	test_utils.MockGetObject(mockAPI, group)
+	test_utils.MockUpdateObject(mockAPI, dataUpdate, updatedGroup)
 
 	controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
 

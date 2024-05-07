@@ -3,6 +3,7 @@ package controllers_test
 import (
 	"cli/controllers"
 	"cli/models"
+	test_utils "cli/test"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -25,7 +26,7 @@ func TestGetWithSimpleFilters(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			controller, mockAPI, _ := layersSetup(t)
 
-			mockGetObjects(mockAPI, tt.mockQueryParams, tt.mockResponse)
+			test_utils.MockGetObjects(mockAPI, tt.mockQueryParams, tt.mockResponse)
 
 			objects, _, err := controller.GetObjectsWildcard(tt.path, map[string]string{
 				"category": tt.category,
@@ -33,7 +34,7 @@ func TestGetWithSimpleFilters(t *testing.T) {
 			assert.Nil(t, err)
 			assert.Len(t, objects, len(tt.mockResponse))
 			for _, instance := range tt.mockResponse {
-				assert.Contains(t, objects, removeChildren(instance.(map[string]any)))
+				assert.Contains(t, objects, test_utils.RemoveChildren(instance.(map[string]any)))
 			}
 		})
 	}
@@ -42,7 +43,7 @@ func TestGetWithSimpleFilters(t *testing.T) {
 func TestGetWithComplexFilters(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	mockGetObjectsWithComplexFilters(
+	test_utils.MockGetObjectsWithComplexFilters(
 		mockAPI,
 		"id=BASIC.A.R1&namespace=physical.hierarchy",
 		map[string]any{
@@ -56,13 +57,13 @@ func TestGetWithComplexFilters(t *testing.T) {
 	}, nil)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
-	assert.Contains(t, objects, removeChildren(roomWithChildren))
+	assert.Contains(t, objects, test_utils.RemoveChildren(roomWithChildren))
 }
 
 func TestGetRecursiveSearchAllChildrenCalledInThatWay(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	mockGetObjects(mockAPI, "id=BASIC.A.**.R1&namespace=physical.hierarchy", []any{roomWithChildren})
+	test_utils.MockGetObjects(mockAPI, "id=BASIC.A.**.R1&namespace=physical.hierarchy", []any{roomWithChildren})
 
 	objects, _, err := controller.GetObjectsWildcard(
 		"/Physical/BASIC/A/R1",
@@ -74,7 +75,7 @@ func TestGetRecursiveSearchAllChildrenCalledInThatWay(t *testing.T) {
 	)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
-	assert.Contains(t, objects, removeChildren(roomWithChildren))
+	assert.Contains(t, objects, test_utils.RemoveChildren(roomWithChildren))
 }
 
 func TestGetRecursiveWithFilters(t *testing.T) {
@@ -97,7 +98,7 @@ func TestGetRecursiveWithFilters(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			controller, mockAPI, _ := layersSetup(t)
 
-			mockGetObjects(mockAPI, tt.mockQueryParams, tt.mockResponse)
+			test_utils.MockGetObjects(mockAPI, tt.mockQueryParams, tt.mockResponse)
 
 			objects, _, err := controller.GetObjectsWildcard(tt.path, map[string]string{
 				"category": tt.category,
@@ -105,7 +106,7 @@ func TestGetRecursiveWithFilters(t *testing.T) {
 			assert.Nil(t, err)
 			assert.Len(t, objects, len(tt.mockResponse))
 			for _, object := range tt.mockResponse {
-				assert.Contains(t, objects, removeChildren(object.(map[string]any)))
+				assert.Contains(t, objects, test_utils.RemoveChildren(object.(map[string]any)))
 			}
 		})
 	}

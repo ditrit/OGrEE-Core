@@ -74,8 +74,8 @@ func TestCreateObjectWithTemplateErrors(t *testing.T) {
 	}
 
 	// Template does not exist
-	mockGetObject(mockAPI, createRoom)
-	mockObjectNotFound(mockAPI, "/api/obj-templates/not-exists")
+	test_utils.MockGetObject(mockAPI, createRoom)
+	test_utils.MockObjectNotFound(mockAPI, "/api/obj-templates/not-exists")
 
 	err := controller.CreateObject("/Physical/BASIC/A/R1/A01", models.RACK, rack)
 	assert.NotNil(t, err)
@@ -83,8 +83,8 @@ func TestCreateObjectWithTemplateErrors(t *testing.T) {
 
 	// Template of incorrect category
 	rack["attributes"].(map[string]any)["template"] = "device-template"
-	mockGetObject(mockAPI, createRoom)
-	mockGetObjTemplate(mockAPI, map[string]any{
+	test_utils.MockGetObject(mockAPI, createRoom)
+	test_utils.MockGetObjTemplate(mockAPI, map[string]any{
 		"category": "device",
 		"slug":     "device-template",
 	})
@@ -97,10 +97,10 @@ func TestCreateObjectWithTemplateErrors(t *testing.T) {
 func TestCreateGenericWithoutTemplateWorks(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	mockGetObject(mockAPI, createRoom)
+	test_utils.MockGetObject(mockAPI, createRoom)
 
 	genericObject := test_utils.GetEntity("generic", "A01", createRoom["id"].(string), createRoom["domain"].(string))
-	mockCreateObject(mockAPI, "generic", genericObject)
+	test_utils.MockCreateObject(mockAPI, "generic", genericObject)
 
 	err := controller.CreateObject("/Physical/BASIC/A/R1/A01", models.GENERIC, map[string]any{
 		"attributes": map[string]any{
@@ -118,9 +118,9 @@ func TestCreateGenericWithoutTemplateWorks(t *testing.T) {
 func TestCreateGenericWithTemplateWorks(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	mockGetObject(mockAPI, createRoom)
+	test_utils.MockGetObject(mockAPI, createRoom)
 
-	mockGetObjTemplate(mockAPI, map[string]any{
+	test_utils.MockGetObjTemplate(mockAPI, map[string]any{
 		"slug":        "generic-template",
 		"description": "a table",
 		"category":    "generic",
@@ -132,7 +132,7 @@ func TestCreateGenericWithTemplateWorks(t *testing.T) {
 		"colors": []any{},
 	})
 
-	mockCreateObject(mockAPI, "generic", map[string]any{
+	test_utils.MockCreateObject(mockAPI, "generic", map[string]any{
 		"name":        "A01",
 		"category":    "generic",
 		"description": "a table",
@@ -167,7 +167,7 @@ func TestCreateDomain(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
 	// domain with no parent
-	mockCreateObject(mockAPI, "domain", test_utils.GetEntity("domain", "dom1", "", ""))
+	test_utils.MockCreateObject(mockAPI, "domain", test_utils.GetEntity("domain", "dom1", "", ""))
 
 	err := controller.CreateObject("/Organisation/Domain/dom1", models.DOMAIN, map[string]any{
 		"category":    "domain",
@@ -178,14 +178,14 @@ func TestCreateDomain(t *testing.T) {
 	assert.Nil(t, err)
 
 	// domain with parent
-	mockGetObjectByEntity(mockAPI, "domains", map[string]any{
+	test_utils.MockGetObjectByEntity(mockAPI, "domains", map[string]any{
 		"category": "domain",
 		"id":       "domParent",
 		"name":     "domParent",
 		"parentId": "",
 	})
 
-	mockCreateObject(mockAPI, "domain", test_utils.GetEntity("domain", "dom2", "domParent", ""))
+	test_utils.MockCreateObject(mockAPI, "domain", test_utils.GetEntity("domain", "dom2", "domParent", ""))
 
 	err = controller.CreateObject("/Organisation/Domain/domParent/dom2", models.DOMAIN, map[string]any{
 		"category":    "domain",
@@ -202,7 +202,7 @@ func TestCreateBuildingInvalidSize(t *testing.T) {
 	buildingInvalidSize := maps.Clone(baseBuilding)
 	buildingInvalidSize["attributes"].(map[string]any)["size"] = "[1,2,3]"
 
-	mockGetObject(mockAPI, baseSite)
+	test_utils.MockGetObject(mockAPI, baseSite)
 
 	// with state.DebugLvl = 0
 	err := controller.CreateObject("/Physical/BASIC/A", models.BLDG, buildingInvalidSize)
@@ -211,7 +211,7 @@ func TestCreateBuildingInvalidSize(t *testing.T) {
 
 	// with state.DebugLvl > 0
 	controllers.State.DebugLvl = 1
-	mockGetObject(mockAPI, baseSite)
+	test_utils.MockGetObject(mockAPI, baseSite)
 	err = controller.CreateObject("/Physical/BASIC/A", models.BLDG, buildingInvalidSize)
 	assert.NotNil(t, err)
 	assert.ErrorContains(t, err, "Invalid size attribute provided."+
@@ -229,14 +229,14 @@ func TestCreateBuildingInvalidPosXY(t *testing.T) {
 	buildingInvalidPosXY["attributes"].(map[string]any)["posXY"] = []float64{}
 
 	// with state.DebugLvl = 0
-	mockGetObject(mockAPI, baseSite)
+	test_utils.MockGetObject(mockAPI, baseSite)
 	err := controller.CreateObject("/Physical/BASIC/A", models.BLDG, maps.Clone(buildingInvalidPosXY))
 	// returns nil but the object is not created
 	assert.Nil(t, err)
 
 	// with state.DebugLvl > 0
 	controllers.State.DebugLvl = 1
-	mockGetObject(mockAPI, baseSite)
+	test_utils.MockGetObject(mockAPI, baseSite)
 	err = controller.CreateObject("/Physical/BASIC/A", models.BLDG, buildingInvalidPosXY)
 	assert.NotNil(t, err)
 	assert.ErrorContains(t, err, "Invalid posXY attribute provided."+
@@ -251,8 +251,8 @@ func TestCreateBuildingInvalidPosXY(t *testing.T) {
 func TestCreateBuilding(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	mockGetObject(mockAPI, baseSite)
-	mockCreateObject(mockAPI, "building", map[string]any{
+	test_utils.MockGetObject(mockAPI, baseSite)
+	test_utils.MockCreateObject(mockAPI, "building", map[string]any{
 		"category":    "building",
 		"id":          "BASIC.A",
 		"name":        "A",
@@ -296,13 +296,13 @@ func TestCreateRoomInvalidSize(t *testing.T) {
 	}
 
 	// with state.DebugLvl = 0
-	mockGetObject(mockAPI, roomsBuilding)
+	test_utils.MockGetObject(mockAPI, roomsBuilding)
 	err := controller.CreateObject("/Physical/BASIC/A/R1", models.ROOM, room)
 	assert.Nil(t, err)
 
 	// with state.DebugLvl > 0
 	controllers.State.DebugLvl = 1
-	mockGetObject(mockAPI, roomsBuilding)
+	test_utils.MockGetObject(mockAPI, roomsBuilding)
 	err = controller.CreateObject("/Physical/BASIC/A/R1", models.ROOM, room)
 	assert.NotNil(t, err)
 	assert.ErrorContains(t, err, "Invalid size attribute provided."+
@@ -315,7 +315,7 @@ func TestCreateRoomInvalidSize(t *testing.T) {
 
 func TestCreateRoomInvalidPosXY(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
-	roomsBuilding := copyMap(baseBuilding)
+	roomsBuilding := test_utils.CopyMap(baseBuilding)
 	room := map[string]any{
 		"category": "room",
 		"id":       "BASIC.A.R1",
@@ -335,14 +335,14 @@ func TestCreateRoomInvalidPosXY(t *testing.T) {
 	}
 
 	// with state.DebugLvl = 0
-	mockGetObject(mockAPI, roomsBuilding)
+	test_utils.MockGetObject(mockAPI, roomsBuilding)
 
-	err := controller.CreateObject("/Physical/BASIC/A/R1", models.ROOM, copyMap(room))
+	err := controller.CreateObject("/Physical/BASIC/A/R1", models.ROOM, test_utils.CopyMap(room))
 	assert.Nil(t, err)
 
 	// with state.DebugLvl > 0
 	controllers.State.DebugLvl = 1
-	mockGetObject(mockAPI, roomsBuilding)
+	test_utils.MockGetObject(mockAPI, roomsBuilding)
 	err = controller.CreateObject("/Physical/BASIC/A/R1", models.ROOM, room)
 	assert.NotNil(t, err)
 	assert.ErrorContains(t, err, "Invalid posXY attribute provided."+
@@ -356,9 +356,9 @@ func TestCreateRoomInvalidPosXY(t *testing.T) {
 func TestCreateRoom(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	mockGetObject(mockAPI, maps.Clone(baseBuilding))
+	test_utils.MockGetObject(mockAPI, maps.Clone(baseBuilding))
 
-	mockCreateObject(mockAPI, "room", map[string]any{
+	test_utils.MockCreateObject(mockAPI, "room", map[string]any{
 		"category":    "room",
 		"id":          "BASIC.A.R1",
 		"name":        "R1",
@@ -425,13 +425,13 @@ func TestCreateRackInvalidSize(t *testing.T) {
 	}
 
 	// with state.DebugLvl = 0
-	mockGetObject(mockAPI, room)
+	test_utils.MockGetObject(mockAPI, room)
 	err := controller.CreateObject("/Physical/BASIC/A/R1/A01", models.RACK, rack)
 	assert.Nil(t, err)
 
 	// with state.DebugLvl > 0
 	controllers.State.DebugLvl = 1
-	mockGetObject(mockAPI, room)
+	test_utils.MockGetObject(mockAPI, room)
 	err = controller.CreateObject("/Physical/BASIC/A/R1/A01", models.RACK, rack)
 	assert.NotNil(t, err)
 	assert.ErrorContains(t, err, "Invalid size attribute/template provided."+
@@ -449,7 +449,7 @@ func TestCreateRackInvalidSize(t *testing.T) {
 func TestCreateRack(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	mockGetObject(mockAPI, map[string]any{
+	test_utils.MockGetObject(mockAPI, map[string]any{
 		"category": "room",
 		"children": []any{},
 		"id":       "BASIC.A.R1",
@@ -458,7 +458,7 @@ func TestCreateRack(t *testing.T) {
 		"domain":   "test-domain",
 	})
 
-	mockCreateObject(mockAPI, "rack", map[string]any{
+	test_utils.MockCreateObject(mockAPI, "rack", map[string]any{
 		"category":    "rack",
 		"id":          "BASIC.A.R1.A01",
 		"name":        "A01",
@@ -497,11 +497,11 @@ func TestCreateRack(t *testing.T) {
 func TestCreateDevice(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	mockGetObject(mockAPI, test_utils.GetEntity("rack", "A01", "BASIC.A.R1", "test-domain"))
+	test_utils.MockGetObject(mockAPI, test_utils.GetEntity("rack", "A01", "BASIC.A.R1", "test-domain"))
 
 	device := test_utils.GetEntity("device", "D1", "BASIC.A.R1.A01", "test-domain")
 
-	mockCreateObject(mockAPI, "device", device)
+	test_utils.MockCreateObject(mockAPI, "device", device)
 
 	err := controller.CreateObject("/Physical/BASIC/A/R1/A01/D1", models.DEVICE, device)
 	assert.Nil(t, err)
@@ -530,8 +530,8 @@ func TestCreateDeviceWithSizeU(t *testing.T) {
 		},
 	}
 
-	mockGetObject(mockAPI, mockGetResponse)
-	mockCreateObject(mockAPI, "device", mockCreateResponse)
+	test_utils.MockGetObject(mockAPI, mockGetResponse)
+	test_utils.MockCreateObject(mockAPI, "device", mockCreateResponse)
 	err := controller.CreateObject("/Physical/BASIC/A/R1/A01/D1", models.DEVICE, map[string]any{
 		"category": "device",
 		"id":       "BASIC.A.R1.A01.D1",
@@ -552,7 +552,7 @@ func TestCreateDeviceWithSizeU(t *testing.T) {
 func TestCreateGroup(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	mockGetObject(mockAPI, baseSite)
+	test_utils.MockGetObject(mockAPI, baseSite)
 
 	object := map[string]any{
 		"attributes": map[string]any{
@@ -565,7 +565,7 @@ func TestCreateGroup(t *testing.T) {
 		"parentId":    "BASIC",
 	}
 
-	mockCreateObject(mockAPI, "group", object)
+	test_utils.MockCreateObject(mockAPI, "group", object)
 
 	err := controller.CreateObject("/Physical/BASIC/G1", models.GROUP, object)
 	assert.Nil(t, err)
@@ -576,7 +576,7 @@ func TestCreateTag(t *testing.T) {
 	color := "D0FF78"
 	slug := "my-tag"
 
-	mockCreateObject(mockAPI, "tag", map[string]any{
+	test_utils.MockCreateObject(mockAPI, "tag", map[string]any{
 		"color":       color,
 		"description": slug,
 		"slug":        slug,

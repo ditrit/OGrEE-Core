@@ -22,7 +22,7 @@ func TestMergeMaps(t *testing.T) {
 		"b": "25",
 		"c": "40",
 	}
-	testMap := copyMap(x)
+	testMap := test_utils.CopyMap(x)
 	controllers.MergeMaps(testMap, y, false)
 	assert.Contains(t, testMap, "a")
 	assert.Contains(t, testMap, "b")
@@ -31,7 +31,7 @@ func TestMergeMaps(t *testing.T) {
 	assert.Equal(t, x["b"], testMap["b"])
 	assert.Equal(t, y["c"], testMap["c"])
 
-	testMap = copyMap(x)
+	testMap = test_utils.CopyMap(x)
 	controllers.MergeMaps(testMap, y, true)
 	assert.Contains(t, testMap, "a")
 	assert.Contains(t, testMap, "b")

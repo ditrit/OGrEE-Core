@@ -20,7 +20,7 @@ func TestPWD(t *testing.T) {
 	location := controllers.PWD()
 	assert.Equal(t, "/", location)
 
-	mockGetObject(mockAPI, rack1)
+	test_utils.MockGetObject(mockAPI, rack1)
 	path := "/Physical/" + strings.Replace(rack1["id"].(string), ".", "/", -1)
 	err := controller.CD(path)
 	assert.Nil(t, err)
@@ -220,7 +220,7 @@ func TestGetSlotWithTemplateNonExistentSlot(t *testing.T) {
 		"slots": []any{},
 	}
 
-	mockGetObjTemplate(mockAPI, template)
+	test_utils.MockGetObjTemplate(mockAPI, template)
 	rack := map[string]any{
 		"attributes": map[string]any{
 			"template": "rack-template",
@@ -258,7 +258,7 @@ func TestGetSlotWithTemplateWorks(t *testing.T) {
 		},
 	}
 
-	mockGetObjTemplate(mockAPI, template)
+	test_utils.MockGetObjTemplate(mockAPI, template)
 	rack := map[string]any{
 		"attributes": map[string]any{
 			"template": "rack-template",
@@ -273,7 +273,7 @@ func TestGetSlotWithTemplateWorks(t *testing.T) {
 func TestUnsetAttributeObjectNotFound(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	mockObjectNotFound(mockAPI, "/api/hierarchy-objects/BASIC.A.R1.A01")
+	test_utils.MockObjectNotFound(mockAPI, "/api/hierarchy-objects/BASIC.A.R1.A01")
 
 	err := controller.UnsetAttribute("/Physical/BASIC/A/R1/A01", "color")
 	assert.NotNil(t, err)
@@ -300,12 +300,12 @@ func TestUnsetAttributeWorks(t *testing.T) {
 			"color":      "00ED00",
 		},
 	}
-	updatedRack := copyMap(rack)
+	updatedRack := test_utils.CopyMap(rack)
 	delete(updatedRack["attributes"].(map[string]any), "color")
 	delete(updatedRack, "id")
 
-	mockGetObject(mockAPI, rack)
-	mockPutObject(mockAPI, updatedRack, updatedRack)
+	test_utils.MockGetObject(mockAPI, rack)
+	test_utils.MockPutObject(mockAPI, updatedRack, updatedRack)
 
 	err := controller.UnsetAttribute("/Physical/BASIC/A/R1/A01", "color")
 	assert.Nil(t, err)
@@ -324,7 +324,7 @@ func TestUnsetInObjInvalidIndex(t *testing.T) {
 func TestUnsetInObjObjectNotFound(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	mockObjectNotFound(mockAPI, "/api/hierarchy-objects/BASIC.A.R1.A01")
+	test_utils.MockObjectNotFound(mockAPI, "/api/hierarchy-objects/BASIC.A.R1.A01")
 
 	result, err := controller.UnsetInObj("/Physical/BASIC/A/R1/A01", "color", 0)
 	assert.NotNil(t, err)
@@ -335,10 +335,10 @@ func TestUnsetInObjObjectNotFound(t *testing.T) {
 func TestUnsetInObjAttributeNotFound(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	rack := copyMap(rack1)
+	rack := test_utils.CopyMap(rack1)
 	rack["attributes"] = map[string]any{}
 
-	mockGetObject(mockAPI, rack)
+	test_utils.MockGetObject(mockAPI, rack)
 
 	result, err := controller.UnsetInObj("/Physical/BASIC/A/R1/A01", "color", 0)
 	assert.NotNil(t, err)
@@ -349,12 +349,12 @@ func TestUnsetInObjAttributeNotFound(t *testing.T) {
 func TestUnsetInObjAttributeNotAnArray(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	rack := copyMap(rack1)
+	rack := test_utils.CopyMap(rack1)
 	rack["attributes"] = map[string]any{
 		"color": "00ED00",
 	}
 
-	mockGetObject(mockAPI, rack)
+	test_utils.MockGetObject(mockAPI, rack)
 
 	result, err := controller.UnsetInObj("/Physical/BASIC/A/R1/A01", "color", 0)
 	assert.NotNil(t, err)
@@ -365,12 +365,12 @@ func TestUnsetInObjAttributeNotAnArray(t *testing.T) {
 func TestUnsetInObjEmptyArray(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	rack := copyMap(rack1)
+	rack := test_utils.CopyMap(rack1)
 	rack["attributes"] = map[string]any{
 		"posXYZ": []any{},
 	}
 
-	mockGetObject(mockAPI, rack)
+	test_utils.MockGetObject(mockAPI, rack)
 
 	result, err := controller.UnsetInObj("/Physical/BASIC/A/R1/A01", "posXYZ", 0)
 	assert.NotNil(t, err)
@@ -381,18 +381,18 @@ func TestUnsetInObjEmptyArray(t *testing.T) {
 func TestUnsetInObjWorksWithNestedAttribute(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	rack := copyMap(rack1)
+	rack := test_utils.CopyMap(rack1)
 	rack["attributes"] = map[string]any{
 		"posXYZ": []any{1, 2, 3},
 	}
-	updatedRack := copyMap(rack1)
+	updatedRack := test_utils.CopyMap(rack1)
 	updatedRack["attributes"] = map[string]any{
 		"posXYZ": []any{1.0, 3.0},
 	}
 	delete(updatedRack, "children")
 
-	mockGetObject(mockAPI, rack)
-	mockPutObject(mockAPI, updatedRack, updatedRack)
+	test_utils.MockGetObject(mockAPI, rack)
+	test_utils.MockPutObject(mockAPI, updatedRack, updatedRack)
 
 	result, err := controller.UnsetInObj("/Physical/BASIC/A/R1/A01", "posXYZ", 1)
 	assert.Nil(t, err)
@@ -421,10 +421,10 @@ func TestUnsetInObjWorksWithAttribute(t *testing.T) {
 			},
 		},
 	}
-	updatedTemplate := copyMap(template)
+	updatedTemplate := test_utils.CopyMap(template)
 	updatedTemplate["colors"] = slices.Delete(updatedTemplate["colors"].([]any), 1, 2)
-	mockPutObject(mockAPI, updatedTemplate, updatedTemplate)
-	mockGetRoomTemplate(mockAPI, template)
+	test_utils.MockPutObject(mockAPI, updatedTemplate, updatedTemplate)
+	test_utils.MockGetRoomTemplate(mockAPI, template)
 
 	result, err := controller.UnsetInObj(models.RoomTemplatesPath+"small-room", "colors", 1)
 	assert.Nil(t, err)
@@ -435,7 +435,7 @@ func TestUnsetInObjWorksWithAttribute(t *testing.T) {
 func TestGetByAttrErrorWhenObjIsNotRack(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	mockGetObjectHierarchy(mockAPI, chassis)
+	test_utils.MockGetObjectHierarchy(mockAPI, chassis)
 
 	err := controller.GetByAttr(models.PhysicalPath+"BASIC/A/R1/A01/chT", "colors")
 	assert.NotNil(t, err)
@@ -445,7 +445,7 @@ func TestGetByAttrErrorWhenObjIsNotRack(t *testing.T) {
 func TestGetByAttrErrorWhenObjIsRackWithSlotName(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	rack := copyMap(rack1)
+	rack := test_utils.CopyMap(rack1)
 	rack["attributes"] = map[string]any{
 		"slot": []any{
 			map[string]any{
@@ -460,7 +460,7 @@ func TestGetByAttrErrorWhenObjIsRackWithSlotName(t *testing.T) {
 			},
 		},
 	}
-	mockGetObjectHierarchy(mockAPI, rack)
+	test_utils.MockGetObjectHierarchy(mockAPI, rack)
 
 	err := controller.GetByAttr(models.PhysicalPath+"BASIC/A/R1/A01", "u01")
 	assert.Nil(t, err)
@@ -469,9 +469,9 @@ func TestGetByAttrErrorWhenObjIsRackWithSlotName(t *testing.T) {
 func TestGetByAttrErrorWhenObjIsRackWithHeight(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	rack := copyMap(rack1)
+	rack := test_utils.CopyMap(rack1)
 	rack["height"] = "47"
-	mockGetObjectHierarchy(mockAPI, rack)
+	test_utils.MockGetObjectHierarchy(mockAPI, rack)
 
 	err := controller.GetByAttr(models.PhysicalPath+"BASIC/A/R1/A01", 47)
 	assert.Nil(t, err)
@@ -516,7 +516,7 @@ func TestUIHighlightObjectNotFound(t *testing.T) {
 	controller, mockAPI, ogree3D := layersSetup(t)
 	path := "/api/hierarchy-objects/BASIC.A.R1.A01"
 
-	mockObjectNotFound(mockAPI, path)
+	test_utils.MockObjectNotFound(mockAPI, path)
 
 	data := map[string]interface{}{
 		"type": "ui",
@@ -542,7 +542,7 @@ func TestUIHighlightWorks(t *testing.T) {
 		},
 	}
 
-	mockGetObject(mockAPI, rack1)
+	test_utils.MockGetObject(mockAPI, rack1)
 	ogree3D.On("Inform", "HandleUI", -1, data).Return(nil).Once() // The inform should be called once
 	err := controller.UIHighlight("/Physical/BASIC/A/R1/A01")
 	assert.Nil(t, err)
@@ -599,7 +599,7 @@ func TestCameraWait(t *testing.T) {
 func TestFocusUIObjectNotFound(t *testing.T) {
 	controller, mockAPI, ogree3D := layersSetup(t)
 
-	mockObjectNotFound(mockAPI, "/api/hierarchy-objects/"+rack1["id"].(string))
+	test_utils.MockObjectNotFound(mockAPI, "/api/hierarchy-objects/"+rack1["id"].(string))
 	err := controller.FocusUI("/Physical/" + strings.Replace(rack1["id"].(string), ".", "/", -1))
 	ogree3D.AssertNotCalled(t, "Inform", "mock.Anything", "mock.Anything", "mock.Anything")
 	assert.NotNil(t, err)
@@ -624,7 +624,7 @@ func TestFocusUIErrorWithRoom(t *testing.T) {
 	errorMessage := "You cannot focus on this object. Note you cannot focus on Sites, Buildings and Rooms. "
 	errorMessage += "For more information please refer to the help doc  (man >)"
 
-	mockGetObject(mockAPI, roomWithoutChildren)
+	test_utils.MockGetObject(mockAPI, roomWithoutChildren)
 	err := controller.FocusUI("/Physical/" + strings.Replace(roomWithoutChildren["id"].(string), ".", "/", -1))
 	ogree3D.AssertNotCalled(t, "Inform", "mock.Anything", "mock.Anything", "mock.Anything")
 	assert.NotNil(t, err)
@@ -640,8 +640,8 @@ func TestFocusUIWorks(t *testing.T) {
 
 	ogree3D.On("Inform", "FocusUI", -1, data).Return(nil).Once() // The inform should be called once
 	// Get Object will be called two times: Once in FocusUI and a second time in FocusUI->CD->Tree
-	mockGetObject(mockAPI, rack1)
-	mockGetObject(mockAPI, rack1)
+	test_utils.MockGetObject(mockAPI, rack1)
+	test_utils.MockGetObject(mockAPI, rack1)
 	err := controller.FocusUI("/Physical/" + strings.Replace(rack1["id"].(string), ".", "/", -1))
 	assert.Nil(t, err)
 }
@@ -658,13 +658,13 @@ func TestLinkObjectErrorNotStaryObject(t *testing.T) {
 func TestLinkObjectWithoutSlots(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	strayDevice := copyMap(chassis)
+	strayDevice := test_utils.CopyMap(chassis)
 	delete(strayDevice, "id")
 	delete(strayDevice, "parentId")
 	response := map[string]any{"message": "successfully linked"}
 	body := map[string]any{"parentId": "BASIC.A.R1.A01", "slot": []string{}}
 
-	mockUpdateObject(mockAPI, body, response)
+	test_utils.MockUpdateObject(mockAPI, body, response)
 
 	slots := []string{}
 	attributes := []string{}
@@ -680,7 +680,7 @@ func TestLinkObjectWithoutSlots(t *testing.T) {
 func TestLinkObjectWithInvalidSlots(t *testing.T) {
 	controller, _, _ := layersSetup(t)
 
-	strayDevice := copyMap(chassis)
+	strayDevice := test_utils.CopyMap(chassis)
 	delete(strayDevice, "id")
 	delete(strayDevice, "parentId")
 
@@ -699,13 +699,13 @@ func TestLinkObjectWithInvalidSlots(t *testing.T) {
 func TestLinkObjectWithValidSlots(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	strayDevice := copyMap(chassis)
+	strayDevice := test_utils.CopyMap(chassis)
 	delete(strayDevice, "id")
 	delete(strayDevice, "parentId")
 	response := map[string]any{"message": "successfully linked"}
 	body := map[string]any{"parentId": "BASIC.A.R1.A01", "slot": []string{"slot01"}}
 
-	mockUpdateObject(mockAPI, body, response)
+	test_utils.MockUpdateObject(mockAPI, body, response)
 
 	slots := []string{"slot01"}
 	attributes := []string{}
@@ -730,7 +730,7 @@ func TestUnlinkObjectWithInvalidPath(t *testing.T) {
 func TestUnlinkObjectWithValidPath(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	mockUpdateObject(mockAPI, nil, map[string]any{"message": "successfully unlinked"})
+	test_utils.MockUpdateObject(mockAPI, nil, map[string]any{"message": "successfully unlinked"})
 
 	err := controller.UnlinkObject(models.PhysicalPath + "BASIC/A/R1/A01")
 	assert.Nil(t, err)
@@ -740,7 +740,7 @@ func TestUnlinkObjectWithValidPath(t *testing.T) {
 func TestIsEntityDrawableObjectNotFound(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	mockObjectNotFound(mockAPI, "/api/hierarchy-objects/BASIC.A.R1.A01")
+	test_utils.MockObjectNotFound(mockAPI, "/api/hierarchy-objects/BASIC.A.R1.A01")
 
 	isDrawable, err := controller.IsEntityDrawable(models.PhysicalPath + "BASIC/A/R1/A01")
 	assert.False(t, isDrawable)
@@ -763,7 +763,7 @@ func TestIsEntityDrawable(t *testing.T) {
 			controller, mockAPI, _ := layersSetup(t)
 			controllers.State.DrawableObjs = tt.drawableObjects
 
-			mockGetObject(mockAPI, rack1)
+			test_utils.MockGetObject(mockAPI, rack1)
 
 			isDrawable, err := controller.IsEntityDrawable(models.PhysicalPath + "BASIC/A/R1/A01")
 			assert.Equal(t, tt.expectedIsDrawable, isDrawable)
@@ -777,7 +777,7 @@ func TestIsAttrDrawableObjectNotFound(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 	path := "/api/hierarchy-objects/BASIC.A.R1.A01"
 
-	mockObjectNotFound(mockAPI, path)
+	test_utils.MockObjectNotFound(mockAPI, path)
 
 	isAttrDrawable, err := controller.IsAttrDrawable(models.PhysicalPath+"BASIC/A/R1/A01", "color")
 	assert.False(t, isAttrDrawable)
@@ -793,7 +793,7 @@ func TestIsAttrDrawableTemplateJsonIsNil(t *testing.T) {
 		"rack": nil,
 	}
 
-	mockGetObject(mockAPI, rack1)
+	test_utils.MockGetObject(mockAPI, rack1)
 
 	isAttrDrawable, err := controller.IsAttrDrawable(models.PhysicalPath+"BASIC/A/R1/A01", "color")
 	assert.True(t, isAttrDrawable)
@@ -817,12 +817,12 @@ func TestIsAttrDrawable(t *testing.T) {
 
 			controllers.State.DrawableJsons = test_utils.GetTestDrawableJson()
 
-			mockGetObject(mockAPI, rack1)
+			test_utils.MockGetObject(mockAPI, rack1)
 			isAttrDrawable, err := controller.IsAttrDrawable(models.PhysicalPath+"BASIC/A/R1/A01", tt.attributeDrawable)
 			assert.True(t, isAttrDrawable)
 			assert.Nil(t, err)
 
-			mockGetObject(mockAPI, rack1)
+			test_utils.MockGetObject(mockAPI, rack1)
 			isAttrDrawable, err = controller.IsAttrDrawable(models.PhysicalPath+"BASIC/A/R1/A01", tt.attributeNonDrawable)
 			assert.False(t, isAttrDrawable)
 			assert.Nil(t, err)

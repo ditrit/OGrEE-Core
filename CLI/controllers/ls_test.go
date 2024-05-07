@@ -23,8 +23,8 @@ func TestLsOnElementAsksForLayersIfTheyHaveNeverBeenLoaded(t *testing.T) {
 	controller, mockAPI, _, mockClock := lsSetup(t)
 
 	mockClock.On("Now").Return(time.Now()).Once()
-	mockGetObjectsByEntity(mockAPI, "layers", []any{})
-	mockGetObjectHierarchy(mockAPI, map[string]any{
+	test_utils.MockGetObjectsByEntity(mockAPI, "layers", []any{})
+	test_utils.MockGetObjectHierarchy(mockAPI, map[string]any{
 		"category": "room",
 		"children": []any{},
 		"id":       "BASIC.A.R1",
@@ -42,14 +42,14 @@ func TestLsOnElementNotAsksForLayersIfTheyAreUpdated(t *testing.T) {
 
 	now := time.Now()
 	mockClock.On("Now").Return(now).Once()
-	mockGetObjectsByEntity(mockAPI, "layers", []any{})
+	test_utils.MockGetObjectsByEntity(mockAPI, "layers", []any{})
 
 	objects, err := controller.Ls("/Logical/Layers", nil, nil)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 0)
 
 	mockClock.On("Now").Return(now.Add(5 * time.Second)).Once()
-	mockGetObjectHierarchy(mockAPI, map[string]any{
+	test_utils.MockGetObjectHierarchy(mockAPI, map[string]any{
 		"category": "room",
 		"children": []any{},
 		"id":       "BASIC.A.R1",
@@ -67,15 +67,15 @@ func TestLsOnElementAsksForLayersIfTheyAreNotUpdated(t *testing.T) {
 
 	now := time.Now()
 	mockClock.On("Now").Return(now).Once()
-	mockGetObjectsByEntity(mockAPI, "layers", []any{})
+	test_utils.MockGetObjectsByEntity(mockAPI, "layers", []any{})
 
 	objects, err := controller.Ls("/Logical/Layers", nil, nil)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 0)
 
 	mockClock.On("Now").Return(now.Add(50 * time.Minute)).Once()
-	mockGetObjectsByEntity(mockAPI, "layers", []any{})
-	mockGetObjectHierarchy(mockAPI, map[string]any{
+	test_utils.MockGetObjectsByEntity(mockAPI, "layers", []any{})
+	test_utils.MockGetObjectHierarchy(mockAPI, map[string]any{
 		"category": "room",
 		"children": []any{},
 		"id":       "BASIC.A.R1",
@@ -91,7 +91,7 @@ func TestLsOnElementAsksForLayersIfTheyAreNotUpdated(t *testing.T) {
 func TestLsWithFilters(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	mockGetObjects(mockAPI, "category=rack&id=BASIC.A.R1.*&namespace=physical.hierarchy", []any{rack1, rack2})
+	test_utils.MockGetObjects(mockAPI, "category=rack&id=BASIC.A.R1.*&namespace=physical.hierarchy", []any{rack1, rack2})
 
 	objects, err := controller.Ls("/Physical/BASIC/A/R1", map[string]string{
 		"category": "rack",
@@ -105,7 +105,7 @@ func TestLsWithFilters(t *testing.T) {
 func TestLsWithComplexFilters(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	mockGetObjectsWithComplexFilters(
+	test_utils.MockGetObjectsWithComplexFilters(
 		mockAPI,
 		"id=BASIC.A.R1.%2A&namespace=physical.hierarchy",
 		map[string]any{
@@ -133,7 +133,7 @@ func TestLsRecursiveReturnsError(t *testing.T) {
 func TestLsRecursiveWithFilters(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	mockGetObjects(mockAPI, "category=rack&id=BASIC.A.R1.**.*&namespace=physical.hierarchy", []any{rack1, rack2})
+	test_utils.MockGetObjects(mockAPI, "category=rack&id=BASIC.A.R1.**.*&namespace=physical.hierarchy", []any{rack1, rack2})
 
 	objects, err := controller.Ls("/Physical/BASIC/A/R1", map[string]string{
 		"category": "rack",
@@ -156,7 +156,7 @@ func TestLsPointRecursiveMaxLessThatMinReturnsError(t *testing.T) {
 func TestLsRecursiveWithMinButNotMax(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	mockGetObjects(mockAPI, "category=device&id=BASIC.A.R1.**{1,}.*&namespace=physical.hierarchy", []any{chassis, pdu})
+	test_utils.MockGetObjects(mockAPI, "category=device&id=BASIC.A.R1.**{1,}.*&namespace=physical.hierarchy", []any{chassis, pdu})
 
 	objects, err := controller.Ls("/Physical/BASIC/A/R1", map[string]string{
 		"category": "device",
@@ -170,7 +170,7 @@ func TestLsRecursiveWithMinButNotMax(t *testing.T) {
 func TestLsRecursiveWithMinAndMax(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	mockGetObjects(mockAPI, "category=device&id=BASIC.A.R1.**{1,2}.*&namespace=physical.hierarchy", []any{chassis, pdu})
+	test_utils.MockGetObjects(mockAPI, "category=device&id=BASIC.A.R1.**{1,2}.*&namespace=physical.hierarchy", []any{chassis, pdu})
 
 	objects, err := controller.Ls("/Physical/BASIC/A/R1", map[string]string{
 		"category": "device",

@@ -3,8 +3,52 @@ package utils
 import (
 	"cli/controllers"
 	mocks "cli/mocks/controllers"
+	"encoding/json"
 	"testing"
 )
+
+func CopyMap(toCopy map[string]any) map[string]any {
+	jsonMap, _ := json.Marshal(toCopy)
+
+	var newMap map[string]any
+
+	json.Unmarshal(jsonMap, &newMap)
+
+	return newMap
+}
+
+func EmptyChildren(object map[string]any) map[string]any {
+	objectCopy := CopyMap(object)
+	objectCopy["children"] = []any{}
+
+	return objectCopy
+}
+
+func KeepOnlyDirectChildren(object map[string]any) map[string]any {
+	objectCopy := CopyMap(object)
+
+	for _, child := range objectCopy["children"].([]any) {
+		delete(child.(map[string]any), "children")
+	}
+
+	return objectCopy
+}
+
+func RemoveChildren(object map[string]any) map[string]any {
+	objectCopy := CopyMap(object)
+	delete(objectCopy, "children")
+
+	return objectCopy
+}
+
+func RemoveChildrenFromList(objects []any) []any {
+	result := []any{}
+	for _, object := range objects {
+		result = append(result, RemoveChildren(object.(map[string]any)))
+	}
+
+	return result
+}
 
 func NewControllerWithMocks(t *testing.T) (controllers.Controller, *mocks.APIPort, *mocks.Ogree3DPort, *mocks.ClockPort) {
 	// Returns a Mock controller

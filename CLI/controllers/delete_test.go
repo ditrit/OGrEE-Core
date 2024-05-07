@@ -15,7 +15,7 @@ func TestDeleteTag(t *testing.T) {
 	slug := "slug"
 	path := models.TagsPath + slug
 
-	mockDeleteObjects(mockAPI, "namespace=logical.tag&slug=slug", []any{
+	test_utils.MockDeleteObjects(mockAPI, "namespace=logical.tag&slug=slug", []any{
 		map[string]any{
 			"slug":        slug,
 			"description": "description",
