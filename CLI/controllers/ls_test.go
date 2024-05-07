@@ -4,6 +4,7 @@ import (
 	"cli/controllers"
 	mocks "cli/mocks/controllers"
 	"cli/models"
+	test_utils "cli/test"
 	"cli/utils"
 	"testing"
 	"time"
@@ -12,7 +13,7 @@ import (
 )
 
 func lsSetup(t *testing.T) (controllers.Controller, *mocks.APIPort, *mocks.Ogree3DPort, *mocks.ClockPort) {
-	controller, mockAPI, mockOgree3d, clockMock := newControllerWithMocks(t)
+	controller, mockAPI, mockOgree3d, clockMock := test_utils.NewControllerWithMocks(t)
 	controllers.State.Hierarchy = controllers.BuildBaseTree(controller)
 
 	return controller, mockAPI, mockOgree3d, clockMock

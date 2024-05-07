@@ -8,21 +8,9 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"testing"
 
 	"github.com/stretchr/testify/mock"
 )
-
-func newControllerWithMocks(t *testing.T) (controllers.Controller, *mocks.APIPort, *mocks.Ogree3DPort, *mocks.ClockPort) {
-	mockAPI := mocks.NewAPIPort(t)
-	mockOgree3D := mocks.NewOgree3DPort(t)
-	mockClock := mocks.NewClockPort(t)
-	return controllers.Controller{
-		API:     mockAPI,
-		Ogree3D: mockOgree3D,
-		Clock:   mockClock,
-	}, mockAPI, mockOgree3D, mockClock
-}
 
 func mockGetObjectHierarchy(mockAPI *mocks.APIPort, object map[string]any) {
 	mockAPI.On(

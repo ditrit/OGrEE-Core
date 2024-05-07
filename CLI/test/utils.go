@@ -51,3 +51,82 @@ func SetMainEnvironmentMock(t *testing.T) (controllers.Controller, *mocks.APIPor
 
 	return controller, mockAPI, mockOgree3D, mockClock
 }
+
+func GetTestDrawableJson() map[string]map[string]any {
+	return map[string]map[string]any{
+		"rack": map[string]any{
+			"name":        true,
+			"parentId":    true,
+			"category":    true,
+			"description": false,
+			"domain":      true,
+			"attributes": map[string]any{
+				"color": true,
+			},
+		},
+	}
+}
+
+func GetEntity(entityName string, name string, parentId string, domain string) map[string]any {
+	id := name
+	if parentId != "" {
+		id = parentId + "." + id
+	}
+	switch entityName {
+	case "domain":
+		return map[string]any{
+			"category":    "domain",
+			"id":          id,
+			"name":        name,
+			"parentId":    parentId,
+			"description": "",
+			"attributes":  map[string]any{},
+		}
+	case "rack":
+		return map[string]any{
+			"category": "rack",
+			"children": []any{},
+			"id":       id,
+			"name":     name,
+			"parentId": parentId,
+			"domain":   domain,
+		}
+	case "device":
+		return map[string]any{
+			"category":    "device",
+			"id":          id,
+			"name":        name,
+			"parentId":    parentId,
+			"domain":      domain,
+			"description": "",
+			"attributes": map[string]any{
+				"height":      47,
+				"heightUnit":  "U",
+				"orientation": "front",
+				"size":        []float64{1, 1},
+				"sizeUnit":    "cm",
+			},
+		}
+	case "generic":
+		return map[string]any{
+			"attributes": map[string]any{
+				"height":     1.0,
+				"heightUnit": "cm",
+				"rotation":   []float64{0, 0, 0},
+				"posXYZ":     []float64{1, 1, 1},
+				"posXYUnit":  "m",
+				"size":       []float64{1, 1},
+				"shape":      "cube",
+				"sizeUnit":   "cm",
+				"type":       "box",
+			},
+			"category":    "generic",
+			"description": "",
+			"domain":      domain,
+			"name":        name,
+			"parentId":    parentId,
+		}
+	default:
+		return nil
+	}
+}

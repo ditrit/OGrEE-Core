@@ -3,6 +3,7 @@ package controllers_test
 import (
 	"cli/controllers"
 	"cli/models"
+	test_utils "cli/test"
 	"strings"
 	"testing"
 
@@ -10,7 +11,7 @@ import (
 )
 
 func TestUpdateTagColor(t *testing.T) {
-	controller, mockAPI, _, _ := newControllerWithMocks(t)
+	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
 
 	oldSlug := "slug"
 	path := models.TagsPath + oldSlug
@@ -39,7 +40,7 @@ func TestUpdateTagColor(t *testing.T) {
 }
 
 func TestUpdateTagSlug(t *testing.T) {
-	controller, mockAPI, _, _ := newControllerWithMocks(t)
+	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
 
 	oldSlug := "slug"
 	newSlug := "new-slug"
@@ -70,7 +71,7 @@ func TestUpdateTagSlug(t *testing.T) {
 }
 
 func TestUpdateRoomTilesColor(t *testing.T) {
-	controller, mockAPI, mockOgree3D, _ := newControllerWithMocks(t)
+	controller, mockAPI, mockOgree3D, _ := test_utils.NewControllerWithMocks(t)
 
 	room := copyMap(roomWithoutChildren)
 	room["attributes"] = map[string]any{
@@ -110,7 +111,7 @@ func TestUpdateRoomTilesColor(t *testing.T) {
 }
 
 func TestUpdateRoomTilesName(t *testing.T) {
-	controller, mockAPI, mockOgree3D, _ := newControllerWithMocks(t)
+	controller, mockAPI, mockOgree3D, _ := test_utils.NewControllerWithMocks(t)
 
 	room := copyMap(roomWithoutChildren)
 	room["attributes"] = map[string]any{
@@ -150,7 +151,7 @@ func TestUpdateRoomTilesName(t *testing.T) {
 }
 
 func TestUpdateRackU(t *testing.T) {
-	controller, mockAPI, mockOgree3D, _ := newControllerWithMocks(t)
+	controller, mockAPI, mockOgree3D, _ := test_utils.NewControllerWithMocks(t)
 	rack := copyMap(rack2)
 	rack["attributes"] = map[string]any{
 		"U": true,
@@ -184,7 +185,7 @@ func TestUpdateRackU(t *testing.T) {
 }
 
 func TestUpdateDeviceAlpha(t *testing.T) {
-	controller, mockAPI, mockOgree3D, _ := newControllerWithMocks(t)
+	controller, mockAPI, mockOgree3D, _ := test_utils.NewControllerWithMocks(t)
 	device := copyMap(chassis)
 	device["attributes"].(map[string]any)["alpha"] = true
 	updatedDevice := copyMap(device)
@@ -216,7 +217,7 @@ func TestUpdateDeviceAlpha(t *testing.T) {
 }
 
 func TestUpdateGroupContent(t *testing.T) {
-	controller, mockAPI, mockOgree3D, _ := newControllerWithMocks(t)
+	controller, mockAPI, mockOgree3D, _ := test_utils.NewControllerWithMocks(t)
 	group := copyMap(rackGroup)
 	group["attributes"] = map[string]any{
 		"content": "A,B",

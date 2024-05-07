@@ -3,6 +3,7 @@ package controllers_test
 import (
 	"cli/controllers"
 	"cli/models"
+	test_utils "cli/test"
 	"maps"
 	"testing"
 
@@ -10,7 +11,7 @@ import (
 )
 
 func TestCreateTemplateOfTypeGenericWorks(t *testing.T) {
-	controller, mockAPI, _, _ := newControllerWithMocks(t)
+	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
 
 	template := map[string]any{
 		"slug":        "generic-example",

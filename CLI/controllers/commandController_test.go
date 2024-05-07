@@ -3,6 +3,7 @@ package controllers_test
 import (
 	"cli/controllers"
 	"cli/models"
+	test_utils "cli/test"
 	"errors"
 	"net/url"
 	"strings"
@@ -747,26 +748,28 @@ func TestIsEntityDrawableObjectNotFound(t *testing.T) {
 	assert.Equal(t, "object not found", err.Error())
 }
 
-func TestIsEntityDrawableCategoryIsNotDrawable(t *testing.T) {
-	controller, mockAPI, _ := layersSetup(t)
-	controllers.State.DrawableObjs = []int{models.EntityStrToInt("device")}
+func TestIsEntityDrawable(t *testing.T) {
+	tests := []struct {
+		name               string
+		drawableObjects    []int
+		expectedIsDrawable bool
+	}{
+		{"CategoryIsNotDrawable", []int{models.EntityStrToInt("device")}, false},
+		{"CategoryIsDrawable", []int{models.EntityStrToInt("rack")}, true},
+	}
 
-	mockGetObject(mockAPI, rack1)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			controller, mockAPI, _ := layersSetup(t)
+			controllers.State.DrawableObjs = tt.drawableObjects
 
-	isDrawable, err := controller.IsEntityDrawable(models.PhysicalPath + "BASIC/A/R1/A01")
-	assert.False(t, isDrawable)
-	assert.Nil(t, err)
-}
+			mockGetObject(mockAPI, rack1)
 
-func TestIsEntityDrawableWorks(t *testing.T) {
-	controller, mockAPI, _ := layersSetup(t)
-	controllers.State.DrawableObjs = []int{models.EntityStrToInt("rack")}
-
-	mockGetObject(mockAPI, rack1)
-
-	isDrawable, err := controller.IsEntityDrawable(models.PhysicalPath + "BASIC/A/R1/A01")
-	assert.True(t, isDrawable)
-	assert.Nil(t, err)
+			isDrawable, err := controller.IsEntityDrawable(models.PhysicalPath + "BASIC/A/R1/A01")
+			assert.Equal(t, tt.expectedIsDrawable, isDrawable)
+			assert.Nil(t, err)
+		})
+	}
 }
 
 // Tests IsAttrDrawable (and IsCategoryAttrDrawable)
@@ -797,63 +800,34 @@ func TestIsAttrDrawableTemplateJsonIsNil(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestIsAttrDrawableSpecialAttribute(t *testing.T) {
-	controller, mockAPI, _ := layersSetup(t)
-	controllers.State.DrawableObjs = []int{models.EntityStrToInt("rack")}
-
-	controllers.State.DrawableJsons = map[string]map[string]any{
-		"rack": map[string]any{
-			"name":        true,
-			"parentId":    true,
-			"category":    true,
-			"description": false,
-			"domain":      true,
-			"attributes": map[string]any{
-				"color": true,
-			},
-		},
+func TestIsAttrDrawable(t *testing.T) {
+	tests := []struct {
+		name                 string
+		attributeDrawable    string
+		attributeNonDrawable string
+	}{
+		{"SpecialAttribute", "name", "description"},
+		{"SpecialAttribute", "color", "height"},
 	}
 
-	mockGetObject(mockAPI, rack1)
-	isAttrDrawable, err := controller.IsAttrDrawable(models.PhysicalPath+"BASIC/A/R1/A01", "name")
-	assert.True(t, isAttrDrawable)
-	assert.Nil(t, err)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			controller, mockAPI, _ := layersSetup(t)
+			controllers.State.DrawableObjs = []int{models.EntityStrToInt("rack")}
 
-	// description is set to false so it should return false
-	mockGetObject(mockAPI, rack1)
-	isAttrDrawable, err = controller.IsAttrDrawable(models.PhysicalPath+"BASIC/A/R1/A01", "description")
-	assert.False(t, isAttrDrawable)
-	assert.Nil(t, err)
-}
+			controllers.State.DrawableJsons = test_utils.GetTestDrawableJson()
 
-func TestIsAttrDrawableDefaultAttribute(t *testing.T) {
-	controller, mockAPI, _ := layersSetup(t)
-	controllers.State.DrawableObjs = []int{models.EntityStrToInt("rack")}
+			mockGetObject(mockAPI, rack1)
+			isAttrDrawable, err := controller.IsAttrDrawable(models.PhysicalPath+"BASIC/A/R1/A01", tt.attributeDrawable)
+			assert.True(t, isAttrDrawable)
+			assert.Nil(t, err)
 
-	controllers.State.DrawableJsons = map[string]map[string]any{
-		"rack": map[string]any{
-			"name":        true,
-			"parentId":    true,
-			"category":    true,
-			"description": false,
-			"domain":      true,
-			"attributes": map[string]any{
-				"color": true,
-			},
-		},
+			mockGetObject(mockAPI, rack1)
+			isAttrDrawable, err = controller.IsAttrDrawable(models.PhysicalPath+"BASIC/A/R1/A01", tt.attributeNonDrawable)
+			assert.False(t, isAttrDrawable)
+			assert.Nil(t, err)
+		})
 	}
-
-	// color is not in the first case. So it will be searched in attributes field
-	mockGetObject(mockAPI, rack1)
-	isAttrDrawable, err := controller.IsAttrDrawable(models.PhysicalPath+"BASIC/A/R1/A01", "color")
-	assert.True(t, isAttrDrawable)
-	assert.Nil(t, err)
-
-	// height is not present in attributes, so it should return false
-	mockGetObject(mockAPI, rack1)
-	isAttrDrawable, err = controller.IsAttrDrawable(models.PhysicalPath+"BASIC/A/R1/A01", "height")
-	assert.False(t, isAttrDrawable)
-	assert.Nil(t, err)
 }
 
 // Tests CreateUser
