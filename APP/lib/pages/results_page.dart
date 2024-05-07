@@ -1,9 +1,11 @@
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/common/theme.dart';
+import 'package:ogree_app/pages/select_page.dart';
 import 'package:universal_html/html.dart' as html;
 import 'dart:math';
 
@@ -36,9 +38,11 @@ class ResultsPage extends StatefulWidget {
 }
 
 class _ResultsPageState extends State<ResultsPage> {
-  final Set<String> _allAttributes = {};
+  final SplayTreeSet<String> _allAttributes = SplayTreeSet<String>(
+      (a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
   Map<String, Map<String, dynamic>>? _data;
   List<DataColumn> columnLabels = [];
+  List<String> selectedAttrs = [];
 
   // TODO: IMPLEMENT SORT
   bool sort = true;
@@ -56,8 +60,9 @@ class _ResultsPageState extends State<ResultsPage> {
 
   @override
   void initState() {
-    if (!widget.selectedAttrs.contains(extraColumn)) {
-      widget.selectedAttrs.add(extraColumn);
+    selectedAttrs = widget.selectedAttrs;
+    if (!selectedAttrs.contains(extraColumn)) {
+      selectedAttrs.add(extraColumn);
     }
     super.initState();
   }
@@ -65,46 +70,6 @@ class _ResultsPageState extends State<ResultsPage> {
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
-    // Column labels
-    // First, the objects column
-    columnLabels = [
-      DataColumn(
-          label: const Text(
-            "Objects",
-            style: TextStyle(fontWeight: FontWeight.w600),
-          ),
-          onSort: (columnIndex, ascending) {
-            setState(() {
-              sort = !sort;
-              sortColumnIndex = columnIndex;
-            });
-            onsortColum(columnIndex, ascending);
-          })
-    ];
-    // Then all selected attributes
-    for (var attr in widget.selectedAttrs) {
-      if (attr != extraColumn) {
-        columnLabels.add(DataColumn(
-            label: Row(
-          children: [
-            Text(
-              attr,
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ],
-        )));
-      }
-    }
-    // Finally, add new column
-    columnLabels.add(DataColumn(
-      label: PopupMenuButton<String>(
-        tooltip: localeMsg.addColumnTip,
-        offset: const Offset(0, -32),
-        itemBuilder: (_) => attributesCheckList(widget.selectedAttrs),
-        onCanceled: () => print('canceled'),
-        icon: const Icon(Icons.add),
-      ),
-    ));
 
     bool isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
     return FutureBuilder(
@@ -156,8 +121,7 @@ class _ResultsPageState extends State<ResultsPage> {
                   PopupMenuButton<String>(
                     tooltip: localeMsg.selectionOptions,
                     offset: const Offset(0, -32),
-                    itemBuilder: (_) =>
-                        attributesCheckList(widget.selectedAttrs),
+                    itemBuilder: (_) => attributesCheckList(selectedAttrs),
                     onCanceled: () => print('canceled'),
                     icon: const Icon(Icons.add),
                   ),
@@ -175,8 +139,9 @@ class _ResultsPageState extends State<ResultsPage> {
                 sortColumnIndex: sortColumnIndex > 0 ? sortColumnIndex : null,
                 sortAscending: sort,
                 columns: columnLabels,
-                source: _DataSource(context, widget.selectedAttrs,
-                    widget.selectedObjects, _data),
+                showCheckboxColumn: false,
+                source: _DataSource(
+                    context, selectedAttrs, widget.selectedObjects, _data),
               ),
             );
           } else {
@@ -204,7 +169,7 @@ class _ResultsPageState extends State<ResultsPage> {
     getAllAttributes(_data!);
     applyMathFunctions(_data!); // Calculate sum and average
     print("GOT DATA");
-    print(_data);
+    // print(_data);
   }
 
   Map<String, Map<String, String>> getSampleData() {
@@ -230,6 +195,61 @@ class _ResultsPageState extends State<ResultsPage> {
         }
       }
     }
+    for (String attr in ["height", "size"]) {
+      if (_allAttributes.contains(attr) && !selectedAttrs.contains(attr)) {
+        selectedAttrs.add(attr);
+      }
+    }
+    if (selectedAttrs.length < 3) {
+      if (!selectedAttrs.contains(_allAttributes.first) &&
+          _allAttributes.first != extraColumn) {
+        selectedAttrs.add(_allAttributes.first);
+      }
+    }
+    addColumnLabels();
+  }
+
+  addColumnLabels() {
+    // Column labels
+    // First, the objects column
+    columnLabels = [
+      DataColumn(
+          label: const Text(
+            "Objects",
+            style: TextStyle(fontWeight: FontWeight.w600),
+          ),
+          onSort: (columnIndex, ascending) {
+            setState(() {
+              sort = !sort;
+              sortColumnIndex = columnIndex;
+            });
+            onsortColum(columnIndex, ascending);
+          })
+    ];
+    // Then all selected attributes
+    for (var attr in selectedAttrs) {
+      if (attr != extraColumn) {
+        columnLabels.add(DataColumn(
+            label: Row(
+          children: [
+            Text(
+              attr,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ],
+        )));
+      }
+    }
+    // Finally, add new column
+    columnLabels.add(DataColumn(
+      label: PopupMenuButton<String>(
+        tooltip: AppLocalizations.of(context)!.addColumnTip,
+        offset: const Offset(0, -32),
+        itemBuilder: (_) => attributesCheckList(selectedAttrs),
+        onCanceled: () => print('canceled'),
+        icon: const Icon(Icons.add),
+      ),
+    ));
   }
 
   applyMathFunctions(Map<String, Map<String, dynamic>> data) {
@@ -241,7 +261,8 @@ class _ResultsPageState extends State<ResultsPage> {
         var count = 0;
         for (var obj in widget.selectedObjects) {
           if (data.containsKey(obj) && data[obj]!.containsKey(attr)) {
-            double? value = double.tryParse(data[obj]![attr]!);
+            var currentValue = data[obj]![attr]!.toString();
+            double? value = double.tryParse(currentValue);
             if (value != null) {
               count++;
               if (sum == null) {
@@ -254,8 +275,8 @@ class _ResultsPageState extends State<ResultsPage> {
         }
         if (sum != null) {
           data[func]![attr] = func == sumStr
-              ? sum.toStringAsFixed(3)
-              : (sum / count).toStringAsFixed(3);
+              ? sum.toStringAsFixed(2)
+              : (sum / count).toStringAsFixed(2);
         }
       }
       print(data[func]);
@@ -281,6 +302,7 @@ class _ResultsPageState extends State<ResultsPage> {
                 } else {
                   selectedAttrs.remove(key);
                 }
+                addColumnLabels();
               });
               localSetState(() {});
             },
@@ -326,17 +348,17 @@ class _ResultsPageState extends State<ResultsPage> {
 
   getCSV() async {
     // Prepare data
-    final firstRow = ["Objects", ...widget.selectedAttrs];
+    final firstRow = ["Objects", ...selectedAttrs];
     firstRow.remove(extraColumn);
     List<List<String>> rows = [firstRow];
     for (var obj in widget.selectedObjects) {
       List<String> row = [];
       row.add(obj);
-      for (String attr in widget.selectedAttrs) {
+      for (String attr in selectedAttrs) {
         if (attr != extraColumn) {
           String value = "-";
           if (_data!.containsKey(obj) && _data![obj]!.containsKey(attr)) {
-            value = _data![obj]![attr]!;
+            value = _data![obj]![attr]!.toString();
           }
           row.add(value);
         }
@@ -401,14 +423,14 @@ class _DataSource extends DataTableSource {
     return DataRow.byIndex(
       index: index,
       selected: row.selected,
-      onSelectChanged: (value) {
-        if (row.selected != value) {
-          _selectedCount += value! ? 1 : -1;
-          assert(_selectedCount >= 0);
-          row.selected = value;
-          notifyListeners();
-        }
-      },
+      // onSelectChanged: (value) {
+      //   if (row.selected != value) {
+      //     _selectedCount += value! ? 1 : -1;
+      //     assert(_selectedCount >= 0);
+      //     row.selected = value;
+      //     notifyListeners();
+      //   }
+      // },
       cells: row.cells,
     );
   }
@@ -426,12 +448,12 @@ class _DataSource extends DataTableSource {
     List<CustomRow> children = [];
     for (var obj in selectedObjects) {
       List<DataCell> row = [];
-      row.add(label(obj, fontWeight: FontWeight.w500));
+      row.add(label(obj, fontWeight: FontWeight.w600));
       for (String attr in selectedAttrs) {
         if (attr != extraColumn) {
           String value = "-";
           if (data!.containsKey(obj) && data![obj]!.containsKey(attr)) {
-            value = data![obj]![attr]!;
+            value = data![obj]![attr]!.toString();
           }
           row.add(label(value));
         }
@@ -447,7 +469,7 @@ class _DataSource extends DataTableSource {
     return DataCell(
       Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Text(
+        child: SelectableText(
           label,
           style: TextStyle(
               fontSize: 14,

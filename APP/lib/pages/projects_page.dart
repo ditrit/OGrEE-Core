@@ -11,6 +11,7 @@ import 'package:ogree_app/models/tenant.dart';
 import 'package:ogree_app/pages/select_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/widgets/projects/autoproject_card.dart';
+import 'package:ogree_app/widgets/projects/autounity_card.dart';
 import 'package:ogree_app/widgets/tenants/popups/create_tenant_popup.dart';
 import 'package:ogree_app/widgets/projects/project_card.dart';
 import 'package:ogree_app/widgets/tenants/tenant_card.dart';
@@ -340,6 +341,10 @@ class _ProjectsPageState extends State<ProjectsPage> {
         }
       }
     } else {
+      cards.add(AutoUnityProjectCard(
+        userEmail: widget.userEmail,
+        parentCallback: refreshFromChildren,
+      ));
       for (var namespace in Namespace.values) {
         if (namespace != Namespace.Test) {
           cards.add(AutoProjectCard(
