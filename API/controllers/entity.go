@@ -1062,7 +1062,6 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 
 	// Get entityStr from URL
 	entityStr := mux.Vars(r)["entity"]
-	//var req primitive.M
 	// If templates, format them
 	entityStr = strings.Replace(entityStr, "-", "_", 1)
 
@@ -1093,8 +1092,6 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		//		fmt.Printf(entityStr)
-		//		fmt.Printf(id)
 		modelErr := models.DeleteObject(entityStr, id, user.Roles)
 		if modelErr != nil {
 			u.ErrLog("Error while deleting entity", "DELETE ENTITY", modelErr.Message, r)
