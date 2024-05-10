@@ -4,6 +4,8 @@ import (
 	"cli/controllers"
 	"cli/models"
 	test_utils "cli/test"
+	"encoding/json"
+	"strings"
 	"testing"
 	"time"
 
@@ -543,6 +545,612 @@ func TestUpdateObjNodeExecuteUpdateDescription(t *testing.T) {
 		hasSharpe: false,
 	}
 	value, err := array.execute()
+
+	assert.Nil(t, err)
+	assert.Nil(t, value)
+}
+
+func TestTreeNodeExecution(t *testing.T) {
+	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
+
+	room := test_utils.GetEntity("room", "room", "site.building", "domain")
+
+	test_utils.MockGetObject(mockAPI, room)
+
+	array := treeNode{
+		path: &pathNode{path: &valueNode{"/Physical/site/building/room"}},
+	}
+	value, err := array.execute()
+
+	assert.Nil(t, err)
+	assert.Nil(t, value)
+}
+
+func TestDrawNodeExecution(t *testing.T) {
+	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
+
+	room := test_utils.GetEntity("room", "room", "site.building", "domain")
+
+	test_utils.MockGetObject(mockAPI, room)
+
+	array := drawNode{
+		path: &pathNode{path: &valueNode{"/Physical/site/building/room"}},
+	}
+	value, err := array.execute()
+
+	assert.Nil(t, err)
+	assert.Nil(t, value)
+}
+
+func TestUndrawNodeExecution(t *testing.T) {
+	_, mockAPI, mockOgree3D, _ := test_utils.SetMainEnvironmentMock(t)
+
+	room := test_utils.GetEntity("room", "room", "site.building", "domain")
+
+	test_utils.MockGetObject(mockAPI, room)
+
+	mockOgree3D.On(
+		"Inform", "Undraw", 0, map[string]interface{}{"type": "delete", "data": "site.building.room"},
+	).Return(nil)
+
+	array := undrawNode{
+		path: &pathNode{path: &valueNode{"/Physical/site/building/room"}},
+	}
+	value, err := array.execute()
+
+	assert.Nil(t, err)
+	assert.Nil(t, value)
+}
+
+func TestLsogNodeExecution(t *testing.T) {
+	tests := []struct {
+		name             string
+		clipboardContent []string
+	}{
+		{"EmptyClipboard", []string{}},
+		{"OneElementClipboard", []string{"/Physical/site/building/room/rack"}},
+		{"TwoElementClipboard", []string{"/Physical/site/building/room/rack", "/Physical/site/building/room2/rack2"}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			test_utils.SetMainEnvironmentMock(t)
+
+			controllers.State.ClipBoard = tt.clipboardContent
+			array := selectNode{}
+			value, err := array.execute()
+
+			assert.Nil(t, err)
+			assert.NotNil(t, value)
+			assert.Len(t, value, len(tt.clipboardContent))
+			assert.Equal(t, tt.clipboardContent, value)
+		})
+	}
+}
+
+func TestPwdNodeExecution(t *testing.T) {
+	tests := []struct {
+		name        string
+		currentPath string
+	}{
+		{"SitePath", "/Physical/site"},
+		{"RoomPath", "/Physical/site/room"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			test_utils.SetMainEnvironmentMock(t)
+
+			controllers.State.CurrPath = tt.currentPath
+			array := pwdNode{}
+			value, err := array.execute()
+
+			assert.Nil(t, err)
+			assert.NotNil(t, value)
+			assert.Equal(t, controllers.State.CurrPath, value)
+		})
+	}
+}
+
+func TestSelectChildrenNodeExecution(t *testing.T) {
+	rack := test_utils.GetEntity("rack", "rack", "site.building.room", "domain")
+	secondRack := test_utils.GetEntity("rack", "rack2", "site.building.room2", "domain")
+	tests := []struct {
+		name     string
+		entities []map[string]any
+	}{
+		{"EmptySelection", []map[string]any{}},
+		{"OneSelection", []map[string]any{rack}},
+		{"TwoSelections", []map[string]any{rack, secondRack}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, mockAPI, mockOgree3D, _ := test_utils.SetMainEnvironmentMock(t)
+
+			paths := []node{}
+			ids := []string{}
+
+			for _, entity := range tt.entities {
+				ids = append(ids, entity["id"].(string))
+				path := models.PhysicalPath + strings.Replace(entity["id"].(string), ".", "/", -1)
+				paths = append(paths, pathNode{path: &valueNode{path}})
+				test_utils.MockGetObject(mockAPI, entity)
+			}
+			informOptionalData, _ := json.Marshal(ids)
+			mockOgree3D.On(
+				"InformOptional", "SetClipBoard",
+				-1, map[string]interface{}{"data": string(informOptionalData), "type": "select"},
+			).Return(nil)
+
+			array := selectChildrenNode{
+				paths: paths,
+			}
+			value, err := array.execute()
+
+			assert.Nil(t, err)
+			assert.NotNil(t, value)
+			assert.Len(t, value, len(paths))
+			assert.Equal(t, controllers.State.ClipBoard, value)
+		})
+	}
+}
+
+func TestUnsetFuncNodeExecution(t *testing.T) {
+	test_utils.SetMainEnvironmentMock(t)
+	functionBody := printNode{&formatStringNode{&valueNode{"%v"}, []node{&symbolReferenceNode{"i"}}}}
+	functionName := "my_function"
+
+	controllers.State.FuncTable[functionName] = functionBody
+
+	unsetFunctionNode := unsetFuncNode{
+		funcName: functionName,
+	}
+
+	value, err := unsetFunctionNode.execute()
+
+	assert.Nil(t, err)
+	assert.Nil(t, value)
+	_, ok := controllers.State.FuncTable[functionName]
+	assert.False(t, ok)
+
+	// unset a non existent function does not generate an error
+	value, err = unsetFunctionNode.execute()
+
+	assert.Nil(t, err)
+	assert.Nil(t, value)
+}
+
+func TestUnsetVarNodeExecution(t *testing.T) {
+	test_utils.SetMainEnvironmentMock(t)
+	varName := "i"
+
+	controllers.State.DynamicSymbolTable[varName] = 5
+
+	unsetVarNode := unsetVarNode{
+		varName: varName,
+	}
+
+	value, err := unsetVarNode.execute()
+
+	assert.Nil(t, err)
+	assert.Nil(t, value)
+	_, ok := controllers.State.FuncTable[varName]
+	assert.False(t, ok)
+
+	// unset a non existent variable does not generate an error
+	value, err = unsetVarNode.execute()
+
+	assert.Nil(t, err)
+	assert.Nil(t, value)
+}
+
+func TestUnsetAttrNodeExecution(t *testing.T) {
+	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
+	rack := test_utils.GetEntity("rack", "rack", "site.building.room", "domain")
+	updatedRack := test_utils.GetEntity("rack", "rack", "site.building.room", "domain")
+	delete(updatedRack, "id")
+	delete(updatedRack, "children")
+	rack["attributes"].(map[string]any)["color"] = "ffffff"
+
+	test_utils.MockGetObject(mockAPI, rack)
+	test_utils.MockPutObject(mockAPI, updatedRack, updatedRack)
+
+	executionNode := unsetAttrNode{
+		path: pathNode{path: &valueNode{"/Physical/site/building/room/rack"}},
+		attr: "color",
+	}
+
+	value, err := executionNode.execute()
+
+	assert.Nil(t, err)
+	assert.Nil(t, value)
+}
+
+func TestCreateDomainNodeExecution(t *testing.T) {
+	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
+	domain := test_utils.GetEntity("domain", "myDomain", "", "")
+	domain["attributes"].(map[string]any)["color"] = "ffaaff"
+	delete(domain, "id")
+
+	test_utils.MockCreateObject(mockAPI, "domain", domain)
+
+	executionNode := createDomainNode{
+		path:  pathNode{path: &valueNode{"/Organisation/Domain/myDomain"}},
+		color: &valueNode{"ffaaff"},
+	}
+
+	value, err := executionNode.execute()
+
+	assert.Nil(t, err)
+	assert.Nil(t, value)
+}
+
+func TestCreateSiteNodeExecution(t *testing.T) {
+	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
+	site := test_utils.GetEntity("site", "mySite", "", "")
+	delete(site, "id")
+	delete(site, "children")
+
+	test_utils.MockCreateObject(mockAPI, "site", site)
+
+	executionNode := createSiteNode{
+		path: pathNode{path: &valueNode{"/Physical/mySite"}},
+	}
+
+	value, err := executionNode.execute()
+
+	assert.Nil(t, err)
+	assert.Nil(t, value)
+}
+
+func TestCreateBuildingNodeExecution(t *testing.T) {
+	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
+	site := test_utils.GetEntity("site", "mySite", "", "")
+	building := test_utils.GetEntity("building", "myBuilding", "mySite", "")
+	building["attributes"].(map[string]any)["posXY"] = []float64{0, 0}
+	building["attributes"].(map[string]any)["rotation"] = 0.0
+	building["attributes"].(map[string]any)["size"] = []float64{10, 10}
+	building["attributes"].(map[string]any)["sizeUnit"] = "m"
+	building["attributes"].(map[string]any)["height"] = 10.0
+	building["attributes"].(map[string]any)["heightUnit"] = "m"
+	building["attributes"].(map[string]any)["posXYUnit"] = "m"
+
+	delete(building, "id")
+	delete(building, "children")
+
+	test_utils.MockGetObject(mockAPI, site)
+	test_utils.MockCreateObject(mockAPI, "building", building)
+
+	executionNode := createBuildingNode{
+		path:           pathNode{path: &valueNode{"/Physical/mySite/myBuilding"}},
+		posXY:          vec2(0, 0),
+		rotation:       &valueNode{0.0},
+		sizeOrTemplate: vec3(10, 10, 10),
+	}
+
+	value, err := executionNode.execute()
+
+	assert.Nil(t, err)
+	assert.Nil(t, value)
+}
+
+func TestCreateRoomNodeExecution(t *testing.T) {
+	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
+	building := test_utils.GetEntity("building", "myBuilding", "mySite", "")
+	room := test_utils.GetEntity("room", "myRoom", "mySite.myBuilding", "")
+	room["attributes"].(map[string]any)["posXY"] = []float64{0, 0}
+	room["attributes"].(map[string]any)["rotation"] = 0.0
+	room["attributes"].(map[string]any)["size"] = []float64{10, 10}
+	room["attributes"].(map[string]any)["sizeUnit"] = "m"
+	room["attributes"].(map[string]any)["height"] = 10.0
+	room["attributes"].(map[string]any)["heightUnit"] = "m"
+	room["attributes"].(map[string]any)["posXYUnit"] = "m"
+	room["attributes"].(map[string]any)["axisOrientation"] = "+x+y"
+	room["attributes"].(map[string]any)["floorUnit"] = "m"
+
+	delete(room, "id")
+	delete(room, "children")
+
+	test_utils.MockGetObject(mockAPI, building)
+	test_utils.MockCreateObject(mockAPI, "room", room)
+
+	executionNode := createRoomNode{
+		path:            pathNode{path: &valueNode{"/Physical/mySite/myBuilding/myRoom"}},
+		posXY:           vec2(0, 0),
+		rotation:        &valueNode{0.0},
+		size:            vec3(10, 10, 10),
+		axisOrientation: &valueNode{"+x+y"},
+		floorUnit:       &valueNode{"m"},
+	}
+
+	value, err := executionNode.execute()
+
+	assert.Nil(t, err)
+	assert.Nil(t, value)
+}
+
+func TestCreateRackNodeExecution(t *testing.T) {
+	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
+	room := test_utils.GetEntity("room", "myRoom", "mySite.myBuilding", "")
+	rack := test_utils.GetEntity("rack", "myRack", "mySite.myBuilding.myRoom", "")
+	rack["attributes"].(map[string]any)["posXYZ"] = []float64{0, 0, 0}
+	rack["attributes"].(map[string]any)["rotation"] = []float64{0, 0, 0}
+	rack["attributes"].(map[string]any)["size"] = []float64{10, 10}
+	rack["attributes"].(map[string]any)["sizeUnit"] = "cm"
+	rack["attributes"].(map[string]any)["height"] = 10.0
+	rack["attributes"].(map[string]any)["heightUnit"] = "U"
+	rack["attributes"].(map[string]any)["posXYUnit"] = "m"
+
+	delete(rack, "id")
+	delete(rack, "children")
+
+	test_utils.MockGetObject(mockAPI, room)
+	test_utils.MockCreateObject(mockAPI, "rack", rack)
+
+	executionNode := createRackNode{
+		path:           pathNode{path: &valueNode{"/Physical/mySite/myBuilding/myRoom/myRack"}},
+		pos:            vec3(0, 0, 0),
+		rotation:       vec3(0, 0, 0),
+		unit:           &valueNode{"m"},
+		sizeOrTemplate: vec3(10, 10, 10),
+	}
+
+	value, err := executionNode.execute()
+
+	assert.Nil(t, err)
+	assert.Nil(t, value)
+}
+
+func TestCreateGenericNodeExecution(t *testing.T) {
+	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
+	room := test_utils.GetEntity("room", "myRoom", "mySite.myBuilding", "")
+	generic := test_utils.GetEntity("generic", "myGeneric", "mySite.myBuilding.myRoom", "")
+	generic["attributes"].(map[string]any)["posXYZ"] = []float64{0, 0, 0}
+	generic["attributes"].(map[string]any)["rotation"] = []float64{0, 0, 0}
+	generic["attributes"].(map[string]any)["size"] = []float64{10, 10}
+	generic["attributes"].(map[string]any)["sizeUnit"] = "cm"
+	generic["attributes"].(map[string]any)["height"] = 10.0
+	generic["attributes"].(map[string]any)["heightUnit"] = "cm"
+	generic["attributes"].(map[string]any)["posXYUnit"] = "m"
+	generic["attributes"].(map[string]any)["shape"] = "cube"
+	generic["attributes"].(map[string]any)["type"] = "box"
+
+	delete(generic, "id")
+	delete(generic, "children")
+
+	test_utils.MockGetObject(mockAPI, room)
+	test_utils.MockCreateObject(mockAPI, "generic", generic)
+
+	executionNode := createGenericNode{
+		path:           pathNode{path: &valueNode{"/Physical/mySite/myBuilding/myRoom/myGeneric"}},
+		pos:            vec3(0, 0, 0),
+		rotation:       vec3(0, 0, 0),
+		unit:           &valueNode{"m"},
+		sizeOrTemplate: vec3(10, 10, 10),
+		shape:          &valueNode{"cube"},
+		getype:         &valueNode{"box"},
+	}
+
+	value, err := executionNode.execute()
+
+	assert.Nil(t, err)
+	assert.Nil(t, value)
+}
+
+func TestCreateDeviceNodeExecution(t *testing.T) {
+	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
+	rack := test_utils.GetEntity("rack", "myRack", "mySite.myBuilding.myRoom", "")
+	device := test_utils.GetEntity("device", "myDevice", "mySite.myBuilding.myRoom.myRack", "")
+	device["attributes"].(map[string]any)["posU/slot"] = []string{}
+	device["attributes"].(map[string]any)["sizeU"] = 10
+	device["attributes"].(map[string]any)["sizeUnit"] = "mm"
+	device["attributes"].(map[string]any)["height"] = 445.0
+	device["attributes"].(map[string]any)["heightUnit"] = "mm"
+	device["attributes"].(map[string]any)["orientation"] = "front"
+	device["attributes"].(map[string]any)["invertOffset"] = false
+	delete(device["attributes"].(map[string]any), "size")
+
+	delete(device, "id")
+	delete(device, "children")
+
+	test_utils.MockGetObject(mockAPI, rack)
+	test_utils.MockCreateObject(mockAPI, "device", device)
+
+	executionNode := createDeviceNode{
+		path:            pathNode{path: &valueNode{"/Physical/mySite/myBuilding/myRoom/myRack/myDevice"}},
+		posUOrSlot:      []node{},
+		invertOffset:    false,
+		sizeUOrTemplate: &valueNode{10},
+		side:            &valueNode{"front"},
+	}
+
+	value, err := executionNode.execute()
+
+	assert.Nil(t, err)
+	assert.Nil(t, value)
+}
+
+func TestCreateGroupNodeExecution(t *testing.T) {
+	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
+	site := test_utils.GetEntity("site", "mySite", "", "")
+	group := map[string]any{
+		"category":    "group",
+		"description": "",
+		"domain":      "",
+		"name":        "myGroup",
+		"parentId":    "mySite",
+		"attributes": map[string]any{
+			"content": []string{"myBuilding1", "myBuilding2"},
+		},
+	}
+
+	test_utils.MockGetObject(mockAPI, site)
+	test_utils.MockCreateObject(mockAPI, "group", group)
+
+	executionNode := createGroupNode{
+		path:  pathNode{path: &valueNode{"/Physical/mySite/myGroup"}},
+		paths: []node{&valueNode{"/Physical/mySite/myBuilding1"}, &valueNode{"/Physical/mySite/myBuilding2"}},
+	}
+
+	value, err := executionNode.execute()
+
+	assert.Nil(t, err)
+	assert.Nil(t, value)
+}
+
+func TestCreateTagNodeExecution(t *testing.T) {
+	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
+	tag := map[string]any{
+		"slug":        "myTag",
+		"description": "myTag",
+		"color":       "ffaaff",
+	}
+
+	test_utils.MockCreateObject(mockAPI, "tag", tag)
+
+	executionNode := createTagNode{
+		slug:  &valueNode{"myTag"},
+		color: &valueNode{"ffaaff"},
+	}
+
+	value, err := executionNode.execute()
+
+	assert.Nil(t, err)
+	assert.Nil(t, value)
+}
+
+func TestCreateLayerNodeExecution(t *testing.T) {
+	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
+	layer := map[string]any{
+		"slug":          "myLayer",
+		"filter":        "category = rack",
+		"applicability": "mySite.myBuilding.myRoom*",
+	}
+
+	test_utils.MockCreateObject(mockAPI, "layer", layer)
+
+	executionNode := createLayerNode{
+		slug:          &valueNode{"myLayer"},
+		applicability: &valueNode{"/Physical/mySite/myBuilding/myRoom*"},
+		filterValue:   &valueNode{"category = rack"},
+	}
+
+	value, err := executionNode.execute()
+
+	assert.Nil(t, err)
+	assert.Nil(t, value)
+}
+
+func TestCreateCorridorNodeExecution(t *testing.T) {
+	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
+	room := test_utils.GetEntity("room", "myRoom", "mySite.myBuilding", "myDomain")
+	corridor := map[string]any{
+		"category":    "corridor",
+		"description": "",
+		"name":        "myCorridor",
+		"parentId":    "mySite.myBuilding.myRoom",
+		"domain":      "myDomain",
+		"attributes": map[string]any{
+			"rotation":    []float64{0, 0, 0},
+			"size":        []float64{10, 10},
+			"temperature": "cold",
+			"sizeUnit":    "cm",
+			"height":      10.0,
+			"heightUnit":  "cm",
+			"posXYZ":      []float64{0, 0, 0},
+			"posXYUnit":   "m",
+		},
+	}
+
+	test_utils.MockGetObject(mockAPI, room)
+	test_utils.MockCreateObject(mockAPI, "corridor", corridor)
+
+	executionNode := createCorridorNode{
+		path:     pathNode{path: &valueNode{"/Physical/mySite/myBuilding/myRoom/myCorridor"}},
+		pos:      vec3(0, 0, 0),
+		rotation: vec3(0, 0, 0),
+		unit:     &valueNode{"m"},
+		size:     vec3(10, 10, 10),
+		temp:     &valueNode{"cold"},
+	}
+
+	value, err := executionNode.execute()
+
+	assert.Nil(t, err)
+	assert.Nil(t, value)
+}
+
+func TestCreateUserNodeExecution(t *testing.T) {
+	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
+
+	mockAPI.On(
+		"Request",
+		"POST",
+		"/api/users",
+		"mock.Anything", // It generates a random password
+		201,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"account": map[string]any{
+					"email": "user@user.com",
+					"roles": map[string]any{
+						"myDomain": "viewer",
+					},
+				},
+			},
+		}, nil,
+	).Once()
+
+	executionNode := createUserNode{
+		email:  &valueNode{"user@user.com"},
+		role:   &valueNode{"viewer"},
+		domain: &valueNode{"myDomain"},
+	}
+
+	value, err := executionNode.execute()
+
+	assert.Nil(t, err)
+	assert.Nil(t, value)
+}
+
+func TestUiDelayNodeExecution(t *testing.T) {
+	_, _, mockOgree3D, _ := test_utils.SetMainEnvironmentMock(t)
+
+	mockOgree3D.On(
+		"Inform",
+		"HandleUI",
+		-1,
+		map[string]interface{}{"type": "ui", "data": map[string]interface{}{"command": "delay", "data": 10.0}},
+	).Return(nil).Once()
+
+	executionNode := uiDelayNode{
+		time: 10,
+	}
+
+	value, err := executionNode.execute()
+
+	assert.Nil(t, err)
+	assert.Nil(t, value)
+}
+
+func TestUiToggleNodeExecution(t *testing.T) {
+	_, _, mockOgree3D, _ := test_utils.SetMainEnvironmentMock(t)
+
+	mockOgree3D.On(
+		"Inform",
+		"HandleUI",
+		-1,
+		map[string]interface{}{"type": "ui", "data": map[string]interface{}{"command": "myFeature", "data": false}},
+	).Return(nil).Once()
+
+	executionNode := uiToggleNode{
+		feature: "myFeature",
+		enable:  false,
+	}
+
+	value, err := executionNode.execute()
 
 	assert.Nil(t, err)
 	assert.Nil(t, value)

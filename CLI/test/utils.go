@@ -3,6 +3,7 @@ package utils
 import (
 	"cli/controllers"
 	mocks "cli/mocks/controllers"
+	"cli/readline"
 	"encoding/json"
 	"testing"
 )
@@ -70,10 +71,13 @@ func SetMainEnvironmentMock(t *testing.T) (controllers.Controller, *mocks.APIPor
 	oldPrevPath := controllers.State.PrevPath
 	oldCurrPath := controllers.State.CurrPath
 	oldDrawableObjs := controllers.State.DrawableObjs
+	oldTerminal := controllers.State.Terminal
 	controllers.State.DynamicSymbolTable = map[string]any{}
 	controllers.State.FuncTable = map[string]any{}
 	controllers.State.ClipBoard = []string{}
 	controllers.State.DrawableObjs = []int{}
+	rl, _ := readline.New("")
+	controllers.State.Terminal = &rl
 
 	controller, mockAPI, mockOgree3D, mockClock := NewControllerWithMocks(t)
 
@@ -91,6 +95,7 @@ func SetMainEnvironmentMock(t *testing.T) (controllers.Controller, *mocks.APIPor
 		controllers.State.DrawableObjs = oldDrawableObjs
 		controllers.State.PrevPath = oldPrevPath
 		controllers.State.CurrPath = oldCurrPath
+		controllers.State.Terminal = oldTerminal
 	})
 
 	return controller, mockAPI, mockOgree3D, mockClock
@@ -128,32 +133,46 @@ func GetEntity(entityName string, name string, parentId string, domain string) m
 		}
 	case "site":
 		return map[string]any{
-			"category": "site",
-			"children": []any{},
-			"id":       name,
-			"name":     name,
-			"parentId": "",
-			"domain":   domain,
+			"category":    "site",
+			"children":    []any{},
+			"id":          name,
+			"name":        name,
+			"description": "",
+			"domain":      domain,
+			"attributes":  map[string]any{},
+		}
+	case "building":
+		return map[string]any{
+			"category":    "building",
+			"children":    []any{},
+			"id":          id,
+			"name":        name,
+			"description": "",
+			"parentId":    parentId,
+			"domain":      domain,
+			"attributes":  map[string]any{},
 		}
 	case "room":
 		return map[string]any{
-			"category":   "room",
-			"children":   []any{},
-			"id":         id,
-			"name":       name,
-			"parentId":   parentId,
-			"domain":     domain,
-			"attributes": map[string]any{},
+			"category":    "room",
+			"children":    []any{},
+			"id":          id,
+			"name":        name,
+			"description": "",
+			"parentId":    parentId,
+			"domain":      domain,
+			"attributes":  map[string]any{},
 		}
 	case "rack":
 		return map[string]any{
-			"category":   "rack",
-			"children":   []any{},
-			"id":         id,
-			"name":       name,
-			"parentId":   parentId,
-			"domain":     domain,
-			"attributes": map[string]any{},
+			"category":    "rack",
+			"children":    []any{},
+			"id":          id,
+			"name":        name,
+			"parentId":    parentId,
+			"description": "",
+			"domain":      domain,
+			"attributes":  map[string]any{},
 		}
 	case "device":
 		return map[string]any{
