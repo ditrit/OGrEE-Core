@@ -1,0 +1,158 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "namespace_cli": {
+      "type": "string"
+    },
+    "domain": {
+      "type": "string"
+    },
+    "device": {
+      "type": "array",
+      "items": [
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "category": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "children": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "namespace_kube": {
+              "type": "string"
+            },
+            "category": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "children": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "category": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "children": {
+                      "type": "array",
+                      "items": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "pvc": {
+                              "type": "string"
+                            },
+                            "children": {
+                              "type": "array",
+                              "items": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "pv-type": {
+                                      "type": "string"
+                                    },
+                                    "pv-path": {
+                                      "type": "string"
+                                    },
+                                    "pv-ip": {
+                                      "type": "string"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "required": [
+            "namespace_kube",
+            "category",
+            "type",
+            "name",
+            "children"
+          ]
+        }
+      ]
+    }
+  },
+  "required": [
+    "namespace_cli",
+    "domain",
+    "device",
+    "category",
+    "type",
+    "name",
+    "children"
+  ],
+  "examples": [
+      {
+          "namespace_cli": "logical",
+          "domain": "DemoA",
+          "device": [
+              "master1"
+          ],
+          "category": "application",
+          "type": "kubernetes",
+          "name": "cluster-test",
+          "children": [
+              {
+                  "namespace_kube": "default",
+                  "category": "application",
+                  "type": "kube-application",
+                  "name": "ogree-api",
+                  "children": [
+                      {
+                          "category": "application",
+                          "type": "pod",
+                          "name": "ogree-api-rcjdb",
+                          "children": [
+                              {
+                                  "pvc": "netbox-media",
+                                  "children": [
+                                      {
+                                          "pv-type": "HostPath",
+                                          "pv-path": "/opt/media",
+                                          "pv-ip": "None"
+                                      }
+                                  ]
+                              }
+                          ]
+                      }
+                  ]
+              }
+          ]
+      }
+  ]    
+
+}

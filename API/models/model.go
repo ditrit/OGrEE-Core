@@ -744,6 +744,15 @@ func DeleteNonHierarchicalObject(entity, slug string) *u.Error {
 	defer cancel()
 	return repository.DeleteObject(ctx, entity, req)
 }
+func DeleteApplicationObject(entity, name string) *u.Error {
+	req := bson.M{"name": name}
+
+	_, err := WithTransaction(func(ctx mongo.SessionContext) (any, error) {
+		return nil, repository.DeleteObject(ctx, entity, req)
+	})
+
+	return err
+}
 
 func prepareUpdateObject(ctx mongo.SessionContext, entity int, id string, updateData, oldObject map[string]any, userRoles map[string]Role) *u.Error {
 	// Check user permissions in case domain is being updated
@@ -789,7 +798,10 @@ func prepareUpdateObject(ctx mongo.SessionContext, entity int, id string, update
 
 func UpdateObject(entityStr string, id string, updateData map[string]interface{}, isPatch bool, userRoles map[string]Role, isRecursive bool) (map[string]interface{}, *u.Error) {
 	var idFilter bson.M
-	if u.IsEntityNonHierarchical(u.EntityStrToInt(entityStr)) {
+	if u.EntityStrToInt(entityStr) == u.APPLICATION {
+		idFilter = bson.M{"name": id}
+
+	} else if u.IsEntityNonHierarchical(u.EntityStrToInt(entityStr)) {
 		idFilter = bson.M{"slug": id}
 	} else {
 		idFilter = bson.M{"id": id}

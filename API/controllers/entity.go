@@ -783,12 +783,17 @@ func GetEntity(w http.ResponseWriter, r *http.Request) {
 		if entityStr == u.HIERARCHYOBJS_ENT {
 			data, modelErr = models.GetHierarchyObjectById(id, filters, user.Roles)
 		} else {
-			if u.IsEntityNonHierarchical(u.EntityStrToInt(entityStr)) {
+			if u.EntityStrToInt(entityStr) == u.APPLICATION {
+				req = bson.M{"name": id}
+
+			} else if u.IsEntityNonHierarchical(u.EntityStrToInt(entityStr)) {
 				// Get by slug
 				req = bson.M{"slug": id}
+
 			} else {
 				req = bson.M{"id": id}
 			}
+
 			data, modelErr = models.GetObject(req, entityStr, filters, user.Roles)
 		}
 	} else {
@@ -1057,6 +1062,7 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 
 	// Get entityStr from URL
 	entityStr := mux.Vars(r)["entity"]
+	//var req primitive.M
 	// If templates, format them
 	entityStr = strings.Replace(entityStr, "-", "_", 1)
 
@@ -1087,6 +1093,8 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		//		fmt.Printf(entityStr)
+		//		fmt.Printf(id)
 		modelErr := models.DeleteObject(entityStr, id, user.Roles)
 		if modelErr != nil {
 			u.ErrLog("Error while deleting entity", "DELETE ENTITY", modelErr.Message, r)

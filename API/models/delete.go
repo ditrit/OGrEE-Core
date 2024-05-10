@@ -8,6 +8,8 @@ func DeleteObject(entityStr string, id string, userRoles map[string]Role) *u.Err
 	entity := u.EntityStrToInt(entityStr)
 	if entity == u.TAG {
 		return DeleteTag(id)
+	} else if u.EntityStrToInt(entityStr) == u.APPLICATION {
+		return DeleteApplicationObject(entityStr, id)
 	} else if u.IsEntityNonHierarchical(entity) {
 		return DeleteNonHierarchicalObject(entityStr, id)
 	} else {
