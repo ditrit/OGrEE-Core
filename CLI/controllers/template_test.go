@@ -13,17 +13,7 @@ import (
 func TestCreateTemplateOfTypeGenericWorks(t *testing.T) {
 	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
 
-	template := map[string]any{
-		"slug":        "generic-example",
-		"description": "a table",
-		"category":    "generic",
-		"sizeWDHmm":   []float64{447, 914.5, 263.3},
-		"fbxModel":    "",
-		"attributes": map[string]any{
-			"type": "table",
-		},
-		"colors": []any{},
-	}
+	template := test_utils.GetEntity("genericTableTemplate", "generic-template", "", "")
 
 	test_utils.MockCreateObject(mockAPI, "obj-template", template)
 
@@ -50,19 +40,7 @@ func TestApplyTemplateOfTypeDeviceWorks(t *testing.T) {
 		"weightKg":    "1.81",
 	}
 	device["attributes"] = attributes
-	template := map[string]any{
-		"slug":        "device-template",
-		"description": "",
-		"category":    "device",
-		"sizeWDHmm":   []any{216, 659, 100},
-		"fbxModel":    "",
-		"attributes": map[string]any{
-			"type":   "chassis",
-			"vendor": "IBM",
-		},
-		"colors":     []any{},
-		"components": []any{},
-	}
+	template := test_utils.GetEntity("deviceChasisTemplate", "device-template", "", "")
 
 	test_utils.MockGetObjTemplate(mockAPI, template)
 
@@ -86,19 +64,8 @@ func TestApplyTemplateOfTypeDeviceError(t *testing.T) {
 		"template": "device-template",
 	}
 	device["attributes"] = attributes
-	template := map[string]any{
-		"slug":        "device-template",
-		"description": "",
-		"category":    "device",
-		"sizeWDHmm":   []any{216, 659, "100"},
-		"fbxModel":    "",
-		"attributes": map[string]any{
-			"type":   "chassis",
-			"vendor": "IBM",
-		},
-		"colors":     []any{},
-		"components": []any{},
-	}
+	template := test_utils.GetEntity("deviceChasisTemplate", "device-template", "", "")
+	template["sizeWDHmm"] = []any{216, 659, "100"}
 
 	test_utils.MockGetObjTemplate(mockAPI, template)
 

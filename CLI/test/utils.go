@@ -209,6 +209,32 @@ func GetEntity(entityName string, name string, parentId string, domain string) m
 			"name":        name,
 			"parentId":    parentId,
 		}
+	case "genericTableTemplate":
+		return map[string]any{
+			"slug":        name,
+			"description": "a table",
+			"category":    "generic",
+			"sizeWDHmm":   []any{447, 914.5, 263.3},
+			"fbxModel":    "",
+			"attributes": map[string]any{
+				"type": "table",
+			},
+			"colors": []any{},
+		}
+	case "deviceChasisTemplate":
+		return map[string]any{
+			"slug":        name,
+			"description": "",
+			"category":    "device",
+			"sizeWDHmm":   []any{216, 659, 100},
+			"fbxModel":    "",
+			"attributes": map[string]any{
+				"type":   "chassis",
+				"vendor": "IBM",
+			},
+			"colors":     []any{},
+			"components": []any{},
+		}
 	default:
 		return nil
 	}

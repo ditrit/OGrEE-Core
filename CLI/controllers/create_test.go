@@ -120,17 +120,8 @@ func TestCreateGenericWithTemplateWorks(t *testing.T) {
 
 	test_utils.MockGetObject(mockAPI, createRoom)
 
-	test_utils.MockGetObjTemplate(mockAPI, map[string]any{
-		"slug":        "generic-template",
-		"description": "a table",
-		"category":    "generic",
-		"sizeWDHmm":   []any{447, 914.5, 263.3},
-		"fbxModel":    "",
-		"attributes": map[string]any{
-			"type": "table",
-		},
-		"colors": []any{},
-	})
+	genericTableTemplate := test_utils.GetEntity("genericTableTemplate", "generic-template", "", "")
+	test_utils.MockGetObjTemplate(mockAPI, genericTableTemplate)
 
 	test_utils.MockCreateObject(mockAPI, "generic", map[string]any{
 		"name":        "A01",

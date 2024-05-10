@@ -411,59 +411,55 @@ func TestRemoveFromStringMap(t *testing.T) {
 	assert.False(t, deleted)
 }
 
-func TestAddRoomSeparatorError(t *testing.T) {
-	obj, err := addRoomSeparator("/Physical/site/building/room", []any{"mySeparator"})
-
-	assert.Nil(t, obj)
-	assert.NotNil(t, err)
-	assert.ErrorContains(t, err, "4 values (name, startPos, endPos, type) expected to add a separator")
-}
-
-func TestAddRoomSeparator(t *testing.T) {
-	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
-
-	room := test_utils.GetEntity("room", "room", "site.building", "domain")
-	test_utils.MockGetObject(mockAPI, room)
-	test_utils.MockGetObject(mockAPI, room)
-
-	newAttributes := map[string]interface{}{
-		"separators": "{\"mySeparator\":{\"startPosXYm\":[1,2],\"endPosXYm\":[1,2],\"type\":\"wireframe\"}}",
+func TestAddRoomSeparatorOrPillarError(t *testing.T) {
+	tests := []struct {
+		name         string
+		addFunction  func(string, []any) (map[string]any, error)
+		values       []any
+		errorMessage string
+	}{
+		{"AddRoomSeparator", addRoomSeparator, []any{"mySeparator"}, "4 values (name, startPos, endPos, type) expected to add a separator"},
+		{"AddRoomPillar", addRoomPillar, []any{"myPillar"}, "4 values (name, centerXY, sizeXY, rotation) expected to add a pillar"},
 	}
-	room["attributes"] = newAttributes
-	test_utils.MockUpdateObject(mockAPI, map[string]interface{}{"attributes": newAttributes}, room)
 
-	obj, err := addRoomSeparator("/Physical/site/building/room", []any{"mySeparator", []float64{1., 2.}, []float64{1., 2.}, "wireframe"})
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			obj, err := tt.addFunction("/Physical/site/building/room", tt.values)
 
-	assert.Nil(t, err)
-	assert.NotNil(t, obj)
-
-}
-
-func TestAddRoomPillarError(t *testing.T) {
-	obj, err := addRoomPillar("/Physical/site/building/room", []any{"myPillar"})
-
-	assert.Nil(t, obj)
-	assert.NotNil(t, err)
-	assert.ErrorContains(t, err, "4 values (name, centerXY, sizeXY, rotation) expected to add a pillar")
-}
-
-func TestAddRoomPillar(t *testing.T) {
-	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
-
-	room := test_utils.GetEntity("room", "room", "site.building", "domain")
-	test_utils.MockGetObject(mockAPI, room)
-	test_utils.MockGetObject(mockAPI, room)
-
-	newAttributes := map[string]interface{}{
-		"pillars": "{\"myPillar\":{\"centerXY\":[1,2],\"sizeXY\":[1,2],\"rotation\":2.5}}",
+			assert.Nil(t, obj)
+			assert.NotNil(t, err)
+			assert.ErrorContains(t, err, tt.errorMessage)
+		})
 	}
-	room["attributes"] = newAttributes
-	test_utils.MockUpdateObject(mockAPI, map[string]interface{}{"attributes": newAttributes}, room)
+}
 
-	obj, err := addRoomPillar("/Physical/site/building/room", []any{"myPillar", []float64{1., 2.}, []float64{1., 2.}, 2.5})
+func TestAddRoomSeparatorOrPillarWorks(t *testing.T) {
+	tests := []struct {
+		name          string
+		addFunction   func(string, []any) (map[string]any, error)
+		values        []any
+		newAttributes map[string]any
+	}{
+		{"AddRoomSeparator", addRoomSeparator, []any{"mySeparator", []float64{1., 2.}, []float64{1., 2.}, "wireframe"}, map[string]interface{}{"separators": "{\"mySeparator\":{\"startPosXYm\":[1,2],\"endPosXYm\":[1,2],\"type\":\"wireframe\"}}"}},
+		{"AddRoomPillar", addRoomPillar, []any{"myPillar", []float64{1., 2.}, []float64{1., 2.}, 2.5}, map[string]interface{}{"pillars": "{\"myPillar\":{\"centerXY\":[1,2],\"sizeXY\":[1,2],\"rotation\":2.5}}"}},
+	}
 
-	assert.Nil(t, err)
-	assert.NotNil(t, obj)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
+			room := test_utils.GetEntity("room", "room", "site.building", "domain")
+
+			test_utils.MockGetObject(mockAPI, room)
+			test_utils.MockGetObject(mockAPI, room)
+
+			room["attributes"] = tt.newAttributes
+			test_utils.MockUpdateObject(mockAPI, map[string]interface{}{"attributes": tt.newAttributes}, room)
+
+			obj, err := tt.addFunction("/Physical/site/building/room", tt.values)
+			assert.NotNil(t, obj)
+			assert.Nil(t, err)
+		})
+	}
 }
 
 func TestDeleteRoomPillarOrSeparatorWithError(t *testing.T) {
@@ -550,56 +546,34 @@ func TestUpdateObjNodeExecuteUpdateDescription(t *testing.T) {
 	assert.Nil(t, value)
 }
 
-func TestTreeNodeExecution(t *testing.T) {
-	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
-
-	room := test_utils.GetEntity("room", "room", "site.building", "domain")
-
-	test_utils.MockGetObject(mockAPI, room)
-
-	array := treeNode{
-		path: &pathNode{path: &valueNode{"/Physical/site/building/room"}},
+func TestTreeDrawAndUndraw(t *testing.T) {
+	tests := []struct {
+		name          string
+		executionNode node
+		isUndraw      bool
+	}{
+		{"TreeNodeExecution", &treeNode{path: &pathNode{path: &valueNode{"/Physical/site/building/room"}}}, false},
+		{"DrawNodeExecution", &drawNode{path: &pathNode{path: &valueNode{"/Physical/site/building/room"}}}, false},
+		{"UndrawNodeExecution", &undrawNode{path: &pathNode{path: &valueNode{"/Physical/site/building/room"}}}, true},
 	}
-	value, err := array.execute()
 
-	assert.Nil(t, err)
-	assert.Nil(t, value)
-}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, mockAPI, mockOgree3D, _ := test_utils.SetMainEnvironmentMock(t)
+			room := test_utils.GetEntity("room", "room", "site.building", "domain")
+			test_utils.MockGetObject(mockAPI, room)
 
-func TestDrawNodeExecution(t *testing.T) {
-	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
+			if tt.isUndraw {
+				mockOgree3D.On(
+					"Inform", "Undraw", 0, map[string]interface{}{"type": "delete", "data": "site.building.room"},
+				).Return(nil)
+			}
 
-	room := test_utils.GetEntity("room", "room", "site.building", "domain")
-
-	test_utils.MockGetObject(mockAPI, room)
-
-	array := drawNode{
-		path: &pathNode{path: &valueNode{"/Physical/site/building/room"}},
+			value, err := tt.executionNode.execute()
+			assert.Nil(t, err)
+			assert.Nil(t, value)
+		})
 	}
-	value, err := array.execute()
-
-	assert.Nil(t, err)
-	assert.Nil(t, value)
-}
-
-func TestUndrawNodeExecution(t *testing.T) {
-	_, mockAPI, mockOgree3D, _ := test_utils.SetMainEnvironmentMock(t)
-
-	room := test_utils.GetEntity("room", "room", "site.building", "domain")
-
-	test_utils.MockGetObject(mockAPI, room)
-
-	mockOgree3D.On(
-		"Inform", "Undraw", 0, map[string]interface{}{"type": "delete", "data": "site.building.room"},
-	).Return(nil)
-
-	array := undrawNode{
-		path: &pathNode{path: &valueNode{"/Physical/site/building/room"}},
-	}
-	value, err := array.execute()
-
-	assert.Nil(t, err)
-	assert.Nil(t, value)
 }
 
 func TestLsogNodeExecution(t *testing.T) {
