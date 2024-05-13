@@ -22,44 +22,36 @@ func TestCpObjectThatIsNotALayerCantBeCopied(t *testing.T) {
 	assert.ErrorIs(t, err, controllers.ErrObjectCantBeCopied)
 }
 
-func TestCpLayerWithDestPathCopiesSource(t *testing.T) {
-	controller, mockAPI, _, _ := lsSetup(t)
-
-	layer1 := map[string]any{
-		"slug":                    "layer1",
-		models.LayerApplicability: "BASIC.A.R1",
-		models.LayerFilters:       "category = device",
+func TestCpLayerWithDestPathOrSlugCopiesSource(t *testing.T) {
+	tests := []struct {
+		name        string
+		destination string
+	}{
+		{"WithPath", "/Logical/Layers/layer2"},
+		{"WithSlug", "layer2"},
 	}
 
-	test_utils.MockGetObjectByEntity(mockAPI, "layers", layer1)
-	test_utils.MockCreateObject(mockAPI, "layer", map[string]any{
-		"slug":                    "layer2",
-		models.LayerApplicability: "BASIC.A.R1",
-		models.LayerFilters:       "category = device",
-	})
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			controller, mockAPI, _, _ := lsSetup(t)
 
-	err := controller.Cp("/Logical/Layers/layer1", "/Logical/Layers/layer2")
-	assert.Nil(t, err)
-}
+			layer1 := map[string]any{
+				"slug":                    "layer1",
+				models.LayerApplicability: "BASIC.A.R1",
+				models.LayerFilters:       "category = device",
+			}
 
-func TestCpLayerWithDestSlugCopiesSource(t *testing.T) {
-	controller, mockAPI, _, _ := lsSetup(t)
+			test_utils.MockGetObjectByEntity(mockAPI, "layers", layer1)
+			test_utils.MockCreateObject(mockAPI, "layer", map[string]any{
+				"slug":                    "layer2",
+				models.LayerApplicability: "BASIC.A.R1",
+				models.LayerFilters:       "category = device",
+			})
 
-	layer1 := map[string]any{
-		"slug":                    "layer1",
-		models.LayerApplicability: "BASIC.A.R1",
-		models.LayerFilters:       "category = device",
+			err := controller.Cp("/Logical/Layers/layer1", tt.destination)
+			assert.Nil(t, err)
+		})
 	}
-
-	test_utils.MockGetObjectByEntity(mockAPI, "layers", layer1)
-	test_utils.MockCreateObject(mockAPI, "layer", map[string]any{
-		"slug":                    "layer2",
-		models.LayerApplicability: "BASIC.A.R1",
-		models.LayerFilters:       "category = device",
-	})
-
-	err := controller.Cp("/Logical/Layers/layer1", "layer2")
-	assert.Nil(t, err)
 }
 
 func TestCpLayerWhenSourceIsCachedCopiesSource(t *testing.T) {

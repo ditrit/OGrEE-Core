@@ -70,84 +70,57 @@ func TestUpdateTagSlug(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestUpdateRoomTilesColor(t *testing.T) {
-	controller, mockAPI, mockOgree3D, _ := test_utils.NewControllerWithMocks(t)
-
-	room := test_utils.CopyMap(roomWithoutChildren)
-	room["attributes"] = map[string]any{
-		"tilesColor": "aaaaaa",
-	}
-	newColor := "aaaaab"
-	updatedRoom := test_utils.CopyMap(room)
-	updatedRoom["attributes"].(map[string]any)["tilesColor"] = newColor
-	dataUpdate := updatedRoom["attributes"].(map[string]any)
-	entity := models.ROOM
-
-	path := "/Physical/" + strings.Replace(room["id"].(string), ".", "/", -1)
-	message := map[string]any{
-		"type": "interact",
-		"data": map[string]any{
-			"id":    room["id"],
-			"param": "tilesColor",
-			"value": newColor,
-		},
+func TestUpdateRoomTiles(t *testing.T) {
+	tests := []struct {
+		name         string
+		attributeKey string
+		oldValue     string
+		newValue     string
+	}{
+		{"Color", "tilesColor", "aaaaaa", "aaaaab"},
+		{"Name", "tilesName", "t1", "t2"},
 	}
 
-	mockOgree3D.On("InformOptional", "UpdateObj", entity, message).Return(nil)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			controller, mockAPI, mockOgree3D, _ := test_utils.NewControllerWithMocks(t)
 
-	test_utils.MockGetObject(mockAPI, room)
+			room := test_utils.CopyMap(roomWithoutChildren)
+			room["attributes"] = map[string]any{
+				tt.attributeKey: tt.oldValue,
+			}
+			updatedRoom := test_utils.CopyMap(room)
+			updatedRoom["attributes"].(map[string]any)[tt.attributeKey] = tt.newValue
+			dataUpdate := updatedRoom["attributes"].(map[string]any)
+			entity := models.ROOM
 
-	dataUpdated := test_utils.CopyMap(room)
-	dataUpdated["attributes"].(map[string]any)["tilesColor"] = newColor
+			path := "/Physical/" + strings.Replace(room["id"].(string), ".", "/", -1)
+			message := map[string]any{
+				"type": "interact",
+				"data": map[string]any{
+					"id":    room["id"],
+					"param": tt.attributeKey,
+					"value": tt.newValue,
+				},
+			}
 
-	test_utils.MockUpdateObject(mockAPI, dataUpdate, dataUpdated)
+			mockOgree3D.On("InformOptional", "UpdateObj", entity, message).Return(nil)
 
-	controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
+			test_utils.MockGetObject(mockAPI, room)
 
-	result, err := controller.UpdateObj(path, dataUpdate, false)
-	assert.Nil(t, err)
-	assert.Equal(t, result["data"].(map[string]any)["attributes"].(map[string]any)["tilesColor"], newColor)
-	mockOgree3D.AssertCalled(t, "InformOptional", "UpdateObj", entity, message)
-}
+			dataUpdated := test_utils.CopyMap(room)
+			dataUpdated["attributes"].(map[string]any)[tt.attributeKey] = tt.newValue
 
-func TestUpdateRoomTilesName(t *testing.T) {
-	controller, mockAPI, mockOgree3D, _ := test_utils.NewControllerWithMocks(t)
+			test_utils.MockUpdateObject(mockAPI, dataUpdate, dataUpdated)
 
-	room := test_utils.CopyMap(roomWithoutChildren)
-	room["attributes"] = map[string]any{
-		"tilesName": "t1",
+			controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
+
+			result, err := controller.UpdateObj(path, dataUpdate, false)
+			assert.Nil(t, err)
+			assert.Equal(t, result["data"].(map[string]any)["attributes"].(map[string]any)[tt.attributeKey], tt.newValue)
+			mockOgree3D.AssertCalled(t, "InformOptional", "UpdateObj", entity, message)
+		})
 	}
-	newName := "t2"
-	updatedRoom := test_utils.CopyMap(room)
-	updatedRoom["attributes"].(map[string]any)["tilesName"] = newName
-	dataUpdate := updatedRoom["attributes"].(map[string]any)
-	entity := models.ROOM
-
-	path := "/Physical/" + strings.Replace(room["id"].(string), ".", "/", -1)
-	message := map[string]any{
-		"type": "interact",
-		"data": map[string]any{
-			"id":    room["id"],
-			"param": "tilesName",
-			"value": newName,
-		},
-	}
-
-	mockOgree3D.On("InformOptional", "UpdateObj", entity, message).Return(nil)
-
-	test_utils.MockGetObject(mockAPI, room)
-
-	dataUpdated := test_utils.CopyMap(room)
-	dataUpdated["attributes"].(map[string]any)["tilesName"] = newName
-
-	test_utils.MockUpdateObject(mockAPI, dataUpdate, dataUpdated)
-
-	controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
-
-	result, err := controller.UpdateObj(path, dataUpdate, false)
-	assert.Nil(t, err)
-	assert.Equal(t, result["data"].(map[string]any)["attributes"].(map[string]any)["tilesName"], newName)
-	mockOgree3D.AssertCalled(t, "InformOptional", "UpdateObj", entity, message)
 }
 
 func TestUpdateRackU(t *testing.T) {
