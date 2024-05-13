@@ -163,6 +163,48 @@ func TestCreateBulkDomainWithDuplicateError(t *testing.T) {
 	assert.Equal(t, "Error while creating domain: Duplicates not allowed", message)
 }
 
+// Tests get objects children until limit (/api/objects)
+func TestGetSubdomainsUntilLimit(t *testing.T) {
+	integration.CreateTestDomain(t, "temporaryFatherDomain", "", "")
+	integration.CreateTestDomain(t, "temporaryChildDomain", "temporaryFatherDomain", "")
+	integration.CreateTestDomain(t, "temporarySubChildDomain", "temporaryFatherDomain.temporaryChildDomain", "")
+	tests := []struct {
+		name           string
+		limitValue     string
+		hasSubChildren bool
+	}{
+		{"OneLevelLimit", "1", false},
+		{"TwoLevelLimit", "2", true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			params, _ := url.ParseQuery("id=temporaryFatherDomain&limit=" + tt.limitValue)
+			endpoint := test_utils.GetEndpoint("getObject") + "?" + params.Encode()
+			response := e2e.ValidateManagedRequest(t, "GET", endpoint, nil, http.StatusOK, "successfully processed request")
+
+			data, exists := response["data"].([]interface{})
+			assert.True(t, exists)
+			assert.Equal(t, 1, len(data)) // we have only one domain (temporaryFatherDomain)
+			fatherDomain := data[0].(map[string]interface{})
+			children, exists := fatherDomain["children"].([]interface{})
+			assert.True(t, exists)
+			assert.Len(t, children, 1)
+
+			for _, child := range children {
+				assert.Equal(t, "temporaryChildDomain", child.(map[string]interface{})["name"])
+				if !tt.hasSubChildren {
+					// The child (temporarySubChildDomain) is not present due to the limit param
+					assert.Nil(t, child.(map[string]interface{})["children"])
+				} else {
+					assert.NotNil(t, child.(map[string]interface{})["children"])
+					assert.Len(t, child.(map[string]interface{})["children"], 1)
+				}
+			}
+		})
+	}
+}
+
 // Tests delete subdomains (/api/objects)
 func TestDeleteSubdomains(t *testing.T) {
 	// Test delete subdomain using a pattern
