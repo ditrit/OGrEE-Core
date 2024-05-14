@@ -663,11 +663,11 @@ func TestParseUnsetFunction(t *testing.T) {
 	assert.Equal(t, functionName, parsedNode.funcName)
 }
 
-func TestParseUnsetAttribute(t *testing.T) {
+func TestParseDeleteAttribute(t *testing.T) {
 	path := "path/to/room"
 	attribute := "template"
 	p := newParser(path + ":" + attribute)
-	parsedNode := p.parseUnset().(*unsetAttrNode)
+	parsedNode := p.parseDelete().(*deleteAttrNode)
 	assert.Equal(t, path, parsedNode.path.(*pathNode).path.(*valueNode).val)
 	assert.Equal(t, attribute, parsedNode.attr)
 }

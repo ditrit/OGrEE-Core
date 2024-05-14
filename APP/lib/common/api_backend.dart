@@ -299,7 +299,7 @@ Future<Result<List<Map<String, List<String>>>, Exception>> fetchObjectsTree(
   }
 }
 
-Future<Result<Map<String, Map<String, String>>, Exception>>
+Future<Result<Map<String, Map<String, dynamic>>, Exception>>
     fetchAttributes() async {
   print("API get Attrs");
   try {
@@ -310,9 +310,9 @@ Future<Result<Map<String, Map<String, String>>, Exception>>
       // Convert dynamic Map to expected type
       Map<String, dynamic> data = json.decode(response.body);
       data = (Map<String, dynamic>.from(data["data"]));
-      Map<String, Map<String, String>> converted = {};
+      Map<String, Map<String, dynamic>> converted = {};
       for (var item in data.keys) {
-        converted[item.toString()] = Map<String, String>.from(data[item]);
+        converted[item.toString()] = Map<String, dynamic>.from(data[item]);
       }
       return Success(converted);
     } else {

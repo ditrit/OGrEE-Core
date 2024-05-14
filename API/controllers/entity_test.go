@@ -369,8 +369,7 @@ func TestGetTemperatureForParentWithNoTemperature(t *testing.T) {
 
 func TestGetTemperature(t *testing.T) {
 	endpoint := test_utils.GetEndpoint("tempunits", "site-with-temperature.building-3")
-	response := e2e.ValidateManagedRequest(t, "GET", endpoint, nil, http.StatusOK, "successfully got temperatureUnit from object's parent site")
-
+	response := e2e.ValidateManagedRequest(t, "GET", endpoint, nil, http.StatusOK, "successfully got attribute from object's parent site")
 	data, exists := response["data"].(map[string]interface{})
 	assert.True(t, exists)
 	temperatureUnit, exists := data["temperatureUnit"].(string)
