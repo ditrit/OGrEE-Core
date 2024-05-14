@@ -71,6 +71,8 @@ jobs:
   coverage-badge:
     needs: api-unit-test
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     defaults:
       run:
         working-directory: ./
@@ -114,5 +116,5 @@ jobs:
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         uses: ad-m/github-push-action@master
         with:
-          github_token: ${{ secrets.WIKI_ACTION_TOKEN }}
+          github_token: ${{ secrets.PAT_GITHUB_TOKEN }}
           branch: ${{ github.head_ref }}
