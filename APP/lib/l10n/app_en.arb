@@ -199,5 +199,11 @@
   "applications": "Applications",
   "toolUsername": "{toolName} user name",
   "toolPassword": "{toolName} user password",
-  "toolPort": "{toolName} port"
+  "toolPort": "{toolName} port",
+
+  "myAlerts": "My alerts",
+  "viewAlerts": "View alerts",
+  "temperatureAlert1": "The temperature of the device ",
+  "temperatureAlert2": " is higher than usual. This could impact performance for your applications: \"my-frontend-app\" and \"my-backend-app\".",
+  "oneAlert": "1 minor alert"
 }

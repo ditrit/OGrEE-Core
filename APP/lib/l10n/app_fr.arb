@@ -258,5 +258,13 @@
         "type": "String"
       }
     }
-  }
+  },
+
+  "@myAlerts": { "description": "Alerts View" },
+  "myAlerts": "Mes alertes",
+  "viewAlerts": "Voir les alertes",
+  "temperatureAlert1": "La temperature du device ",
+  "temperatureAlert2": " est plus élevée que d'habitude. Cela peut avoir un impact sur les performances de vos applications : \"my-frontend-app\" et \"my-backend-app\".",
+  "oneAlert": "1 alerte mineur"
+
 }

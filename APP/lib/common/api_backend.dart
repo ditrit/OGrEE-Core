@@ -286,7 +286,7 @@ Future<Result<List<Map<String, List<String>>>, Exception>> fetchObjectsTree(
               List<String>.from(converted["categories"]![item]);
         }
       } else if (namespace == Namespace.Logical) {
-        tree["*"] = tree.keys.toList();
+        tree["*"] = tree.keys.where((e) => e.contains("*")).toList();
       }
       return Success([tree, categories]);
     } else {

@@ -8,6 +8,7 @@ import 'package:ogree_app/models/container.dart';
 import 'package:ogree_app/models/netbox.dart';
 import 'package:ogree_app/models/project.dart';
 import 'package:ogree_app/models/tenant.dart';
+import 'package:ogree_app/pages/alert_page.dart';
 import 'package:ogree_app/pages/select_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/widgets/projects/autoproject_card.dart';
@@ -53,6 +54,64 @@ class _ProjectsPageState extends State<ProjectsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(localeMsg.myAlerts,
+                    style: Theme.of(context).textTheme.headlineLarge),
+                Row(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(right: 10.0, bottom: 10),
+                      child: analysisViewButton(),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.only(right: 20.0),
+              child: InkWell(
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        AlertPage(userEmail: widget.userEmail),
+                  ),
+                ),
+                child: MaterialBanner(
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                  content: _isSmallDisplay
+                      ? Text(localeMsg.oneAlert)
+                      : RichText(
+                          text: TextSpan(
+                            style: new TextStyle(
+                              fontSize: 14.0,
+                              color: Colors.black,
+                            ),
+                            children: <TextSpan>[
+                              TextSpan(text: localeMsg.temperatureAlert1),
+                              TextSpan(
+                                  text: 'BASIC.A.R1.A02.chassis01',
+                                  style: new TextStyle(
+                                      fontWeight: FontWeight.bold)),
+                              TextSpan(text: localeMsg.temperatureAlert2),
+                            ],
+                          ),
+                        ),
+                  leading: Icon(Icons.info),
+                  backgroundColor: Colors.amber.shade100,
+                  dividerColor: Colors.transparent,
+                  actions: <Widget>[
+                    TextButton(
+                      onPressed: null,
+                      child: Text(''),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: 30),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -216,6 +275,39 @@ class _ProjectsPageState extends State<ProjectsPage> {
               : Text(widget.isTenantMode
                   ? "${localeMsg.create} tenant"
                   : localeMsg.newProject),
+        ],
+      ),
+    );
+  }
+
+  analysisViewButton() {
+    final localeMsg = AppLocalizations.of(context)!;
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.deepOrange,
+        foregroundColor: Colors.white,
+      ),
+      onPressed: () {
+        if (widget.isTenantMode) {
+          showCustomPopup(
+              context, CreateTenantPopup(parentCallback: refreshFromChildren));
+        } else {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => AlertPage(userEmail: widget.userEmail),
+            ),
+          );
+        }
+      },
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: EdgeInsets.only(
+                top: 8, bottom: 8, right: _isSmallDisplay ? 0 : 10),
+            child: const Icon(Icons.analytics),
+          ),
+          _isSmallDisplay ? Container() : Text(localeMsg.viewAlerts),
         ],
       ),
     );

@@ -47,9 +47,7 @@ class SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
   List<String> _selectedAttrs = [];
   List<String> get selectedAttrs => _selectedAttrs;
   set selectedAttrs(List<String> value) => () {
-        print("set called");
         _selectedAttrs = value;
-        print(_selectedAttrs);
       };
 
   @override
