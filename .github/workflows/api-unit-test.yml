@@ -29,6 +29,12 @@ jobs:
     - name: Install gotestsum
       run: go install gotest.tools/gotestsum@latest
 
+    - name: Install gocov
+      run: go install github.com/axw/gocov/gocov@latest
+
+    - name: Install gocov-xml
+      run: go install github.com/AlekSi/gocov-xml@latest
+
     - name: Create MongoDB Container
       run: cd ../deploy/docker && make test_api
 
@@ -41,6 +47,9 @@ jobs:
     - name: Log Test Coverage
       run: go tool cover -func coverage_api.out | grep total
 
+    - name: Generate coverage XML report
+      run: gocov convert coverage_api.out | gocov-xml > coverage_api.xml
+
     - name: Test Report
       uses: dorny/test-reporter@v1
       if: always() # run this step even if previous steps failed
@@ -48,7 +57,84 @@ jobs:
         name: API Tests Report  # Name of the check run which will be created
         path: ./API/tests-api.xml     # Path to test results
         reporter: java-junit                 # Format of test results
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: coverage
         path: ./API/coverage_api.out
+    - uses: actions/upload-artifact@v4
+      with:
+        name: coverage_api_xml
+        path: ./API/coverage_api.xml
+
+  coverage-badge:
+    needs: api-unit-test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./
+    # if: github.ref == 'refs/heads/main'
+    if: github.event.head_commit.author.name != 'GitHubActions'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.8'
+
+      - name: Install genbadge
+        run: pip install genbadge[coverage]
+
+      - name: Github ref
+        run: echo "${{github.ref}}"
+
+      - name: Github head ref
+        run: echo "${{github.head_ref}}"
+
+      - name: Ls root
+        run: ls
+
+      - name: Ls API
+        run: ls API/
+
+      - name: Download line coverage reports
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage_api_xml
+
+      - name: Generate badge
+        run: genbadge coverage -i coverage_api.xml -n "API coverage" -o assets/images/api_coverage_badge.svg
+
+      - name: Ls Badge
+        run: ls assets/images/
+
+      - name: Verify Changed files
+        uses: tj-actions/verify-changed-files@v16
+        id: verify-changed-files
+        with:
+          files: assets/images/api_coverage_badge.svg
+
+      - name: Last commit Author
+        run: echo "${{github.event.commits[0].author.name}} or ${{github.event.head_commit.author.name}}"
+
+      - name: Get commit author's username
+        run: |
+          COMMIT_AUTHOR=$(git log -1 --pretty=%an)
+          echo "Commit author: $COMMIT_AUTHOR"
+
+      - name: Commit badge
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        run: |
+          git config --local user.email "<>"
+          git config --local user.name "GitHubActions"
+          git add assets/images/api_coverage_badge.svg
+          git commit -m "Add/Update badge"
+
+      - name: Push badge commit
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.head_ref }}

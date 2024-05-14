@@ -3,6 +3,7 @@ package controllers_test
 import (
 	"cli/controllers"
 	l "cli/logger"
+	test_utils "cli/test"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -21,7 +22,7 @@ func TestMergeMaps(t *testing.T) {
 		"b": "25",
 		"c": "40",
 	}
-	testMap := copyMap(x)
+	testMap := test_utils.CopyMap(x)
 	controllers.MergeMaps(testMap, y, false)
 	assert.Contains(t, testMap, "a")
 	assert.Contains(t, testMap, "b")
@@ -30,7 +31,7 @@ func TestMergeMaps(t *testing.T) {
 	assert.Equal(t, x["b"], testMap["b"])
 	assert.Equal(t, y["c"], testMap["c"])
 
-	testMap = copyMap(x)
+	testMap = test_utils.CopyMap(x)
 	controllers.MergeMaps(testMap, y, true)
 	assert.Contains(t, testMap, "a")
 	assert.Contains(t, testMap, "b")
@@ -41,18 +42,8 @@ func TestMergeMaps(t *testing.T) {
 }
 
 func TestGenerateFilteredJson(t *testing.T) {
-	controllers.State.DrawableJsons = map[string]map[string]any{
-		"rack": map[string]any{
-			"name":        true,
-			"parentId":    true,
-			"category":    true,
-			"description": false,
-			"domain":      true,
-			"attributes": map[string]any{
-				"color": true,
-			},
-		},
-	}
+	controllers.State.DrawableJsons = test_utils.GetTestDrawableJson()
+
 	object := map[string]any{
 		"name":        "rack",
 		"parentId":    "site.building.room",
