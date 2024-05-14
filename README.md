@@ -2,7 +2,7 @@
 <img src="https://raw.githubusercontent.com/ditrit/OGrEE-Core/main/APP/assets/custom/logo.png" width="300" alt="NetBox logo" />
 <p><strong>A smart datacenter digital twin</strong></p>
 
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=helderbetiol_OGrEE-Core&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=helderbetiol_OGrEE-Core)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ditrit_OGrEE-Core&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=ditrit_OGrEE-Core)
 [![⚙️ Build - Publish](https://github.com/ditrit/OGrEE-Core/actions/workflows/build-deploy.yaml/badge.svg)](https://github.com/ditrit/OGrEE-Core/actions/workflows/build-deploy.yaml)
 
 </div>

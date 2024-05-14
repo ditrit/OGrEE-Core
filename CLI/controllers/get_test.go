@@ -3,55 +3,47 @@ package controllers_test
 import (
 	"cli/controllers"
 	"cli/models"
+	test_utils "cli/test"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetWithFilters(t *testing.T) {
-	controller, mockAPI, _ := layersSetup(t)
+func TestGetWithSimpleFilters(t *testing.T) {
+	tests := []struct {
+		name            string
+		mockQueryParams string
+		mockResponse    []any
+		path            string
+		category        string
+	}{
+		{"WithoutStar", "category=room&id=BASIC.A.R1&namespace=physical.hierarchy", []any{roomWithChildren}, "/Physical/BASIC/A/R1", "room"},
+		{"WithStar", "category=rack&id=BASIC.A.R1.*&namespace=physical.hierarchy", []any{rack1, rack2}, "/Physical/BASIC/A/R1/*", "rack"},
+		{"SomethingStarWithFilters", "category=rack&id=BASIC.A.R1.A*&namespace=physical.hierarchy", []any{rack1}, "/Physical/BASIC/A/R1/A*", "rack"},
+	}
 
-	mockGetObjects(mockAPI, "category=room&id=BASIC.A.R1&namespace=physical.hierarchy", []any{roomWithChildren})
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			controller, mockAPI, _ := layersSetup(t)
 
-	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1", map[string]string{
-		"category": "room",
-	}, nil)
-	assert.Nil(t, err)
-	assert.Len(t, objects, 1)
-	assert.Contains(t, objects, removeChildren(roomWithChildren))
-}
+			test_utils.MockGetObjects(mockAPI, tt.mockQueryParams, tt.mockResponse)
 
-func TestGetStarWithFilters(t *testing.T) {
-	controller, mockAPI, _ := layersSetup(t)
-
-	mockGetObjects(mockAPI, "category=rack&id=BASIC.A.R1.*&namespace=physical.hierarchy", []any{rack1, rack2})
-
-	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/*", map[string]string{
-		"category": "rack",
-	}, nil)
-	assert.Nil(t, err)
-	assert.Len(t, objects, 2)
-	assert.Contains(t, objects, removeChildren(rack1))
-	assert.Contains(t, objects, removeChildren(rack2))
-}
-
-func TestGetSomethingStarWithFilters(t *testing.T) {
-	controller, mockAPI, _ := layersSetup(t)
-
-	mockGetObjects(mockAPI, "category=rack&id=BASIC.A.R1.A*&namespace=physical.hierarchy", []any{rack1})
-
-	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/A*", map[string]string{
-		"category": "rack",
-	}, nil)
-	assert.Nil(t, err)
-	assert.Len(t, objects, 1)
-	assert.Contains(t, objects, removeChildren(rack1))
+			objects, _, err := controller.GetObjectsWildcard(tt.path, map[string]string{
+				"category": tt.category,
+			}, nil)
+			assert.Nil(t, err)
+			assert.Len(t, objects, len(tt.mockResponse))
+			for _, instance := range tt.mockResponse {
+				assert.Contains(t, objects, test_utils.RemoveChildren(instance.(map[string]any)))
+			}
+		})
+	}
 }
 
 func TestGetWithComplexFilters(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	mockGetObjectsWithComplexFilters(
+	test_utils.MockGetObjectsWithComplexFilters(
 		mockAPI,
 		"id=BASIC.A.R1&namespace=physical.hierarchy",
 		map[string]any{
@@ -65,13 +57,13 @@ func TestGetWithComplexFilters(t *testing.T) {
 	}, nil)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
-	assert.Contains(t, objects, removeChildren(roomWithChildren))
+	assert.Contains(t, objects, test_utils.RemoveChildren(roomWithChildren))
 }
 
 func TestGetRecursiveSearchAllChildrenCalledInThatWay(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	mockGetObjects(mockAPI, "id=BASIC.A.**.R1&namespace=physical.hierarchy", []any{roomWithChildren})
+	test_utils.MockGetObjects(mockAPI, "id=BASIC.A.**.R1&namespace=physical.hierarchy", []any{roomWithChildren})
 
 	objects, _, err := controller.GetObjectsWildcard(
 		"/Physical/BASIC/A/R1",
@@ -83,83 +75,39 @@ func TestGetRecursiveSearchAllChildrenCalledInThatWay(t *testing.T) {
 	)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
-	assert.Contains(t, objects, removeChildren(roomWithChildren))
+	assert.Contains(t, objects, test_utils.RemoveChildren(roomWithChildren))
 }
 
 func TestGetRecursiveWithFilters(t *testing.T) {
-	controller, mockAPI, _ := layersSetup(t)
+	tests := []struct {
+		name            string
+		mockQueryParams string
+		mockResponse    []any
+		path            string
+		category        string
+		recursiveParams controllers.RecursiveParams
+	}{
+		{"WithoutStar", "category=room&id=BASIC.A.**.R1&namespace=physical.hierarchy", []any{roomWithChildren}, "/Physical/BASIC/A/R1", "room", controllers.RecursiveParams{MaxDepth: models.UnlimitedDepth, PathEntered: "R1"}},
+		{"WithStar", "category=device&id=BASIC.A.R1.**.*&namespace=physical.hierarchy", []any{chassis, pdu}, "/Physical/BASIC/A/R1/*", "device", controllers.RecursiveParams{MaxDepth: models.UnlimitedDepth}},
+		{"SomethingStarRecursiveWithFilters", "category=device&id=BASIC.A.R1.**.ch*&namespace=physical.hierarchy", []any{chassis}, "/Physical/BASIC/A/R1/ch*", "device", controllers.RecursiveParams{MaxDepth: models.UnlimitedDepth, PathEntered: "ch*"}},
+		{"FolderSomethingStarRecursiveWithFilters", "category=device&id=BASIC.A.**.R1.ch*&namespace=physical.hierarchy", []any{chassis}, "/Physical/BASIC/A/R1/ch*", "device", controllers.RecursiveParams{MaxDepth: models.UnlimitedDepth, PathEntered: "R1/ch*"}},
+		{"PointRecursiveIsEqualToNotRecursive", "category=device&id=BASIC.A.R1&namespace=physical.hierarchy", []any{roomWithChildren}, "/Physical/BASIC/A/R1", "device", controllers.RecursiveParams{MaxDepth: models.UnlimitedDepth, PathEntered: "."}},
+	}
 
-	mockGetObjects(mockAPI, "category=room&id=BASIC.A.**.R1&namespace=physical.hierarchy", []any{roomWithChildren})
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			controller, mockAPI, _ := layersSetup(t)
 
-	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1", map[string]string{
-		"category": "room",
-	}, &controllers.RecursiveParams{
-		MaxDepth:    models.UnlimitedDepth,
-		PathEntered: "R1",
-	})
-	assert.Nil(t, err)
-	assert.Len(t, objects, 1)
-	assert.Contains(t, objects, removeChildren(roomWithChildren))
-}
+			test_utils.MockGetObjects(mockAPI, tt.mockQueryParams, tt.mockResponse)
 
-func TestGetStarRecursiveWithFilters(t *testing.T) {
-	controller, mockAPI, _ := layersSetup(t)
-
-	mockGetObjects(mockAPI, "category=device&id=BASIC.A.R1.**.*&namespace=physical.hierarchy", []any{chassis, pdu})
-
-	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/*", map[string]string{
-		"category": "device",
-	}, &controllers.RecursiveParams{MaxDepth: models.UnlimitedDepth})
-	assert.Nil(t, err)
-	assert.Len(t, objects, 2)
-	assert.Contains(t, objects, removeChildren(chassis))
-	assert.Contains(t, objects, removeChildren(pdu))
-}
-
-func TestGetSomethingStarRecursiveWithFilters(t *testing.T) {
-	controller, mockAPI, _ := layersSetup(t)
-
-	mockGetObjects(mockAPI, "category=device&id=BASIC.A.R1.**.ch*&namespace=physical.hierarchy", []any{chassis})
-
-	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/ch*", map[string]string{
-		"category": "device",
-	}, &controllers.RecursiveParams{
-		MaxDepth:    models.UnlimitedDepth,
-		PathEntered: "ch*",
-	})
-	assert.Nil(t, err)
-	assert.Len(t, objects, 1)
-	assert.Contains(t, objects, removeChildren(chassis))
-}
-
-func TestGetFolderSomethingStarRecursiveWithFilters(t *testing.T) {
-	controller, mockAPI, _ := layersSetup(t)
-
-	mockGetObjects(mockAPI, "category=device&id=BASIC.A.**.R1.ch*&namespace=physical.hierarchy", []any{chassis})
-
-	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/ch*", map[string]string{
-		"category": "device",
-	}, &controllers.RecursiveParams{
-		MaxDepth:    models.UnlimitedDepth,
-		PathEntered: "R1/ch*",
-	})
-	assert.Nil(t, err)
-	assert.Len(t, objects, 1)
-	assert.Contains(t, objects, removeChildren(chassis))
-}
-
-func TestGetPointRecursiveIsEqualToNotRecursive(t *testing.T) {
-	controller, mockAPI, _ := layersSetup(t)
-
-	mockGetObjects(mockAPI, "category=device&id=BASIC.A.R1&namespace=physical.hierarchy", []any{roomWithChildren})
-
-	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1", map[string]string{
-		"category": "device",
-	}, &controllers.RecursiveParams{
-		MaxDepth:    models.UnlimitedDepth,
-		PathEntered: ".",
-	})
-	assert.Nil(t, err)
-	assert.Len(t, objects, 1)
-	assert.Contains(t, objects, removeChildren(roomWithChildren))
+			objects, _, err := controller.GetObjectsWildcard(tt.path, map[string]string{
+				"category": tt.category,
+			}, &tt.recursiveParams)
+			assert.Nil(t, err)
+			assert.Len(t, objects, len(tt.mockResponse))
+			for _, object := range tt.mockResponse {
+				assert.Contains(t, objects, test_utils.RemoveChildren(object.(map[string]any)))
+			}
+		})
+	}
 }

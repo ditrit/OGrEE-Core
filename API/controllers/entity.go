@@ -1375,8 +1375,7 @@ func GetEntityByQuery(w http.ResponseWriter, r *http.Request) {
 // parameters:
 //   - name: id
 //     in: path
-//     description: 'ID of desired object.
-//     For templates the slug is the ID.'
+//     description: 'ID of desired object'
 //     required: true
 //     type: string
 //     default: "siteA"
@@ -1387,9 +1386,31 @@ func GetEntityByQuery(w http.ResponseWriter, r *http.Request) {
 //  '404':
 //     description: 'Nothing Found. An error message will be returned.'
 
-func GetTempUnit(w http.ResponseWriter, r *http.Request) {
+// swagger:operation GET /api/sitecolors/{id} Objects GetSiteColors
+// Gets the colors attributes of the parent site of given object.
+// Returned attributes are always: reservedColor, usableColor and technicalColor.
+// ---
+// security:
+// - bearer: []
+// produces:
+// - application/json
+// parameters:
+//   - name: id
+//     in: path
+//     description: 'ID of desired object'
+//     required: true
+//     type: string
+//     default: "siteA"
+// responses:
+//  '200':
+//     description: 'Found. A response body will be returned with
+//     a meaningful message.'
+//  '404':
+//     description: 'Nothing Found. An error message will be returned.'
+
+func GetSiteAttr(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
-	fmt.Println("FUNCTION CALL: 	 GetTempUnit ")
+	fmt.Println("FUNCTION CALL: 	 GetSiteAttr ")
 	fmt.Println("******************************************************")
 
 	// Check id
@@ -1398,9 +1419,13 @@ func GetTempUnit(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message("Error while extracting id from URL"))
 	}
+	siteAttr := mux.Vars(r)["siteAttr"]
+	if siteAttr == "tempunits" {
+		siteAttr = "temperatureUnit"
+	}
 
 	// Try get tempUnit and respond
-	data, err := models.GetSiteParentTempUnit(id)
+	data, err := models.GetSiteParentAttribute(id, siteAttr)
 	if err != nil {
 		u.RespondWithError(w, err)
 	} else {
@@ -1409,8 +1434,8 @@ func GetTempUnit(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
 		} else {
 			resp := u.RespDataWrapper(
-				"successfully got temperatureUnit from object's parent site",
-				map[string]interface{}{"temperatureUnit": data})
+				"successfully got attribute from object's parent site",
+				data)
 			u.Respond(w, resp)
 		}
 	}

@@ -3,6 +3,7 @@ package controllers_test
 import (
 	"cli/controllers"
 	"cli/models"
+	test_utils "cli/test"
 	"maps"
 	"testing"
 
@@ -10,21 +11,11 @@ import (
 )
 
 func TestCreateTemplateOfTypeGenericWorks(t *testing.T) {
-	controller, mockAPI, _, _ := newControllerWithMocks(t)
+	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
 
-	template := map[string]any{
-		"slug":        "generic-example",
-		"description": "a table",
-		"category":    "generic",
-		"sizeWDHmm":   []float64{447, 914.5, 263.3},
-		"fbxModel":    "",
-		"attributes": map[string]any{
-			"type": "table",
-		},
-		"colors": []any{},
-	}
+	template := test_utils.GetEntity("genericTableTemplate", "generic-template", "", "")
 
-	mockCreateObject(mockAPI, "obj-template", template)
+	test_utils.MockCreateObject(mockAPI, "obj-template", template)
 
 	err := controller.LoadTemplate(template)
 	assert.Nil(t, err)
@@ -49,21 +40,9 @@ func TestApplyTemplateOfTypeDeviceWorks(t *testing.T) {
 		"weightKg":    "1.81",
 	}
 	device["attributes"] = attributes
-	template := map[string]any{
-		"slug":        "device-template",
-		"description": "",
-		"category":    "device",
-		"sizeWDHmm":   []any{216, 659, 100},
-		"fbxModel":    "",
-		"attributes": map[string]any{
-			"type":   "chassis",
-			"vendor": "IBM",
-		},
-		"colors":     []any{},
-		"components": []any{},
-	}
+	template := test_utils.GetEntity("deviceChasisTemplate", "device-template", "", "")
 
-	mockGetObjTemplate(mockAPI, template)
+	test_utils.MockGetObjTemplate(mockAPI, template)
 
 	sizeU := int((float64(template["sizeWDHmm"].([]any)[2].(int)) / 1000) / controllers.RACKUNIT)
 	err := controller.ApplyTemplate(attributes, device, models.DEVICE)
@@ -80,26 +59,15 @@ func TestApplyTemplateOfTypeDeviceWorks(t *testing.T) {
 func TestApplyTemplateOfTypeDeviceError(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	device := copyMap(chassis)
+	device := test_utils.CopyMap(chassis)
 	attributes := map[string]any{
 		"template": "device-template",
 	}
 	device["attributes"] = attributes
-	template := map[string]any{
-		"slug":        "device-template",
-		"description": "",
-		"category":    "device",
-		"sizeWDHmm":   []any{216, 659, "100"},
-		"fbxModel":    "",
-		"attributes": map[string]any{
-			"type":   "chassis",
-			"vendor": "IBM",
-		},
-		"colors":     []any{},
-		"components": []any{},
-	}
+	template := test_utils.GetEntity("deviceChasisTemplate", "device-template", "", "")
+	template["sizeWDHmm"] = []any{216, 659, "100"}
 
-	mockGetObjTemplate(mockAPI, template)
+	test_utils.MockGetObjTemplate(mockAPI, template)
 
 	err := controller.ApplyTemplate(attributes, device, models.DEVICE)
 	assert.NotNil(t, err)
@@ -110,7 +78,7 @@ func TestApplyTemplateOfTypeDeviceError(t *testing.T) {
 func TestApplyTemplateOfTypeRoomWorks(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	room := copyMap(roomWithoutChildren)
+	room := test_utils.CopyMap(roomWithoutChildren)
 	attributes := map[string]any{
 		"template":   "room-template",
 		"height":     "2.8",
@@ -158,7 +126,7 @@ func TestApplyTemplateOfTypeRoomWorks(t *testing.T) {
 		// "center"          : [0,0],
 	}
 
-	mockGetRoomTemplate(mockAPI, template)
+	test_utils.MockGetRoomTemplate(mockAPI, template)
 
 	err := controller.ApplyTemplate(attributes, room, models.ROOM)
 	assert.Nil(t, err)
@@ -182,7 +150,7 @@ func TestLoadTemplateRoom(t *testing.T) {
 		"sizeWDHm":    []any{216, 659, 41},
 	}
 
-	mockCreateObject(mockAPI, "room-template", template)
+	test_utils.MockCreateObject(mockAPI, "room-template", template)
 
 	err := controller.LoadTemplate(template)
 	assert.Nil(t, err)
@@ -199,7 +167,7 @@ func TestLoadTemplateBuilding(t *testing.T) {
 		"center":      []any{0, 0},
 	}
 
-	mockCreateObject(mockAPI, "bldg-template", template)
+	test_utils.MockCreateObject(mockAPI, "bldg-template", template)
 
 	err := controller.LoadTemplate(template)
 	assert.Nil(t, err)

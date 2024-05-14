@@ -1,42 +1,37 @@
-package models
+package models_test
 
 import (
+	"p3/models"
+	test_utils "p3/test/utils"
 	"testing"
 )
 
 func TestLoginToReturnFalse(t *testing.T) {
-	//fmt.Println(res)
-	//fmt.Println(reflect.TypeOf(res["status"]))
-
-	//Test Case 1
-	if _, err := Login("throwaway", "password"); err == nil {
-		t.Error("Gave a false login request and did not receive error!")
+	tests := []struct {
+		name         string
+		mail         string
+		password     string
+		errorMessage string
+	}{
+		{"FalseLogin", "throwaway", "password", "Gave a false login request and did not receive error!"},
+		{"EmptyEmail", "", "password", "Gave an empty email and did not receive error!"},
+		{"EmptyEmailAndPassword", "", "", "Gave an empty email and did not receive error!"},
+		{"EmptyPassword", "realcheat@gmail.com", "", "Gave an empty email and did not receive error!"},
+		{"UserDoesNotExist", "realcheat@gmail.com", "password123", "Test Case 5 failed"},
 	}
-
-	//Test Case 2
-	if _, err := Login("", "password"); err == nil {
-		t.Error("Gave an empty email and did not receive error!")
-	}
-
-	//Test Case 3
-	if _, err := Login("", ""); err == nil {
-		t.Error("Gave an empty email and did not receive error!")
-	}
-
-	//Test Case 4
-	if _, err := Login("realcheat@gmail.com", ""); err == nil {
-		t.Error("Gave an empty email and did not receive error!")
-	}
-
-	//Test Case 5
-	if _, err := Login("realcheat@gmail.com", "password123"); err == nil {
-		t.Error("Test Case 5 failed")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if _, err := models.Login(tt.mail, tt.password); err == nil {
+				t.Error(tt.errorMessage)
+			}
+		})
 	}
 }
 
 // Thoroughly test the Validate() function
 func TestValidateToReturnFalse(t *testing.T) {
-	var tst Account
+	existingEmail, existingPassword := test_utils.CreateTestUser(t, "manager")
+	var tst models.Account
 
 	//Case 1
 	if err := tst.Validate(); err.Message != "A valid email address is required" {
@@ -76,8 +71,22 @@ func TestValidateToReturnFalse(t *testing.T) {
 	if err := tst.Validate(); err == nil {
 		t.Error("Test Case 6 failed!")
 	}
+
+	//Case 7
+	tst.Email = existingEmail
+	tst.Password = existingPassword
+	if err := tst.Validate(); err.Message != "Error: User already exists" {
+		t.Error("Duplicate user did not return error")
+	}
 }
 
-/*func TestValidateToReturnTrue(t *testing.T) {
-
-}*/
+func TestValidateToReturnTrue(t *testing.T) {
+	newAccount := models.Account{
+		Email:    "test@test.com",
+		Password: "password123",
+		Roles:    map[string]models.Role{"*": "user"},
+	}
+	if err := newAccount.Validate(); err != nil {
+		t.Error("Validate should return nil")
+	}
+}

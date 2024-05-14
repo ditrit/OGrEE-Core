@@ -4,6 +4,7 @@ import (
 	cmd "cli/controllers"
 	mocks "cli/mocks/controllers"
 	"cli/models"
+	test_utils "cli/test"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,9 +13,9 @@ import (
 func interactTestSetup(t *testing.T) (cmd.Controller, *mocks.APIPort, *mocks.Ogree3DPort) {
 	controller, mockAPI, mockOgree3D := layersSetup(t)
 
-	mockGetObject(mockAPI, createRoom)
+	test_utils.MockGetObject(mockAPI, createRoom)
 
-	mockCreateObject(mockAPI, "generic", map[string]any{
+	test_utils.MockCreateObject(mockAPI, "generic", map[string]any{
 		"name":        "A01",
 		"category":    "generic",
 		"description": "",
@@ -51,7 +52,7 @@ func interactTestSetup(t *testing.T) (cmd.Controller, *mocks.APIPort, *mocks.Ogr
 func interactLabelTestSetup(t *testing.T) (cmd.Controller, *mocks.APIPort, *mocks.Ogree3DPort) {
 	controller, mockAPI, mockOgree3D := interactTestSetup(t)
 
-	mockGetObject(mockAPI, map[string]any{
+	test_utils.MockGetObject(mockAPI, map[string]any{
 		"category": "rack",
 		"children": []any{chassis, rackGroup, pdu},
 		"id":       "BASIC.A.R1.A01",
@@ -82,118 +83,60 @@ func TestNonExistingAttrReturnsError(t *testing.T) {
 	assert.Errorf(t, err, "The specified attribute 'abc' does not exist in the object. \nPlease view the object (ie. $> get) and try again")
 }
 
-func TestLabelStringOk(t *testing.T) {
-	controller, _, _ := interactLabelTestSetup(t)
-	err := controller.InteractObject("/Physical/BASIC/A/R1/A01", "label", "string", false)
-	assert.Nil(t, err)
+func TestInteractObject(t *testing.T) {
+	tests := []struct {
+		name     string
+		path     string
+		keyword  string
+		value    interface{}
+		fromAttr bool
+	}{
+		{"LabelStringOk", "/Physical/BASIC/A/R1/A01", "label", "string", false},
+		{"LabelSingleAttrOk", "/Physical/BASIC/A/R1/A01", "label", "name", true},
+		{"LabelStringWithOneAttrOk", "/Physical/BASIC/A/R1/A01", "label", "My name is #name", false},
+		{"LabelStringWithMultipleAttrOk", "/Physical/BASIC/A/R1/A01", "label", "My name is #name and I am a #category", false},
+		{"LabelSingleAttrAndStringOk", "/Physical/BASIC/A/R1/A01", "label", "name is my name", true},
+		{"LabelSingleAttrAndStringWithAttrOk", "/Physical/BASIC/A/R1/A01", "label", "name\n#id", true},
+		{"FontItalicOk", "/Physical/BASIC/A/R1/A01", "labelFont", "italic", false},
+		{"LabelFontBoldOk", "/Physical/BASIC/A/R1/A01", "labelFont", "bold", false},
+		{"LabelColorOk", "/Physical/BASIC/A/R1/A01", "labelFont", "color@C0FFEE", false},
+		{"LabelBackgroundOk", "/Physical/BASIC/A/R1/A01", "labelBackground", "C0FFEE", false},
+		{"ContentOk", "/Physical/BASIC/A/R1/A01", "displayContent", true, false},
+		{"AlphaOk", "/Physical/BASIC/A/R1/A01", "alpha", true, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			controller, _, _ := interactLabelTestSetup(t)
+			err := controller.InteractObject(tt.path, tt.keyword, tt.value, tt.fromAttr)
+			assert.Nil(t, err)
+		})
+	}
 }
 
-func TestLabelSingleAttrOk(t *testing.T) {
-	controller, _, _ := interactLabelTestSetup(t)
-	err := controller.InteractObject("/Physical/BASIC/A/R1/A01", "label", "name", true)
-	assert.Nil(t, err)
-}
+func TestInteractObjectWithMock(t *testing.T) {
+	tests := []struct {
+		name       string
+		mockObject map[string]any
+		path       string
+		keyword    string
+		value      interface{}
+		fromAttr   bool
+	}{
+		{"TilesNameOk", createRoom, "/Physical/BASIC/A/R1", "tilesName", true, false},
+		{"TilesColorOk", createRoom, "/Physical/BASIC/A/R1", "tilesColor", true, false},
+		{"UOk", createRoom, "/Physical/BASIC/A/R1", "U", true, false},
+		{"SlotsOk", createRoom, "/Physical/BASIC/A/R1", "slots", true, false},
+		{"LocalCSOk", createRoom, "/Physical/BASIC/A/R1", "localCS", true, false},
+	}
 
-func TestLabelStringWithOneAttrOk(t *testing.T) {
-	controller, _, _ := interactLabelTestSetup(t)
-	err := controller.InteractObject("/Physical/BASIC/A/R1/A01", "label", "My name is #name", false)
-	assert.Nil(t, err)
-}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			controller, mockAPI, _ := interactTestSetup(t)
 
-func TestLabelStringWithMultipleAttrOk(t *testing.T) {
-	controller, _, _ := interactLabelTestSetup(t)
-	err := controller.InteractObject("/Physical/BASIC/A/R1/A01", "label", "My name is #name and I am a #category", false)
-	assert.Nil(t, err)
-}
-
-func TestLabelSingleAttrAndStringOk(t *testing.T) {
-	controller, _, _ := interactLabelTestSetup(t)
-	err := controller.InteractObject("/Physical/BASIC/A/R1/A01", "label", "name is my name", true)
-	assert.Nil(t, err)
-}
-
-func TestLabelSingleAttrAndStringWithAttrOk(t *testing.T) {
-	controller, _, _ := interactLabelTestSetup(t)
-	err := controller.InteractObject("/Physical/BASIC/A/R1/A01", "label", "name\n#id", true)
-	assert.Nil(t, err)
-}
-
-func TestLabelFontItalicOk(t *testing.T) {
-	controller, _, _ := interactLabelTestSetup(t)
-
-	err := controller.InteractObject("/Physical/BASIC/A/R1/A01", "labelFont", "italic", false)
-	assert.Nil(t, err)
-}
-
-func TestLabelFontBoldOk(t *testing.T) {
-	controller, _, _ := interactLabelTestSetup(t)
-
-	err := controller.InteractObject("/Physical/BASIC/A/R1/A01", "labelFont", "bold", false)
-	assert.Nil(t, err)
-}
-
-func TestLabelColorOk(t *testing.T) {
-	controller, _, _ := interactLabelTestSetup(t)
-
-	err := controller.InteractObject("/Physical/BASIC/A/R1/A01", "labelFont", "color@C0FFEE", false)
-	assert.Nil(t, err)
-}
-
-func TestLabelBackgroundOk(t *testing.T) {
-	controller, _, _ := interactLabelTestSetup(t)
-
-	err := controller.InteractObject("/Physical/BASIC/A/R1/A01", "labelBackground", "C0FFEE", false)
-	assert.Nil(t, err)
-}
-
-func TestContentOk(t *testing.T) {
-	controller, _, _ := interactLabelTestSetup(t)
-	err := controller.InteractObject("/Physical/BASIC/A/R1/A01", "displayContent", true, false)
-	assert.Nil(t, err)
-}
-
-func TestAlphaOk(t *testing.T) {
-	controller, _, _ := interactLabelTestSetup(t)
-	err := controller.InteractObject("/Physical/BASIC/A/R1/A01", "alpha", true, false)
-	assert.Nil(t, err)
-}
-
-func TestTilesNameOk(t *testing.T) {
-	controller, mockAPI, _ := interactTestSetup(t)
-
-	mockGetObject(mockAPI, createRoom)
-	err := controller.InteractObject("/Physical/BASIC/A/R1", "tilesName", true, false)
-	assert.Nil(t, err)
-}
-
-func TestTilesColorOk(t *testing.T) {
-	controller, mockAPI, _ := interactTestSetup(t)
-
-	mockGetObject(mockAPI, createRoom)
-	err := controller.InteractObject("/Physical/BASIC/A/R1", "tilesColor", true, false)
-	assert.Nil(t, err)
-}
-
-func TestUOk(t *testing.T) {
-	controller, mockAPI, _ := interactTestSetup(t)
-
-	mockGetObject(mockAPI, createRoom)
-	err := controller.InteractObject("/Physical/BASIC/A/R1", "U", true, false)
-	assert.Nil(t, err)
-}
-
-func TestSlotsOk(t *testing.T) {
-	controller, mockAPI, _ := interactTestSetup(t)
-
-	mockGetObject(mockAPI, createRoom)
-	err := controller.InteractObject("/Physical/BASIC/A/R1", "slots", true, false)
-	assert.Nil(t, err)
-}
-
-func TestLocalCSOk(t *testing.T) {
-	controller, mockAPI, _ := interactTestSetup(t)
-
-	mockGetObject(mockAPI, createRoom)
-	err := controller.InteractObject("/Physical/BASIC/A/R1", "localCS", true, false)
-	assert.Nil(t, err)
+			test_utils.MockGetObject(mockAPI, tt.mockObject)
+			err := controller.InteractObject(tt.path, tt.keyword, tt.value, tt.fromAttr)
+			assert.Nil(t, err)
+		})
+	}
 }

@@ -3,7 +3,14 @@ package integration
 import (
 	"log"
 	"p3/models"
+	test_utils "p3/test/utils"
 	"p3/utils"
+	"slices"
+	"strings"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 var ManagerUserRoles = map[string]models.Role{
@@ -25,19 +32,10 @@ func createObject(entity int, obj map[string]interface{}, require bool) (map[str
 }
 
 func internalCreateSite(name string, require bool) (map[string]any, *utils.Error) {
+	site := test_utils.GetEntityMap("site", name, "", TestDBName)
 	return createObject(
 		utils.SITE,
-		map[string]any{
-			"attributes": map[string]any{
-				"reservedColor":  "AAAAAA",
-				"technicalColor": "D0FF78",
-				"usableColor":    "5BDCFF",
-			},
-			"category":    "site",
-			"description": name,
-			"domain":      TestDBName,
-			"name":        name,
-		},
+		site,
 		require,
 	)
 }
@@ -56,25 +54,11 @@ func internalCreateBuilding(siteID, name string, require bool) (map[string]any, 
 		site := RequireCreateSite(name + "-site")
 		siteID = site["id"].(string)
 	}
+	building := test_utils.GetEntityMap("building", name, siteID, TestDBName)
 
 	return createObject(
 		utils.BLDG,
-		map[string]any{
-			"attributes": map[string]any{
-				"height":     5,
-				"heightUnit": "m",
-				"posXY":      []any{50, 0},
-				"posXYUnit":  "m",
-				"size":       []any{49, 46.5},
-				"sizeUnit":   "m",
-				"rotation":   30.5,
-			},
-			"category":    "building",
-			"description": name,
-			"domain":      TestDBName,
-			"name":        name,
-			"parentId":    siteID,
-		},
+		building,
 		require,
 	)
 }
@@ -93,28 +77,11 @@ func internalCreateRoom(buildingID, name string, require bool) (map[string]any, 
 		building := RequireCreateBuilding("", name+"-building")
 		buildingID = building["id"].(string)
 	}
+	room := test_utils.GetEntityMap("room", name, buildingID, TestDBName)
 
 	return createObject(
 		utils.ROOM,
-		map[string]any{
-			"attributes": map[string]any{
-				"floorUnit":       "t",
-				"height":          2.8,
-				"heightUnit":      "m",
-				"axisOrientation": "+x+y",
-				"rotation":        -90,
-				"posXY":           []any{0, 0},
-				"posXYUnit":       "m",
-				"size":            []any{-13, -2.9},
-				"sizeUnit":        "m",
-				"template":        "",
-			},
-			"category":    "room",
-			"description": name,
-			"domain":      TestDBName,
-			"name":        name,
-			"parentId":    buildingID,
-		},
+		room,
 		require,
 	)
 }
@@ -133,26 +100,11 @@ func internalCreateRack(roomID, name string, require bool) (map[string]any, *uti
 		room := RequireCreateRoom("", name+"-room")
 		roomID = room["id"].(string)
 	}
+	rack := test_utils.GetEntityMap("rack", name, roomID, TestDBName)
 
 	return createObject(
 		utils.RACK,
-		map[string]any{
-			"attributes": map[string]any{
-				"height":     47,
-				"heightUnit": "U",
-				"rotation":   []any{45, 45, 45},
-				"posXYUnit":  "m",
-				"posXYZ":     []any{4.6666666666667, -2, 0},
-				"size":       []any{80, 100.532442},
-				"sizeUnit":   "cm",
-				"template":   "",
-			},
-			"category":    "rack",
-			"description": name,
-			"domain":      TestDBName,
-			"name":        name,
-			"parentId":    roomID,
-		},
+		rack,
 		require,
 	)
 }
@@ -171,28 +123,11 @@ func internalCreateCorridor(roomID, name string, require bool) (map[string]any, 
 		room := RequireCreateRoom("", name+"-room")
 		roomID = room["id"].(string)
 	}
+	corridor := test_utils.GetEntityMap("corridor", name, roomID, TestDBName)
 
 	return createObject(
 		utils.CORRIDOR,
-		map[string]any{
-			"attributes": map[string]any{
-				"color":       "000099",
-				"content":     "B11,C19",
-				"temperature": "cold",
-				"height":      470,
-				"heightUnit":  "cm",
-				"rotation":    []any{45, 45, 45},
-				"posXYUnit":   "m",
-				"posXYZ":      []any{4.6666666666667, -2, 0},
-				"size":        []any{80, 100.532442},
-				"sizeUnit":    "cm",
-			},
-			"category":    "corridor",
-			"description": "corridor",
-			"domain":      TestDBName,
-			"name":        name,
-			"parentId":    roomID,
-		},
+		corridor,
 		require,
 	)
 }
@@ -211,28 +146,11 @@ func internalCreateGeneric(roomID, name string, require bool) (map[string]any, *
 		room := RequireCreateRoom("", name+"-room")
 		roomID = room["id"].(string)
 	}
+	generic := test_utils.GetEntityMap("generic", name, roomID, TestDBName)
 
 	return createObject(
 		utils.GENERIC,
-		map[string]any{
-			"attributes": map[string]any{
-				"height":     47,
-				"heightUnit": "cm",
-				"rotation":   []any{45, 45, 45},
-				"posXYZ":     []any{4.6666666666667, -2, 0},
-				"posXYUnit":  "m",
-				"size":       []any{80, 100.532442},
-				"shape":      "cube",
-				"sizeUnit":   "cm",
-				"template":   "",
-				"type":       "box",
-			},
-			"category":    "generic",
-			"description": name,
-			"domain":      TestDBName,
-			"name":        name,
-			"parentId":    roomID,
-		},
+		generic,
 		require,
 	)
 }
@@ -247,31 +165,10 @@ func CreateGeneric(roomID, name string) (map[string]any, *utils.Error) {
 }
 
 func internalCreateDevice(parentID, name string, require bool) (map[string]any, *utils.Error) {
+	device := test_utils.GetEntityMap("device", name, parentID, TestDBName)
 	return createObject(
 		utils.DEVICE,
-		map[string]any{
-			"attributes": map[string]any{
-				"TDP":         "",
-				"TDPmax":      "",
-				"fbxModel":    "https://github.com/test.fbx",
-				"height":      40.1,
-				"heightUnit":  "mm",
-				"model":       "TNF2LTX",
-				"orientation": "front",
-				"partNumber":  "0303XXXX",
-				"size":        []any{388.4, 205.9},
-				"sizeUnit":    "mm",
-				"template":    "huawei-xxxxxx",
-				"type":        "blade",
-				"vendor":      "Huawei",
-				"weightKg":    1.81,
-			},
-			"category":    "device",
-			"description": name,
-			"domain":      TestDBName,
-			"name":        name,
-			"parentId":    parentID,
-		},
+		device,
 		require,
 	)
 }
@@ -309,4 +206,112 @@ func RequireCreateGroup(parentID, name string, content []any) map[string]any {
 
 func CreateGroup(parentID, name string, content []any) (map[string]any, *utils.Error) {
 	return internalCreateGroup(parentID, name, content, false)
+}
+
+func CreateTestDomain(t *testing.T, name string, parentId string, color string) {
+	// It creates a temporary domain that will be deleted at the end of the test t
+	domainColor := "ffffff"
+	if color != "" {
+		domainColor = color
+	}
+	domain := map[string]any{
+		"name":        name,
+		"parentId":    parentId,
+		"category":    "domain",
+		"description": "temporary domain",
+		"attributes": map[string]any{
+			"color": domainColor,
+		},
+	}
+	entity, err := models.CreateEntity(utils.DOMAIN, domain, ManagerUserRoles)
+	assert.Nil(t, err)
+
+	t.Cleanup(func() {
+		// we get the domain again as it may have been deleted in a test
+		filters := utils.RequestFilters{}
+		domain, _ := models.GetObject(bson.M{"id": entity["id"]}, utils.EntityToString(utils.DOMAIN), filters, ManagerUserRoles)
+		if domain != nil {
+			err := models.DeleteObject(utils.EntityToString(utils.DOMAIN), entity["id"].(string), ManagerUserRoles)
+			assert.Nil(t, err)
+		}
+	})
+}
+
+func CreateTestPhysicalEntity(t *testing.T, entityType int, name string, parentId string, recursive bool) map[string]any {
+	// It creates a temporary entity and its temporary parents if recursive is true
+	if recursive {
+		ids := strings.Split(parentId, ".")
+		if entityType == utils.CORRIDOR || entityType == utils.GENERIC {
+			CreateTestPhysicalEntity(t, utils.ROOM, ids[len(ids)-1], strings.Join(ids[:len(ids)-1], "."), recursive)
+		} else if entityType != utils.SITE {
+			CreateTestPhysicalEntity(t, entityType-1, ids[len(ids)-1], strings.Join(ids[:len(ids)-1], "."), recursive)
+		}
+	}
+	var entity map[string]any
+	var err *utils.Error
+	switch entityType {
+	case utils.SITE:
+		entity, err = CreateSite(name)
+	case utils.BLDG:
+		entity, err = CreateBuilding(parentId, name)
+	case utils.ROOM:
+		entity, err = CreateRoom(parentId, name)
+	case utils.CORRIDOR:
+		entity, err = CreateCorridor(parentId, name)
+	case utils.GENERIC:
+		entity, err = CreateGeneric(parentId, name)
+	case utils.RACK:
+		entity, err = CreateRack(parentId, name)
+	case utils.DEVICE:
+		entity, err = CreateDevice(parentId, name)
+	default:
+		t.Errorf("Invalid Entity type %d. Please verify", entityType)
+	}
+	assert.Nil(t, err)
+
+	t.Cleanup(func() {
+		// we get the room again as it may have been deleted in a test
+		filters := utils.RequestFilters{}
+		room, _ := models.GetObject(bson.M{"id": entity["id"]}, utils.EntityToString(entityType), filters, ManagerUserRoles)
+		if room != nil {
+			err := models.DeleteObject(utils.EntityToString(entityType), entity["id"].(string), ManagerUserRoles)
+			assert.Nil(t, err)
+		}
+	})
+	return entity
+}
+
+func CreateTestProject(t *testing.T, name string) (models.Project, string) {
+	// Creates a temporary project that will be deleted at the end of the test
+	adminUser := "admin@admin.com"
+	project := models.Project{
+		Name:        name,
+		Attributes:  []string{"domain"},
+		Namespace:   "physical",
+		Permissions: []string{adminUser},
+		ShowAvg:     false,
+		ShowSum:     false,
+	}
+	err := models.AddProject(project)
+	assert.Nil(t, err)
+
+	// we get the project ID
+	projects, _ := models.GetProjectsByUserEmail(adminUser)
+	projectIndex := slices.IndexFunc(projects, func(p models.Project) bool {
+		return p.Name == project.Name
+	})
+	projectId := projects[projectIndex].Id
+
+	t.Cleanup(func() {
+		// we get the room again as it may have been deleted in a test
+		projects, _ := models.GetProjectsByUserEmail(adminUser)
+		projectExists := slices.ContainsFunc(projects, func(p models.Project) bool {
+			return p.Id == projectId
+		})
+		if projectExists {
+			err := models.DeleteProject(projectId)
+			assert.Nil(t, err)
+		}
+	})
+	return project, projectId
 }

@@ -227,26 +227,33 @@ func TestValToColor(t *testing.T) {
 	assert.Equal(t, "255255", color)
 }
 
-func TestIsInfArr(t *testing.T) {
-	ok := utils.IsInfArr([]any{1})
-	assert.True(t, ok)
+func TestIs(t *testing.T) {
+	tests := []struct {
+		name           string
+		isFunction     func(interface{}) bool
+		value          interface{}
+		expectedResult bool
+	}{
+		{"IsInfArrArrayInteger", utils.IsInfArr, []any{1}, true},
+		{"IsInfArrArrayFloat", utils.IsInfArr, []any{1.0}, true},
+		{"IsInfArrString", utils.IsInfArr, "string", false},
+		{"IsStringInteger", utils.IsString, 1, false},
+		{"IsStringFloat", utils.IsString, 1.0, false},
+		{"IsStringString", utils.IsString, "string", true},
+		{"IsIntFloat", utils.IsInt, 1.0, false},
+		{"IsIntString", utils.IsInt, "string", false},
+		{"IsIntInteger", utils.IsInt, 1, true},
+		{"IsFloatFloat", utils.IsFloat, 1.0, true},
+		{"IsFloatString", utils.IsFloat, "string", false},
+		{"IsFloatInteger", utils.IsFloat, 1, false},
+	}
 
-	ok = utils.IsInfArr([]any{1.0})
-	assert.True(t, ok)
-
-	ok = utils.IsInfArr("string")
-	assert.False(t, ok)
-}
-
-func TestIsString(t *testing.T) {
-	ok := utils.IsString(1)
-	assert.False(t, ok)
-
-	ok = utils.IsString(1.0)
-	assert.False(t, ok)
-
-	ok = utils.IsString("string")
-	assert.True(t, ok)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ok := tt.isFunction(tt.value)
+			assert.Equal(t, tt.expectedResult, ok)
+		})
+	}
 }
 
 func TestIsHexString(t *testing.T) {
@@ -258,28 +265,6 @@ func TestIsHexString(t *testing.T) {
 
 	ok = utils.IsHexString("abc4")
 	assert.True(t, ok)
-}
-
-func TestIsInt(t *testing.T) {
-	ok := utils.IsInt(1.0)
-	assert.False(t, ok)
-
-	ok = utils.IsInt("string")
-	assert.False(t, ok)
-
-	ok = utils.IsInt(1)
-	assert.True(t, ok)
-}
-
-func TestIsFloat(t *testing.T) {
-	ok := utils.IsFloat(1.0)
-	assert.True(t, ok)
-
-	ok = utils.IsFloat("string")
-	assert.False(t, ok)
-
-	ok = utils.IsFloat(1)
-	assert.False(t, ok)
 }
 
 func TestCompareVals(t *testing.T) {

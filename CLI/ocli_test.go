@@ -2,6 +2,7 @@ package main
 
 import (
 	"cli/controllers"
+	test_utils "cli/test"
 	"fmt"
 	"os"
 	"strings"
@@ -88,8 +89,7 @@ func TestNewStackTraceError(t *testing.T) {
 }
 
 func TestLoadFile(t *testing.T) {
-	_, _, _, deferFunction := setMainEnvironmentMock(t)
-	defer deferFunction()
+	test_utils.SetMainEnvironmentMock(t)
 
 	basePath := t.TempDir() // temporary directory that will be deleted after the tests have finished
 	fileContent := ".var:siteName=siteB\n"
@@ -111,48 +111,37 @@ func TestLoadFile(t *testing.T) {
 	assert.Equal(t, "siteB", controllers.State.DynamicSymbolTable["siteName"])
 }
 
-func TestLoadFileParseError(t *testing.T) {
-	_, _, _, deferFunction := setMainEnvironmentMock(t)
-	defer deferFunction()
-
-	basePath := t.TempDir() // temporary directory that will be deleted after the tests have finished
-	fileContent := "siteName=siteB\n"
-
+func TestLoadFileError(t *testing.T) {
 	filename := "load_test_file.ocli"
-	filePath := basePath + "/" + filename
-
-	err := os.WriteFile(filePath, []byte(fileContent), 0644)
-
-	if err != nil {
-		t.Errorf("an error ocurred while creating the test file: %s", err)
+	tests := []struct {
+		name                 string
+		fileContentWithError string
+		errorType            error
+		errorMessage         string
+	}{
+		{"ParseError", "siteName=siteB\n", &fileParseError{}, "Syntax errors were found in the file: " + filename + "\nThe following commands were invalid\n  LINE#: 1\tCOMMAND:siteName=siteB"},
+		{"StackError", ".var: i = eval 10/0\n", &stackTraceError{}, "Stack trace (most recent call last):\n  File \"" + filename + "\", line 1\n    .var: i = eval 10/0\nError : cannot divide by 0"},
 	}
-	err = LoadFile(filePath)
-	assert.NotNil(t, err)
-	assert.IsType(t, &fileParseError{}, err)
 
-	errMsg := "Syntax errors were found in the file: " + filename + "\nThe following commands were invalid\n  LINE#: 1\tCOMMAND:siteName=siteB"
-	assert.ErrorContains(t, err, errMsg)
-}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			test_utils.SetMainEnvironmentMock(t)
 
-func TestLoadFileStackError(t *testing.T) {
-	_, _, _, deferFunction := setMainEnvironmentMock(t)
-	defer deferFunction()
+			basePath := t.TempDir() // temporary directory that will be deleted after the tests have finished
+			fileContent := tt.fileContentWithError
 
-	basePath := t.TempDir() // temporary directory that will be deleted after the tests have finished
-	fileContent := ".var: i = eval 10/0\n"
+			filePath := basePath + "/" + filename
 
-	filename := "load_test_file.ocli"
-	filePath := basePath + "/" + filename
+			err := os.WriteFile(filePath, []byte(fileContent), 0644)
 
-	err := os.WriteFile(filePath, []byte(fileContent), 0644)
+			if err != nil {
+				t.Errorf("an error ocurred while creating the test file: %s", err)
+			}
+			err = LoadFile(filePath)
+			assert.NotNil(t, err)
+			assert.IsType(t, tt.errorType, err)
 
-	if err != nil {
-		t.Errorf("an error ocurred while creating the test file: %s", err)
+			assert.ErrorContains(t, err, tt.errorMessage)
+		})
 	}
-	err = LoadFile(filePath)
-	assert.NotNil(t, err)
-	assert.IsType(t, &stackTraceError{}, err)
-
-	errMsg := "Stack trace (most recent call last):\n  File \"" + filename + "\", line 1\n    .var: i = eval 10/0\nError : cannot divide by 0"
-	assert.ErrorContains(t, err, errMsg)
 }
