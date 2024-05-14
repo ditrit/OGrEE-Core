@@ -79,7 +79,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 
 	//Check ParentID is valid
 	if t["parentId"] == nil || t["parentId"] == "" {
-		if entNum == u.DOMAIN || entNum == u.STRAYOBJ {
+		if entNum == u.DOMAIN || entNum == u.STRAYOBJ || entNum == u.APPLICATION {
 			return nil, nil
 		}
 		return nil, &u.Error{Type: u.ErrBadFormat, Message: "ParentID is not valid"}
@@ -154,6 +154,18 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 
 		return nil, &u.Error{Type: u.ErrInvalidValue,
 			Message: "ParentID should correspond to existing room ID"}
+
+	case u.APPLICATION:
+		x, _ := GetObject(req, "application", u.RequestFilters{}, nil)
+		if x != nil {
+			parent["parent"] = "application"
+			parent["domain"] = x["domain"]
+			parent["id"] = x["id"]
+			return parent, nil
+		}
+
+		return nil, &u.Error{Type: u.ErrInvalidValue,
+			Message: "ParentID should correspond to existing application ID"}
 	default:
 		parentInt := u.GetParentOfEntityByInt(entNum)
 		parentStr := u.EntityToString(parentInt)

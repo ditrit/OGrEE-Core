@@ -19,140 +19,43 @@
     "category": {
       "type": "string"
     },
-    "type": {
-      "type": "string"
-    },
     "name": {
       "type": "string"
     },
-    "children": {
-      "type": "array",
-      "items": [
-        {
-          "type": "object",
-          "properties": {
-            "namespace_kube": {
-              "type": "string"
-            },
-            "category": {
-              "type": "string"
-            },
-            "type": {
-              "type": "string"
-            },
-            "name": {
-              "type": "string"
-            },
-            "children": {
-              "type": "array",
-              "items": [
-                {
-                  "type": "object",
-                  "properties": {
-                    "category": {
-                      "type": "string"
-                    },
-                    "type": {
-                      "type": "string"
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "children": {
-                      "type": "array",
-                      "items": [
-                        {
-                          "type": "object",
-                          "properties": {
-                            "pvc": {
-                              "type": "string"
-                            },
-                            "children": {
-                              "type": "array",
-                              "items": [
-                                {
-                                  "type": "object",
-                                  "properties": {
-                                    "pv-type": {
-                                      "type": "string"
-                                    },
-                                    "pv-path": {
-                                      "type": "string"
-                                    },
-                                    "pv-ip": {
-                                      "type": "string"
-                                    }
-                                  }
-                                }
-                              ]
-                            }
-                          }
-                        }
-                      ]
-                    }
-                  }
-                }
-              ]
-            }
-          },
-          "required": [
-            "namespace_kube",
-            "category",
-            "type",
-            "name",
-            "children"
-          ]
+    "attributes": {
+      "type": "object",
+      "title": "The attributes Schema",
+      "required": [
+          "type"
+      ],
+      "properties": {
+        "type": {
+            "type": "string"
         }
-      ]
+      }
     }
   },
   "required": [
-    "namespace_cli",
     "domain",
-    "device",
     "category",
-    "type",
     "name",
-    "children"
+    "attributes"
   ],
   "examples": [
-      {
-          "namespace_cli": "logical",
-          "domain": "DemoA",
+    {
+      "domain": "DemoA",
+      "category": "application",
+      "attributes" : {
+          "type" : "kubernetes",
           "device": [
-              "master1"
-          ],
-          "category": "application",
-          "type": "kubernetes",
-          "name": "cluster-test",
-          "children": [
-              {
-                  "namespace_kube": "default",
-                  "category": "application",
-                  "type": "kube-application",
-                  "name": "ogree-api",
-                  "children": [
-                      {
-                          "category": "application",
-                          "type": "pod",
-                          "name": "ogree-api-rcjdb",
-                          "children": [
-                              {
-                                  "pvc": "netbox-media",
-                                  "children": [
-                                      {
-                                          "pv-type": "HostPath",
-                                          "pv-path": "/opt/media",
-                                          "pv-ip": "None"
-                                      }
-                                  ]
-                              }
-                          ]
-                      }
-                  ]
-              }
-          ]
-      }
+            "BASIC.A.R1.A02.chassis01.bladeA",
+            "BASIC.A.R1.A02.chassis01.bladeB",
+            "BASIC.A.R1.A02.chassis01.bladeC"
+        ]
+      },
+      "name": "kubernetes-cluster",
+      "id": "kubernetes-cluster"
+    }
   ]    
 
 }

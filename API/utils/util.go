@@ -257,7 +257,7 @@ func IsEntityHierarchical(entity int) bool {
 }
 
 func IsEntityNonHierarchical(entity int) bool {
-	return entity >= ROOMTMPL
+	return entity >= ROOMTMPL && entity != APPLICATION
 }
 
 func EntityToString(entity int) string {
@@ -361,7 +361,7 @@ func GetEntitiesByNamespace(namespace Namespace, hierarchyName string) []string 
 	case Organisational:
 		entNames = append(entNames, EntityToString(DOMAIN))
 	case Logical:
-		for entity := GROUP; entity <= LAYER; entity++ {
+		for entity := GROUP; entity <= APPLICATION; entity++ {
 			entNames = append(entNames, EntityToString(entity))
 		}
 	case LObjTemplate:
@@ -396,6 +396,7 @@ func GetEntitiesByNamespace(namespace Namespace, hierarchyName string) []string 
 		} else {
 			if namespace == Any {
 				entities = append(entities, DOMAIN)
+				entities = append(entities, APPLICATION)
 			}
 
 			// Add entities according to hierarchyName possibilities

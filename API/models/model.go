@@ -472,7 +472,7 @@ func getHierarchyWithNamespace(namespace u.Namespace, userRoles map[string]Role,
 
 	for _, entityName := range entities {
 		// Get data
-		opts := options.Find().SetProjection(bson.D{{Key: "domain", Value: 1}, {Key: "id", Value: 1}})
+		opts := options.Find().SetProjection(bson.D{{Key: "domain", Value: 1}, {Key: "id", Value: 1}, {Key: "category", Value: 1}})
 
 		if u.IsEntityNonHierarchical(u.EntityStrToInt(entityName)) {
 			opts = options.Find().SetProjection(bson.D{{Key: "slug", Value: 1}})
@@ -496,10 +496,17 @@ func getHierarchyWithNamespace(namespace u.Namespace, userRoles map[string]Role,
 				var objId string
 				if u.IsEntityNonHierarchical(u.EntityStrToInt(entityName)) {
 					objId = obj["slug"].(string)
+					hierarchy[rootIdx+entityName] = append(hierarchy[rootIdx+entityName], objId)
 				} else {
 					objId = obj["id"].(string)
+					if strings.Contains(obj["id"].(string), ".") && obj["category"] != "group" {
+						// Physical or Org Children
+						categories[entityName] = append(categories[entityName], obj["id"].(string))
+						fillHierarchyMap(obj["id"].(string), hierarchy)
+					} else {
+						hierarchy[rootIdx+entityName] = append(hierarchy[rootIdx+entityName], objId)
+					}
 				}
-				hierarchy[rootIdx+entityName] = append(hierarchy[rootIdx+entityName], objId)
 			} else if strings.Contains(obj["id"].(string), ".") {
 				// Physical or Org Children
 				categories[entityName] = append(categories[entityName], obj["id"].(string))
