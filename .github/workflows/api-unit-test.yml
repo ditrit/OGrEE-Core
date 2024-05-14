@@ -72,7 +72,7 @@ jobs:
     defaults:
       run:
         working-directory: ./
-    if: github.ref == 'refs/heads/chore449-tests-and-documentation'
+    if: github.ref == 'refs/heads/main'
 
     steps:
       - uses: actions/checkout@v4
