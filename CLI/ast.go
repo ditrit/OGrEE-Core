@@ -367,7 +367,7 @@ func (n *deleteAttrNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return nil, cmd.UnsetAttribute(path, n.attr)
+	return nil, cmd.C.UnsetAttribute(path, n.attr)
 }
 
 type isEntityDrawableNode struct {
