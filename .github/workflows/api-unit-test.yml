@@ -48,7 +48,7 @@ jobs:
       run: go tool cover -func coverage_api.out | grep total
 
     - name: Generate coverage XML report
-      run: gocov convert coverage.out | gocov-xml > coverage_api.xml
+      run: gocov convert coverage_api.out | gocov-xml > coverage_api.xml
 
     - name: Test Report
       uses: dorny/test-reporter@v1
