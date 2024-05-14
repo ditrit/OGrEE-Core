@@ -83,8 +83,8 @@ class UnityPageState extends State<UnityPage> with TickerProviderStateMixin {
               children: [
                 InAppWebView(
                   key: webViewKey,
-                  initialUrlRequest:
-                      URLRequest(url: WebUri("http://localhost:80")),
+                  initialUrlRequest: URLRequest(
+                      url: WebUri("https://unity.kube.ogree.ditrit.io")),
                   initialSettings: settings,
                   pullToRefreshController: pullToRefreshController,
                   onWebViewCreated: (controller) {
