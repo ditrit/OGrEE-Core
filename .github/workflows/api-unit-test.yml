@@ -113,4 +113,4 @@ jobs:
           files: assets/images/api_coverage_badge.svg
 
       - name: Last commit Author
-        run: echo "${{github.event.commits[0].author.name}}"
+        run: echo "${{github.event.commits[0].author.name}} or ${{github.event.head_commit.author.name}}"
