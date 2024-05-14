@@ -111,3 +111,6 @@ jobs:
         id: verify-changed-files
         with:
           files: assets/images/api_coverage_badge.svg
+
+      - name: Last commit Author
+        run: echo "${github.event.commits[0].author.name}"
