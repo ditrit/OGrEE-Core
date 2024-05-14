@@ -82,6 +82,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: coverage_badges
 
       - uses: actions/setup-python@v5
         with:
@@ -96,25 +97,25 @@ jobs:
           name: coverage_api_xml
 
       - name: Generate badge
-        run: genbadge coverage -i coverage_api.xml -n "API coverage" -o assets/images/api_coverage_badge.svg
+        run: genbadge coverage -i coverage_api.xml -n "API coverage" -o api_coverage_badge.svg
 
       - name: Verify Changed files
         uses: tj-actions/verify-changed-files@v16
         id: verify-changed-files
         with:
-          files: assets/images/api_coverage_badge.svg
+          files: api_coverage_badge.svg
 
       - name: Commit badge
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         run: |
           git config --local user.email "<>"
           git config --local user.name "GitHubActions"
-          git add assets/images/api_coverage_badge.svg
+          git add api_coverage_badge.svg
           git commit -m "Add/Update badge"
 
       - name: Push badge commit
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         uses: ad-m/github-push-action@master
         with:
-          github_token: ${{ secrets.PAT_GITHUB_TOKEN }}
-          branch: ${{ github.head_ref }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: coverage_badges # Dedicated branch to store coverage badges

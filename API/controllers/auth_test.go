@@ -215,7 +215,6 @@ func TestModifyPassword(t *testing.T) {
 	}
 
 	changePasswordEndpoint := test_utils.GetEndpoint("changePassword")
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			e2e.ValidateRequestWithToken(t, "POST", changePasswordEndpoint, []byte(tt.requestBody), userToken, tt.statusCode, tt.message)
