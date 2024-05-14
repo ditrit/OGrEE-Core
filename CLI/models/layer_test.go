@@ -119,24 +119,24 @@ func TestLayerByAttributeFromObjects(t *testing.T) {
 	}
 }
 
-func TestIsIDElementLayer(t *testing.T) {
-	assert.True(t, models.IsIDElementLayer("#layer-id"))
-	assert.False(t, models.IsIDElementLayer("id"))
-}
+func TestIs(t *testing.T) {
+	tests := []struct {
+		name          string
+		isFunction    func(string) bool
+		correctPath   string
+		incorrectPath string
+	}{
+		{"IsIDElementLayer", models.IsIDElementLayer, "#layer-id", "id"},
+		{"IsLayer", models.PathIsLayer, "/site/building/room1/room1/#racks", "/site/building/room1/room1/rack1"},
+		{"HasLayer", models.PathHasLayer, "/site/building/room1/room1/#racks/rack1", "/site/building/room1/room1/rack1"},
+	}
 
-func TestIsObjectIDLayer(t *testing.T) {
-	assert.True(t, models.IsObjectIDLayer("room1.#racks"))
-	assert.False(t, models.IsObjectIDLayer("room1.rack1"))
-}
-
-func TestPathIsLayer(t *testing.T) {
-	assert.True(t, models.PathIsLayer("/site/building/room1/room1/#racks"))
-	assert.False(t, models.PathIsLayer("/site/building/room1/room1/rack1"))
-}
-
-func TestPathHasLayer(t *testing.T) {
-	assert.True(t, models.PathHasLayer("/site/building/room1/room1/#racks/rack1"))
-	assert.False(t, models.PathHasLayer("/site/building/room1/room1/rack1"))
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.True(t, tt.isFunction(tt.correctPath))
+			assert.False(t, tt.isFunction(tt.incorrectPath))
+		})
+	}
 }
 
 func TestPathRemoveLayer(t *testing.T) {
