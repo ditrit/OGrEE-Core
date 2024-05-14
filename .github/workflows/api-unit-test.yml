@@ -57,11 +57,11 @@ jobs:
         name: API Tests Report  # Name of the check run which will be created
         path: ./API/tests-api.xml     # Path to test results
         reporter: java-junit                 # Format of test results
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: coverage
         path: ./API/coverage_api.out
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: coverage_api_xml
         path: ./API/coverage_api.xml
@@ -85,6 +85,9 @@ jobs:
 
       - name: Install genbadge
         run: pip install genbadge[coverage]
+
+      - name: Github ref
+        run: echo "${{github.ref}}"
 
       - name: Ls root
         run: ls
