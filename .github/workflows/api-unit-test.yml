@@ -29,6 +29,12 @@ jobs:
     - name: Install gotestsum
       run: go install gotest.tools/gotestsum@latest
 
+    - name: Install gocov
+      run: go install github.com/axw/gocov/gocov
+
+    - name: Install gocov-xml
+      run: go install github.com/AlekSi/gocov-xml
+
     - name: Create MongoDB Container
       run: cd ../deploy/docker && make test_api
 
@@ -41,6 +47,9 @@ jobs:
     - name: Log Test Coverage
       run: go tool cover -func coverage_api.out | grep total
 
+    - name: Generate coverage XML report
+      run: gocov convert coverage.out | gocov-xml > coverage_api.xml
+
     - name: Test Report
       uses: dorny/test-reporter@v1
       if: always() # run this step even if previous steps failed
@@ -52,3 +61,50 @@ jobs:
       with:
         name: coverage
         path: ./API/coverage_api.out
+    - uses: actions/upload-artifact@v3
+      with:
+        name: coverage_api_xml
+        path: ./API/coverage_api.xml
+
+  coverage-badge:
+    needs: api-unit-test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./
+    if: github.ref == 'refs/heads/chore449-tests-and-documentation'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.8'
+
+      - name: Install genbadge
+        run: pip install genbadge[coverage]
+
+      - name: Ls root
+        run: ls
+
+      - name: Ls API
+        run: ls API/
+
+      - name: Download line coverage reports
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage_api_xml
+
+      - name: Generate badge
+        run: genbadge coverage -i coverage_api.xml -n "API coverage" -o assets/images/api_coverage_badge.svg
+
+      - name: Ls Badge
+        run: ls assets/images/
+
+      - name: Verify Changed files
+        uses: tj-actions/verify-changed-files@v16
+        id: verify-changed-files
+        with:
+          files: assets/images/api_coverage_badge.svg
