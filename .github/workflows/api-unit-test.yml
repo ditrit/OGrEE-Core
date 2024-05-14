@@ -57,10 +57,12 @@ jobs:
         name: API Tests Report  # Name of the check run which will be created
         path: ./API/tests-api.xml     # Path to test results
         reporter: java-junit                 # Format of test results
+
     - uses: actions/upload-artifact@v4
       with:
         name: coverage
         path: ./API/coverage_api.out
+
     - uses: actions/upload-artifact@v4
       with:
         name: coverage_api_xml
@@ -72,8 +74,7 @@ jobs:
     defaults:
       run:
         working-directory: ./
-    # if: github.ref == 'refs/heads/main'
-    if: github.event.head_commit.author.name != 'GitHubActions'
+    if: github.ref == 'refs/heads/main' && github.event.head_commit.author.name != 'GitHubActions'
 
     steps:
       - uses: actions/checkout@v4
@@ -87,18 +88,6 @@ jobs:
       - name: Install genbadge
         run: pip install genbadge[coverage]
 
-      - name: Github ref
-        run: echo "${{github.ref}}"
-
-      - name: Github head ref
-        run: echo "${{github.head_ref}}"
-
-      - name: Ls root
-        run: ls
-
-      - name: Ls API
-        run: ls API/
-
       - name: Download line coverage reports
         uses: actions/download-artifact@v4
         with:
@@ -107,22 +96,11 @@ jobs:
       - name: Generate badge
         run: genbadge coverage -i coverage_api.xml -n "API coverage" -o assets/images/api_coverage_badge.svg
 
-      - name: Ls Badge
-        run: ls assets/images/
-
       - name: Verify Changed files
         uses: tj-actions/verify-changed-files@v16
         id: verify-changed-files
         with:
           files: assets/images/api_coverage_badge.svg
-
-      - name: Last commit Author
-        run: echo "${{github.event.commits[0].author.name}} or ${{github.event.head_commit.author.name}}"
-
-      - name: Get commit author's username
-        run: |
-          COMMIT_AUTHOR=$(git log -1 --pretty=%an)
-          echo "Commit author: $COMMIT_AUTHOR"
 
       - name: Commit badge
         if: steps.verify-changed-files.outputs.files_changed == 'true'
@@ -136,5 +114,5 @@ jobs:
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         uses: ad-m/github-push-action@master
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.WIKI_ACTION_TOKEN }}
           branch: ${{ github.head_ref }}
