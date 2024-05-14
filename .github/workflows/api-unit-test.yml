@@ -120,3 +120,18 @@ jobs:
         run: |
           COMMIT_AUTHOR=$(git log -1 --pretty=%an)
           echo "Commit author: $COMMIT_AUTHOR"
+
+      - name: Commit badge
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        run: |
+          git config --local user.email "<>"
+          git config --local user.name "GitHubActions"
+          git add assets/images/api_coverage_badge.svg
+          git commit -m "Add/Update badge"
+
+      - name: Push badge commit
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ steps.coverage.outputs.branch }}
