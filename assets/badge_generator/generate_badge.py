@@ -27,7 +27,7 @@ def parse_coverage_from_report(report_path):
     try:
         coverage_report = pycobertura.Cobertura(report_path)
         return round(coverage_report.line_rate() * 100, 2)
-    except:
+    except Exception:
         raise ValueError("Invalid file path or invalid file format")
 
 def parse_coverage(coverage):

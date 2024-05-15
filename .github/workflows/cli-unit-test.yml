@@ -11,8 +11,8 @@ name: 🕵️‍♂️ CLI Unit Tests
 jobs:
   cli-unit-test:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    # permissions:
+    #   contents: write
     defaults:
       run:
         working-directory: ./CLI
