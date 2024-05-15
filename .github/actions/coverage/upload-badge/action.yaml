@@ -1,0 +1,55 @@
+name: Upload Badge
+description: Uploads the generated badge to an specific branch
+
+inputs:
+  BADGE_ARTIFACT_NAME:
+    description: "Name of the Badge artifact"
+    required: true
+  BADGE_FILE_NAME:
+    description: "Name of the Badge file"
+    required: true
+  BRANCH_NAME:
+    description: "Name of the branch where you want to add the badge"
+    required: true
+  github_token:
+    description: "Github token"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        ref: ${{ inputs.BRANCH_NAME }}
+
+    - name: Download coverage badge
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ inputs.BADGE_ARTIFACT_NAME }}
+
+    - name: Verify Changed files
+      uses: tj-actions/verify-changed-files@v16
+      id: verify-changed-files
+      with:
+        files: ${{ inputs.BADGE_FILE_NAME }}
+
+    - name: Commit badge
+      if: steps.verify-changed-files.outputs.files_changed == 'true'
+      shell: bash
+      run: |
+        git config --local user.email "<>"
+        git config --local user.name "GitHubActions"
+        git add ${{ inputs.BADGE_FILE_NAME }}
+        git commit -m "Add/Update badge"
+
+    - name: Push badge commit
+      if: steps.verify-changed-files.outputs.files_changed == 'true'
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ inputs.github_token }}
+        branch: ${{ inputs.BRANCH_NAME }} # Dedicated branch to store coverage badges
+
+    - uses: actions/checkout@v4 # we checkout to main so we have access the actions folder and we can execute the Post Upload
+      with:
+        fetch-depth: "0"
