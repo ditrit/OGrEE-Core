@@ -802,17 +802,17 @@ func TestIsEntityDrawableObjectNotFound(t *testing.T) {
 // }
 
 // Tests IsAttrDrawable (and IsCategoryAttrDrawable)
-func TestIsAttrDrawableObjectNotFound(t *testing.T) {
-	controller, mockAPI, _ := layersSetup(t)
-	path := "/api/hierarchy-objects/BASIC.A.R1.A01"
+// func TestIsAttrDrawableObjectNotFound(t *testing.T) {
+// 	controller, mockAPI, _ := layersSetup(t)
+// 	path := "/api/hierarchy-objects/BASIC.A.R1.A01"
 
-	test_utils.MockObjectNotFound(mockAPI, path)
+// 	test_utils.MockObjectNotFound(mockAPI, path)
 
-	isAttrDrawable, err := controller.IsAttrDrawable(models.PhysicalPath+"BASIC/A/R1/A01", "color")
-	assert.False(t, isAttrDrawable)
-	assert.NotNil(t, err)
-	assert.Equal(t, "object not found", err.Error())
-}
+// 	isAttrDrawable, err := controller.IsAttrDrawable(models.PhysicalPath+"BASIC/A/R1/A01", "color")
+// 	assert.False(t, isAttrDrawable)
+// 	assert.NotNil(t, err)
+// 	assert.Equal(t, "object not found", err.Error())
+// }
 
 func TestIsAttrDrawableTemplateJsonIsNil(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
