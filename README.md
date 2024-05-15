@@ -4,7 +4,7 @@
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ditrit_OGrEE-Core&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=ditrit_OGrEE-Core)
 [![API Coverage](https://raw.githubusercontent.com/ditrit/OGrEE-Core/coverage_badges/api_coverage_badge.svg)](https://github.com/ditrit/OGrEE-Core/actions/workflows/api-unit-test.yml)
-[![CLI Coverage](https://raw.githubusercontent.com/ditrit/OGrEE-Core/coverage_badges/cli_coverage_badge.svg)](https://github.com/ditrit/OGrEE-Core/actions/workflows/cli-unit-test.yml)
+[![CLI Coverage](https://raw.githubusercontent.com/ditrit/OGrEE-Core/cli_coverage_badge/cli_coverage_badge.svg)](https://github.com/ditrit/OGrEE-Core/actions/workflows/cli-unit-test.yml)
 [![⚙️ Build - Publish](https://github.com/ditrit/OGrEE-Core/actions/workflows/build-deploy.yaml/badge.svg)](https://github.com/ditrit/OGrEE-Core/actions/workflows/build-deploy.yaml)
 
 </div>

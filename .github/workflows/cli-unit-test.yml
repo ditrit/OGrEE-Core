@@ -73,7 +73,7 @@ jobs:
     defaults:
       run:
         working-directory: ./
-    # if: github.ref == 'refs/heads/main' && github.event.head_commit.author.name != 'GitHubActions'
+    if: github.ref == 'refs/heads/main' && github.event.head_commit.author.name != 'GitHubActions'
 
     steps:
       - uses: actions/checkout@v4
@@ -99,7 +99,7 @@ jobs:
     defaults:
       run:
         working-directory: ./
-    # if: github.ref == 'refs/heads/main' && github.event.head_commit.author.name != 'GitHubActions'
+    if: github.ref == 'refs/heads/main' && github.event.head_commit.author.name != 'GitHubActions'
 
     steps:
       - uses: actions/checkout@v4
