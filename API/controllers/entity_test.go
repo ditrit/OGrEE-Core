@@ -10,6 +10,7 @@ import (
 	test_utils "p3/test/utils"
 	"p3/utils"
 	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -613,21 +614,21 @@ func TestGetLayersObjectsWithSimpleFilter(t *testing.T) {
 	assert.True(t, condition)
 }
 
-// func TestGetLayersObjectsWithDoubleFilter(t *testing.T) {
-// 	endpoint := test_utils.GetEndpoint("layersObjects", "racks-1-layer")
-// 	expectedMessage := "successfully processed request"
-// 	response := e2e.ValidateManagedRequest(t, "GET", endpoint+"?root=site-no-temperature.building-1.room-*", nil, http.StatusOK, expectedMessage)
+func TestGetLayersObjectsWithDoubleFilter(t *testing.T) {
+	endpoint := test_utils.GetEndpoint("layersObjects", "racks-1-layer")
+	expectedMessage := "successfully processed request"
+	response := e2e.ValidateManagedRequest(t, "GET", endpoint+"?root=site-no-temperature.building-1.room-*", nil, http.StatusOK, expectedMessage)
 
-// 	data, exists := response["data"].([]any)
-// 	assert.True(t, exists)
-// 	assert.Equal(t, 2, len(data))
+	data, exists := response["data"].([]any)
+	assert.True(t, exists)
+	assert.Equal(t, 2, len(data))
 
-// 	condition := true
-// 	for _, rack := range data {
-// 		condition = condition && strings.HasPrefix(rack.(map[string]any)["parentId"].(string), "site-no-temperature.building-1.room-")
-// 		condition = condition && rack.(map[string]any)["category"] == "rack"
-// 		condition = condition && rack.(map[string]any)["name"] == "rack-1"
-// 	}
+	condition := true
+	for _, rack := range data {
+		condition = condition && strings.HasPrefix(rack.(map[string]any)["parentId"].(string), "site-no-temperature.building-1.room-")
+		condition = condition && rack.(map[string]any)["category"] == "rack"
+		condition = condition && rack.(map[string]any)["name"] == "rack-1"
+	}
 
-// 	assert.True(t, condition)
-// }
+	assert.True(t, condition)
+}
