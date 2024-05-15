@@ -109,9 +109,10 @@ jobs:
         with:
           fetch-depth: "0"
 
-      - name: Generate Badge
+      - name: Upload Badge
         uses: ./.github/actions/coverage/upload-badge
         with:
           BADGE_ARTIFACT_NAME: api_coverage_badge
           BADGE_FILE_NAME: api_coverage_badge.svg
           BRANCH_NAME: coverage_badges
+          inputs: ${{ secrets.GITHUB_TOKEN }}

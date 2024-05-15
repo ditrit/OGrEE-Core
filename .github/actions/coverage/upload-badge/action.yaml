@@ -11,6 +11,9 @@ inputs:
   BRANCH_NAME:
     description: "Name of the branch where you want to add the badge"
     required: true
+  github_token:
+    description: "Github token"
+    required: true
 
 runs:
   using: "composite"
@@ -44,5 +47,5 @@ runs:
       if: steps.verify-changed-files.outputs.files_changed == 'true'
       uses: ad-m/github-push-action@master
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        github_token: ${{ inputs.github_token }}
         branch: ${{ inputs.BRANCH_NAME }} # Dedicated branch to store coverage badges
