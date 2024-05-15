@@ -52,7 +52,7 @@ jobs:
 
     - name: Test Report
       uses: dorny/test-reporter@v1
-      if: always() # run this step even if previous steps failed
+      if: github.actor != 'dependabot[bot]'
       with:
         name: API Tests Report  # Name of the check run which will be created
         path: ./API/tests-api.xml     # Path to test results

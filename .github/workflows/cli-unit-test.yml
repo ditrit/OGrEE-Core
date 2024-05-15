@@ -49,7 +49,7 @@ jobs:
 
     - name: Test Report
       uses: dorny/test-reporter@v1
-      if: always() # run this step even if previous steps failed
+      if: github.actor != 'dependabot[bot]'
       with:
         name: CLI Tests Report  # Name of the check run which will be created
         path: ./CLI/tests-cli.xml     # Path to test results
@@ -111,5 +111,5 @@ jobs:
         with:
           BADGE_ARTIFACT_NAME: cli_coverage_badge
           BADGE_FILE_NAME: cli_coverage_badge.svg
-          BRANCH_NAME: coverage_badges
+          BRANCH_NAME: cli_coverage_badge
           github_token: ${{ secrets.GITHUB_TOKEN }}
