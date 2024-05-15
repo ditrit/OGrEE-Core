@@ -159,8 +159,10 @@
   "restoreInfoMessage": "Todos os dados do banco atual serão apagados antes de restaurar o backup.\nSe não for selecionado, o banco de dados atual será favorecido em caso de conflito com o restaurado",
 
   "tools": "Ferramentas",
-  "downloadCli": "Baixe a CLI mais recente",
+  "downloadCli": "Baixar CLI",
   "downloadCliTitle": "Baixe a CLI mais recente",
+  "downloadUnity": "Baixar cliente 3D",
+  "downloadUnityTitle": "Baixe o cliente 3D mais recente",
   "selectOS": "Selecione o OS:",
   "fileSavedTo": "Arquivo salvo com sucesso em:",
   "unableDownload": "Não foi possível baixar o arquivo",

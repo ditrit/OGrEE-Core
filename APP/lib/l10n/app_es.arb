@@ -159,8 +159,10 @@
   "restoreInfoMessage": "Todos los datos serán eliminados antes de realizar la restauración.\nSi no se selecciona, se favorecerá la DB actual si ocurren conflictos",
 
   "tools": "Herramientas",
-  "downloadCli": "Descargar última CLI",
+  "downloadCli": "Descargar CLI",
   "downloadCliTitle": "Descargar última CLI",
+  "downloadUnity": "Descargar cliente 3D",
+  "downloadUnityTitle": "Descarfar último cliente 3D",
   "selectOS": "Seleccionar OS:",
   "fileSavedTo": "Archivo descargado en:",
   "unableDownload": "No se pudo descargar el archivo",

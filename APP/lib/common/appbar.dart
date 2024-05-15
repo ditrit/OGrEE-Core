@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
+import 'package:ogree_app/models/netbox.dart';
 import 'package:ogree_app/pages/login_page.dart';
 import 'package:ogree_app/pages/projects_page.dart';
 import 'package:ogree_app/pages/tenant_page.dart';
 import 'package:ogree_app/widgets/change_password_popup.dart';
 import 'package:ogree_app/widgets/common/language_toggle.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:ogree_app/widgets/tools/download_cli_popup.dart';
+import 'package:ogree_app/widgets/tools/download_unity_popup.dart';
 
 import '../widgets/tenants/popups/create_server_popup.dart';
 
@@ -19,6 +22,14 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
       );
 
   List<PopupMenuEntry<String>> entries = <PopupMenuEntry<String>>[
+    PopupMenuItem(
+      value: Tools.cli.name,
+      child: Text(localeMsg.downloadCli),
+    ),
+    PopupMenuItem(
+      value: "unity",
+      child: Text(localeMsg.downloadUnity),
+    ),
     PopupMenuItem(
       value: "change",
       child: Text(AppLocalizations.of(context)!.changePassword),
@@ -121,6 +132,12 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
               Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) => const TenantPage(userEmail: "admin"),
               ));
+            } else if (value == "unity") {
+              showCustomPopup(context, const DownloadUnityPopup(),
+                  isDismissible: true);
+            } else if (value == Tools.cli.name) {
+              showCustomPopup(context, const DownloadCliPopup(),
+                  isDismissible: true);
             } else {
               showCustomPopup(context, const ChangePasswordPopup());
             }

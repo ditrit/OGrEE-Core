@@ -159,8 +159,10 @@
   "restoreInfoMessage": "Everything in the current database will be erased before restoring the backup.\nIf not selected, conflicts may occur and the current DB will be favored",
 
   "tools": "Tools",
-  "downloadCli": "Download latest CLI",
+  "downloadCli": "Download CLI",
   "downloadCliTitle": "Download latest CLI",
+  "downloadUnity": "Download 3D Client",
+  "downloadUnityTitle": "Download latest 3D Client",
   "selectOS": "Select OS:",
   "fileSavedTo": "File successfully saved to:",
   "unableDownload": "Unable to download file",

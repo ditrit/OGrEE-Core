@@ -191,6 +191,8 @@
   "tools": "Outils",
   "downloadCli": "Télécharger la CLI",
   "downloadCliTitle": "Télécharger la CLI la plus récente",
+  "downloadUnity": "Télécharger le Client 3D",
+  "downloadUnityTitle": "Télécharger le dernier client 3D",
   "selectOS": "Choisir SO :" ,
   "fileSavedTo": "Téléchargé dans :",
   "unableDownload": "Impossible de télécharger le fichier",
