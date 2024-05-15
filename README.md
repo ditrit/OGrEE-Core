@@ -85,14 +85,18 @@ OGrEE-Tools is a collection of tools help populate OGrEE with data. They can hel
 
 ## Demo
 
-Check out our Live Demo! 👉 https://app.demo.kube.ogree.ditrit.io/  
+Check out our **Live Demo!** 👉 https://app.demo.kube.ogree.ditrit.io/  
 Login with user `john@ogreecore.com` and password `password`.
 
 ![demo-screeenshot](https://github.com/ditrit/OGrEE-Core/assets/37706737/017f81a2-a9d1-456d-a18f-d6a30347309a)
 
 You can also see a quick demo video of a datacenter being created on OGrEE:
 
-https://github.com/ditrit/OGrEE-Core/assets/35805113/d6fe1a3e-9c5f-42e7-b926-1c6211a7df0d
+
+
+https://github.com/ditrit/OGrEE-Core/assets/37706737/fa8bd095-303e-4501-a619-9f45171c317f
+
+
 
 Our website [ogree.ditrit.io](https://ogree.ditrit.io) also has some others videos and photos of OGrEE.
 
