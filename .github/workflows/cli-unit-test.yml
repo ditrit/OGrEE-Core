@@ -78,30 +78,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: "0"
 
-      - uses: actions/setup-python@v5
+      - name: Generate Badge
+        uses: ./.github/actions/coverage/generate-badge
         with:
-          python-version: '3.8'
-
-      - name: Install requests
-        run: pip install requests
-
-      - name: Install pycobertura
-        run: pip install pycobertura
-
-      - name: Download line coverage reports
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage_cli_xml
-
-      - name: Generate badge
-        run: python assets/badge_generator/generate_badge.py --label "CLI coverage" --output cli_coverage_badge.svg --input-report coverage_cli.xml --red-limit 50 --green-limit 65
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: cli_coverage_badge
-          path: cli_coverage_badge.svg
+          COVERAGE_REPORT_ARTIFACT: coverage_cli_xml
+          COVERAGE_REPORT_NAME: coverage_cli.xml
+          LABEL: "CLI coverage"
+          OUTPUT_FILE: cli_coverage_badge.svg
+          RED_LIMIT: "50"
+          GREEN_LIMIT: "65"
+          BADGE_ARTIFACT_NAME: cli_coverage_badge
 
   upload-coverage-badge:
     needs: generate-coverage-badge
@@ -116,31 +104,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-          ref: coverage_badges
+          fetch-depth: "0"
 
-      - name: Download coverage badge
-        uses: actions/download-artifact@v4
+      - name: Upload Badge
+        uses: ./.github/actions/coverage/upload-badge
         with:
-          name: cli_coverage_badge
-
-      - name: Verify Changed files
-        uses: tj-actions/verify-changed-files@v16
-        id: verify-changed-files
-        with:
-          files: cli_coverage_badge.svg
-
-      - name: Commit badge
-        if: steps.verify-changed-files.outputs.files_changed == 'true'
-        run: |
-          git config --local user.email "<>"
-          git config --local user.name "GitHubActions"
-          git add cli_coverage_badge.svg
-          git commit -m "Add/Update badge"
-
-      - name: Push badge commit
-        if: steps.verify-changed-files.outputs.files_changed == 'true'
-        uses: ad-m/github-push-action@master
-        with:
+          BADGE_ARTIFACT_NAME: cli_coverage_badge
+          BADGE_FILE_NAME: cli_coverage_badge.svg
+          BRANCH_NAME: coverage_badges
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: coverage_badges # Dedicated branch to store coverage badges

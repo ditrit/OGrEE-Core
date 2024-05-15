@@ -595,23 +595,23 @@ func TestGetLayersObjectsLayerUnknown(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, recorder.Code)
 }
 
-// func TestGetLayersObjectsWithSimpleFilter(t *testing.T) {
-// 	endpoint := test_utils.GetEndpoint("layersObjects", "racks-layer")
-// 	expectedMessage := "successfully processed request"
-// 	response := e2e.ValidateManagedRequest(t, "GET", endpoint+"?root=site-no-temperature.building-1.room-1", nil, http.StatusOK, expectedMessage)
+func TestGetLayersObjectsWithSimpleFilter(t *testing.T) {
+	endpoint := test_utils.GetEndpoint("layersObjects", "racks-layer")
+	expectedMessage := "successfully processed request"
+	response := e2e.ValidateManagedRequest(t, "GET", endpoint+"?root=site-no-temperature.building-1.room-1", nil, http.StatusOK, expectedMessage)
 
-// 	data, exists := response["data"].([]any)
-// 	assert.True(t, exists)
-// 	assert.Equal(t, 2, len(data))
+	data, exists := response["data"].([]any)
+	assert.True(t, exists)
+	assert.Equal(t, 2, len(data))
 
-// 	condition := true
-// 	for _, rack := range data {
-// 		condition = condition && rack.(map[string]any)["parentId"] == "site-no-temperature.building-1.room-1"
-// 		condition = condition && rack.(map[string]any)["category"] == "rack"
-// 	}
+	condition := true
+	for _, rack := range data {
+		condition = condition && rack.(map[string]any)["parentId"] == "site-no-temperature.building-1.room-1"
+		condition = condition && rack.(map[string]any)["category"] == "rack"
+	}
 
-// 	assert.True(t, condition)
-// }
+	assert.True(t, condition)
+}
 
 // func TestGetLayersObjectsWithDoubleFilter(t *testing.T) {
 // 	endpoint := test_utils.GetEndpoint("layersObjects", "racks-1-layer")
