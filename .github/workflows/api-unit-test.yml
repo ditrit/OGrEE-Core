@@ -79,6 +79,10 @@ jobs:
     # if: github.ref == 'refs/heads/main' && github.event.head_commit.author.name != 'GitHubActions'
 
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: "0"
+
       - name: Generate Badge
         uses: ./.github/actions/coverage/generate-badge
         with:
@@ -101,8 +105,12 @@ jobs:
     # if: github.ref == 'refs/heads/main' && github.event.head_commit.author.name != 'GitHubActions'
 
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: "0"
+
       - name: Generate Badge
-        uses: ./.github/actions/coverage/generate-badge
+        uses: ./.github/actions/coverage/upload-badge
         with:
           BADGE_ARTIFACT_NAME: api_coverage_badge
           BADGE_FILE_NAME: api_coverage_badge.svg
