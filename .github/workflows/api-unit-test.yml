@@ -116,3 +116,7 @@ jobs:
           BADGE_FILE_NAME: api_coverage_badge.svg
           BRANCH_NAME: coverage_badges
           github_token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: "0"
