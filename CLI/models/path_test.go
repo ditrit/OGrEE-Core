@@ -34,44 +34,30 @@ func TestMakeRecursive(t *testing.T) {
 	assert.Equal(t, strings.Replace(id, ".*", ".**{1,2}.*", -1), path.ObjectID)
 }
 
-func TestIsPhysical(t *testing.T) {
-	assert.True(t, models.IsPhysical(models.PhysicalPath+"site1"))
-	assert.False(t, models.IsPhysical(models.OrganisationPath+"domain1/"))
-}
+func TestSss(t *testing.T) {
+	domainPath := models.OrganisationPath + "domain1"
+	tests := []struct {
+		name          string
+		isFunction    func(string) bool
+		correctPath   string
+		incorrectPath string
+	}{
+		{"IsPhysical", models.IsPhysical, models.PhysicalPath + "site1", domainPath},
+		{"IsStray", models.IsStray, models.StrayPath + "stray-device1", domainPath},
+		{"IsObjectTemplate", models.IsObjectTemplate, models.ObjectTemplatesPath + "template1", domainPath},
+		{"IsRoomTemplate", models.IsRoomTemplate, models.RoomTemplatesPath + "template1", domainPath},
+		{"IsBuildingTemplate", models.IsBuildingTemplate, models.BuildingTemplatesPath + "template1", domainPath},
+		{"IsTag", models.IsTag, models.TagsPath + "tag1", domainPath},
+		{"IsLayer", models.IsLayer, models.LayersPath + "layer1", domainPath},
+		{"IsGroup", models.IsGroup, models.GroupsPath + "group1", domainPath},
+	}
 
-func TestIsStray(t *testing.T) {
-	assert.True(t, models.IsStray(models.StrayPath+"stray-device1"))
-	assert.False(t, models.IsStray(models.OrganisationPath+"domain1"))
-}
-
-func TestIsObjectTemplate(t *testing.T) {
-	assert.True(t, models.IsObjectTemplate(models.ObjectTemplatesPath+"template1"))
-	assert.False(t, models.IsObjectTemplate(models.OrganisationPath+"domain1"))
-}
-
-func TestIsRoomTemplate(t *testing.T) {
-	assert.True(t, models.IsRoomTemplate(models.RoomTemplatesPath+"template1"))
-	assert.False(t, models.IsRoomTemplate(models.OrganisationPath+"domain1"))
-}
-
-func TestIsBuildingTemplate(t *testing.T) {
-	assert.True(t, models.IsBuildingTemplate(models.BuildingTemplatesPath+"template1"))
-	assert.False(t, models.IsBuildingTemplate(models.OrganisationPath+"domain1"))
-}
-
-func TestIsTag(t *testing.T) {
-	assert.True(t, models.IsTag(models.TagsPath+"tag1"))
-	assert.False(t, models.IsTag(models.OrganisationPath+"domain1"))
-}
-
-func TestIsLayer(t *testing.T) {
-	assert.True(t, models.IsLayer(models.LayersPath+"layer1"))
-	assert.False(t, models.IsLayer(models.OrganisationPath+"domain1"))
-}
-
-func TestIsGroup(t *testing.T) {
-	assert.True(t, models.IsGroup(models.GroupsPath+"group1"))
-	assert.False(t, models.IsGroup(models.OrganisationPath+"domain1"))
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.True(t, tt.isFunction(tt.correctPath))
+			assert.False(t, tt.isFunction(tt.incorrectPath))
+		})
+	}
 }
 
 func TestSplitPath(t *testing.T) {

@@ -8,6 +8,7 @@ import (
 	"p3/test/e2e"
 	"p3/test/integration"
 	"p3/test/unit"
+	test_utils "p3/test/utils"
 	u "p3/utils"
 	"testing"
 
@@ -18,10 +19,9 @@ import (
 )
 
 func TestAddTagThatNotExistReturnsError(t *testing.T) {
-	err := createSite("add-tag-1-site", nil)
-	require.Nil(t, err)
+	integration.CreateTestPhysicalEntity(t, u.SITE, "add-tag-1-site", "", false)
 
-	_, err = addTagToObject("add-tag-1-site", "not-exists")
+	_, err := addTagToObject("add-tag-1-site", "not-exists")
 	assert.NotNil(t, err)
 	assert.Equal(t, "Tag \"not-exists\" not found", err.Message)
 }
@@ -30,8 +30,7 @@ func TestAddTagToObjectAddsItToList(t *testing.T) {
 	err := createTag("add-tag-2")
 	require.Nil(t, err)
 
-	err = createSite("add-tag-2-site", nil)
-	require.Nil(t, err)
+	integration.CreateTestPhysicalEntity(t, u.SITE, "add-tag-2-site", "", false)
 
 	site, err := addTagToObject("add-tag-2-site", "add-tag-2")
 	assert.Nil(t, err)
@@ -53,8 +52,7 @@ func TestAddDuplicatedTagDoesNothing(t *testing.T) {
 }
 
 func TestRemoveTagThatIsNotInListDoesNothing(t *testing.T) {
-	err := createSite("remove-tag-1-site", nil)
-	require.Nil(t, err)
+	integration.CreateTestPhysicalEntity(t, u.SITE, "remove-tag-1-site", "", false)
 
 	site, err := removeTagFromObject("remove-tag-1-site", "not-present")
 	assert.Nil(t, err)
@@ -407,20 +405,11 @@ func TestFilterByTagMultipleMatches(t *testing.T) {
 }
 
 func TestCreateObjectWithTagsThatNotExistsReturnsError(t *testing.T) {
+	site := test_utils.GetEntityMap("site", "create-object-tags-1", "", integration.TestDBName)
+	site["tags"] = []any{"not-exists"}
 	_, err := models.CreateEntity(
 		u.SITE,
-		map[string]any{
-			"attributes": map[string]any{
-				"reservedColor":  "AAAAAA",
-				"technicalColor": "D0FF78",
-				"usableColor":    "5BDCFF",
-			},
-			"category":    "site",
-			"description": "site",
-			"domain":      integration.TestDBName,
-			"name":        "create-object-tags-1",
-			"tags":        []any{"not-exists"},
-		},
+		site,
 		integration.ManagerUserRoles,
 	)
 	assert.NotNil(t, err)
@@ -429,20 +418,11 @@ func TestCreateObjectWithTagsThatNotExistsReturnsError(t *testing.T) {
 }
 
 func TestCreateObjectWithDuplicatedTagsReturnsError(t *testing.T) {
+	site := test_utils.GetEntityMap("site", "create-object-tags-1", "", integration.TestDBName)
+	site["tags"] = []any{"tag1", "tag1"}
 	_, err := models.CreateEntity(
 		u.SITE,
-		map[string]any{
-			"attributes": map[string]any{
-				"reservedColor":  "AAAAAA",
-				"technicalColor": "D0FF78",
-				"usableColor":    "5BDCFF",
-			},
-			"category":    "site",
-			"description": "site",
-			"domain":      integration.TestDBName,
-			"name":        "create-object-tags-1",
-			"tags":        []any{"tag1", "tag1"},
-		},
+		site,
 		integration.ManagerUserRoles,
 	)
 	assert.NotNil(t, err)
@@ -450,45 +430,37 @@ func TestCreateObjectWithDuplicatedTagsReturnsError(t *testing.T) {
 	assert.Equal(t, "Tags has duplicated values", err.Message)
 }
 
-func TestUpdateObjectWithTagsThatNotExistsReturnsError(t *testing.T) {
+func TestUpdateObjectWithTagsThatReturnsError(t *testing.T) {
 	err := createSite("update-object-tags-1", []any{})
 	require.Nil(t, err)
 
-	_, err = models.UpdateObject(u.EntityToString(u.SITE), "update-object-tags-1", map[string]any{
-		"tags": []any{"not-exists"},
-	}, false, integration.ManagerUserRoles, false)
-	assert.NotNil(t, err)
-	assert.Equal(t, u.ErrBadFormat, err.Type)
-	assert.Equal(t, "Tag \"not-exists\" not found", err.Message)
-}
+	tests := []struct {
+		name    string
+		isPatch bool
+		message string
+	}{
+		{"NonExistentTag", false, "Tag \"not-exists\" not found"},
+		{"InvalidKeyModification", true, "Tags cannot be modified in this way, use tags+ and tags-"},
+	}
 
-func TestPatchObjectWithTagsReturnsError(t *testing.T) {
-	err := createSite("update-object-tags-2", []any{})
-	require.Nil(t, err)
-
-	_, err = models.UpdateObject(u.EntityToString(u.SITE), "update-object-tags-2", map[string]any{
-		"tags": []any{"not-exists"},
-	}, true, integration.ManagerUserRoles, false)
-	assert.NotNil(t, err)
-	assert.Equal(t, u.ErrBadFormat, err.Type)
-	assert.Equal(t, "Tags cannot be modified in this way, use tags+ and tags-", err.Message)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err = models.UpdateObject(u.EntityToString(u.SITE), "update-object-tags-1", map[string]any{
+				"tags": []any{"not-exists"},
+			}, tt.isPatch, integration.ManagerUserRoles, false)
+			assert.NotNil(t, err)
+			assert.Equal(t, u.ErrBadFormat, err.Type)
+			assert.Equal(t, tt.message, err.Message)
+		})
+	}
 }
 
 func TestCreateObjectWithTagsAsStringReturnsError(t *testing.T) {
+	site := test_utils.GetEntityMap("site", "create-objects-tags-string", "", integration.TestDBName)
+	site["tags"] = "a string that is not an array"
 	_, err := models.CreateEntity(
 		u.SITE,
-		map[string]any{
-			"attributes": map[string]any{
-				"reservedColor":  "AAAAAA",
-				"technicalColor": "D0FF78",
-				"usableColor":    "5BDCFF",
-			},
-			"category":    "site",
-			"description": "site",
-			"domain":      integration.TestDBName,
-			"name":        "create-objects-tags-string",
-			"tags":        "a string that is not an array",
-		},
+		site,
 		integration.ManagerUserRoles,
 	)
 	assert.NotNil(t, err)
@@ -525,20 +497,11 @@ func createTagWithImage(slug, image string) *u.Error {
 }
 
 func createSite(name string, tags any) *u.Error {
+	site := test_utils.GetEntityMap("site", name, "", integration.TestDBName)
+	site["tags"] = tags
 	_, err := models.CreateEntity(
 		u.SITE,
-		map[string]any{
-			"attributes": map[string]any{
-				"reservedColor":  "AAAAAA",
-				"technicalColor": "D0FF78",
-				"usableColor":    "5BDCFF",
-			},
-			"category":    "site",
-			"description": "site",
-			"domain":      integration.TestDBName,
-			"name":        name,
-			"tags":        tags,
-		},
+		site,
 		integration.ManagerUserRoles,
 	)
 	if err != nil {
@@ -548,12 +511,16 @@ func createSite(name string, tags any) *u.Error {
 	return nil
 }
 
-func addTagToObject(objectID string, tagSlug string) (map[string]any, *u.Error) {
+func manageObjectTag(objectID string, tagSlug string, isAdd bool) (map[string]any, *u.Error) {
+	tagKey := "tags+"
+	if !isAdd {
+		tagKey = "tags-"
+	}
 	return models.UpdateObject(
 		u.HIERARCHYOBJS_ENT,
 		objectID,
 		map[string]any{
-			"tags+": tagSlug,
+			tagKey: tagSlug,
 		},
 		true,
 		integration.ManagerUserRoles,
@@ -561,33 +528,27 @@ func addTagToObject(objectID string, tagSlug string) (map[string]any, *u.Error) 
 	)
 }
 
+func addTagToObject(objectID string, tagSlug string) (map[string]any, *u.Error) {
+	return manageObjectTag(objectID, tagSlug, true)
+}
+
 func removeTagFromObject(objectID string, tagSlug string) (map[string]any, *u.Error) {
-	return models.UpdateObject(
-		u.HIERARCHYOBJS_ENT,
-		objectID,
-		map[string]any{
-			"tags-": tagSlug,
-		},
-		true,
+	return manageObjectTag(objectID, tagSlug, false)
+}
+
+func getObject(req bson.M, entity int) (map[string]interface{}, *u.Error) {
+	return models.GetObject(
+		req,
+		u.EntityToString(entity),
+		u.RequestFilters{},
 		integration.ManagerUserRoles,
-		false,
 	)
 }
 
 func getSite(name string) (map[string]interface{}, *u.Error) {
-	return models.GetObject(
-		bson.M{"name": name},
-		u.EntityToString(u.SITE),
-		u.RequestFilters{},
-		integration.ManagerUserRoles,
-	)
+	return getObject(bson.M{"name": name}, u.SITE)
 }
 
 func getTag(slug string) (map[string]interface{}, *u.Error) {
-	return models.GetObject(
-		bson.M{"slug": slug},
-		u.EntityToString(u.TAG),
-		u.RequestFilters{},
-		integration.ManagerUserRoles,
-	)
+	return getObject(bson.M{"slug": slug}, u.TAG)
 }

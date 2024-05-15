@@ -23,152 +23,88 @@ func TestMessageToReturnMSI(t *testing.T) {
 	if msi["message"] != testString {
 		t.Error("Test Case 2 failed")
 	}
+}
+
+func getEntityTestsList() []struct {
+	name         string
+	stringEntity string
+	intEntity    int
+} {
+	return []struct {
+		name         string
+		stringEntity string
+		intEntity    int
+	}{
+		{"SiteEntity", "site", SITE},
+		{"BuildingEntity", "building", BLDG},
+		{"RoomEntity", "room", ROOM},
+		{"RackEntity", "rack", RACK},
+		{"DeviceEntity", "device", DEVICE},
+		{"AcEntity", "ac", AC},
+		{"PanelEntity", "panel", PWRPNL},
+		{"DomainEntity", "domain", DOMAIN},
+		{"RoomTemplateEntity", "room_template", ROOMTMPL},
+		{"ObjectTemplateEntity", "obj_template", OBJTMPL},
+		{"BuildingTemplateEntity", "bldg_template", BLDGTMPL},
+		{"CabinetEntity", "cabinet", CABINET},
+		{"GroupEntity", "group", GROUP},
+		{"CorridorEntity", "corridor", CORRIDOR},
+		{"GenericEntity", "generic", GENERIC},
+		{"TagEntity", "tag", TAG},
+		{"LayerEntity", "layer", LAYER},
+		{"InvalidEntity", "INVALID", -1},
+	}
 
 }
 
 func TestEntityStrToIntToReturnTrue(t *testing.T) {
-	//Test Case 1
-	testString := "site"
-	ent := EntityStrToInt(testString)
-	if ent != SITE {
-		t.Error("Test Case 2 failed")
-	}
+	tests := getEntityTestsList()
+	// we add the short building name case
+	tests = append(tests, struct {
+		name         string
+		stringEntity string
+		intEntity    int
+	}{"ShortBuildingEntity", "bldg", BLDG})
 
-	//Test Case 3
-	testString = "building"
-	ent = EntityStrToInt(testString)
-	if ent != BLDG {
-		t.Error("Test Case 3 failed")
-	}
-
-	//Test Case 4
-	testString = "room"
-	ent = EntityStrToInt(testString)
-	if ent != ROOM {
-		t.Error("Test Case 4 failed")
-	}
-
-	//Test Case 5
-	testString = "rack"
-	ent = EntityStrToInt(testString)
-	if ent != RACK {
-		t.Error("Test Case 5 failed")
-	}
-
-	//Test Case 6
-	testString = "device"
-	ent = EntityStrToInt(testString)
-	if ent != DEVICE {
-		t.Error("Test Case 6 failed")
-	}
-
-	//Test Case 9
-	testString = "bldg"
-	ent = EntityStrToInt(testString)
-	if ent != BLDG {
-		t.Error("Test Case 7 failed")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ent := EntityStrToInt(tt.stringEntity)
+			assert.Equal(t, tt.intEntity, ent, "The entity \"%s\" should have the code %d", tt.stringEntity, tt.intEntity)
+		})
 	}
 }
 
 func TestEntityToStringToReturnTrue(t *testing.T) {
-	//Test Case 1
-	testString := SITE
-	ent := EntityToString(testString)
-	if ent != "site" {
-		t.Error("Test Case 2 failed")
-	}
+	tests := getEntityTestsList()
 
-	//Test Case 3
-	testString = BLDG
-	ent = EntityToString(testString)
-	if ent != "building" {
-		t.Error("Test Case 3 failed")
-	}
-
-	//Test Case 4
-	testString = ROOM
-	ent = EntityToString(testString)
-	if ent != "room" {
-		t.Error("Test Case 4 failed")
-	}
-
-	//Test Case 5
-	testString = RACK
-	ent = EntityToString(testString)
-	if ent != "rack" {
-		t.Error("Test Case 5 failed")
-	}
-
-	//Test Case 6
-	testString = DEVICE
-	ent = EntityToString(testString)
-	if ent != "device" {
-		t.Error("Test Case 6 failed")
-	}
-
-	//Test Case 7
-	testString = -1
-	ent = EntityToString(testString)
-	if ent != "INVALID" {
-		t.Error("Test Case 7 failed")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ent := EntityToString(tt.intEntity)
+			assert.Equal(t, tt.stringEntity, ent, "The entity with code \"%d\" should have the string \"%s\"", tt.intEntity, tt.stringEntity)
+		})
 	}
 }
 
 func TestErrTypeToStatusCodeToReturnTrue(t *testing.T) {
-	//Test Case 1
-	testString := ErrForbidden
-	ent := ErrTypeToStatusCode(testString)
-	if ent != http.StatusForbidden {
-		t.Error("Test Case 1 failed")
+	tests := []struct {
+		name       string
+		errorType  ErrType
+		httpStatus int
+	}{
+		{"ErrForbidden", ErrForbidden, http.StatusForbidden},
+		{"ErrUnauthorized", ErrUnauthorized, http.StatusUnauthorized},
+		{"ErrNotFound", ErrNotFound, http.StatusNotFound},
+		{"ErrDuplicate", ErrDuplicate, http.StatusBadRequest},
+		{"ErrBadFormat", ErrBadFormat, http.StatusBadRequest},
+		{"ErrDBError", ErrDBError, http.StatusInternalServerError},
+		{"ErrInternal", ErrInternal, http.StatusInternalServerError},
+		{"ErrInternal", -1, http.StatusInternalServerError},
 	}
-
-	//Test Case 2
-	testString = ErrUnauthorized
-	ent = ErrTypeToStatusCode(testString)
-	if ent != http.StatusUnauthorized {
-		t.Error("Test Case 2 failed")
-	}
-
-	//Test Case 3
-	testString = ErrNotFound
-	ent = ErrTypeToStatusCode(testString)
-	if ent != http.StatusNotFound {
-		t.Error("Test Case 3 failed")
-	}
-
-	//Test Case 4
-	testString = ErrDuplicate
-	ent = ErrTypeToStatusCode(testString)
-	if ent != http.StatusBadRequest {
-		t.Error("Test Case 4 failed")
-	}
-
-	//Test Case 5
-	testString = ErrBadFormat
-	ent = ErrTypeToStatusCode(testString)
-	if ent != http.StatusBadRequest {
-		t.Error("Test Case 5 failed")
-	}
-
-	//Test Case 6
-	testString = ErrDBError
-	ent = ErrTypeToStatusCode(testString)
-	if ent != http.StatusInternalServerError {
-		t.Error("Test Case 6 failed")
-	}
-
-	//Test Case 7
-	testString = ErrInternal
-	ent = ErrTypeToStatusCode(testString)
-	if ent != http.StatusInternalServerError {
-		t.Error("Test Case 7 failed")
-	}
-
-	//Test Case 8
-	testString = -1
-	ent = ErrTypeToStatusCode(testString)
-	if ent != http.StatusInternalServerError {
-		t.Error("Test Case 8 failed")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			code := ErrTypeToStatusCode(tt.errorType)
+			assert.Equal(t, tt.httpStatus, code, "The errorType \"%d\" should have the status code \"%d\"", tt.errorType, tt.httpStatus)
+		})
 	}
 }
 

@@ -671,6 +671,42 @@
         }
       }
     },
+    "/api/sitecolors/{id}": {
+      "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "Returned attributes are always: reservedColor, usableColor and technicalColor.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Gets the colors attributes of the parent site of given object.",
+        "operationId": "GetSiteColors",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "siteA",
+            "description": "ID of desired object",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. A response body will be returned with a meaningful message."
+          },
+          "404": {
+            "description": "Nothing Found. An error message will be returned."
+          }
+        }
+      }
+    },
     "/api/stats": {
       "get": {
         "security": [
@@ -764,7 +800,7 @@
           {
             "type": "string",
             "default": "siteA",
-            "description": "ID of desired object. For templates the slug is the ID.",
+            "description": "ID of desired object",
             "name": "id",
             "in": "path",
             "required": true

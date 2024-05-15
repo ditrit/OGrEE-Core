@@ -3,11 +3,12 @@ package integration
 import (
 	"log"
 	"p3/repository"
+	test_utils "p3/test/utils"
 	"p3/utils"
 )
 
 const testDBPort = "27018"
-const TestDBName = "ogreeAutoTest"
+const TestDBName = test_utils.TestDBName
 const testDBUser = TestDBName + "Admin"
 
 func init() {

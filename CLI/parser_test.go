@@ -49,14 +49,27 @@ func TestParseExact(t *testing.T) {
 }
 
 func TestParseWord(t *testing.T) {
-	defer recoverFunc(t)
-	p := newParser("test abc")
-	word := p.parseSimpleWord("")
-	if word != "test" {
-		t.Errorf("wrong word parsed")
+	tests := []struct {
+		name      string
+		word      string
+		remaining string
+	}{
+		{"ParseWordSingleLetter", "a", "42"},
+		{"ParseWordMultipleLetters", "test", "abc"},
 	}
-	if p.remaining() != "abc" {
-		t.Errorf("wrong stop, remaining buf : %s", p.remaining())
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			defer recoverFunc(t)
+			p := newParser(tt.word + " " + tt.remaining)
+			word := p.parseSimpleWord("")
+			if word != tt.word {
+				t.Errorf("wrong word parsed")
+			}
+			if p.remaining() != tt.remaining {
+				t.Errorf("wrong stop, remaining buf : %s", p.remaining())
+			}
+		})
 	}
 }
 
@@ -71,18 +84,6 @@ func TestParsePathGroup(t *testing.T) {
 		t.Errorf("wrong path group parsed : %s", spew.Sdump(paths))
 	}
 	if p.remaining() != "a" {
-		t.Errorf("wrong stop, remaining buf : %s", p.remaining())
-	}
-}
-
-func TestParseWordSingleLetter(t *testing.T) {
-	defer recoverFunc(t)
-	p := newParser("a 42")
-	word := p.parseSimpleWord("")
-	if word != "a" {
-		t.Errorf("wrong word parsed")
-	}
-	if p.remaining() != "42" {
 		t.Errorf("wrong stop, remaining buf : %s", p.remaining())
 	}
 }
@@ -662,11 +663,11 @@ func TestParseUnsetFunction(t *testing.T) {
 	assert.Equal(t, functionName, parsedNode.funcName)
 }
 
-func TestParseUnsetAttribute(t *testing.T) {
+func TestParseDeleteAttribute(t *testing.T) {
 	path := "path/to/room"
 	attribute := "template"
 	p := newParser(path + ":" + attribute)
-	parsedNode := p.parseUnset().(*unsetAttrNode)
+	parsedNode := p.parseDelete().(*deleteAttrNode)
 	assert.Equal(t, path, parsedNode.path.(*pathNode).path.(*valueNode).val)
 	assert.Equal(t, attribute, parsedNode.attr)
 }
