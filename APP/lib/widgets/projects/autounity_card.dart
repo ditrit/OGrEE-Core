@@ -67,7 +67,7 @@ class AutoUnityProjectCard extends StatelessWidget {
                     child: Text(localeMsg.descriptionTwoPoints),
                   ),
                   Text(
-                    "View a 3D representation of this datacenter",
+                    localeMsg.view3Dobjs,
                     style: TextStyle(backgroundColor: Colors.grey.shade200),
                   ),
                 ],

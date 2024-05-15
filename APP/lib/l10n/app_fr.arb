@@ -260,6 +260,7 @@
     }
   },
 
+  "view3Dobjs": "Voir une vue 3D de ce datacenter",
   "@myAlerts": { "description": "Alerts View" },
   "myAlerts": "Mes alertes",
   "viewAlerts": "Voir les alertes",

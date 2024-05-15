@@ -360,9 +360,12 @@ class _DataSource extends DataTableSource {
 
   DataCell imageLabel(String imagePath) {
     return DataCell(
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Image.network(tenantUrl + imagePath),
+      SizedBox(
+        width: 100,
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Image.network(tenantUrl + imagePath),
+        ),
       ),
     );
   }

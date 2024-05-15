@@ -121,7 +121,7 @@ class _UserViewState extends State<UserView> {
                     ),
                     const SizedBox(width: 8),
                     SizedBox(
-                      width: 150,
+                      width: 225,
                       child: TextFormField(
                           textAlignVertical: TextAlignVertical.center,
                           initialValue: widget.searchText,

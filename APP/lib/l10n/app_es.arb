@@ -201,6 +201,7 @@
   "toolPassword": "Contraseña del usuario {toolName}",
   "toolPort": "Puerto {toolName}",
 
+  "view3Dobjs": "Ver una representación 3D del datacenter",
   "myAlerts": "Mis alertas",
   "viewAlerts": "Ver alertas",
   "temperatureAlert1": "La temperatura del dispositivo ",
