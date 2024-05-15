@@ -17,12 +17,14 @@ inputs:
   OUTPUT_FILE:
     description: "Name of the output file"
     required: true
-  RED_LIMIT: 
+  RED_LIMIT:
     description: "Percentage of the red/orange limit"
     default: "50"
-  GREEN_LIMIT: 
+    required: false
+  GREEN_LIMIT:
     description: "Percentage of the orange/green limit"
     default: "65"
+    required: false
 
 runs:
   using: "composite"
@@ -47,7 +49,7 @@ runs:
         name: ${{ inputs.COVERAGE_REPORT_ARTIFACT }}
 
     - name: Generate badge
-      run: python assets/badge_generator/generate_badge.py --label ${{ inputs.LABEL }} --output ${{ inputs.OUTPUT_FILE }} --input-report ${{ inputs.COVERAGE_REPORT_NAME }} --red-limit ${{ inputs.RED_LIMIT }} --green-limit ${{ inputs.GREEN_LIMIT }}
+      run: python assets/badge_generator/generate_badge.py --label "${{ inputs.LABEL }}" --output "${{ inputs.OUTPUT_FILE }}" --input-report "${{ inputs.COVERAGE_REPORT_NAME }}" --red-limit "${{ inputs.RED_LIMIT }}" --green-limit "${{ inputs.GREEN_LIMIT }}"
 
     - uses: actions/upload-artifact@v4
       with:
