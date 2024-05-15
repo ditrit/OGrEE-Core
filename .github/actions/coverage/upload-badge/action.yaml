@@ -20,10 +20,6 @@ runs:
   steps:
     - uses: actions/checkout@v4
       with:
-        fetch-depth: "0"
-
-    - uses: actions/checkout@v4
-      with:
         fetch-depth: 0
         ref: ${{ inputs.BRANCH_NAME }}
 
@@ -53,3 +49,7 @@ runs:
       with:
         github_token: ${{ inputs.github_token }}
         branch: ${{ inputs.BRANCH_NAME }} # Dedicated branch to store coverage badges
+
+    - uses: actions/checkout@v4 # we checkout to main so we have access the actions folder and we can execute the Post Upload
+      with:
+        fetch-depth: "0"
