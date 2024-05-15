@@ -16,7 +16,7 @@ OGrEE exists so managing a datacenter can be easier. It aggregates data from dif
   <a href="#ogree-core">OGrEE-Core</a> |
   <a href="#ogree-3d">OGrEE-3D</a> |
   <a href="#quickstart">Quickstart</a> |
-    <a href="#quick-demo">Quick Demo</a> |
+    <a href="#demo">Demo</a> |
   <a href="#get-involved">Get Involved</a>
 </p>
 
@@ -83,9 +83,18 @@ We have a Windows Installer to quickly install SuperAdmin with a CLI and a 3D cl
 ## OGrEE-Tools
 OGrEE-Tools is a collection of tools help populate OGrEE with data. They can help extract and parse data from multiple logs, create 3D models of servers using Machine Learning and much more. Check out its repo [here](https://github.com/ditrit/OGrEE-Tools). 
 
-## Quick Demo
+## Demo
+
+Check out our Live Demo! 👉 https://app.demo.kube.ogree.ditrit.io/  
+Login with user `john@ogreecore.com` and password `password`.
+
+![demo-screeenshot](https://github.com/ditrit/OGrEE-Core/assets/37706737/017f81a2-a9d1-456d-a18f-d6a30347309a)
+
+You can also see a quick demo video of a datacenter being created on OGrEE:
 
 https://github.com/ditrit/OGrEE-Core/assets/35805113/d6fe1a3e-9c5f-42e7-b926-1c6211a7df0d
+
+Our website [ogree.ditrit.io](https://ogree.ditrit.io) also has some others videos and photos of OGrEE.
 
 ## Get Involved
 
