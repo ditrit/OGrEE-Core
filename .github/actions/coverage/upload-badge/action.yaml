@@ -33,6 +33,7 @@ runs:
 
     - name: Commit badge
       if: steps.verify-changed-files.outputs.files_changed == 'true'
+      shell: bash
       run: |
         git config --local user.email "<>"
         git config --local user.name "GitHubActions"

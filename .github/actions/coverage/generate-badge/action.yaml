@@ -38,9 +38,11 @@ runs:
         python-version: '3.8'
 
     - name: Install requests
+      shell: bash
       run: pip install requests
 
     - name: Install pycobertura
+      shell: bash
       run: pip install pycobertura
 
     - name: Download line coverage reports
@@ -49,6 +51,7 @@ runs:
         name: ${{ inputs.COVERAGE_REPORT_ARTIFACT }}
 
     - name: Generate badge
+      shell: bash
       run: python assets/badge_generator/generate_badge.py --label "${{ inputs.LABEL }}" --output "${{ inputs.OUTPUT_FILE }}" --input-report "${{ inputs.COVERAGE_REPORT_NAME }}" --red-limit "${{ inputs.RED_LIMIT }}" --green-limit "${{ inputs.GREEN_LIMIT }}"
 
     - uses: actions/upload-artifact@v4
