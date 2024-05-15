@@ -812,6 +812,10 @@ class _ObjectPopupState extends State<ObjectPopup> {
                         } on Exception catch (_) {
                           objDataAttrs[attrKey] = arrStr;
                         }
+                      } else if (newValue == "true") {
+                        objDataAttrs[attrKey] = true;
+                      } else if (newValue == "false") {
+                        objDataAttrs[attrKey] = false;
                       } else {
                         // is string
                         objDataAttrs[attrKey] = newValue;
