@@ -1,3 +1,3 @@
-# Coverage Badges branch
+# Coverage Badges for the API
 
-It contains the coverage badges
+It contains the coverage badge for the API
