@@ -783,10 +783,7 @@ func GetEntity(w http.ResponseWriter, r *http.Request) {
 		if entityStr == u.HIERARCHYOBJS_ENT {
 			data, modelErr = models.GetHierarchyObjectById(id, filters, user.Roles)
 		} else {
-			if u.EntityStrToInt(entityStr) == u.APPLICATION {
-				req = bson.M{"name": id}
-
-			} else if u.IsEntityNonHierarchical(u.EntityStrToInt(entityStr)) {
+			if u.IsEntityNonHierarchical(u.EntityStrToInt(entityStr)) {
 				// Get by slug
 				req = bson.M{"slug": id}
 

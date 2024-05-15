@@ -8,14 +8,6 @@
     "domain": {
       "type": "string"
     },
-    "device": {
-      "type": "array",
-      "items": [
-        {
-          "type": "string"
-        }
-      ]
-    },
     "category": {
       "type": "string"
     },
@@ -31,6 +23,17 @@
       "properties": {
         "type": {
             "type": "string"
+        },
+        "namespace_kube": {
+          "type": "string"
+        },
+        "device": {
+          "type": "array",
+          "items": [
+            {
+              "type": "string"
+            }
+          ]
         }
       }
     }

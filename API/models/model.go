@@ -66,6 +66,10 @@ func getChildrenCollections(limit int, parentEntStr string) []int {
 		// device special case (devices can have devices)
 		startEnt = u.DEVICE
 		endEnt = u.DEVICE
+	} else if parentEntStr == "application" {
+		// application special case (app can have apps)
+		startEnt = u.APPLICATION
+		endEnt = u.APPLICATION
 	} else if endEnt >= u.DEVICE {
 		// include AC, CABINET, CORRIDOR, PWRPNL and GROUP
 		// beacause of ROOM and RACK possible children
