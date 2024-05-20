@@ -23,8 +23,8 @@ void main() {
     await tester.pumpAndSettle();
 
     // Namespace
-    expect(find.text("Physical"), findsNWidgets(2));
-    expect((tester.widget(find.text("Physical").at(1)) as Text).style!.color,
+    expect(find.text("Physical"), findsNWidgets(1));
+    expect((tester.widget(find.text("Physical")) as Text).style!.color,
         Colors.blue);
     expect((tester.widget(find.text("Logical")) as Text).style!.color, null);
     // expect(find.text(defaultDate, skipOffstage: false), findsOneWidget);

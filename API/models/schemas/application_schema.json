@@ -46,7 +46,7 @@
   ],
   "examples": [
     {
-      "domain": "DemoA",
+      "domain": "domainTest",
       "category": "application",
       "attributes" : {
           "type" : "kubernetes",
