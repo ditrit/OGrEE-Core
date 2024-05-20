@@ -7,6 +7,7 @@ import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/pages/tenant_page.dart';
 import 'package:ogree_app/widgets/select_objects/object_popup.dart';
+import 'package:ogree_app/widgets/select_objects/settings_view/tree_filter.dart';
 import 'package:ogree_app/widgets/tenants/popups/domain_popup.dart';
 
 import '../treeapp_controller.dart';

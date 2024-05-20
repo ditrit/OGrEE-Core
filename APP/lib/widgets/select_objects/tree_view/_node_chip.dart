@@ -77,7 +77,7 @@ class _NodeActionsChipState extends State<_NodeActionsChip> {
         backgroundColor: const Color(0x331565c0),
         side: const BorderSide(style: BorderStyle.none),
         label: Text(
-          widget.node.label,
+          adaptLabel(widget.node.label),
           style: TextStyle(
             fontSize: 14,
             fontFamily: GoogleFonts.inter().fontFamily,
@@ -87,5 +87,13 @@ class _NodeActionsChipState extends State<_NodeActionsChip> {
         ),
       ),
     );
+  }
+
+  String adaptLabel(String label) {
+    String editedLabel = label;
+    if (label.startsWith("*")) {
+      editedLabel = label.replaceFirst("*", "").capitalize();
+    }
+    return editedLabel;
   }
 }

@@ -68,18 +68,27 @@ void showProjectDialog(
                         ),
                       ),
                       deleteCallback != null
-                          ? TextButton.icon(
-                              style: OutlinedButton.styleFrom(
-                                  foregroundColor: Colors.red.shade900),
-                              onPressed: () =>
-                                  deleteCallback(project.id, parentCallback),
-                              label:
-                                  Text(isSmallDisplay ? "" : localeMsg.delete),
-                              icon: const Icon(
-                                Icons.delete,
-                                size: 16,
-                              ),
-                            )
+                          ? (isSmallDisplay
+                              ? IconButton(
+                                  iconSize: 16,
+                                  onPressed: () => deleteCallback(
+                                      project.id, parentCallback),
+                                  icon: Icon(
+                                    Icons.delete,
+                                    color: Colors.red.shade900,
+                                  ))
+                              : TextButton.icon(
+                                  style: OutlinedButton.styleFrom(
+                                      foregroundColor: Colors.red.shade900),
+                                  onPressed: () => deleteCallback(
+                                      project.id, parentCallback),
+                                  label: Text(
+                                      isSmallDisplay ? "" : localeMsg.delete),
+                                  icon: const Icon(
+                                    Icons.delete,
+                                    size: 16,
+                                  ),
+                                ))
                           : Container(),
                       SizedBox(width: isSmallDisplay ? 0 : 10),
                       ElevatedButton(

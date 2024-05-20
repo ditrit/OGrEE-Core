@@ -147,23 +147,23 @@ class _ResponsiveBody extends StatelessWidget {
     }
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: Stack(
+      child: Row(
         children: [
-          Row(
-            children: [
-              const Flexible(
-                  flex: 2, child: CustomTreeView(isTenantMode: false)),
-              const VerticalDivider(
-                width: 1,
-                thickness: 1,
-                color: Colors.black26,
-              ),
-              Expanded(
-                  child:
-                      SettingsView(isTenantMode: false, noFilters: noFilters)),
-            ],
+          Flexible(
+              flex: 2,
+              child: Stack(
+                children: [
+                  CustomTreeView(isTenantMode: false),
+                  addObjectButton(context, namespace, callback),
+                ],
+              )),
+          const VerticalDivider(
+            width: 1,
+            thickness: 1,
+            color: Colors.black26,
           ),
-          addObjectButton(context, namespace, callback),
+          Expanded(
+              child: SettingsView(isTenantMode: false, noFilters: noFilters)),
         ],
       ),
     );
@@ -173,9 +173,9 @@ class _ResponsiveBody extends StatelessWidget {
 addObjectButton(
     BuildContext context, Namespace namespace, Function() callback) {
   return Padding(
-    padding: const EdgeInsets.only(left: 6, bottom: 6),
+    padding: const EdgeInsets.only(right: 12, bottom: 6),
     child: Align(
-      alignment: Alignment.bottomLeft,
+      alignment: Alignment.bottomRight,
       child: SizedBox(
         height: 34,
         width: 34,

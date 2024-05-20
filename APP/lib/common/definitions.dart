@@ -2,6 +2,8 @@ enum Namespace { Physical, Organisational, Logical, Test }
 
 const starSymbol = "*";
 
+const isDemo = false;
+
 /// Base Result class
 /// [S] represents the type of the success value
 /// [E] should be [Exception] or a subclass of it

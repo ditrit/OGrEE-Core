@@ -66,6 +66,10 @@ func getChildrenCollections(limit int, parentEntStr string) []int {
 		// device special case (devices can have devices)
 		startEnt = u.DEVICE
 		endEnt = u.DEVICE
+	} else if parentEntStr == "application" {
+		// application special case (app can have apps)
+		startEnt = u.APPLICATION
+		endEnt = u.APPLICATION
 	} else if endEnt >= u.DEVICE {
 		// include AC, CABINET, CORRIDOR, PWRPNL and GROUP
 		// beacause of ROOM and RACK possible children
@@ -472,7 +476,7 @@ func getHierarchyWithNamespace(namespace u.Namespace, userRoles map[string]Role,
 
 	for _, entityName := range entities {
 		// Get data
-		opts := options.Find().SetProjection(bson.D{{Key: "domain", Value: 1}, {Key: "id", Value: 1}})
+		opts := options.Find().SetProjection(bson.D{{Key: "domain", Value: 1}, {Key: "id", Value: 1}, {Key: "category", Value: 1}})
 
 		if u.IsEntityNonHierarchical(u.EntityStrToInt(entityName)) {
 			opts = options.Find().SetProjection(bson.D{{Key: "slug", Value: 1}})
@@ -496,10 +500,17 @@ func getHierarchyWithNamespace(namespace u.Namespace, userRoles map[string]Role,
 				var objId string
 				if u.IsEntityNonHierarchical(u.EntityStrToInt(entityName)) {
 					objId = obj["slug"].(string)
+					hierarchy[rootIdx+entityName] = append(hierarchy[rootIdx+entityName], objId)
 				} else {
 					objId = obj["id"].(string)
+					if strings.Contains(obj["id"].(string), ".") && obj["category"] != "group" {
+						// Physical or Org Children
+						categories[entityName] = append(categories[entityName], obj["id"].(string))
+						fillHierarchyMap(obj["id"].(string), hierarchy)
+					} else {
+						hierarchy[rootIdx+entityName] = append(hierarchy[rootIdx+entityName], objId)
+					}
 				}
-				hierarchy[rootIdx+entityName] = append(hierarchy[rootIdx+entityName], objId)
 			} else if strings.Contains(obj["id"].(string), ".") {
 				// Physical or Org Children
 				categories[entityName] = append(categories[entityName], obj["id"].(string))
@@ -799,7 +810,10 @@ func prepareUpdateObject(ctx mongo.SessionContext, entity int, id string, update
 
 func UpdateObject(entityStr string, id string, updateData map[string]interface{}, isPatch bool, userRoles map[string]Role, isRecursive bool) (map[string]interface{}, *u.Error) {
 	var idFilter bson.M
-	if u.IsEntityNonHierarchical(u.EntityStrToInt(entityStr)) {
+	if u.EntityStrToInt(entityStr) == u.APPLICATION {
+		idFilter = bson.M{"name": id}
+
+	} else if u.IsEntityNonHierarchical(u.EntityStrToInt(entityStr)) {
 		idFilter = bson.M{"slug": id}
 	} else {
 		idFilter = bson.M{"id": id}

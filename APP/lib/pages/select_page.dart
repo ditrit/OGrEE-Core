@@ -46,6 +46,9 @@ class SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
 
   List<String> _selectedAttrs = [];
   List<String> get selectedAttrs => _selectedAttrs;
+  set selectedAttrs(List<String> value) => () {
+        _selectedAttrs = value;
+      };
 
   @override
   void initState() {
@@ -193,7 +196,7 @@ class SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
         // Continue of RESULT is actually Save
         Project project;
         bool isCreate = true;
-        if (widget.project != null) {
+        if (widget.project != null && widget.project!.lastUpdate != "AUTO") {
           // Editing existing project
           isCreate = false;
           project = widget.project!;

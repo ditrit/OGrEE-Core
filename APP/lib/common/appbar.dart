@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
+import 'package:ogree_app/models/netbox.dart';
 import 'package:ogree_app/pages/login_page.dart';
 import 'package:ogree_app/pages/projects_page.dart';
 import 'package:ogree_app/pages/tenant_page.dart';
 import 'package:ogree_app/widgets/change_password_popup.dart';
 import 'package:ogree_app/widgets/common/language_toggle.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:ogree_app/widgets/tools/download_tool_popup.dart';
 
 import '../widgets/tenants/popups/create_server_popup.dart';
 
@@ -37,13 +39,27 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
               ? localeMsg.addKube
               : localeMsg.addServer),
         ));
-  } else if (isTenantAdmin) {
+  } else {
     entries.insert(
         0,
         PopupMenuItem(
-          value: "tenant",
-          child: Text(localeMsg.tenantParameters),
+          value: Tools.unity.name,
+          child: Text(localeMsg.downloadUnity),
         ));
+    entries.insert(
+        0,
+        PopupMenuItem(
+          value: Tools.cli.name,
+          child: Text(localeMsg.downloadCli),
+        ));
+    if (isTenantAdmin) {
+      entries.insert(
+          0,
+          PopupMenuItem(
+            value: "tenant",
+            child: Text(localeMsg.tenantParameters),
+          ));
+    }
   }
 
   bool isSmallDisplay = MediaQuery.of(context).size.width < 600;
@@ -121,6 +137,12 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
               Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) => const TenantPage(userEmail: "admin"),
               ));
+            } else if (value == Tools.unity.name) {
+              showCustomPopup(context, DownloadToolPopup(tool: Tools.unity),
+                  isDismissible: true);
+            } else if (value == Tools.cli.name) {
+              showCustomPopup(context, DownloadToolPopup(tool: Tools.cli),
+                  isDismissible: true);
             } else {
               showCustomPopup(context, const ChangePasswordPopup());
             }

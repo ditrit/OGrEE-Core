@@ -38,7 +38,8 @@ enum LogCategories {
   obj_template,
   room_template,
   bldg_template,
-  tag
+  tag,
+  application
 }
 
 Map<Namespace, List<String>> objsByNamespace = {
@@ -252,7 +253,8 @@ class _ObjectPopupState extends State<ObjectPopup> {
 
   double getPopupHeightByCategory() {
     if (widget.namespace == Namespace.Physical ||
-        _objCategory == LogCategories.group.name) {
+        _objCategory == LogCategories.group.name ||
+        _objCategory == LogCategories.application.name) {
       return 585;
     } else if (widget.namespace == Namespace.Organisational) {
       return 470;
@@ -264,7 +266,8 @@ class _ObjectPopupState extends State<ObjectPopup> {
 
   double getFormHeightByCategory() {
     if (widget.namespace == Namespace.Physical ||
-        _objCategory == LogCategories.group.name) {
+        _objCategory == LogCategories.group.name ||
+        _objCategory == LogCategories.application.name) {
       return 415;
     } else if (widget.namespace == Namespace.Organisational) {
       return 300;
@@ -357,7 +360,10 @@ class _ObjectPopupState extends State<ObjectPopup> {
     }
 
     // Define JSON schemas to read according to namespace
-    List<String> objects = [LogCategories.group.name];
+    List<String> objects = [
+      LogCategories.group.name,
+      LogCategories.application.name
+    ];
     if (widget.namespace == Namespace.Physical) {
       objects = objsByNamespace[widget.namespace]!;
     } else if (widget.namespace == Namespace.Organisational) {
@@ -377,7 +383,8 @@ class _ObjectPopupState extends State<ObjectPopup> {
           return;
       }
 
-      if (jsonResult["properties"]["attributes"]["properties"] != null) {
+      if (jsonResult["properties"]["attributes"] != null &&
+          jsonResult["properties"]["attributes"]["properties"] != null) {
         // Get all properties
         var attrs = Map<String, dynamic>.from(
             jsonResult["properties"]["attributes"]["properties"]);
@@ -416,6 +423,8 @@ class _ObjectPopupState extends State<ObjectPopup> {
                 "${localeMsg.example} ${examplesAttrs[obj]![attr]}";
           }
         }
+      } else {
+        categoryAttrs[obj] = [];
       }
     }
   }
@@ -453,7 +462,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
     final messenger = ScaffoldMessenger.of(context);
     var errMsg = "";
     // Try both id and slug since we dont know the obj's category
-    for (var keyId in ["id", "slug"]) {
+    for (var keyId in ["id", "slug", "name"]) {
       var result = await fetchObject(_objId, idKey: keyId);
       switch (result) {
         case Success(value: final value):
@@ -497,8 +506,24 @@ class _ObjectPopupState extends State<ObjectPopup> {
               } else {
                 // group
                 objData = value;
-                objDataAttrs = Map<String, String>.from(objData["attributes"]);
+                if (objData["attributes"] != null) {
+                  objDataAttrs =
+                      Map<String, dynamic>.from(objData["attributes"]);
+                }
                 _objCategory = value["category"];
+                if (_objCategory == LogCategories.application.name) {
+                  for (var attr in objDataAttrs.entries) {
+                    if (!categoryAttrs[_objCategory]!.contains(attr.key) &&
+                        !categoryAttrs[_objCategory]!
+                            .contains(starSymbol + attr.key)) {
+                      // add custom attribute
+                      customAttributesRows.add(CustomAttrRow(
+                          customAttributesRows.length,
+                          givenAttrName: attr.key,
+                          givenAttrValue: attr.value.toString()));
+                    }
+                  }
+                }
               }
             }
           } else {
@@ -667,7 +692,8 @@ class _ObjectPopupState extends State<ObjectPopup> {
   getFormByCategory(String category, AppLocalizations localeMsg) {
     if (widget.namespace == Namespace.Physical ||
         widget.namespace == Namespace.Organisational ||
-        category == LogCategories.group.name) {
+        category == LogCategories.group.name ||
+        category == LogCategories.application.name) {
       return getObjectForm();
     } else if (category == LogCategories.layer.name) {
       return getLayerForm();
@@ -700,11 +726,13 @@ class _ObjectPopupState extends State<ObjectPopup> {
                     objData["parentId"] = newValue;
                   }
                 },
-                label: "${starSymbol}Parent ID",
+                label:
+                    "${_objCategory == LogCategories.application.name ? "" : starSymbol}Parent ID",
                 icon: Icons.family_restroom,
                 initialValue: objData["parentId"],
                 tipStr: localeMsg.parentIdTip,
-                shouldValidate: widget.namespace != Namespace.Organisational)
+                shouldValidate: widget.namespace != Namespace.Organisational &&
+                    _objCategory != LogCategories.application.name)
             : Container(),
         CustomFormField(
             save: (newValue) => objData["name"] = newValue,
@@ -784,6 +812,10 @@ class _ObjectPopupState extends State<ObjectPopup> {
                         } on Exception catch (_) {
                           objDataAttrs[attrKey] = arrStr;
                         }
+                      } else if (newValue == "true") {
+                        objDataAttrs[attrKey] = true;
+                      } else if (newValue == "false") {
+                        objDataAttrs[attrKey] = false;
                       } else {
                         // is string
                         objDataAttrs[attrKey] = newValue;

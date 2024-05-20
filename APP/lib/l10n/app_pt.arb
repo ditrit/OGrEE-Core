@@ -34,17 +34,17 @@
   "haveResetToken": "Tenho um reset token",
   "resetSent": "Solicitação de redefinição enviada",
 
-  "myprojects": "Meus projetos",
-  "newProject": "Criar novo projeto",
-  "noProjects": "Ainda não há projetos criados :(",
-  "editProject": "Editar este projeto",
+  "myprojects": "Minhas visualizações",
+  "newProject": "Criar nova visualização",
+  "noProjects": "Ainda não há visualizações criadas :(",
+  "editProject": "Editar esta visualização",
   "author": "Autor:",
   "lastUpdate": "Última Atualização:",
   "descriptionTwoPoints": "Descrição:",
   "launch": "Lançar",
-  "projectName": "Nome do projeto",
-  "mandatoryProjectName": "O nome do projeto é obrigatório",
-  "nameProject": "Dê um nome ao projeto",
+  "projectName": "Nome da visualização",
+  "mandatoryProjectName": "O nome da visualização é obrigatório",
+  "nameProject": "Dê um nome à visualização",
 
   "selectDate": "Escolha uma data",
   "selectNamespace": "Escolha um namespace",
@@ -159,8 +159,10 @@
   "restoreInfoMessage": "Todos os dados do banco atual serão apagados antes de restaurar o backup.\nSe não for selecionado, o banco de dados atual será favorecido em caso de conflito com o restaurado",
 
   "tools": "Ferramentas",
-  "downloadCli": "Baixe a CLI mais recente",
+  "downloadCli": "Baixar CLI",
   "downloadCliTitle": "Baixe a CLI mais recente",
+  "downloadUnity": "Baixar cliente 3D",
+  "downloadUnityTitle": "Baixe o cliente 3D mais recente",
   "selectOS": "Selecione o OS:",
   "fileSavedTo": "Arquivo salvo com sucesso em:",
   "unableDownload": "Não foi possível baixar o arquivo",
@@ -199,5 +201,12 @@
   "applications": "Aplicativos",
   "toolUsername": "Nome do usuário {toolName}",
   "toolPassword": "Senha do usuário {toolName}",
-  "toolPort": "Porta {toolName}"
+  "toolPort": "Porta {toolName}",
+
+  "view3Dobjs": "Ver representação 3D deste datacenter",
+  "myAlerts": "Meus alertas",
+  "viewAlerts": "Ver alertas",
+  "temperatureAlert1": "A temperature do device ",
+  "temperatureAlert2": " está acima do normal. Isso pode impactar a performance de suas aplicações: \"my-frontend-app\" e \"my-backend-app\"",
+  "oneAlert": "1 alerta menor"
 }

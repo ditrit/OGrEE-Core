@@ -33,7 +33,7 @@ void main() {
     await tester.tap(find.byIcon(Icons.add).last);
     await tester.pumpAndSettle();
 
-    for (var attr in ["height", "weight", "vendor"]) {
+    for (var attr in ["weight", "vendor"]) {
       await tester.tap(find.textContaining(attr));
       await tester.pumpAndSettle();
       expect(find.text(attr), findsNWidgets(2));

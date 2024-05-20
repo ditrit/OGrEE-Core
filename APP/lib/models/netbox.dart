@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-enum Tools { netbox, nautobot, opendcim, cli }
+enum Tools { netbox, nautobot, opendcim, cli, unity }
 
 // Nbox applies to both netbox and nautobot
 class Nbox {

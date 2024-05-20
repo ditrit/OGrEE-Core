@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "namespace_cli": {
+      "type": "string"
+    },
+    "domain": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "attributes": {
+      "type": "object",
+      "title": "The attributes Schema",
+      "required": [
+          "type"
+      ],
+      "properties": {
+        "type": {
+            "type": "string"
+        },
+        "namespace_kube": {
+          "type": "string"
+        },
+        "device": {
+          "type": "array",
+          "items": [
+            {
+              "type": "string"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "required": [
+    "domain",
+    "category",
+    "name",
+    "attributes"
+  ],
+  "examples": [
+    {
+      "domain": "domainTest",
+      "category": "application",
+      "attributes" : {
+          "type" : "kubernetes",
+          "device": [
+            "BASIC.A.R1.A02.chassis01.bladeA",
+            "BASIC.A.R1.A02.chassis01.bladeB",
+            "BASIC.A.R1.A02.chassis01.bladeC"
+        ]
+      },
+      "name": "kubernetes-cluster",
+      "id": "kubernetes-cluster"
+    }
+  ]    
+
+}

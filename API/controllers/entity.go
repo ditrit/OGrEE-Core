@@ -786,9 +786,11 @@ func GetEntity(w http.ResponseWriter, r *http.Request) {
 			if u.IsEntityNonHierarchical(u.EntityStrToInt(entityStr)) {
 				// Get by slug
 				req = bson.M{"slug": id}
+
 			} else {
 				req = bson.M{"id": id}
 			}
+
 			data, modelErr = models.GetObject(req, entityStr, filters, user.Roles)
 		}
 	} else {

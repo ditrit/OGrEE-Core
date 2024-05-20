@@ -20,7 +20,7 @@ class _SelectNamespaceState extends State<SelectNamespace> {
 
   @override
   void initState() {
-    SelectPage.of(context)!.selectedNamespace = _selection;
+    //SelectPage.of(context)!.selectedNamespace = _selection;
     super.initState();
   }
 

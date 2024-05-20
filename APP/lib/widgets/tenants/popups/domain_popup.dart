@@ -274,26 +274,23 @@ class _DomainPopupState extends State<DomainPopup>
   }
 
   removeDomain(AppLocalizations localeMsg) async {
-    if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
-      setState(() {
-        _isLoadingDelete = true;
-      });
-      final messenger = ScaffoldMessenger.of(context);
-      var result = await removeObject(domainId!, "domains");
-      switch (result) {
-        case Success():
-          widget.parentCallback();
-          showSnackBar(messenger, localeMsg.deleteOK);
-          if (context.mounted) {
-            Navigator.of(context).pop();
-          }
-        case Failure(exception: final exception):
-          setState(() {
-            _isLoadingDelete = false;
-          });
-          showSnackBar(messenger, exception.toString(), isError: true);
-      }
+    setState(() {
+      _isLoadingDelete = true;
+    });
+    final messenger = ScaffoldMessenger.of(context);
+    var result = await removeObject(domainId!, "domains");
+    switch (result) {
+      case Success():
+        widget.parentCallback();
+        showSnackBar(messenger, localeMsg.deleteOK);
+        if (context.mounted) {
+          Navigator.of(context).pop();
+        }
+      case Failure(exception: final exception):
+        setState(() {
+          _isLoadingDelete = false;
+        });
+        showSnackBar(messenger, exception.toString(), isError: true);
     }
   }
 

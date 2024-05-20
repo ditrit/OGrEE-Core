@@ -36,17 +36,17 @@
   "resetSent": "Demande de réinitialisation envoyée",
 
   "@myprojects": { "description": "Projects Page" },
-  "myprojects": "Mes projets",
-  "newProject": "Créer un nouveau projet",
-  "noProjects": "Pas encore de projets crées :(",
-  "editProject": "Editer ce projet",
+  "myprojects": "Mes vues",
+  "newProject": "Créer une nouvelle vue",
+  "noProjects": "Pas encore de vues créées :(",
+  "editProject": "Editer cette vue",
   "author": "Auteur :",
   "lastUpdate": "Dernière modification :",
   "descriptionTwoPoints": "Description :",
   "launch": "Lancer",
-  "projectName": "Nom du projet",
-  "mandatoryProjectName": "Il faut donner un nom au projet",
-  "nameProject": "Nommer ce projet",
+  "projectName": "Nom de la vue",
+  "mandatoryProjectName": "Il faut donner un nom à la vue",
+  "nameProject": "Nommer cette vue",
 
   "@selectDate": { "description": "Select Page" },
   "selectDate": "Choisir date",
@@ -191,6 +191,8 @@
   "tools": "Outils",
   "downloadCli": "Télécharger la CLI",
   "downloadCliTitle": "Télécharger la CLI la plus récente",
+  "downloadUnity": "Télécharger le Client 3D",
+  "downloadUnityTitle": "Télécharger le dernier client 3D",
   "selectOS": "Choisir SO :" ,
   "fileSavedTo": "Téléchargé dans :",
   "unableDownload": "Impossible de télécharger le fichier",
@@ -258,5 +260,14 @@
         "type": "String"
       }
     }
-  }
+  },
+
+  "view3Dobjs": "Voir une vue 3D de ce datacenter",
+  "@myAlerts": { "description": "Alerts View" },
+  "myAlerts": "Mes alertes",
+  "viewAlerts": "Voir les alertes",
+  "temperatureAlert1": "La temperature du device ",
+  "temperatureAlert2": " est plus élevée que d'habitude. Cela peut avoir un impact sur les performances de vos applications : \"my-frontend-app\" et \"my-backend-app\".",
+  "oneAlert": "1 alerte mineur"
+
 }
