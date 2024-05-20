@@ -351,10 +351,11 @@ class _ProjectsPageState extends State<ProjectsPage> {
         }
       }
     } else {
-      cards.add(AutoUnityProjectCard(
-        userEmail: widget.userEmail,
-        parentCallback: refreshFromChildren,
-      ));
+      if (isDemo) {
+        cards.add(AutoUnityProjectCard(
+          userEmail: widget.userEmail,
+        ));
+      }
       for (var namespace in Namespace.values) {
         if (namespace != Namespace.Test) {
           cards.add(AutoProjectCard(

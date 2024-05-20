@@ -765,15 +765,6 @@ func DeleteNonHierarchicalObject(entity, slug string) *u.Error {
 	defer cancel()
 	return repository.DeleteObject(ctx, entity, req)
 }
-func DeleteApplicationObject(entity, name string) *u.Error {
-	req := bson.M{"name": name}
-
-	_, err := WithTransaction(func(ctx mongo.SessionContext) (any, error) {
-		return nil, repository.DeleteObject(ctx, entity, req)
-	})
-
-	return err
-}
 
 func prepareUpdateObject(ctx mongo.SessionContext, entity int, id string, updateData, oldObject map[string]any, userRoles map[string]Role) *u.Error {
 	// Check user permissions in case domain is being updated
