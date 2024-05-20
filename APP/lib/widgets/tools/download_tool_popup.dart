@@ -5,22 +5,25 @@ import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/theme.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:ogree_app/models/netbox.dart';
 import 'package:ogree_app/widgets/select_objects/settings_view/tree_filter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:universal_html/html.dart' as html;
 import 'package:http/http.dart' as http;
 
-enum CliOS { windows, linux, macOS }
+enum ToolOS { windows, linux, macOS }
 
-class DownloadCliPopup extends StatefulWidget {
-  const DownloadCliPopup({super.key});
+// Currently used to download cli or unity
+class DownloadToolPopup extends StatefulWidget {
+  Tools tool;
+  DownloadToolPopup({super.key, required this.tool});
 
   @override
-  State<DownloadCliPopup> createState() => _DownloadCliPopupState();
+  State<DownloadToolPopup> createState() => _DownloadCliPopupState();
 }
 
-class _DownloadCliPopupState extends State<DownloadCliPopup> {
-  CliOS _selectedOS = CliOS.windows;
+class _DownloadCliPopupState extends State<DownloadToolPopup> {
+  ToolOS _selectedOS = ToolOS.windows;
   bool _isLoading = false;
 
   @override
@@ -45,7 +48,9 @@ class _DownloadCliPopupState extends State<DownloadCliPopup> {
                           children: [
                             Center(
                                 child: Text(
-                              localeMsg.downloadCliTitle,
+                              widget.tool == Tools.cli
+                                  ? localeMsg.downloadCliTitle
+                                  : localeMsg.downloadUnityTitle,
                               style: Theme.of(context).textTheme.headlineMedium,
                             )),
                             const SizedBox(height: 30),
@@ -57,7 +62,7 @@ class _DownloadCliPopupState extends State<DownloadCliPopup> {
                                 SizedBox(
                                   height: 35,
                                   width: 165,
-                                  child: DropdownButtonFormField<CliOS>(
+                                  child: DropdownButtonFormField<ToolOS>(
                                     borderRadius: BorderRadius.circular(12.0),
                                     decoration: GetFormInputDecoration(
                                       false,
@@ -65,20 +70,20 @@ class _DownloadCliPopupState extends State<DownloadCliPopup> {
                                       icon: Icons.desktop_windows,
                                     ),
                                     value: _selectedOS,
-                                    items: CliOS.values
-                                        .map<DropdownMenuItem<CliOS>>(
-                                            (CliOS value) {
-                                      return DropdownMenuItem<CliOS>(
+                                    items: ToolOS.values
+                                        .map<DropdownMenuItem<ToolOS>>(
+                                            (ToolOS value) {
+                                      return DropdownMenuItem<ToolOS>(
                                         value: value,
                                         child: Text(
-                                          value == CliOS.macOS
+                                          value == ToolOS.macOS
                                               ? value.name
                                               : value.name.capitalize(),
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       );
                                     }).toList(),
-                                    onChanged: (CliOS? value) {
+                                    onChanged: (ToolOS? value) {
                                       setState(() {
                                         _selectedOS = value!;
                                       });
@@ -103,8 +108,8 @@ class _DownloadCliPopupState extends State<DownloadCliPopup> {
                                 ),
                                 const SizedBox(width: 15),
                                 ElevatedButton.icon(
-                                    onPressed: () =>
-                                        submitCreateOpenDcim(localeMsg),
+                                    onPressed: () => submitDownloadTool(
+                                        widget.tool, localeMsg),
                                     label: Text(localeMsg.download),
                                     icon: _isLoading
                                         ? Container(
@@ -128,19 +133,48 @@ class _DownloadCliPopupState extends State<DownloadCliPopup> {
     );
   }
 
-  submitCreateOpenDcim(AppLocalizations localeMsg) async {
+  (String, String) getCliInfo() {
     const urlPath =
         'https://github.com/ditrit/OGrEE-Core/releases/latest/download/';
     String cliName = "cli";
     switch (_selectedOS) {
-      case CliOS.windows:
+      case ToolOS.windows:
         cliName = "$cliName.exe";
         break;
-      case CliOS.linux:
+      case ToolOS.linux:
         break;
-      case CliOS.macOS:
+      case ToolOS.macOS:
         cliName = "$cliName.mac";
         break;
+    }
+    return (urlPath, cliName);
+  }
+
+  (String, String) getUnityInfo() {
+    const urlPath =
+        'https://github.com/ditrit/OGrEE-3D/releases/latest/download/';
+    String cliName = "OGrEE-3D";
+    switch (_selectedOS) {
+      case ToolOS.windows:
+        cliName = "${cliName}_win.zip";
+        break;
+      case ToolOS.linux:
+        cliName = "${cliName}_Linux.zip";
+        break;
+      case ToolOS.macOS:
+        cliName = "${cliName}_macOS.zip";
+        break;
+    }
+    return (urlPath, cliName);
+  }
+
+  submitDownloadTool(Tools tool, AppLocalizations localeMsg) async {
+    String urlPath, cliName;
+    if (tool == Tools.cli) {
+      (urlPath, cliName) = getCliInfo();
+    } else {
+      //unity
+      (urlPath, cliName) = getUnityInfo();
     }
     if (kIsWeb) {
       html.AnchorElement(href: urlPath + cliName)
