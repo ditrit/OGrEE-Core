@@ -52,7 +52,7 @@ jobs:
 
     - name: Test Report
       uses: dorny/test-reporter@v1
-      if: always() # run this step even if previous steps failed
+      if: github.actor != 'dependabot[bot]'
       with:
         name: API Tests Report  # Name of the check run which will be created
         path: ./API/tests-api.xml     # Path to test results
@@ -68,7 +68,7 @@ jobs:
         name: coverage_api_xml
         path: ./API/coverage_api.xml
 
-  coverage-badge:
+  generate-coverage-badge:
     needs: api-unit-test
     runs-on: ubuntu-latest
     permissions:
@@ -81,40 +81,38 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: "0"
 
-      - uses: actions/setup-python@v5
+      - name: Generate Badge
+        uses: ./.github/actions/coverage/generate-badge
         with:
-          python-version: '3.8'
+          COVERAGE_REPORT_ARTIFACT: coverage_api_xml
+          COVERAGE_REPORT_NAME: coverage_api.xml
+          LABEL: "API coverage"
+          OUTPUT_FILE: api_coverage_badge.svg
+          RED_LIMIT: "50"
+          GREEN_LIMIT: "65"
+          BADGE_ARTIFACT_NAME: api_coverage_badge
 
-      - name: Install genbadge
-        run: pip install genbadge[coverage]
+  upload-coverage-badge:
+    needs: generate-coverage-badge
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: ./
+    if: github.ref == 'refs/heads/main' && github.event.head_commit.author.name != 'GitHubActions'
 
-      - name: Download line coverage reports
-        uses: actions/download-artifact@v4
+    steps:
+      - uses: actions/checkout@v4
         with:
-          name: coverage_api_xml
+          fetch-depth: "0"
 
-      - name: Generate badge
-        run: genbadge coverage -i coverage_api.xml -n "API coverage" -o assets/images/api_coverage_badge.svg
-
-      - name: Verify Changed files
-        uses: tj-actions/verify-changed-files@v16
-        id: verify-changed-files
+      - name: Upload Badge
+        uses: ./.github/actions/coverage/upload-badge
         with:
-          files: assets/images/api_coverage_badge.svg
-
-      - name: Commit badge
-        if: steps.verify-changed-files.outputs.files_changed == 'true'
-        run: |
-          git config --local user.email "<>"
-          git config --local user.name "GitHubActions"
-          git add assets/images/api_coverage_badge.svg
-          git commit -m "Add/Update badge"
-
-      - name: Push badge commit
-        if: steps.verify-changed-files.outputs.files_changed == 'true'
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.PAT_GITHUB_TOKEN }}
-          branch: ${{ github.head_ref }}
+          BADGE_ARTIFACT_NAME: api_coverage_badge
+          BADGE_FILE_NAME: api_coverage_badge.svg
+          BRANCH_NAME: coverage_badges
+          github_token: ${{ secrets.GITHUB_TOKEN }}
