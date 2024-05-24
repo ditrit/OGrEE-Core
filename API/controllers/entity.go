@@ -1007,8 +1007,7 @@ func GetAllEntities(w http.ResponseWriter, r *http.Request) {
 			})
 		}
 
-		u.Respond(w, u.RespDataWrapper("successfully got "+entStr+"s",
-			map[string]interface{}{"objects": data}))
+		u.Respond(w, u.RespDataWrapper("successfully got "+entStr+"s", data))
 	}
 }
 
@@ -1357,8 +1356,7 @@ func GetEntityByQuery(w http.ResponseWriter, r *http.Request) {
 		u.ErrLog("Error while getting "+entStr, "GET ENTITYQUERY", modelErr.Message, r)
 		u.RespondWithError(w, modelErr)
 	} else {
-		u.Respond(w, u.RespDataWrapper("successfully got query for "+entStr,
-			map[string]interface{}{"objects": data}))
+		u.Respond(w, u.RespDataWrapper("successfully got query for "+entStr, data))
 	}
 }
 
@@ -1527,7 +1525,7 @@ func GetEntitiesOfAncestor(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		w.Header().Add("Allow", "GET, OPTIONS")
 	} else {
-		u.Respond(w, u.RespDataWrapper("successfully got object", map[string]interface{}{"objects": data}))
+		u.Respond(w, u.RespDataWrapper("successfully got object", data))
 	}
 }
 
