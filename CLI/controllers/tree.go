@@ -364,12 +364,7 @@ func FillUrlTree[T any](n *HierarchyNode, api APIPort, path string, depth int, u
 	}
 
 	invalidRespErr := fmt.Errorf("invalid response from API on GET %s", url)
-	data, hasData := resp.Body["data"].(map[string]any)
-	if !hasData {
-		return invalidRespErr
-	}
-
-	objects, hasObjects := data["objects"].([]any)
+	objects, hasObjects := resp.Body["data"].([]any)
 	if !hasObjects {
 		return invalidRespErr
 	}
