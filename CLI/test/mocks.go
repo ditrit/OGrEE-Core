@@ -74,9 +74,7 @@ func MockDeleteObjectsWithComplexFilters(mockAPI *mocks.APIPort, queryParams str
 }
 
 func MockGetObjectsByEntity(mockAPI *mocks.APIPort, entity string, objects []any) {
-	mockResponse(mockAPI, http.MethodGet, "/api/"+entity, nil, http.StatusOK, map[string]any{
-		"objects": RemoveChildrenFromList(objects),
-	})
+	mockResponse(mockAPI, http.MethodGet, "/api/"+entity, nil, http.StatusOK, RemoveChildrenFromList(objects))
 }
 
 func MockCreateObject(mockAPI *mocks.APIPort, entity string, data map[string]any) {

@@ -146,9 +146,7 @@ func TestLsNodeExecute(t *testing.T) {
 	).Return(
 		&controllers.Response{
 			Body: map[string]any{
-				"data": map[string]any{
-					"objects": []any{},
-				},
+				"data": []any{},
 			},
 		}, nil,
 	).Once()
