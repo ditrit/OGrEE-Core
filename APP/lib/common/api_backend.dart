@@ -243,7 +243,7 @@ Future<Result<List<Map<String, List<String>>>, Exception>> fetchObjectsTree(
   }
   // Add filters, if any
   String namespaceStr = namespace.name.toLowerCase();
-  if (namespace == Namespace.Physical) {
+  if (namespace == Namespace.Physical || namespace == Namespace.Logical) {
     localUrl = '$localUrl?namespace=$namespaceStr&withcategories=true';
   } else {
     localUrl = '$localUrl?namespace=$namespaceStr';
@@ -277,16 +277,18 @@ Future<Result<List<Map<String, List<String>>>, Exception>> fetchObjectsTree(
             List<String>.from(converted2[namespaceStr]![item]);
       }
       // Namespace adaptations
-      if (namespace == Namespace.Physical) {
-        if (tree["*stray_object"] != null) {
-          tree["*"]!.addAll(tree["*stray_object"]!);
-        }
+      if (namespace == Namespace.Physical || namespace == Namespace.Logical) {
         for (var item in converted["categories"]!.keys) {
           categories[item.toString()] =
               List<String>.from(converted["categories"]![item]);
         }
-      } else if (namespace == Namespace.Logical) {
-        tree["*"] = tree.keys.where((e) => e.contains("*")).toList();
+        if (namespace == Namespace.Physical) {
+          if (tree["*stray_object"] != null) {
+            tree["*"]!.addAll(tree["*stray_object"]!);
+          }
+        } else if (namespace == Namespace.Logical) {
+          tree["*"] = tree.keys.where((e) => e.contains("*")).toList();
+        }
       }
       return Success([tree, categories]);
     } else {

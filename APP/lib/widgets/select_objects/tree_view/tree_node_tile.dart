@@ -6,6 +6,7 @@ import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/pages/tenant_page.dart';
+import 'package:ogree_app/widgets/select_objects/view_object_popup.dart';
 import 'package:ogree_app/widgets/select_objects/object_popup.dart';
 import 'package:ogree_app/widgets/select_objects/settings_view/tree_filter.dart';
 import 'package:ogree_app/widgets/tenants/popups/domain_popup.dart';
@@ -42,6 +43,17 @@ class _TreeNodeTileState extends State<TreeNodeTile> {
   Widget build(BuildContext context) {
     final appController = TreeAppController.of(context);
 
+    bool isVirtual = false;
+    bool isTemplate = false;
+    if (appController.fetchedCategories["virtual_obj"] != null &&
+        appController.fetchedCategories["virtual_obj"]!
+            .contains(widget.entry.node.id)) {
+      isVirtual = true;
+    } else if (widget.entry.parent != null &&
+        widget.entry.parent!.node.id.contains("template")) {
+      isTemplate = true;
+    }
+
     return InkWell(
       hoverColor: Colors.white,
       onTap: widget.onTap,
@@ -54,16 +66,26 @@ class _TreeNodeTileState extends State<TreeNodeTile> {
           child: Row(
             children: [
               FolderButton(
-                closedIcon: const Icon(Icons.auto_awesome_mosaic),
-                openedIcon: const Icon(Icons.auto_awesome_mosaic_outlined),
+                closedIcon: isVirtual
+                    ? Icon(Icons.cloud)
+                    : Icon(Icons.auto_awesome_mosaic),
+                openedIcon: isVirtual
+                    ? Icon(Icons.cloud_outlined)
+                    : Icon(Icons.auto_awesome_mosaic_outlined),
                 icon: widget.isTenantMode
                     ? const Icon(Icons.dns)
-                    : const Icon(Icons.auto_awesome_mosaic),
+                    : isVirtual
+                        ? Icon(Icons.cloud)
+                        : Icon(Icons.auto_awesome_mosaic),
                 isOpen:
                     widget.entry.hasChildren ? widget.entry.isExpanded : null,
                 onPressed: widget.entry.hasChildren ? widget.onTap : null,
               ),
-              _NodeActionsChip(node: widget.entry.node),
+              _NodeActionsChip(
+                node: widget.entry.node,
+                isTemplate: isTemplate,
+                isVirtual: isVirtual,
+              ),
               widget.isTenantMode
                   ? Row(
                       children: [

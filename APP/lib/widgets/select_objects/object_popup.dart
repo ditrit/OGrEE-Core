@@ -28,7 +28,16 @@ class ObjectPopup extends StatefulWidget {
   State<ObjectPopup> createState() => _ObjectPopupState();
 }
 
-enum PhyCategories { site, building, room, corridor, rack, device, group }
+enum PhyCategories {
+  site,
+  building,
+  room,
+  corridor,
+  rack,
+  device,
+  group,
+  virtual_obj
+}
 
 enum OrgCategories { domain }
 
@@ -39,7 +48,7 @@ enum LogCategories {
   room_template,
   bldg_template,
   tag,
-  application
+  virtual_obj
 }
 
 Map<Namespace, List<String>> objsByNamespace = {
@@ -254,7 +263,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
   double getPopupHeightByCategory() {
     if (widget.namespace == Namespace.Physical ||
         _objCategory == LogCategories.group.name ||
-        _objCategory == LogCategories.application.name) {
+        _objCategory == LogCategories.virtual_obj.name) {
       return 585;
     } else if (widget.namespace == Namespace.Organisational) {
       return 470;
@@ -267,7 +276,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
   double getFormHeightByCategory() {
     if (widget.namespace == Namespace.Physical ||
         _objCategory == LogCategories.group.name ||
-        _objCategory == LogCategories.application.name) {
+        _objCategory == LogCategories.virtual_obj.name) {
       return 415;
     } else if (widget.namespace == Namespace.Organisational) {
       return 300;
@@ -362,7 +371,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
     // Define JSON schemas to read according to namespace
     List<String> objects = [
       LogCategories.group.name,
-      LogCategories.application.name
+      LogCategories.virtual_obj.name
     ];
     if (widget.namespace == Namespace.Physical) {
       objects = objsByNamespace[widget.namespace]!;
@@ -511,7 +520,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
                       Map<String, dynamic>.from(objData["attributes"]);
                 }
                 _objCategory = value["category"];
-                if (_objCategory == LogCategories.application.name) {
+                if (_objCategory == LogCategories.virtual_obj.name) {
                   for (var attr in objDataAttrs.entries) {
                     if (!categoryAttrs[_objCategory]!.contains(attr.key) &&
                         !categoryAttrs[_objCategory]!
@@ -693,7 +702,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
     if (widget.namespace == Namespace.Physical ||
         widget.namespace == Namespace.Organisational ||
         category == LogCategories.group.name ||
-        category == LogCategories.application.name) {
+        category == LogCategories.virtual_obj.name) {
       return getObjectForm();
     } else if (category == LogCategories.layer.name) {
       return getLayerForm();
@@ -727,12 +736,12 @@ class _ObjectPopupState extends State<ObjectPopup> {
                   }
                 },
                 label:
-                    "${_objCategory == LogCategories.application.name ? "" : starSymbol}Parent ID",
+                    "${_objCategory == LogCategories.virtual_obj.name ? "" : starSymbol}Parent ID",
                 icon: Icons.family_restroom,
                 initialValue: objData["parentId"],
                 tipStr: localeMsg.parentIdTip,
                 shouldValidate: widget.namespace != Namespace.Organisational &&
-                    _objCategory != LogCategories.application.name)
+                    _objCategory != LogCategories.virtual_obj.name)
             : Container(),
         CustomFormField(
             save: (newValue) => objData["name"] = newValue,

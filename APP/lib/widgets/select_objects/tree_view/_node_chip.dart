@@ -2,7 +2,14 @@ part of 'tree_node_tile.dart';
 
 class _NodeActionsChip extends StatefulWidget {
   final TreeNode node;
-  const _NodeActionsChip({Key? key, required this.node}) : super(key: key);
+  final bool isVirtual;
+  final bool isTemplate;
+  const _NodeActionsChip(
+      {Key? key,
+      required this.node,
+      this.isTemplate = false,
+      this.isVirtual = false})
+      : super(key: key);
 
   @override
   State<_NodeActionsChip> createState() => _NodeActionsChipState();
@@ -39,7 +46,21 @@ class _NodeActionsChipState extends State<_NodeActionsChip> {
           ),
         ),
       );
+      if (!widget.isTemplate) {
+        menuEntries.add(
+          PopupMenuItem(
+            value: 3,
+            child: ListTile(
+              dense: true,
+              title: Text("View as JSON"),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+              leading: const Icon(Icons.search, color: _kDarkBlue),
+            ),
+          ),
+        );
+      }
     }
+
     return PopupMenuButton<int>(
       key: _popupMenuKey,
       tooltip: AppLocalizations.of(context)!.selectionOptions,
@@ -48,7 +69,7 @@ class _NodeActionsChipState extends State<_NodeActionsChip> {
       onSelected: (int selected) {
         if (selected == 1) {
           TreeAppController.of(context).toggleAllFrom(widget.node);
-        } else {
+        } else if (selected == 2) {
           showCustomPopup(
               context,
               namespace == Namespace.Organisational
@@ -70,18 +91,23 @@ class _NodeActionsChipState extends State<_NodeActionsChip> {
                       objId: widget.node.id,
                     ),
               isDismissible: true);
+        } else {
+          showCustomPopup(context,
+              ViewObjectPopup(namespace: namespace, objId: widget.node.id),
+              isDismissible: true);
         }
       },
       child: RawChip(
         onPressed: () => _menu?.showButtonMenu(),
-        backgroundColor: const Color(0x331565c0),
+        backgroundColor:
+            widget.isVirtual ? Colors.deepPurple.shade100 : Color(0x331565c0),
         side: const BorderSide(style: BorderStyle.none),
         label: Text(
           adaptLabel(widget.node.label),
           style: TextStyle(
             fontSize: 14,
             fontFamily: GoogleFonts.inter().fontFamily,
-            color: _kDarkBlue,
+            color: widget.isVirtual ? Colors.deepPurple.shade900 : _kDarkBlue,
             fontWeight: FontWeight.w600,
           ),
         ),

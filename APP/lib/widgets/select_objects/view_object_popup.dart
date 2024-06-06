@@ -1,0 +1,205 @@
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
+import 'package:ogree_app/common/api_backend.dart';
+import 'package:ogree_app/common/definitions.dart';
+import 'package:ogree_app/common/snackbar.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:ogree_app/common/theme.dart';
+
+import 'object_popup.dart';
+
+class ViewObjectPopup extends StatefulWidget {
+  String objId;
+  Namespace namespace;
+  ViewObjectPopup({super.key, required this.namespace, required this.objId});
+
+  @override
+  State<ViewObjectPopup> createState() => _ViewObjectPopupState();
+}
+
+class _ViewObjectPopupState extends State<ViewObjectPopup> {
+  final _formKey = GlobalKey<FormState>();
+  bool _isSmallDisplay = false;
+  String _objCategory = LogCategories.group.name;
+  String? _loadFileResult;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final localeMsg = AppLocalizations.of(context)!;
+    _isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
+
+    return FutureBuilder(
+        future: _loadFileResult == null ? getObject() : null,
+        builder: (context, _) {
+          if (_loadFileResult == null) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          return Center(
+            child: Container(
+              width: 500,
+              constraints: BoxConstraints(maxHeight: 430),
+              margin: const EdgeInsets.symmetric(horizontal: 20),
+              decoration: PopupDecoration,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(40, 20, 40, 15),
+                child: Form(
+                    key: _formKey,
+                    child: ScaffoldMessenger(
+                        child: Builder(
+                      builder: (context) => Scaffold(
+                        backgroundColor: Colors.white,
+                        body: SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              Center(
+                                child: Text(
+                                  "View",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineMedium,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(localeMsg.objType),
+                                  const SizedBox(width: 20),
+                                  SizedBox(
+                                    height: 35,
+                                    width: 147,
+                                    child: DropdownButtonFormField<String>(
+                                        isExpanded: true,
+                                        borderRadius:
+                                            BorderRadius.circular(12.0),
+                                        decoration: GetFormInputDecoration(
+                                          false,
+                                          null,
+                                          icon: Icons.bookmark,
+                                        ),
+                                        value: _objCategory,
+                                        items: getCategoryMenuItems(),
+                                        onChanged: null),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              SizedBox(
+                                  height: 270,
+                                  child: getTemplatesForm(localeMsg)),
+                              const SizedBox(height: 12),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  ElevatedButton.icon(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      label: const Text("OK"),
+                                      icon:
+                                          const Icon(Icons.thumb_up, size: 16))
+                                ],
+                              )
+                            ],
+                          ),
+                        ),
+                      ),
+                    ))),
+              ),
+            ),
+          );
+        });
+  }
+
+  List<DropdownMenuItem<String>> getCategoryMenuItems() {
+    List<String> categories = objsByNamespace[widget.namespace]!;
+    return categories.map<DropdownMenuItem<String>>((String value) {
+      return DropdownMenuItem<String>(
+        value: value,
+        child: Text(
+          value,
+          overflow: TextOverflow.ellipsis,
+        ),
+      );
+    }).toList();
+  }
+
+  getObject() async {
+    // Get object info for edit popup
+    final messenger = ScaffoldMessenger.of(context);
+    var errMsg = "";
+    // Try both id and slug since we dont know the obj's category
+    for (var keyId in ["id", "slug"]) {
+      var result = await fetchObject(widget.objId, idKey: keyId);
+      print("hi");
+      switch (result) {
+        case Success(value: final value):
+          print(value);
+          if (widget.namespace == Namespace.Logical) {
+            if (["room", "building", "device", "rack", "generic"]
+                .contains(value["category"])) {
+              // templates
+              switch (value["category"]) {
+                case "room":
+                  _objCategory = LogCategories.room_template.name;
+                  break;
+                case "building":
+                  _objCategory = LogCategories.bldg_template.name;
+                  break;
+                default:
+                  _objCategory = LogCategories.obj_template.name;
+              }
+            } else {
+              if (value["applicability"] != null) {
+                // layers
+                _objCategory = LogCategories.layer.name;
+              } else if (value["category"] == null) {
+                // tags
+                _objCategory = LogCategories.tag.name;
+              } else {
+                // group
+                _objCategory = value["category"];
+                _objCategory = _objCategory.replaceFirst("-", "_");
+                print(_objCategory);
+              }
+            }
+          } else {
+            // physical or organisational
+            _objCategory = value["category"];
+            _objCategory = _objCategory.replaceFirst("-", "_");
+          }
+          var encoder = const JsonEncoder.withIndent("     ");
+          _loadFileResult = encoder.convert(value);
+          return;
+        case Failure(exception: final exception):
+          errMsg = exception.toString();
+      }
+    }
+    showSnackBar(messenger, errMsg, isError: true);
+    if (context.mounted) Navigator.pop(context);
+  }
+
+  getTemplatesForm(AppLocalizations localeMsg) {
+    return Center(
+      child: ListView(shrinkWrap: true, children: [
+        Container(
+          color: Colors.black,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              _loadFileResult!,
+              style: const TextStyle(color: Colors.white),
+            ),
+          ),
+        )
+      ]),
+    );
+  }
+}
