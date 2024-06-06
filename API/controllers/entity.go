@@ -93,8 +93,8 @@ func getUserFromToken(w http.ResponseWriter, r *http.Request) *models.Account {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, tags,
-//     stray-objects, hierarchy-objects.'
+//     room_templates, obj_templates, bldg_templates, tags,
+//     stray_objects, hierarchy_objects.'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -117,8 +117,6 @@ func CreateEntity(w http.ResponseWriter, r *http.Request) {
 	DispRequestMetaData(r)
 	// Get entity
 	entStr := mux.Vars(r)["entity"]
-	// If creating templates, format them
-	entStr = strings.Replace(entStr, "-", "_", 1)
 	entInt := u.EntityStrToInt(entStr)
 	println("ENT: ", entStr)
 
@@ -721,8 +719,8 @@ func HandleComplexFilters(w http.ResponseWriter, r *http.Request) {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, tags,
-//     stray-objects, hierarchy-objects.'
+//     room_templates, obj_templates, bldg_templates, tags,
+//     stray_objects, hierarchy_objects.'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -773,9 +771,6 @@ func GetEntity(w http.ResponseWriter, r *http.Request) {
 	// Get entity type and filters
 	entityStr := mux.Vars(r)["entity"]
 	filters := getFiltersFromQueryParams(r)
-
-	// If templates, format them
-	entityStr = strings.Replace(entityStr, "-", "_", 1)
 
 	// Get entity
 	if id, canParse = mux.Vars(r)["id"]; canParse {
@@ -938,7 +933,7 @@ func GetLayerObjects(w http.ResponseWriter, r *http.Request) {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-objects, tags'
+//     room_templates, obj_templates, bldg_templates, stray_objects, tags'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -978,8 +973,6 @@ func GetAllEntities(w http.ResponseWriter, r *http.Request) {
 	// Get entity
 	entStr = mux.Vars(r)["entity"]
 	println("ENTSTR: ", entStr)
-	// If templates, format them
-	entStr = strings.Replace(entStr, "-", "_", 1)
 
 	// Check if entity is valid
 	entity := u.EntityStrToInt(entStr)
@@ -1024,8 +1017,8 @@ func GetAllEntities(w http.ResponseWriter, r *http.Request) {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, tags,
-//     stray-objects, hierarchy-objects.'
+//     room_templates, obj_templates, bldg_templates, tags,
+//     stray_objects, hierarchy_objects.'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -1058,8 +1051,6 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 
 	// Get entityStr from URL
 	entityStr := mux.Vars(r)["entity"]
-	// If templates, format them
-	entityStr = strings.Replace(entityStr, "-", "_", 1)
 
 	// Check unidentified collection
 	if u.EntityStrToInt(entityStr) < 0 && entityStr != u.HIERARCHYOBJS_ENT {
@@ -1116,7 +1107,7 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-objects, tags.'
+//     room_templates, obj_templates, bldg_templates, stray_objects, tags.'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -1160,8 +1151,8 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, tags,
-//     stray-objects, hierarchy-objects.'
+//     room_templates, obj_templates, bldg_templates, tags,
+//     stray_objects, hierarchy_objects.'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -1215,8 +1206,6 @@ func UpdateEntity(w http.ResponseWriter, r *http.Request) {
 
 	//Get entity from URL
 	entity = mux.Vars(r)["entity"]
-	//If templates, format them
-	entity = strings.Replace(entity, "-", "_", 1)
 
 	// Check unidentified collection
 	if u.EntityStrToInt(entity) < 0 && entity != u.HIERARCHYOBJS_ENT {
@@ -1270,7 +1259,7 @@ func UpdateEntity(w http.ResponseWriter, r *http.Request) {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-objects, tags.'
+//     room_templates, obj_templates, bldg_templates, stray_objects, tags.'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -1319,8 +1308,6 @@ func GetEntityByQuery(w http.ResponseWriter, r *http.Request) {
 
 	// Get entity
 	entStr = r.URL.Path[5 : len(r.URL.Path)-1]
-	//If templates, format them
-	entStr = strings.Replace(entStr, "-", "_", 1)
 
 	// Check unidentified collection
 	entInt := u.EntityStrToInt(entStr)
@@ -1543,7 +1530,7 @@ func GetEntitiesOfAncestor(w http.ResponseWriter, r *http.Request) {
 //   description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //   buildings, rooms, racks, devices, acs, panels,
 //   cabinets, groups, corridors,
-//   stray-objects, hierarchy-objects.'
+//   stray_objects, hierarchy_objects.'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -1603,9 +1590,6 @@ func GetHierarchyByName(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// If template or stray convert '-' -> '_'
-	entity = strings.Replace(entity, "-", "_", 1)
-
 	// Check if the request is a ranged hierarchy
 	filters := getFiltersFromQueryParams(r)
 	if len(filters.Limit) > 0 {
@@ -1635,7 +1619,12 @@ func GetHierarchyByName(w http.ResponseWriter, r *http.Request) {
 			// use stray's category as entity
 			entity = data["category"].(string)
 		}
-		data["children"], modelErr = models.GetHierarchyByName(entity, id, limit, filters)
+
+		if vconfig, ok := data["attributes"].(map[string]any)["virtual_config"].(map[string]any); ok && entity == u.EntityToString(u.VIRTUALOBJ) && vconfig["type"] == "cluster" {
+			data["children"], modelErr = models.GetHierarchyByCluster(id, limit, filters)
+		} else {
+			data["children"], modelErr = models.GetHierarchyByName(entity, id, limit, filters)
+		}
 	}
 
 	// Respond
@@ -1754,7 +1743,7 @@ func GetCompleteHierarchyAttributes(w http.ResponseWriter, r *http.Request) {
 // swagger:operation PATCH /api/{entity}/{id}/unlink Objects UnlinkObject
 // Removes the object from its original entity and hierarchy tree to make it stray.
 // The object will no longer have a parent, its id will change as well as the id of all its children.
-// The object will then belong to the stray-objects entity.
+// The object will then belong to the stray_objects entity.
 // ---
 // security:
 // - bearer: []
@@ -1788,7 +1777,7 @@ func GetCompleteHierarchyAttributes(w http.ResponseWriter, r *http.Request) {
 //     '500':
 //         description: 'Internal error. Unable to remove object from entity and create it as stray.'
 
-// swagger:operation PATCH /api/stray-objects/{id}/link Objects LinkObject
+// swagger:operation PATCH /api/stray_objects/{id}/link Objects LinkObject
 // Removes the object from stray and add it to the entity of its category attribute.
 // The object will again have a parent, its id will change as well as the id of all its children.
 // The object will then belong to the given entity.
@@ -1859,7 +1848,7 @@ func LinkEntity(w http.ResponseWriter, r *http.Request) {
 
 	// Get entity
 	if id, canParse = mux.Vars(r)["id"]; canParse {
-		if strings.Replace(entityStr, "-", "_", 1) == u.HIERARCHYOBJS_ENT {
+		if entityStr == u.HIERARCHYOBJS_ENT {
 			data, modelErr = models.GetHierarchyObjectById(id, u.RequestFilters{}, user.Roles)
 		} else {
 			data, modelErr = models.GetObject(bson.M{"id": id}, entityStr, u.RequestFilters{}, user.Roles)
@@ -1984,7 +1973,7 @@ func GetStats(w http.ResponseWriter, r *http.Request) {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-objects, tags.'
+//     room_templates, obj_templates, bldg_templates, stray_objects, tags.'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -2016,11 +2005,6 @@ func ValidateEntity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//If templates or stray-objects, format them
-	if idx := strings.Index(entity, "-"); idx != -1 {
-		//entStr[idx] = '_'
-		entity = entity[:idx] + "_" + entity[idx+1:]
-	}
 	entInt := u.EntityStrToInt(entity)
 
 	if !e1 || entInt == -1 {
