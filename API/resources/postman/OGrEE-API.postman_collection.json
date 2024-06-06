@@ -1775,13 +1775,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/room-templates",
+							"raw": "{{URL}}/api/room_templates",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
 								"api",
-								"room-templates"
+								"room_templates"
 							]
 						}
 					},
@@ -1840,13 +1840,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/room-templates/{{RoomTemplateID}}",
+							"raw": "{{URL}}/api/room_templates/{{RoomTemplateID}}",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
 								"api",
-								"room-templates",
+								"room_templates",
 								"{{RoomTemplateID}}"
 							]
 						}
@@ -1890,13 +1890,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/obj-templates",
+							"raw": "{{URL}}/api/obj_templates",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
 								"api",
-								"obj-templates"
+								"obj_templates"
 							]
 						}
 					},
@@ -1955,13 +1955,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/obj-templates/{{RackTemplateID}}",
+							"raw": "{{URL}}/api/obj_templates/{{RackTemplateID}}",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
 								"api",
-								"obj-templates",
+								"obj_templates",
 								"{{RackTemplateID}}"
 							]
 						}
@@ -2006,13 +2006,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/obj-templates",
+							"raw": "{{URL}}/api/obj_templates",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
 								"api",
-								"obj-templates"
+								"obj_templates"
 							]
 						}
 					},
@@ -2071,13 +2071,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/obj-templates/{{DeviceTemplateID}}",
+							"raw": "{{URL}}/api/obj_templates/{{DeviceTemplateID}}",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
 								"api",
-								"obj-templates",
+								"obj_templates",
 								"{{DeviceTemplateID}}"
 							]
 						}
@@ -2121,13 +2121,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/stray-objects",
+							"raw": "{{URL}}/api/stray_objects",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
 								"api",
-								"stray-objects"
+								"stray_objects"
 							]
 						}
 					},
@@ -2186,13 +2186,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/stray-objects/{{StrayDevID}}",
+							"raw": "{{URL}}/api/stray_objects/{{StrayDevID}}",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
 								"api",
-								"stray-objects",
+								"stray_objects",
 								"{{StrayDevID}}"
 							]
 						}
@@ -2752,13 +2752,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/stray-objects/DeviceA/link",
+							"raw": "{{URL}}/api/stray_objects/DeviceA/link",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
 								"api",
-								"stray-objects",
+								"stray_objects",
 								"DeviceA",
 								"link"
 							]
@@ -3865,13 +3865,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/room-templates/{{RoomTemplateID}}",
+							"raw": "{{URL}}/api/room_templates/{{RoomTemplateID}}",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
 								"api",
-								"room-templates",
+								"room_templates",
 								"{{RoomTemplateID}}"
 							]
 						}
@@ -3900,13 +3900,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/room-templates/{{RoomTemplateID}}",
+							"raw": "{{URL}}/api/room_templates/{{RoomTemplateID}}",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
 								"api",
-								"room-templates",
+								"room_templates",
 								"{{RoomTemplateID}}"
 							]
 						}
@@ -3952,13 +3952,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/obj-templates/{{RackTemplateID}}",
+							"raw": "{{URL}}/api/obj_templates/{{RackTemplateID}}",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
 								"api",
-								"obj-templates",
+								"obj_templates",
 								"{{RackTemplateID}}"
 							]
 						}
@@ -4024,13 +4024,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/obj-templates/{{RackTemplateID}}",
+							"raw": "{{URL}}/api/obj_templates/{{RackTemplateID}}",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
 								"api",
-								"obj-templates",
+								"obj_templates",
 								"{{RackTemplateID}}"
 							]
 						}
@@ -4596,13 +4596,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/room-templates/{{RoomTemplateID}}",
+							"raw": "{{URL}}/api/room_templates/{{RoomTemplateID}}",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
 								"api",
-								"room-templates",
+								"room_templates",
 								"{{RoomTemplateID}}"
 							]
 						}
@@ -4631,13 +4631,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/room-templates/{{RoomTemplateID}}",
+							"raw": "{{URL}}/api/room_templates/{{RoomTemplateID}}",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
 								"api",
-								"room-templates",
+								"room_templates",
 								"{{RoomTemplateID}}"
 							]
 						}
@@ -4666,13 +4666,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/obj-templates/{{RackTemplateID}}",
+							"raw": "{{URL}}/api/obj_templates/{{RackTemplateID}}",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
 								"api",
-								"obj-templates",
+								"obj_templates",
 								"{{RackTemplateID}}"
 							]
 						}
@@ -4701,13 +4701,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/rack-templates/{{RackTemplateID}}",
+							"raw": "{{URL}}/api/rack_templates/{{RackTemplateID}}",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
 								"api",
-								"rack-templates",
+								"rack_templates",
 								"{{RackTemplateID}}"
 							]
 						}
@@ -4736,13 +4736,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/obj-templates/{{DeviceTemplateID}}",
+							"raw": "{{URL}}/api/obj_templates/{{DeviceTemplateID}}",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
 								"api",
-								"obj-templates",
+								"obj_templates",
 								"{{DeviceTemplateID}}"
 							]
 						}
@@ -4771,13 +4771,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/device-templates/{{DeviceTemplateID}}",
+							"raw": "{{URL}}/api/device_templates/{{DeviceTemplateID}}",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
 								"api",
-								"device-templates",
+								"device_templates",
 								"{{DeviceTemplateID}}"
 							]
 						}
@@ -5369,13 +5369,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/room-templates",
+							"raw": "{{URL}}/api/room_templates",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
 								"api",
-								"room-templates"
+								"room_templates"
 							]
 						}
 					},
@@ -5403,13 +5403,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/obj-templates",
+							"raw": "{{URL}}/api/obj_templates",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
 								"api",
-								"obj-templates"
+								"obj_templates"
 							]
 						}
 					},

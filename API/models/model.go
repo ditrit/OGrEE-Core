@@ -59,17 +59,13 @@ func getChildrenCollections(limit int, parentEntStr string) []int {
 	rangeEntities := []int{}
 	startEnt := u.EntityStrToInt(parentEntStr) + 1
 	endEnt := startEnt + limit
-	if parentEntStr == "domain" {
-		startEnt = u.DOMAIN
-		endEnt = u.DOMAIN
-	} else if parentEntStr == "device" {
-		// device special case (devices can have devices)
-		startEnt = u.DEVICE
-		endEnt = u.DEVICE
-	} else if parentEntStr == "application" {
-		// application special case (app can have apps)
-		startEnt = u.APPLICATION
-		endEnt = u.APPLICATION
+	if parentEntStr == u.EntityToString(u.DOMAIN) {
+		return []int{u.DOMAIN}
+	} else if parentEntStr == u.EntityToString(u.DEVICE) {
+		// device special case (devices can have devices and vobjs)
+		return []int{u.DEVICE, u.VIRTUALOBJ}
+	} else if parentEntStr == u.EntityToString(u.VIRTUALOBJ) {
+		return []int{u.VIRTUALOBJ}
 	} else if endEnt >= u.DEVICE {
 		// include AC, CABINET, CORRIDOR, PWRPNL and GROUP
 		// beacause of ROOM and RACK possible children
@@ -223,11 +219,6 @@ func GetObject(req bson.M, entityStr string, filters u.RequestFilters, userRoles
 		}
 	}
 
-	//If entity has '_' remove it
-	if strings.Contains(entityStr, "_") {
-		FixUnderScore(object)
-	}
-
 	return object, nil
 }
 
@@ -280,13 +271,6 @@ func GetManyObjects(entityStr string, req bson.M, filters u.RequestFilters, comp
 	if e1 != nil {
 		fmt.Println(e1)
 		return nil, &u.Error{Type: u.ErrInternal, Message: e1.Error()}
-	}
-
-	//Remove underscore If the entity has '_'
-	if strings.Contains(entityStr, "_") {
-		for i := range data {
-			FixUnderScore(data[i])
-		}
 	}
 
 	if shouldFillTags(entity, filters) {
@@ -503,10 +487,10 @@ func getHierarchyWithNamespace(namespace u.Namespace, userRoles map[string]Role,
 					hierarchy[rootIdx+entityName] = append(hierarchy[rootIdx+entityName], objId)
 				} else {
 					objId = obj["id"].(string)
-					if strings.Contains(obj["id"].(string), ".") && obj["category"] != "group" {
+					categories[entityName] = append(categories[entityName], objId)
+					if strings.Contains(objId, ".") && obj["category"] != "group" {
 						// Physical or Org Children
-						categories[entityName] = append(categories[entityName], obj["id"].(string))
-						fillHierarchyMap(obj["id"].(string), hierarchy)
+						fillHierarchyMap(objId, hierarchy)
 					} else {
 						hierarchy[rootIdx+entityName] = append(hierarchy[rootIdx+entityName], objId)
 					}
@@ -521,9 +505,34 @@ func getHierarchyWithNamespace(namespace u.Namespace, userRoles map[string]Role,
 				categories[entityName] = append(categories[entityName], objId)
 				if u.EntityStrToInt(entityName) == u.STRAYOBJ {
 					hierarchy[rootIdx+entityName] = append(hierarchy[rootIdx+entityName], objId)
-				} else {
+				} else if u.EntityStrToInt(entityName) != u.VIRTUALOBJ {
 					hierarchy[rootIdx] = append(hierarchy[rootIdx], objId)
 				}
+			}
+		}
+	}
+
+	// For the root of VIRTUAL objects we also need to check for devices
+	for _, vobj := range hierarchy[rootIdx+u.EntityToString(u.VIRTUALOBJ)] {
+		if !strings.ContainsAny(vobj, u.HN_DELIMETER) { // is stray virtual
+			// Get device linked to this vobj through its virtual config
+			entityName := u.EntityToString(u.DEVICE)
+			dbFilter := bson.M{"attributes.virtual_config.clusterId": vobj}
+			opts := options.Find().SetProjection(bson.D{{Key: "domain", Value: 1}, {Key: "id", Value: 1}, {Key: "category", Value: 1}})
+			c, err := db.Collection(entityName).Find(ctx, dbFilter, opts)
+			if err != nil {
+				println(err.Error())
+				return nil, &u.Error{Type: u.ErrDBError, Message: err.Error()}
+			}
+			data, e := ExtractCursor(c, ctx, u.EntityStrToInt(entityName), userRoles)
+			if e != nil {
+				return nil, &u.Error{Type: u.ErrInternal, Message: e.Error()}
+			}
+			// Add data
+			for _, obj := range data {
+				objId := obj["id"].(string)
+				categories[entityName] = append(categories[entityName], objId)
+				hierarchy[vobj] = append(hierarchy[vobj], objId)
 			}
 		}
 	}
@@ -810,10 +819,7 @@ func prepareUpdateObject(ctx mongo.SessionContext, entity int, id string, update
 
 func UpdateObject(entityStr string, id string, updateData map[string]interface{}, isPatch bool, userRoles map[string]Role, isRecursive bool) (map[string]interface{}, *u.Error) {
 	var idFilter bson.M
-	if u.EntityStrToInt(entityStr) == u.APPLICATION {
-		idFilter = bson.M{"name": id}
-
-	} else if u.IsEntityNonHierarchical(u.EntityStrToInt(entityStr)) {
+	if u.IsEntityNonHierarchical(u.EntityStrToInt(entityStr)) {
 		idFilter = bson.M{"slug": id}
 	} else {
 		idFilter = bson.M{"id": id}
@@ -986,6 +992,45 @@ func getChildren(entity, hierarchyName string, limit int, filters u.RequestFilte
 	}
 
 	return allChildren, hierarchy, nil
+}
+
+func GetHierarchyByCluster(clusterName string, limit int, filters u.RequestFilters) ([]map[string]interface{}, *u.Error) {
+	// Get all children and their relations
+	allChildren := map[string]interface{}{}
+	hierarchy := make(map[string][]string)
+
+	// Get children from all given collections
+	for _, checkEnt := range []int{u.DEVICE, u.VIRTUALOBJ} {
+		checkEntName := u.EntityToString(checkEnt)
+		var dbFilter primitive.M
+		if checkEnt == u.VIRTUALOBJ {
+			pattern := primitive.Regex{Pattern: "^" + clusterName +
+				"(." + u.NAME_REGEX + "){1," + strconv.Itoa(limit) + "}$", Options: ""}
+			dbFilter = bson.M{"id": pattern}
+		} else { // DEVICE links to vobj via virtual config
+			dbFilter = bson.M{"attributes.virtual_config.clusterId": clusterName}
+		}
+		children, e1 := GetManyObjects(checkEntName, dbFilter, filters, "", nil)
+		fmt.Println(children)
+		if e1 != nil {
+			return nil, e1
+		}
+		for _, child := range children {
+			// create hierarchy map
+			if checkEnt == u.VIRTUALOBJ {
+				allChildren[child["id"].(string)] = child
+				fillHierarchyMap(child["id"].(string), hierarchy)
+			} else {
+				child["id"] = "Physical." + child["id"].(string)
+				allChildren[child["id"].(string)] = child
+				// fill hierarchy map by cluster
+				hierarchy[clusterName] = append(hierarchy[clusterName], child["id"].(string))
+			}
+		}
+	}
+
+	// Organize the family according to relations (nest children)
+	return recursivelyGetChildrenFromMaps(clusterName, hierarchy, allChildren), nil
 }
 
 // recursivelyGetChildrenFromMaps: nest children data as the array value of

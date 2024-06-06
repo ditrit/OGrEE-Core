@@ -79,7 +79,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 
 	//Check ParentID is valid
 	if t["parentId"] == nil || t["parentId"] == "" {
-		if entNum == u.DOMAIN || entNum == u.STRAYOBJ || entNum == u.APPLICATION {
+		if entNum == u.DOMAIN || entNum == u.STRAYOBJ || entNum == u.VIRTUALOBJ {
 			return nil, nil
 		}
 		return nil, &u.Error{Type: u.ErrBadFormat, Message: "ParentID is not valid"}
@@ -155,17 +155,25 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		return nil, &u.Error{Type: u.ErrInvalidValue,
 			Message: "ParentID should correspond to existing room ID"}
 
-	case u.APPLICATION:
-		x, _ := GetObject(req, "application", u.RequestFilters{}, nil)
+	case u.VIRTUALOBJ:
+		x, _ := GetObject(req, "device", u.RequestFilters{}, nil)
 		if x != nil {
-			parent["parent"] = "application"
+			parent["parent"] = "device"
 			parent["domain"] = x["domain"]
 			parent["id"] = x["id"]
 			return parent, nil
 		}
 
+		y, _ := GetObject(req, "virtual_obj", u.RequestFilters{}, nil)
+		if y != nil {
+			parent["parent"] = "virtual_obj"
+			parent["domain"] = y["domain"]
+			parent["id"] = y["id"]
+			return parent, nil
+		}
+
 		return nil, &u.Error{Type: u.ErrInvalidValue,
-			Message: "ParentID should correspond to existing application ID"}
+			Message: "Group parent should correspond to existing device or virtual_obj"}
 	default:
 		parentInt := u.GetParentOfEntityByInt(entNum)
 		parentStr := u.EntityToString(parentInt)
@@ -306,7 +314,8 @@ func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 	}
 
 	// Check attributes
-	if entity == u.RACK || entity == u.GROUP || entity == u.CORRIDOR || entity == u.GENERIC || entity == u.DEVICE {
+	if entity == u.RACK || entity == u.GROUP || entity == u.CORRIDOR || entity == u.GENERIC ||
+		entity == u.DEVICE || entity == u.VIRTUALOBJ {
 		attributes := t["attributes"].(map[string]any)
 
 		if pie.Contains(u.RoomChildren, entity) {
@@ -433,6 +442,23 @@ func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 				}
 			} else if err != nil {
 				return err
+			}
+		case u.VIRTUALOBJ:
+			if attributes["vlinks"] != nil {
+				for _, vlinkId := range attributes["vlinks"].([]any) {
+					count, err := repository.CountObjectsManyEntities([]int{u.DEVICE, u.VIRTUALOBJ},
+						bson.M{"id": strings.Split(vlinkId.(string), "#")[0]})
+					if err != nil {
+						return err
+					}
+
+					if count != 1 {
+						return &u.Error{
+							Type:    u.ErrBadFormat,
+							Message: "One or more vlink objects could not be found. Note that it must be device or virtual obj",
+						}
+					}
+				}
 			}
 		}
 	} else if entity == u.LAYER && !doublestar.ValidatePattern(t["applicability"].(string)) {

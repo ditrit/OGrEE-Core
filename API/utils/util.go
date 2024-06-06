@@ -48,7 +48,7 @@ const (
 	BLDGTMPL
 	TAG
 	LAYER
-	APPLICATION
+	VIRTUALOBJ
 )
 
 type Namespace string
@@ -239,7 +239,7 @@ var Entities = []int{
 	DOMAIN,
 	STRAYOBJ, SITE,
 	BLDG, ROOM, RACK, DEVICE, AC, CABINET, CORRIDOR, GENERIC, PWRPNL, GROUP,
-	ROOMTMPL, OBJTMPL, BLDGTMPL, TAG, LAYER, APPLICATION,
+	ROOMTMPL, OBJTMPL, BLDGTMPL, TAG, LAYER, VIRTUALOBJ,
 }
 
 var EntitiesWithTags = []int{
@@ -257,7 +257,7 @@ func IsEntityHierarchical(entity int) bool {
 }
 
 func IsEntityNonHierarchical(entity int) bool {
-	return entity >= ROOMTMPL && entity != APPLICATION
+	return entity >= ROOMTMPL && entity < VIRTUALOBJ
 }
 
 func EntityToString(entity int) string {
@@ -298,8 +298,8 @@ func EntityToString(entity int) string {
 		return "tag"
 	case LAYER:
 		return "layer"
-	case APPLICATION:
-		return "application"
+	case VIRTUALOBJ:
+		return "virtual_obj"
 	default:
 		return "INVALID"
 	}
@@ -343,8 +343,8 @@ func EntityStrToInt(entity string) int {
 		return TAG
 	case "layer":
 		return LAYER
-	case "application":
-		return APPLICATION
+	case "virtual_obj":
+		return VIRTUALOBJ
 	default:
 		return -1
 	}
@@ -361,7 +361,7 @@ func GetEntitiesByNamespace(namespace Namespace, hierarchyName string) []string 
 	case Organisational:
 		entNames = append(entNames, EntityToString(DOMAIN))
 	case Logical:
-		for entity := GROUP; entity <= APPLICATION; entity++ {
+		for entity := GROUP; entity <= VIRTUALOBJ; entity++ {
 			entNames = append(entNames, EntityToString(entity))
 		}
 	case LObjTemplate:
@@ -393,10 +393,11 @@ func GetEntitiesByNamespace(namespace Namespace, hierarchyName string) []string 
 			case Any:
 				entities = Entities
 			}
+			entities = append(entities, VIRTUALOBJ)
 		} else {
 			if namespace == Any {
 				entities = append(entities, DOMAIN)
-				entities = append(entities, APPLICATION)
+				entities = append(entities, VIRTUALOBJ)
 			}
 
 			// Add entities according to hierarchyName possibilities
