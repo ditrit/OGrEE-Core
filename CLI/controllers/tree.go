@@ -316,6 +316,10 @@ func BuildBaseTree(controller Controller) *HierarchyNode {
 	groups.FillFn = FillUrlTreeFn[map[string]any]("/api/groups", nil, true, controller.API)
 	logical.AddChild(groups)
 
+	virtual := NewNode("VirtualObjects")
+	virtual.FillFn = FillUrlTreeFn[map[string]any]("/api/virtual_objs", controller.FillObjectTree, false, controller.API)
+	logical.AddChild(virtual)
+
 	organisation := NewNode("Organisation")
 	organisation.FillFn = FillChildren
 	root.AddChild(organisation)

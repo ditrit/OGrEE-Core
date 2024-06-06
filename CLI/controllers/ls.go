@@ -44,6 +44,8 @@ func (controller Controller) lsObjectsWithoutFilters(path string) ([]map[string]
 			if isMap {
 				if models.IsGroup(path) {
 					childObj["name"] = strings.ReplaceAll(childObj["id"].(string), ".", "/")
+				} else if models.IsVirtual(path) && strings.Contains(childObj["id"].(string), "Physical.") {
+					childObj["name"] = "/" + strings.ReplaceAll(childObj["id"].(string), ".", "/")
 				}
 				objects = append(objects, childObj)
 				continue

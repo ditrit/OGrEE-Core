@@ -7,7 +7,6 @@ import (
 	"net/http"
 	pathutil "path"
 	"strconv"
-	"strings"
 )
 
 func (controller Controller) PostObj(ent int, entity string, data map[string]any, path string) error {
@@ -53,7 +52,8 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 		if err != nil {
 			return err
 		}
-		if parent == nil && (ent != models.DOMAIN || path != "/Organisation/Domain") {
+		if parent == nil && (ent != models.DOMAIN || path != "/Organisation/Domain") &&
+			ent != models.VIRTUALOBJ {
 			return fmt.Errorf("parent not found")
 		}
 	}
@@ -325,16 +325,16 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			}
 		}
 
+	case models.VIRTUALOBJ:
+		if parent != nil {
+			data["parentId"] = parent["id"]
+		}
 	default:
 		//Execution should not reach here!
 		return fmt.Errorf("Invalid Object Specified!")
 	}
 
 	data["attributes"] = attr
-
-	//Because we already stored the string conversion in category
-	//we can do the conversion for templates here
-	data["category"] = strings.Replace(data["category"].(string), "_", "-", 1)
 
 	return controller.PostObj(ent, data["category"].(string), data, path)
 }

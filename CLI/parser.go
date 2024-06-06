@@ -545,24 +545,40 @@ func (p *parser) parseStringOrVecStr(name string) []node {
 	defer un(trace(p, name))
 	p.skipWhiteSpaces()
 	if p.parseExact("[") {
-		listnodes := []node{}
-		for {
-			p.skipWhiteSpaces()
-			n := p.parseText(p.parseUnquotedStringToken, true, true)
-			listnodes = append(listnodes, n)
-			if p.parseExact(",") {
-				continue
-			} else {
-				break
-			}
-		}
-		if !p.parseExact("]") {
-			p.error("] expected")
-		}
-		p.skipWhiteSpaces()
-		return listnodes
+		return p.parseVecStrElems("vec str elems")
 	}
 	return []node{p.parseString("")}
+}
+
+func (p *parser) parseVecStr(name string) []node {
+	defer un(trace(p, name))
+	p.skipWhiteSpaces()
+	if p.parseExact("[") {
+		return p.parseVecStrElems("vec str elems")
+	} else {
+		p.error("[ expected")
+	}
+	return []node{}
+}
+
+func (p *parser) parseVecStrElems(name string) []node {
+	defer un(trace(p, name))
+	listnodes := []node{}
+	for {
+		p.skipWhiteSpaces()
+		n := p.parseText(p.parseUnquotedStringToken, true, true)
+		listnodes = append(listnodes, n)
+		if p.parseExact(",") {
+			continue
+		} else {
+			break
+		}
+	}
+	if !p.parseExact("]") {
+		p.error("] expected")
+	}
+	p.skipWhiteSpaces()
+	return listnodes
 }
 
 func (p *parser) parseArgValue() string {
@@ -851,6 +867,11 @@ func (p *parser) parseDelete() node {
 	path := p.parsePath("")
 	if p.parseExact(":") {
 		attr := p.parseComplexWord("attribute")
+		if attr == c.VIRTUALCONFIG {
+			p.expect(".")
+			extraAttr := p.parseComplexWord("attribute")
+			attr = attr + "." + extraAttr
+		}
 		return &deleteAttrNode{path, attr}
 	} else {
 		return &deleteObjNode{path}
@@ -1203,6 +1224,22 @@ func (p *parser) parseCreateDevice() node {
 	return &createDeviceNode{path, posUOrSlot, sizeUOrTemplate, invertOffset, side}
 }
 
+func (p *parser) parseCreateVirtualObj() node {
+	defer un(trace(p, "create virtual"))
+	path := p.parsePath("")
+	p.expect("@")
+	vtype := p.parseString("type")
+	if !p.parseExact("@") {
+		return &createVirtualNode{path, vtype, nil, nil}
+	}
+	vlinks := p.parseVecStr("vlinks")
+	if !p.parseExact("@") {
+		return &createVirtualNode{path, vtype, vlinks, nil}
+	}
+	role := p.parseString("role")
+	return &createVirtualNode{path, vtype, vlinks, role}
+}
+
 func (p *parser) parseCreateGroup() node {
 	defer un(trace(p, "create group"))
 	path := p.parsePath("")
@@ -1288,6 +1325,11 @@ func (p *parser) parseUpdate() node {
 	p.expect(":")
 	p.skipWhiteSpaces()
 	attr := p.parseComplexWord("attribute")
+	if attr == c.VIRTUALCONFIG {
+		p.expect(".")
+		extraAttr := p.parseComplexWord("attribute")
+		attr = attr + "." + extraAttr
+	}
 	p.skipWhiteSpaces()
 	p.expect("=")
 	p.skipWhiteSpaces()
@@ -1449,6 +1491,7 @@ func newParser(buffer string) *parser {
 		"role":     p.parseAddRole,
 		"generic":  p.parseCreateGeneric,
 		"ge":       p.parseCreateGeneric,
+		"vobj":     p.parseCreateVirtualObj,
 	}
 	p.noArgsCommands = map[string]node{
 		"selection":    &selectNode{},

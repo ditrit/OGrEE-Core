@@ -43,6 +43,7 @@ func (controller Controller) ObjectUrl(pathStr string, depth int) (string, error
 	if err != nil {
 		return "", err
 	}
+	useGeneric := false
 
 	var baseUrl string
 	switch path.Prefix {
@@ -64,14 +65,30 @@ func (controller Controller) ObjectUrl(pathStr string, depth int) (string, error
 		baseUrl = LayersURL
 	case models.DomainsPath:
 		baseUrl = "/api/domains"
+	case models.VirtualObjsPath:
+		if strings.Contains(path.ObjectID, ".Physical.") {
+			baseUrl = "/api/objects"
+			path.ObjectID = strings.Split(path.ObjectID, ".Physical.")[1]
+			useGeneric = true
+		} else {
+			baseUrl = "/api/virtual_objs"
+		}
 	default:
 		return "", fmt.Errorf("invalid object path")
 	}
-	baseUrl += "/" + path.ObjectID
+
 	params := url.Values{}
-	if depth > 0 {
-		baseUrl += "/all"
-		params.Add("limit", strconv.Itoa(depth))
+	if useGeneric {
+		params.Add("id", path.ObjectID)
+		if depth > 0 {
+			params.Add("limit", strconv.Itoa(depth))
+		}
+	} else {
+		baseUrl += "/" + path.ObjectID
+		if depth > 0 {
+			baseUrl += "/all"
+			params.Add("limit", strconv.Itoa(depth))
+		}
 	}
 	parsedUrl, _ := url.Parse(baseUrl)
 	parsedUrl.RawQuery = params.Encode()
@@ -128,6 +145,10 @@ func (controller Controller) ObjectUrlGeneric(pathStr string, depth int, filters
 		params.Add("id", path.ObjectID)
 	case models.DomainsPath:
 		params.Add("namespace", "organisational")
+		params.Add("id", path.ObjectID)
+	case models.VirtualObjsPath:
+		params.Add("namespace", "logical")
+		params.Add("category", "virtual_obj")
 		params.Add("id", path.ObjectID)
 	default:
 		return "", fmt.Errorf("invalid object path")
@@ -189,7 +210,17 @@ func (controller Controller) UnsetAttribute(path string, attr string) error {
 	if !hasAttributes {
 		return fmt.Errorf("object has no attributes")
 	}
-	delete(attributes, attr)
+	if vconfigAttr, found := strings.CutPrefix(attr, VIRTUALCONFIG+"."); found {
+		if len(vconfigAttr) < 1 {
+			return fmt.Errorf("invalid attribute name")
+		} else if vAttrs, ok := attributes[VIRTUALCONFIG].(map[string]any); !ok {
+			return fmt.Errorf("object has no " + VIRTUALCONFIG)
+		} else {
+			delete(vAttrs, vconfigAttr)
+		}
+	} else {
+		delete(attributes, attr)
+	}
 	url, err := controller.ObjectUrl(path, 0)
 	if err != nil {
 		return err

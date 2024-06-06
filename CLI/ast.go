@@ -11,7 +11,6 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
-	"strconv"
 	"strings"
 )
 
@@ -687,19 +686,6 @@ func deleteRoomPillarOrSeparator(path, attribute, name string) (map[string]any, 
 	return cmd.C.UpdateObj(path, map[string]any{"attributes": attributes}, false)
 }
 
-func parseDescriptionIdx(desc string) (int, error) {
-	numStr := desc[len("description"):]
-	num, e := strconv.Atoi(numStr)
-	if e != nil {
-		return -1, e
-	}
-	num -= 1
-	if num < 0 {
-		return -1, fmt.Errorf("description index should be at least 1")
-	}
-	return num, nil
-}
-
 func updateDescription(path string, attr string, values []any) (map[string]any, error) {
 	if len(values) != 1 {
 		return nil, fmt.Errorf("a single value is expected to update a description")
@@ -708,29 +694,50 @@ func updateDescription(path string, attr string, values []any) (map[string]any, 
 	if err != nil {
 		return nil, err
 	}
-	data := map[string]any{}
-	if attr == "description" {
-		data["description"] = newDesc
-	} else {
-		obj, err := cmd.C.GetObject(path)
-		if err != nil {
-			return nil, err
-		}
-		curDesc := obj["description"].([]any)
-		idx, e := parseDescriptionIdx(attr)
-		if e != nil {
-			return nil, e
-		}
-		if idx > len(curDesc) {
-			return nil, fmt.Errorf("description index out of range")
-		} else if idx == len(curDesc) {
-			curDesc = append(curDesc, newDesc)
-		} else {
-			curDesc[idx] = newDesc
-		}
-		data["description"] = curDesc
-	}
+	data := map[string]any{"description": newDesc}
 	return cmd.C.UpdateObj(path, data, false)
+}
+
+func updateVirtualLink(path string, attr string, value string) (map[string]any, error) {
+	if len(value) == 0 {
+		return nil, fmt.Errorf("an empty string is not valid")
+	}
+
+	obj, err := cmd.C.GetObject(path)
+	if err != nil {
+		return nil, err
+	} else if obj["category"] != models.EntityToString(models.VIRTUALOBJ) {
+		return nil, fmt.Errorf("only virtual objects can have vlinks")
+	}
+
+	vlinks, e := obj["attributes"].(map[string]any)["vlinks"].([]any)
+	if attr == "vlinks+" {
+		if !e {
+			vlinks = []any{value}
+		} else {
+			vlinks = append(vlinks, value)
+		}
+	} else if attr == "vlinks-" {
+		if !e {
+			return nil, fmt.Errorf("no vlinks defined for this object")
+		}
+		found := false
+		for i, vlink := range vlinks {
+			if vlink == value {
+				vlinks = append(vlinks[:i], vlinks[i+1:]...)
+				found = true
+				break
+			}
+		}
+		if !found {
+			return nil, fmt.Errorf("vlink to remove not found")
+		}
+	} else {
+		return nil, fmt.Errorf("invalid vlink update command")
+	}
+
+	data := map[string]any{"vlinks": vlinks}
+	return cmd.C.UpdateObj(path, map[string]any{"attributes": data}, false)
 }
 
 type updateObjNode struct {
@@ -796,10 +803,12 @@ func (n *updateObjNode) execute() (interface{}, error) {
 				_, err = deleteRoomPillarOrSeparator(path, "separator", values[0].(string))
 			case "pillars-":
 				_, err = deleteRoomPillarOrSeparator(path, "pillar", values[0].(string))
+			case "vlinks+", "vlinks-":
+				_, err = updateVirtualLink(path, n.attr, values[0].(string))
 			case "domain", "tags+", "tags-":
 				isRecursive := len(values) > 1 && values[1] == "recursive"
 				_, err = cmd.C.UpdateObj(path, map[string]any{n.attr: values[0]}, isRecursive)
-			case "tags", "separators", "pillars":
+			case "tags", "separators", "pillars", "vlinks":
 				err = fmt.Errorf(
 					"object's %[1]s can not be updated directly, please use %[1]s+= and %[1]s-=",
 					n.attr,
@@ -836,7 +845,15 @@ func updateAttributes(path, attributeName string, values []any) (map[string]any,
 		if len(values) > 1 {
 			return nil, fmt.Errorf("attributes can only be assigned a single value")
 		}
-		attributes = map[string]any{attributeName: values[0]}
+		if vconfigAttr, found := strings.CutPrefix(attributeName, controllers.VIRTUALCONFIG+"."); found {
+			if len(vconfigAttr) < 1 {
+				return nil, fmt.Errorf("invalid attribute name")
+			}
+			vAttr := map[string]any{vconfigAttr: values[0]}
+			attributes = map[string]any{controllers.VIRTUALCONFIG: vAttr}
+		} else {
+			attributes = map[string]any{attributeName: values[0]}
+		}
 	}
 
 	return cmd.C.UpdateObj(path, map[string]any{"attributes": attributes}, false)
@@ -981,27 +998,6 @@ type unsetVarNode struct {
 func (n *unsetVarNode) execute() (interface{}, error) {
 	delete(cmd.State.DynamicSymbolTable, n.varName)
 	return nil, nil
-}
-
-type unsetAttrNode struct {
-	path  node
-	attr  string
-	index node
-}
-
-func (n *unsetAttrNode) execute() (interface{}, error) {
-	path, err := nodeToString(n.path, "path")
-	if err != nil {
-		return nil, err
-	}
-	if n.index != nil {
-		idx, err := nodeToInt(n.index, "index")
-		if err != nil {
-			return nil, err
-		}
-		return cmd.C.UnsetInObj(path, n.attr, idx)
-	}
-	return nil, cmd.C.UnsetAttribute(path, n.attr)
 }
 
 type setEnvNode struct {
@@ -1277,6 +1273,49 @@ func (n *createDeviceNode) execute() (interface{}, error) {
 	}
 
 	return nil, cmd.C.CreateObject(path, models.DEVICE, map[string]any{"attributes": attributes})
+}
+
+type createVirtualNode struct {
+	path   node
+	vtype  node
+	vlinks []node
+	role   node
+}
+
+func (n *createVirtualNode) execute() (interface{}, error) {
+	path, err := nodeToString(n.path, "path")
+	if err != nil {
+		return nil, err
+	}
+
+	vtype, err := nodeToString(n.vtype, "vtype")
+	if err != nil {
+		return nil, err
+	}
+	attributes := map[string]any{controllers.VIRTUALCONFIG: map[string]any{"type": vtype}}
+
+	if n.vlinks != nil {
+		vlinks := []string{}
+		for _, node := range n.vlinks {
+			str, err := nodeToString(node, "vlinks")
+			if err != nil {
+				return nil, err
+			} else if len(str) > 0 {
+				vlinks = append(vlinks, str)
+			}
+		}
+		attributes["vlinks"] = vlinks
+	}
+
+	if n.role != nil {
+		role, err := n.role.execute()
+		if err != nil {
+			return nil, err
+		}
+		attributes[controllers.VIRTUALCONFIG].(map[string]any)["role"] = role
+	}
+
+	return nil, cmd.C.CreateObject(path, models.VIRTUALOBJ, map[string]any{"attributes": attributes})
 }
 
 type createGroupNode struct {
