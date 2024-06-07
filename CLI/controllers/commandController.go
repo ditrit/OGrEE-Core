@@ -48,15 +48,15 @@ func (controller Controller) ObjectUrl(pathStr string, depth int) (string, error
 	var baseUrl string
 	switch path.Prefix {
 	case models.StrayPath:
-		baseUrl = "/api/stray-objects"
+		baseUrl = "/api/stray_objects"
 	case models.PhysicalPath:
-		baseUrl = "/api/hierarchy-objects"
+		baseUrl = "/api/hierarchy_objects"
 	case models.ObjectTemplatesPath:
-		baseUrl = "/api/obj-templates"
+		baseUrl = "/api/obj_templates"
 	case models.RoomTemplatesPath:
-		baseUrl = "/api/room-templates"
+		baseUrl = "/api/room_templates"
 	case models.BuildingTemplatesPath:
-		baseUrl = "/api/bldg-templates"
+		baseUrl = "/api/bldg_templates"
 	case models.GroupsPath:
 		baseUrl = "/api/groups"
 	case models.TagsPath:
