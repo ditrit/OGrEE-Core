@@ -52,7 +52,7 @@ class _NodeActionsChipState extends State<_NodeActionsChip> {
             value: 3,
             child: ListTile(
               dense: true,
-              title: Text("View as JSON"),
+              title: Text(AppLocalizations.of(context)!.viewJSON),
               contentPadding: const EdgeInsets.symmetric(horizontal: 4),
               leading: const Icon(Icons.search, color: _kDarkBlue),
             ),

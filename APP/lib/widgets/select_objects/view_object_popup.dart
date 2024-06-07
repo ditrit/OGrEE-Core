@@ -60,7 +60,7 @@ class _ViewObjectPopupState extends State<ViewObjectPopup> {
                             children: [
                               Center(
                                 child: Text(
-                                  "View",
+                                  localeMsg.viewJSON,
                                   style: Theme.of(context)
                                       .textTheme
                                       .headlineMedium,
@@ -92,8 +92,7 @@ class _ViewObjectPopupState extends State<ViewObjectPopup> {
                               ),
                               const SizedBox(height: 10),
                               SizedBox(
-                                  height: 270,
-                                  child: getTemplatesForm(localeMsg)),
+                                  height: 270, child: getViewForm(localeMsg)),
                               const SizedBox(height: 12),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.end,
@@ -132,48 +131,28 @@ class _ViewObjectPopupState extends State<ViewObjectPopup> {
   }
 
   getObject() async {
-    // Get object info for edit popup
+    // Get object info for popup
     final messenger = ScaffoldMessenger.of(context);
     var errMsg = "";
     // Try both id and slug since we dont know the obj's category
     for (var keyId in ["id", "slug"]) {
       var result = await fetchObject(widget.objId, idKey: keyId);
-      print("hi");
       switch (result) {
         case Success(value: final value):
-          print(value);
           if (widget.namespace == Namespace.Logical) {
-            if (["room", "building", "device", "rack", "generic"]
-                .contains(value["category"])) {
-              // templates
-              switch (value["category"]) {
-                case "room":
-                  _objCategory = LogCategories.room_template.name;
-                  break;
-                case "building":
-                  _objCategory = LogCategories.bldg_template.name;
-                  break;
-                default:
-                  _objCategory = LogCategories.obj_template.name;
-              }
+            if (value["applicability"] != null) {
+              // layers
+              _objCategory = LogCategories.layer.name;
+            } else if (value["category"] == null) {
+              // tags
+              _objCategory = LogCategories.tag.name;
             } else {
-              if (value["applicability"] != null) {
-                // layers
-                _objCategory = LogCategories.layer.name;
-              } else if (value["category"] == null) {
-                // tags
-                _objCategory = LogCategories.tag.name;
-              } else {
-                // group
-                _objCategory = value["category"];
-                _objCategory = _objCategory.replaceFirst("-", "_");
-                print(_objCategory);
-              }
+              // group or virtual
+              _objCategory = value["category"];
             }
           } else {
             // physical or organisational
             _objCategory = value["category"];
-            _objCategory = _objCategory.replaceFirst("-", "_");
           }
           var encoder = const JsonEncoder.withIndent("     ");
           _loadFileResult = encoder.convert(value);
@@ -186,7 +165,7 @@ class _ViewObjectPopupState extends State<ViewObjectPopup> {
     if (context.mounted) Navigator.pop(context);
   }
 
-  getTemplatesForm(AppLocalizations localeMsg) {
+  getViewForm(AppLocalizations localeMsg) {
     return Center(
       child: ListView(shrinkWrap: true, children: [
         Container(

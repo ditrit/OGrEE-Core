@@ -189,6 +189,7 @@
   "filter": "Filter",
   "example": "Example:",
   "viewEditNode": "View and edit this node",
+  "viewJSON": "View as JSON",
 
   "selectColor": "Select color",
   "colorPrimary": "Primary",
