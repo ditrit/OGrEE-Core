@@ -181,7 +181,7 @@ func (controller Controller) GetSlot(rack map[string]any, location string) (map[
 	if template == "" {
 		return nil, nil
 	}
-	resp, err := controller.API.Request("GET", "/api/obj-templates/"+template, nil, http.StatusOK)
+	resp, err := controller.API.Request("GET", "/api/obj_templates/"+template, nil, http.StatusOK)
 	if err != nil {
 		return nil, err
 	}

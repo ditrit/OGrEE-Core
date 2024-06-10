@@ -293,15 +293,15 @@ func BuildBaseTree(controller Controller) *HierarchyNode {
 	root.AddChild(logical)
 
 	objectTemplates := NewNode("ObjectTemplates")
-	objectTemplates.FillFn = FillUrlTreeFn[map[string]any]("/api/obj-templates", nil, false, controller.API)
+	objectTemplates.FillFn = FillUrlTreeFn[map[string]any]("/api/obj_templates", nil, false, controller.API)
 	logical.AddChild(objectTemplates)
 
 	roomTemplates := NewNode("RoomTemplates")
-	roomTemplates.FillFn = FillUrlTreeFn[map[string]any]("/api/room-templates", nil, false, controller.API)
+	roomTemplates.FillFn = FillUrlTreeFn[map[string]any]("/api/room_templates", nil, false, controller.API)
 	logical.AddChild(roomTemplates)
 
 	bldgTemplates := NewNode("BldgTemplates")
-	bldgTemplates.FillFn = FillUrlTreeFn[map[string]any]("/api/bldg-templates", nil, false, controller.API)
+	bldgTemplates.FillFn = FillUrlTreeFn[map[string]any]("/api/bldg_templates", nil, false, controller.API)
 	logical.AddChild(bldgTemplates)
 
 	layers := NewCachedNode("Layers")
