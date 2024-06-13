@@ -720,18 +720,17 @@ func updateVirtualLink(path string, attr string, value string) (map[string]any, 
 	} else if attr == "vlinks-" {
 		if !hasVlinks {
 			return nil, fmt.Errorf("no vlinks defined for this object")
-		} else {
-			found := false
-			for i, vlink := range vlinks {
-				if vlink == value {
-					vlinks = append(vlinks[:i], vlinks[i+1:]...)
-					found = true
-					break
-				}
+		}
+		found := false
+		for i, vlink := range vlinks {
+			if vlink == value {
+				vlinks = append(vlinks[:i], vlinks[i+1:]...)
+				found = true
+				break
 			}
-			if !found {
-				return nil, fmt.Errorf("vlink to remove not found")
-			}
+		}
+		if !found {
+			return nil, fmt.Errorf("vlink to remove not found")
 		}
 	} else {
 		return nil, fmt.Errorf("invalid vlink update command")
