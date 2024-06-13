@@ -113,8 +113,13 @@ func (controller Controller) ObjectUrlGeneric(pathStr string, depth int, filters
 		filters = map[string]string{}
 	}
 
+	isNodeLayerInVirtualPath := false
 	if path.Layer != nil {
-		path.Layer.ApplyFilters(filters)
+		if path.Prefix == models.VirtualObjsPath && path.Layer.Name() == "#nodes" {
+			isNodeLayerInVirtualPath = true
+		} else {
+			path.Layer.ApplyFilters(filters)
+		}
 	}
 
 	switch path.Prefix {
@@ -147,9 +152,15 @@ func (controller Controller) ObjectUrlGeneric(pathStr string, depth int, filters
 		params.Add("namespace", "organisational")
 		params.Add("id", path.ObjectID)
 	case models.VirtualObjsPath:
-		params.Add("namespace", "logical")
-		params.Add("category", "virtual_obj")
-		params.Add("id", path.ObjectID)
+		if isNodeLayerInVirtualPath {
+			params.Add("category", "device")
+			params.Set("virtual_config.clusterId", path.ObjectID[:len(path.ObjectID)-2])
+		} else {
+			params.Add("category", "virtual_obj")
+			if path.ObjectID != "Logical."+models.VirtualObjsNode+".*" {
+				params.Add("id", path.ObjectID)
+			}
+		}
 	default:
 		return "", fmt.Errorf("invalid object path")
 	}
@@ -158,11 +169,14 @@ func (controller Controller) ObjectUrlGeneric(pathStr string, depth int, filters
 	}
 
 	endpoint := "/api/objects"
-	for key, value := range filters {
-		if key != "filter" {
-			params.Set(key, value)
-		} else {
-			endpoint = "/api/objects/search"
+
+	if !isNodeLayerInVirtualPath {
+		for key, value := range filters {
+			if key != "filter" {
+				params.Set(key, value)
+			} else {
+				endpoint = "/api/objects/search"
+			}
 		}
 	}
 
@@ -618,7 +632,7 @@ func (controller Controller) LinkObject(source string, destination string, attrs
 	if err != nil {
 		return err
 	}
-	if !strings.HasPrefix(sourceUrl, "/api/stray-objects/") {
+	if !strings.HasPrefix(sourceUrl, "/api/stray_objects/") {
 		return fmt.Errorf("only stray objects can be linked")
 	}
 	payload := map[string]any{"parentId": destPath.ObjectID}
@@ -836,7 +850,13 @@ func ChangePassword() error {
 func (controller Controller) SplitPath(pathStr string) (models.Path, error) {
 	for _, prefix := range models.PathPrefixes {
 		if strings.HasPrefix(pathStr, string(prefix)) {
-			id := pathStr[len(prefix):]
+			var id string
+			if prefix == models.VirtualObjsPath && strings.HasPrefix(pathStr, prefix+"#") {
+				// virtual root layer, keep the virtual node
+				id = pathStr[1:]
+			} else {
+				id = pathStr[len(prefix):]
+			}
 			id = strings.ReplaceAll(id, "/", ".")
 
 			var layer models.Layer

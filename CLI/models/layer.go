@@ -112,9 +112,18 @@ func (factory LayerByAttribute) FromObjects(objects []any) []AutomaticLayer {
 		if isMap {
 			objectAttributes, hasAttributes := objectMap["attributes"].(map[string]any)
 			if hasAttributes {
-				objectAttribute, hasAttribute := objectAttributes[factory.attribute].(string)
-				if hasAttribute {
-					attributes = append(attributes, objectAttribute)
+				if prefix, suffix, found := strings.Cut(factory.attribute, "."); found {
+					// the attribute is an object (prefix), get value from key (suffix), e.g. virtual_config.type
+					if objAttrPrefix, hasAttribute := objectAttributes[prefix].(map[string]any); hasAttribute {
+						if objectAttribute, hasAttribute := objAttrPrefix[suffix].(string); hasAttribute {
+							attributes = append(attributes, objectAttribute)
+						}
+					}
+				} else {
+					objectAttribute, hasAttribute := objectAttributes[factory.attribute].(string)
+					if hasAttribute {
+						attributes = append(attributes, objectAttribute)
+					}
 				}
 			}
 		}
@@ -166,6 +175,10 @@ var (
 		category:  "device",
 		attribute: "type",
 	}
+	VirtualTypeLayers = LayerByAttribute{
+		category:  "virtual_obj",
+		attribute: "virtual_config.type",
+	}
 )
 
 // LayerFactory to be executed for each entity
@@ -195,6 +208,9 @@ var LayersByEntity = map[int][]LayersFactory{
 	},
 	DEVICE: {
 		DeviceTypeLayers,
+	},
+	VIRTUALOBJ: {
+		VirtualTypeLayers,
 	},
 }
 

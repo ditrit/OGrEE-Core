@@ -18,7 +18,8 @@ const (
 	GroupsPath            = LogicalPath + "Groups/"
 	TagsPath              = LogicalPath + "Tags/"
 	LayersPath            = LogicalPath + "Layers/"
-	VirtualObjsPath       = LogicalPath + "VirtualObjects/"
+	VirtualObjsNode       = "VirtualObjects"
+	VirtualObjsPath       = LogicalPath + VirtualObjsNode + "/"
 	OrganisationPath      = "/Organisation/"
 	DomainsPath           = OrganisationPath + "Domain/"
 )

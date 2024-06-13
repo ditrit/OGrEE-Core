@@ -285,7 +285,7 @@ func BuildBaseTree(controller Controller) *HierarchyNode {
 	root.AddChild(physical)
 
 	stray := NewNode("Stray")
-	stray.FillFn = FillUrlTreeFn[map[string]any]("/api/stray-objects", controller.FillObjectTree, false, controller.API)
+	stray.FillFn = FillUrlTreeFn[map[string]any]("/api/stray_objects", controller.FillObjectTree, false, controller.API)
 	physical.AddChild(stray)
 
 	logical := NewNode("Logical")
@@ -316,8 +316,8 @@ func BuildBaseTree(controller Controller) *HierarchyNode {
 	groups.FillFn = FillUrlTreeFn[map[string]any]("/api/groups", nil, true, controller.API)
 	logical.AddChild(groups)
 
-	virtual := NewNode("VirtualObjects")
-	virtual.FillFn = FillUrlTreeFn[map[string]any]("/api/virtual_objs", controller.FillObjectTree, false, controller.API)
+	virtual := NewNode(models.VirtualObjsNode)
+	virtual.FillFn = FillUrlTreeFn[map[string]any]("/api/virtual_objs?limit=1", controller.FillObjectTree, true, controller.API)
 	logical.AddChild(virtual)
 
 	organisation := NewNode("Organisation")
@@ -387,7 +387,7 @@ func FillUrlTree[T any](n *HierarchyNode, api APIPort, path string, depth int, u
 
 		var objName string
 		if fullId {
-			objName = strings.Replace(obj["id"].(string), ".", "/", -1)
+			objName = obj["id"].(string)
 		} else {
 			objName = utils.NameOrSlug(obj)
 			objId, hasID := obj["id"].(string)
