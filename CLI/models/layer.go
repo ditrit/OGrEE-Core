@@ -108,24 +108,18 @@ func (factory LayerByAttribute) FromObjects(objects []any) []AutomaticLayer {
 	attributes := []string{}
 
 	for _, object := range objects {
-		objectMap, isMap := object.(map[string]any)
-		if isMap {
-			objectAttributes, hasAttributes := objectMap["attributes"].(map[string]any)
-			if hasAttributes {
-				if prefix, suffix, found := strings.Cut(factory.attribute, "."); found {
-					// the attribute is an object (prefix), get value from key (suffix), e.g. virtual_config.type
-					if objAttrPrefix, hasAttribute := objectAttributes[prefix].(map[string]any); hasAttribute {
-						if objectAttribute, hasAttribute := objAttrPrefix[suffix].(string); hasAttribute {
-							attributes = append(attributes, objectAttribute)
-						}
-					}
-				} else {
-					objectAttribute, hasAttribute := objectAttributes[factory.attribute].(string)
-					if hasAttribute {
-						attributes = append(attributes, objectAttribute)
-					}
+		if objectAttributes := getAttributesFromObjectAny(object); objectAttributes != nil {
+			objectAttrValue := objectAttributes[factory.attribute]
+			if prefix, suffix, found := strings.Cut(factory.attribute, "."); found {
+				// the attribute is an object (prefix), get value from key (suffix), e.g. virtual_config.type
+				if objAttrPrefix, hasAttribute := objectAttributes[prefix].(map[string]any); hasAttribute {
+					objectAttrValue = objAttrPrefix[suffix]
 				}
 			}
+			if objectAttribute, hasAttr := objectAttrValue.(string); hasAttr {
+				attributes = append(attributes, objectAttribute)
+			}
+
 		}
 	}
 
@@ -141,6 +135,15 @@ func (factory LayerByAttribute) FromObjects(objects []any) []AutomaticLayer {
 	}
 
 	return layers
+}
+
+func getAttributesFromObjectAny(object any) map[string]any {
+	if objectMap, isMap := object.(map[string]any); isMap {
+		if objectAttributes, hasAttrs := objectMap["attributes"].(map[string]any); hasAttrs {
+			return objectAttributes
+		}
+	}
+	return nil
 }
 
 func toLayerName(name string) string {
