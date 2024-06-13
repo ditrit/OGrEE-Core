@@ -27,7 +27,7 @@ func TestCdObjectNotFound(t *testing.T) {
 
 	path := "/Physical/" + strings.Replace(rack1["id"].(string), ".", "/", -1)
 	oldCurrentPath := controllers.State.CurrPath
-	test_utils.MockObjectNotFound(mockAPI, "/api/hierarchy-objects/"+rack1["id"].(string))
+	test_utils.MockObjectNotFound(mockAPI, "/api/hierarchy_objects/"+rack1["id"].(string))
 
 	err := controller.CD(path)
 	assert.NotNil(t, err)
