@@ -45,13 +45,7 @@ func (controller Controller) lsObjectsWithoutFilters(path string) ([]map[string]
 				if models.IsGroup(path) {
 					childObj["name"] = strings.ReplaceAll(childObj["id"].(string), ".", "/")
 				} else if models.IsVirtual(path) {
-					if strings.Contains(childObj["id"].(string), "Physical.") {
-						// child is physical, point to that namespace
-						childObj["name"] = "/" + strings.ReplaceAll(childObj["id"].(string), ".", "/")
-					} else if path+"/" == models.VirtualObjsPath {
-						// use fullid for virtual root path
-						childObj["name"] = childObj["id"].(string)
-					}
+					adaptObjectNameForVirtual(path, childObj)
 				}
 				objects = append(objects, childObj)
 				continue
@@ -94,19 +88,23 @@ func (controller Controller) lsObjectsWithFilters(path string, filters map[strin
 			return nil, fmt.Errorf("invalid response from API on POST %s", url)
 		}
 		if models.IsVirtual(path) {
-			if strings.HasPrefix(path, models.VirtualObjsPath+"#") {
-				// layer invirtual root, use full id
-				obj["name"] = obj["id"].(string)
-			} else if strings.Contains(obj["id"].(string), "Physical.") {
-				// is physical, point to that namespace
-				obj["name"] = "/" + strings.ReplaceAll(obj["id"].(string), ".", "/")
-			}
+			adaptObjectNameForVirtual(path, obj)
 		}
 
 		objects = append(objects, obj)
 	}
 
 	return objects, nil
+}
+
+func adaptObjectNameForVirtual(path string, obj map[string]any) {
+	if strings.HasPrefix(path, models.VirtualObjsPath+"#") || path+"/" == models.VirtualObjsPath {
+		// is layer right under virtual root or is virtual root, use full id
+		obj["name"] = obj["id"].(string)
+	} else if strings.Contains(obj["id"].(string), "Physical.") {
+		// is physical, point to that namespace
+		obj["name"] = "/" + strings.ReplaceAll(obj["id"].(string), ".", "/")
+	}
 }
 
 // Obtains a HierarchyNode using Tree and adds the layers

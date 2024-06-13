@@ -13,6 +13,8 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+const testRackObjPath = "/api/hierarchy_objects/BASIC.A.R1.A01"
+
 // Test PWD
 func TestPWD(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
@@ -302,7 +304,7 @@ func TestGetSlotWithTemplateWorks(t *testing.T) {
 func TestUnsetAttributeObjectNotFound(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	test_utils.MockObjectNotFound(mockAPI, "/api/hierarchy_objects/BASIC.A.R1.A01")
+	test_utils.MockObjectNotFound(mockAPI, testRackObjPath)
 
 	err := controller.UnsetAttribute("/Physical/BASIC/A/R1/A01", "color")
 	assert.NotNil(t, err)
@@ -353,7 +355,7 @@ func TestUnsetInObjInvalidIndex(t *testing.T) {
 func TestUnsetInObjObjectNotFound(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	test_utils.MockObjectNotFound(mockAPI, "/api/hierarchy_objects/BASIC.A.R1.A01")
+	test_utils.MockObjectNotFound(mockAPI, testRackObjPath)
 
 	result, err := controller.UnsetInObj("/Physical/BASIC/A/R1/A01", "color", 0)
 	assert.NotNil(t, err)
@@ -543,7 +545,7 @@ func TestUIToggle(t *testing.T) {
 
 func TestUIHighlightObjectNotFound(t *testing.T) {
 	controller, mockAPI, ogree3D := layersSetup(t)
-	path := "/api/hierarchy_objects/BASIC.A.R1.A01"
+	path := testRackObjPath
 
 	test_utils.MockObjectNotFound(mockAPI, path)
 
@@ -769,7 +771,7 @@ func TestUnlinkObjectWithValidPath(t *testing.T) {
 func TestIsEntityDrawableObjectNotFound(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	test_utils.MockObjectNotFound(mockAPI, "/api/hierarchy_objects/BASIC.A.R1.A01")
+	test_utils.MockObjectNotFound(mockAPI, testRackObjPath)
 
 	isDrawable, err := controller.IsEntityDrawable(models.PhysicalPath + "BASIC/A/R1/A01")
 	assert.False(t, isDrawable)
@@ -804,7 +806,7 @@ func TestIsEntityDrawable(t *testing.T) {
 // Tests IsAttrDrawable (and IsCategoryAttrDrawable)
 func TestIsAttrDrawableObjectNotFound(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
-	path := "/api/hierarchy_objects/BASIC.A.R1.A01"
+	path := testRackObjPath
 
 	test_utils.MockObjectNotFound(mockAPI, path)
 
