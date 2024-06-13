@@ -463,6 +463,10 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 		// Save entity to help delete and respond
 		for _, obj := range entData {
 			obj["entity"] = entStr
+			if entStr == "device" && req["attributes.virtual_config.clusterId"] != nil {
+				// add namespace prefix to nodes
+				obj["id"] = "Physical." + obj["id"].(string)
+			}
 		}
 
 		if nLimit, e := strconv.Atoi(filters.Limit); e == nil && nLimit > 0 && req["id"] != nil {
@@ -988,6 +992,12 @@ func GetAllEntities(w http.ResponseWriter, r *http.Request) {
 	req := bson.M{}
 	data, e := models.GetManyObjects(entStr, req, u.RequestFilters{}, "", user.Roles)
 
+	queryValues, _ := url.ParseQuery(r.URL.RawQuery)
+	if entity == u.VIRTUALOBJ && queryValues.Get("limit") == "1" {
+		// limit=1 used to get only root nodes of virtual objs
+		data = getVirtualRootObjects(data)
+	}
+
 	// Respond
 	if e != nil {
 		u.ErrLog("Error while getting "+entStr+"s", "GET ALL "+strings.ToUpper(entStr),
@@ -1002,6 +1012,28 @@ func GetAllEntities(w http.ResponseWriter, r *http.Request) {
 
 		u.Respond(w, u.RespDataWrapper("successfully got "+entStr+"s", data))
 	}
+}
+
+func getVirtualRootObjects(data []map[string]any) []map[string]any {
+	objects := []map[string]any{}
+	fmt.Println(data)
+	for _, comparingObj := range data {
+		shouldAdd := true
+		comparingObjName := comparingObj["id"].(string)
+		for _, obj := range data {
+			objName := obj["id"].(string)
+			if comparingObjName != objName && strings.HasPrefix(comparingObjName, objName) {
+				// already has its parent, no need for this one
+				shouldAdd = false
+				break
+			}
+		}
+		if shouldAdd {
+			objects = append(objects, comparingObj)
+		}
+	}
+	fmt.Println(objects)
+	return objects
 }
 
 // swagger:operation DELETE /api/{entity}/{id} Objects DeleteObject

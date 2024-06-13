@@ -377,7 +377,7 @@ func GetEntitiesByNamespace(namespace Namespace, hierarchyName string) []string 
 	case PStray:
 		entNames = append(entNames, EntityToString(STRAYOBJ))
 	case Physical, PHierarchy, Any:
-		entities := []int{}
+		entities := []int{VIRTUALOBJ}
 
 		if hierarchyName == "" || hierarchyName == "**" {
 			// All entities of each namespace
@@ -393,11 +393,9 @@ func GetEntitiesByNamespace(namespace Namespace, hierarchyName string) []string 
 			case Any:
 				entities = Entities
 			}
-			entities = append(entities, VIRTUALOBJ)
 		} else {
 			if namespace == Any {
 				entities = append(entities, DOMAIN)
-				entities = append(entities, VIRTUALOBJ)
 			}
 
 			// Add entities according to hierarchyName possibilities
@@ -423,7 +421,6 @@ func GetEntitiesByNamespace(namespace Namespace, hierarchyName string) []string 
 				for entity := initialEntity; entity <= finalEntity; entity++ {
 					entities = append(entities, entity)
 				}
-				entities = append(entities, VIRTUALOBJ)
 			} else {
 				switch strings.Count(hierarchyName, HN_DELIMETER) {
 				case 0:
@@ -441,9 +438,9 @@ func GetEntitiesByNamespace(namespace Namespace, hierarchyName string) []string 
 				case 3:
 					entities = append(entities, RACK, AC, CORRIDOR, PWRPNL, CABINET, GROUP, GENERIC)
 				case 4:
-					entities = append(entities, DEVICE, GROUP, VIRTUALOBJ)
+					entities = append(entities, DEVICE, GROUP)
 				default:
-					entities = append(entities, DEVICE, VIRTUALOBJ)
+					entities = append(entities, DEVICE)
 				}
 			}
 		}

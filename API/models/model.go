@@ -1021,6 +1021,7 @@ func GetHierarchyByCluster(clusterName string, limit int, filters u.RequestFilte
 				allChildren[child["id"].(string)] = child
 				fillHierarchyMap(child["id"].(string), hierarchy)
 			} else {
+				// add namespace prefix to devices
 				child["id"] = "Physical." + child["id"].(string)
 				allChildren[child["id"].(string)] = child
 				// fill hierarchy map by cluster
