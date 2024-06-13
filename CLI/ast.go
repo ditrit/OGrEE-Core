@@ -710,27 +710,28 @@ func updateVirtualLink(path string, attr string, value string) (map[string]any, 
 		return nil, fmt.Errorf("only virtual objects can have vlinks")
 	}
 
-	vlinks, e := obj["attributes"].(map[string]any)["vlinks"].([]any)
+	vlinks, hasVlinks := obj["attributes"].(map[string]any)["vlinks"].([]any)
 	if attr == "vlinks+" {
-		if !e {
+		if !hasVlinks {
 			vlinks = []any{value}
 		} else {
 			vlinks = append(vlinks, value)
 		}
 	} else if attr == "vlinks-" {
-		if !e {
+		if !hasVlinks {
 			return nil, fmt.Errorf("no vlinks defined for this object")
-		}
-		found := false
-		for i, vlink := range vlinks {
-			if vlink == value {
-				vlinks = append(vlinks[:i], vlinks[i+1:]...)
-				found = true
-				break
+		} else {
+			found := false
+			for i, vlink := range vlinks {
+				if vlink == value {
+					vlinks = append(vlinks[:i], vlinks[i+1:]...)
+					found = true
+					break
+				}
 			}
-		}
-		if !found {
-			return nil, fmt.Errorf("vlink to remove not found")
+			if !found {
+				return nil, fmt.Errorf("vlink to remove not found")
+			}
 		}
 	} else {
 		return nil, fmt.Errorf("invalid vlink update command")

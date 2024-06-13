@@ -434,9 +434,9 @@ func TestLinkUnlinkRoomss(t *testing.T) {
 	integration.CreateTestPhysicalEntity(t, utils.ROOM, roomName, parentId, true)
 
 	unlinkEndpoint := test_utils.GetEndpoint("entityUnlink", "rooms", parentId+"."+roomName)
-	linkEndpoint := test_utils.GetEndpoint("entityLink", "stray-objects", "StrayRoom")
+	linkEndpoint := test_utils.GetEndpoint("entityLink", "stray_objects", "StrayRoom")
 	roomEndpoint := test_utils.GetEndpoint("entityInstance", "rooms", parentId+"."+roomName)
-	strayObjectEndpoint := test_utils.GetEndpoint("entityInstance", "stray-objects", strayName)
+	strayObjectEndpoint := test_utils.GetEndpoint("entityInstance", "stray_objects", strayName)
 	tests := []struct {
 		name        string
 		isUnlink    bool
