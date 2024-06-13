@@ -721,16 +721,9 @@ func updateVirtualLink(path string, attr string, value string) (map[string]any, 
 		if !hasVlinks {
 			return nil, fmt.Errorf("no vlinks defined for this object")
 		}
-		found := false
-		for i, vlink := range vlinks {
-			if vlink == value {
-				vlinks = append(vlinks[:i], vlinks[i+1:]...)
-				found = true
-				break
-			}
-		}
-		if !found {
-			return nil, fmt.Errorf("vlink to remove not found")
+		vlinks, err = removeVirtualLink(vlinks, value)
+		if err != nil {
+			return nil, err
 		}
 	} else {
 		return nil, fmt.Errorf("invalid vlink update command")
@@ -738,6 +731,16 @@ func updateVirtualLink(path string, attr string, value string) (map[string]any, 
 
 	data := map[string]any{"vlinks": vlinks}
 	return cmd.C.UpdateObj(path, map[string]any{"attributes": data}, false)
+}
+
+func removeVirtualLink(vlinks []any, vlinkToRemove string) ([]any, error) {
+	for i, vlink := range vlinks {
+		if vlink == vlinkToRemove {
+			vlinks = append(vlinks[:i], vlinks[i+1:]...)
+			return vlinks, nil
+		}
+	}
+	return nil, fmt.Errorf("vlink to remove not found")
 }
 
 type updateObjNode struct {
