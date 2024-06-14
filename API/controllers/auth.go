@@ -53,8 +53,7 @@ func CreateAccount(w http.ResponseWriter, r *http.Request) {
 	DispRequestMetaData(r)
 
 	if r.Method == "OPTIONS" {
-		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "POST, OPTIONS")
+		u.WriteOptionsHeader(w, "POST")
 	} else {
 		account := &models.Account{}
 		err := json.NewDecoder(r.Body).Decode(account)
@@ -185,8 +184,7 @@ func Authenticate(w http.ResponseWriter, r *http.Request) {
 	DispRequestMetaData(r)
 
 	if r.Method == "OPTIONS" {
-		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "POST, OPTIONS")
+		u.WriteOptionsHeader(w, "POST")
 	} else {
 		var account models.Account
 		err := json.NewDecoder(r.Body).Decode(&account)
@@ -229,8 +227,7 @@ func VerifyToken(w http.ResponseWriter, r *http.Request) {
 	DispRequestMetaData(r)
 
 	if r.Method == "OPTIONS" {
-		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "GET, OPTIONS")
+		u.WriteOptionsHeader(w, "GET")
 	} else {
 		u.Respond(w, u.Message("working"))
 	}
@@ -256,8 +253,7 @@ func GetAllAccounts(w http.ResponseWriter, r *http.Request) {
 	DispRequestMetaData(r)
 
 	if r.Method == "OPTIONS" {
-		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "GET, OPTIONS, HEAD")
+		u.WriteOptionsHeader(w, "GET, HEAD")
 	} else {
 		var resp map[string]interface{}
 
@@ -310,8 +306,7 @@ func RemoveAccount(w http.ResponseWriter, r *http.Request) {
 	DispRequestMetaData(r)
 
 	if r.Method == "OPTIONS" {
-		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "DELETE, OPTIONS, HEAD")
+		u.WriteOptionsHeader(w, "DELETE, HEAD")
 	} else {
 		// Get caller user
 		callerUser := getUserFromToken(w, r)
@@ -389,35 +384,17 @@ func ModifyUserRoles(w http.ResponseWriter, r *http.Request) {
 	DispRequestMetaData(r)
 
 	if r.Method == "OPTIONS" {
-		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "PATCH, OPTIONS, HEAD")
+		u.WriteOptionsHeader(w, "PATCH, HEAD")
 	} else {
 		var resp map[string]interface{}
 		userId := mux.Vars(r)["id"]
 
 		// Check if POST body is valid
-		var data map[string]interface{}
-		err := json.NewDecoder(r.Body).Decode(&data)
+		rolesConverted, err := getUserRolesFromBody(r)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			u.Respond(w, u.Message("Invalid request"))
+			u.Respond(w, u.Message(err.Error()))
 			return
-		}
-		roles, ok := data["roles"].(map[string]interface{})
-		if len(data) > 1 || !ok {
-			w.WriteHeader(http.StatusBadRequest)
-			u.Respond(w, u.Message("Only 'roles' should be provided to patch"))
-			return
-		}
-		rolesConverted := map[string]models.Role{}
-		for k := range roles {
-			if v, ok := roles[k].(string); ok {
-				rolesConverted[k] = models.Role(v)
-			} else {
-				w.WriteHeader(http.StatusBadRequest)
-				u.Respond(w, u.Message("Invalid roles format"))
-				return
-			}
 		}
 
 		// Get caller user
@@ -452,6 +429,28 @@ func ModifyUserRoles(w http.ResponseWriter, r *http.Request) {
 			u.Respond(w, u.Message("successfully updated user roles"))
 		}
 	}
+}
+
+func getUserRolesFromBody(r *http.Request) (map[string]models.Role, error) {
+	var data map[string]interface{}
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		return nil, fmt.Errorf("invalid request")
+	}
+
+	roles, ok := data["roles"].(map[string]interface{})
+	if len(data) > 1 || !ok {
+		return nil, fmt.Errorf("only 'roles' should be provided to patch")
+	}
+	rolesConverted := map[string]models.Role{}
+	for k := range roles {
+		if v, ok := roles[k].(string); ok {
+			rolesConverted[k] = models.Role(v)
+		} else {
+			return nil, fmt.Errorf("invalid roles format")
+		}
+	}
+	return rolesConverted, nil
 }
 
 // swagger:operation POST /api/users/password/change Authentication ModifyUserPassword
@@ -509,8 +508,7 @@ func ModifyUserPassword(w http.ResponseWriter, r *http.Request) {
 	DispRequestMetaData(r)
 
 	if r.Method == "OPTIONS" {
-		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "POST, OPTIONS, HEAD")
+		u.WriteOptionsHeader(w, "POST, HEAD")
 	} else {
 		// Get user ID and email from token
 		userData := r.Context().Value("user")
@@ -524,26 +522,11 @@ func ModifyUserPassword(w http.ResponseWriter, r *http.Request) {
 		userEmail := userData.(map[string]interface{})["email"].(string)
 
 		// Check if POST body is valid
-		var data map[string]interface{}
-		err := json.NewDecoder(r.Body).Decode(&data)
+		currentPassword, newPassword, isReset,
+			err := getModifyPassDataFromBody(r, userEmail)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			u.Respond(w, u.Message("Invalid request"))
-			return
-		}
-		isReset := false
-		hasCurrent := true
-		currentPassword := ""
-		if userEmail == u.RESET_TAG {
-			// it's not change, it's reset (no need for current password)
-			isReset = true
-		} else {
-			currentPassword, hasCurrent = data["currentPassword"].(string)
-		}
-		newPassword, hasNew := data["newPassword"].(string)
-		if !hasCurrent || !hasNew {
-			w.WriteHeader(http.StatusBadRequest)
-			u.Respond(w, u.Message("Invalid request: wrong body format"))
+			u.Respond(w, u.Message(err.Error()))
 			return
 		}
 
@@ -573,6 +556,29 @@ func ModifyUserPassword(w http.ResponseWriter, r *http.Request) {
 			u.Respond(w, resp)
 		}
 	}
+}
+
+func getModifyPassDataFromBody(r *http.Request, userEmail string) (string, string, bool, error) {
+	isReset := false
+	hasCurrent := true
+	currentPassword := ""
+	var data map[string]interface{}
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		return currentPassword, "", isReset, fmt.Errorf("invalid request")
+	}
+	if userEmail == u.RESET_TAG {
+		// it's not change, it's reset (no need for current password)
+		isReset = true
+	} else {
+		currentPassword, hasCurrent = data["currentPassword"].(string)
+	}
+	newPassword, hasNew := data["newPassword"].(string)
+	if !hasCurrent || !hasNew {
+		return currentPassword, "", isReset,
+			fmt.Errorf("invalid request: wrong body format")
+	}
+	return currentPassword, newPassword, isReset, nil
 }
 
 // swagger:operation POST /api/users/password/forgot Authentication UserForgotPassword
@@ -605,8 +611,7 @@ func UserForgotPassword(w http.ResponseWriter, r *http.Request) {
 	DispRequestMetaData(r)
 
 	if r.Method == "OPTIONS" {
-		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "POST, OPTIONS, HEAD")
+		u.WriteOptionsHeader(w, "POST, HEAD")
 	} else {
 		// Check if POST body is valid
 		var data map[string]interface{}

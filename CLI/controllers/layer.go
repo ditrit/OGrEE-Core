@@ -76,7 +76,9 @@ func (controller Controller) splitLayerRecursive(previousRealID string, idSplit 
 //
 // If the layer is not present, errLayerNotFound is returned.
 func (controller Controller) getLayerFromHierarchy(parent, layerName, separator string) (models.Layer, error) {
-	if separator != "/" {
+	if parent == "Logical."+models.VirtualObjsNode {
+		parent = strings.TrimSuffix(models.VirtualObjsPath, "/")
+	} else if separator != "/" {
 		parent = strings.ReplaceAll(models.PhysicalIDToPath(parent), "/*", "")
 	}
 

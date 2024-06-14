@@ -189,6 +189,7 @@
   "filter": "Filtro",
   "example": "Exemplo:",
   "viewEditNode": "Visualizar e editar este nó",
+  "viewJSON": "Visualizar JSON",
 
   "selectColor": "Selecione a cor",
   "colorPrimary": "Primárias",

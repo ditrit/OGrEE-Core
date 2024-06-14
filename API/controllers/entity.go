@@ -92,9 +92,9 @@ func getUserFromToken(w http.ResponseWriter, r *http.Request) *models.Account {
 //     in: path
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
-//     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, tags,
-//     stray-objects, hierarchy-objects.'
+//     cabinets, groups, corridors, virtual_objs
+//     room_templates, obj_templates, bldg_templates, tags,
+//     stray_objects, hierarchy_objects.'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -117,8 +117,6 @@ func CreateEntity(w http.ResponseWriter, r *http.Request) {
 	DispRequestMetaData(r)
 	// Get entity
 	entStr := mux.Vars(r)["entity"]
-	// If creating templates, format them
-	entStr = strings.Replace(entStr, "-", "_", 1)
 	entInt := u.EntityStrToInt(entStr)
 	println("ENT: ", entStr)
 
@@ -465,6 +463,10 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 		// Save entity to help delete and respond
 		for _, obj := range entData {
 			obj["entity"] = entStr
+			if entStr == "device" && req["attributes.virtual_config.clusterId"] != nil {
+				// add namespace prefix to nodes
+				obj["id"] = "Physical." + obj["id"].(string)
+			}
 		}
 
 		if nLimit, e := strconv.Atoi(filters.Limit); e == nil && nLimit > 0 && req["id"] != nil {
@@ -503,8 +505,7 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 		}
 		u.Respond(w, u.RespDataWrapper("successfully deleted objects", matchingObjects))
 	} else if r.Method == "OPTIONS" {
-		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "GET, OPTIONS")
+		u.WriteOptionsHeader(w, "GET")
 	} else {
 		matchingObjects = pie.Map(matchingObjects, func(object map[string]any) map[string]any {
 			entityStr := object["entity"].(string)
@@ -700,8 +701,7 @@ func HandleComplexFilters(w http.ResponseWriter, r *http.Request) {
 		}
 		u.Respond(w, u.RespDataWrapper("successfully deleted objects", matchingObjects))
 	} else if r.Method == "OPTIONS" {
-		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "POST, OPTIONS")
+		u.WriteOptionsHeader(w, "POST")
 	} else {
 		u.Respond(w, u.RespDataWrapper("successfully processed request", matchingObjects))
 	}
@@ -720,9 +720,9 @@ func HandleComplexFilters(w http.ResponseWriter, r *http.Request) {
 //     in: path
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
-//     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, tags,
-//     stray-objects, hierarchy-objects.'
+//     cabinets, groups, corridors, virtual_objs
+//     room_templates, obj_templates, bldg_templates, tags,
+//     stray_objects, hierarchy_objects.'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -774,9 +774,6 @@ func GetEntity(w http.ResponseWriter, r *http.Request) {
 	entityStr := mux.Vars(r)["entity"]
 	filters := getFiltersFromQueryParams(r)
 
-	// If templates, format them
-	entityStr = strings.Replace(entityStr, "-", "_", 1)
-
 	// Get entity
 	if id, canParse = mux.Vars(r)["id"]; canParse {
 		var req primitive.M
@@ -802,8 +799,7 @@ func GetEntity(w http.ResponseWriter, r *http.Request) {
 
 	// Respond
 	if r.Method == "OPTIONS" && data != nil {
-		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "GET, DELETE, OPTIONS, PATCH, PUT")
+		u.WriteOptionsHeader(w, "GET, DELETE, OPTIONS, PATCH, PUT")
 	} else {
 		if modelErr != nil {
 			u.ErrLog("Error while getting "+entityStr, "GET "+strings.ToUpper(entityStr),
@@ -912,8 +908,7 @@ func GetLayerObjects(w http.ResponseWriter, r *http.Request) {
 
 		// Respond
 		if r.Method == "OPTIONS" {
-			w.Header().Add("Content-Type", "application/json")
-			w.Header().Add("Allow", "GET, DELETE, OPTIONS, PATCH, PUT")
+			u.WriteOptionsHeader(w, "GET, DELETE, PATCH, PUT")
 		} else {
 			u.Respond(w, u.RespDataWrapper("successfully processed request", matchingObjects))
 		}
@@ -937,8 +932,8 @@ func GetLayerObjects(w http.ResponseWriter, r *http.Request) {
 //     in: path
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
-//     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-objects, tags'
+//     cabinets, groups, corridors, virtual_objs
+//     room_templates, obj_templates, bldg_templates, stray_objects, tags'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -978,8 +973,6 @@ func GetAllEntities(w http.ResponseWriter, r *http.Request) {
 	// Get entity
 	entStr = mux.Vars(r)["entity"]
 	println("ENTSTR: ", entStr)
-	// If templates, format them
-	entStr = strings.Replace(entStr, "-", "_", 1)
 
 	// Check if entity is valid
 	entity := u.EntityStrToInt(entStr)
@@ -994,6 +987,12 @@ func GetAllEntities(w http.ResponseWriter, r *http.Request) {
 	// Get entities
 	req := bson.M{}
 	data, e := models.GetManyObjects(entStr, req, u.RequestFilters{}, "", user.Roles)
+
+	queryValues, _ := url.ParseQuery(r.URL.RawQuery)
+	if entity == u.VIRTUALOBJ && queryValues.Get("limit") == "1" {
+		// limit=1 used to get only root nodes of virtual objs
+		data = getVirtualRootObjects(data)
+	}
 
 	// Respond
 	if e != nil {
@@ -1011,6 +1010,27 @@ func GetAllEntities(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func getVirtualRootObjects(data []map[string]any) []map[string]any {
+	objects := []map[string]any{}
+	fmt.Println(data)
+	for _, comparingObj := range data {
+		shouldAdd := true
+		comparingObjName := comparingObj["id"].(string)
+		for _, obj := range data {
+			objName := obj["id"].(string)
+			if comparingObjName != objName && strings.HasPrefix(comparingObjName, objName) {
+				// already has its parent, no need for this one
+				shouldAdd = false
+				break
+			}
+		}
+		if shouldAdd {
+			objects = append(objects, comparingObj)
+		}
+	}
+	return objects
+}
+
 // swagger:operation DELETE /api/{entity}/{id} Objects DeleteObject
 // Deletes an Object in the system.
 // ---
@@ -1023,9 +1043,9 @@ func GetAllEntities(w http.ResponseWriter, r *http.Request) {
 //     in: path
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
-//     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, tags,
-//     stray-objects, hierarchy-objects.'
+//     cabinets, groups, corridors, virtual_objs
+//     room_templates, obj_templates, bldg_templates, tags,
+//     stray_objects, hierarchy_objects.'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -1058,8 +1078,6 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 
 	// Get entityStr from URL
 	entityStr := mux.Vars(r)["entity"]
-	// If templates, format them
-	entityStr = strings.Replace(entityStr, "-", "_", 1)
 
 	// Check unidentified collection
 	if u.EntityStrToInt(entityStr) < 0 && entityStr != u.HIERARCHYOBJS_ENT {
@@ -1115,8 +1133,8 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 //     in: path
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
-//     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-objects, tags.'
+//     cabinets, groups, corridors, virtual_objs
+//     room_templates, obj_templates, bldg_templates, stray_objects, tags.'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -1159,9 +1177,9 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 //     in: path
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
-//     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, tags,
-//     stray-objects, hierarchy-objects.'
+//     cabinets, groups, corridors, virtual_objs
+//     room_templates, obj_templates, bldg_templates, tags,
+//     stray_objects, hierarchy_objects.'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -1215,8 +1233,6 @@ func UpdateEntity(w http.ResponseWriter, r *http.Request) {
 
 	//Get entity from URL
 	entity = mux.Vars(r)["entity"]
-	//If templates, format them
-	entity = strings.Replace(entity, "-", "_", 1)
 
 	// Check unidentified collection
 	if u.EntityStrToInt(entity) < 0 && entity != u.HIERARCHYOBJS_ENT {
@@ -1269,8 +1285,8 @@ func UpdateEntity(w http.ResponseWriter, r *http.Request) {
 //     in: path
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
-//     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-objects, tags.'
+//     cabinets, groups, corridors, virtual_objs
+//     room_templates, obj_templates, bldg_templates, stray_objects, tags.'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -1319,8 +1335,6 @@ func GetEntityByQuery(w http.ResponseWriter, r *http.Request) {
 
 	// Get entity
 	entStr = r.URL.Path[5 : len(r.URL.Path)-1]
-	//If templates, format them
-	entStr = strings.Replace(entStr, "-", "_", 1)
 
 	// Check unidentified collection
 	entInt := u.EntityStrToInt(entStr)
@@ -1425,8 +1439,7 @@ func GetSiteAttr(w http.ResponseWriter, r *http.Request) {
 		u.RespondWithError(w, err)
 	} else {
 		if r.Method == "OPTIONS" {
-			w.Header().Add("Content-Type", "application/json")
-			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
+			u.WriteOptionsHeader(w, "GET, HEAD")
 		} else {
 			resp := u.RespDataWrapper(
 				"successfully got attribute from object's parent site",
@@ -1522,8 +1535,7 @@ func GetEntitiesOfAncestor(w http.ResponseWriter, r *http.Request) {
 			"GET CHILDRENOFPARENT", modelErr.Message, r)
 		u.RespondWithError(w, modelErr)
 	} else if r.Method == "OPTIONS" {
-		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "GET, OPTIONS")
+		u.WriteOptionsHeader(w, "GET")
 	} else {
 		u.Respond(w, u.RespDataWrapper("successfully got object", data))
 	}
@@ -1542,8 +1554,8 @@ func GetEntitiesOfAncestor(w http.ResponseWriter, r *http.Request) {
 //   in: path
 //   description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //   buildings, rooms, racks, devices, acs, panels,
-//   cabinets, groups, corridors,
-//   stray-objects, hierarchy-objects.'
+//   cabinets, groups, corridors, virtual_objs
+//   stray_objects, hierarchy_objects.'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -1603,9 +1615,6 @@ func GetHierarchyByName(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// If template or stray convert '-' -> '_'
-	entity = strings.Replace(entity, "-", "_", 1)
-
 	// Check if the request is a ranged hierarchy
 	filters := getFiltersFromQueryParams(r)
 	if len(filters.Limit) > 0 {
@@ -1635,7 +1644,12 @@ func GetHierarchyByName(w http.ResponseWriter, r *http.Request) {
 			// use stray's category as entity
 			entity = data["category"].(string)
 		}
-		data["children"], modelErr = models.GetHierarchyByName(entity, id, limit, filters)
+
+		if vconfig, ok := data["attributes"].(map[string]any)["virtual_config"].(map[string]any); ok && entity == u.EntityToString(u.VIRTUALOBJ) && vconfig["type"] == "cluster" {
+			data["children"], modelErr = models.GetHierarchyByCluster(id, limit, filters)
+		} else {
+			data["children"], modelErr = models.GetHierarchyByName(entity, id, limit, filters)
+		}
 	}
 
 	// Respond
@@ -1643,8 +1657,7 @@ func GetHierarchyByName(w http.ResponseWriter, r *http.Request) {
 		u.ErrLog("Error while getting "+entity, "GET "+entity, modelErr.Message, r)
 		u.RespondWithError(w, modelErr)
 	} else if r.Method == "OPTIONS" {
-		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "GET, OPTIONS")
+		u.WriteOptionsHeader(w, "GET")
 	} else {
 		u.Respond(w, u.RespDataWrapper("successfully got object's hierarchy", data))
 	}
@@ -1703,8 +1716,7 @@ func GetCompleteHierarchy(w http.ResponseWriter, r *http.Request) {
 		u.RespondWithError(w, err)
 	} else {
 		if r.Method == "OPTIONS" {
-			w.Header().Add("Content-Type", "application/json")
-			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
+			u.WriteOptionsHeader(w, "GET, HEAD")
 		} else {
 			u.Respond(w, u.RespDataWrapper("successfully got hierarchy", data))
 		}
@@ -1743,8 +1755,7 @@ func GetCompleteHierarchyAttributes(w http.ResponseWriter, r *http.Request) {
 		u.RespondWithError(w, err)
 	} else {
 		if r.Method == "OPTIONS" {
-			w.Header().Add("Content-Type", "application/json")
-			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
+			u.WriteOptionsHeader(w, "GET, HEAD")
 		} else {
 			u.Respond(w, u.RespDataWrapper("successfully got attrs hierarchy", data))
 		}
@@ -1754,7 +1765,7 @@ func GetCompleteHierarchyAttributes(w http.ResponseWriter, r *http.Request) {
 // swagger:operation PATCH /api/{entity}/{id}/unlink Objects UnlinkObject
 // Removes the object from its original entity and hierarchy tree to make it stray.
 // The object will no longer have a parent, its id will change as well as the id of all its children.
-// The object will then belong to the stray-objects entity.
+// The object will then belong to the stray_objects entity.
 // ---
 // security:
 // - bearer: []
@@ -1771,7 +1782,7 @@ func GetCompleteHierarchyAttributes(w http.ResponseWriter, r *http.Request) {
 //     in: path
 //     description: 'Entity (same as category) of the object. Accepted values:
 //     buildings, rooms, racks, devices, acs, panels,
-//     cabinets, groups, corridors.'
+//     cabinets, groups, corridors, virtual_objs.'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -1788,7 +1799,7 @@ func GetCompleteHierarchyAttributes(w http.ResponseWriter, r *http.Request) {
 //     '500':
 //         description: 'Internal error. Unable to remove object from entity and create it as stray.'
 
-// swagger:operation PATCH /api/stray-objects/{id}/link Objects LinkObject
+// swagger:operation PATCH /api/stray_objects/{id}/link Objects LinkObject
 // Removes the object from stray and add it to the entity of its category attribute.
 // The object will again have a parent, its id will change as well as the id of all its children.
 // The object will then belong to the given entity.
@@ -1859,7 +1870,7 @@ func LinkEntity(w http.ResponseWriter, r *http.Request) {
 
 	// Get entity
 	if id, canParse = mux.Vars(r)["id"]; canParse {
-		if strings.Replace(entityStr, "-", "_", 1) == u.HIERARCHYOBJS_ENT {
+		if entityStr == u.HIERARCHYOBJS_ENT {
 			data, modelErr = models.GetHierarchyObjectById(id, u.RequestFilters{}, user.Roles)
 		} else {
 			data, modelErr = models.GetObject(bson.M{"id": id}, entityStr, u.RequestFilters{}, user.Roles)
@@ -1937,9 +1948,7 @@ func BaseOption(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	w.Header().Add("Content-Type", "application/json")
-	w.Header().Add("Allow", "GET, DELETE, OPTIONS, PATCH, POST, PUT")
-
+	u.WriteOptionsHeader(w, "GET, DELETE, PATCH, PUT, POST")
 }
 
 // swagger:operation GET /api/stats About GetStats
@@ -1962,13 +1971,10 @@ func GetStats(w http.ResponseWriter, r *http.Request) {
 	DispRequestMetaData(r)
 	if r.Method == "OPTIONS" {
 		w.Header().Add("Allow", "GET, HEAD, OPTIONS")
-		//w.WriteHeader(http.StatusOK)
 	} else {
 		r := models.GetStats()
 		u.Respond(w, r)
 	}
-	//w.Header().Add("Content-Type", "application/json")
-
 }
 
 // swagger:operation POST /api/validate/{entity} Objects ValidateObject
@@ -1983,8 +1989,8 @@ func GetStats(w http.ResponseWriter, r *http.Request) {
 //     in: path
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
-//     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-objects, tags.'
+//     cabinets, groups, corridors, virtual_objs
+//     room_templates, obj_templates, bldg_templates, stray_objects, tags.'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -2016,11 +2022,6 @@ func ValidateEntity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//If templates or stray-objects, format them
-	if idx := strings.Index(entity, "-"); idx != -1 {
-		//entStr[idx] = '_'
-		entity = entity[:idx] + "_" + entity[idx+1:]
-	}
 	entInt := u.EntityStrToInt(entity)
 
 	if !e1 || entInt == -1 {
@@ -2029,8 +2030,7 @@ func ValidateEntity(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == "OPTIONS" {
-		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "POST, OPTIONS")
+		u.WriteOptionsHeader(w, "POST")
 		return
 	}
 
@@ -2078,8 +2078,7 @@ func ValidateEntity(w http.ResponseWriter, r *http.Request) {
 func GetVersion(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{}
 	if r.Method == "OPTIONS" {
-		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "GET, OPTIONS, HEAD")
+		u.WriteOptionsHeader(w, "GET, HEAD")
 		return
 	} else {
 		data["status"] = true

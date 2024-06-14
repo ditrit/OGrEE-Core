@@ -13,14 +13,14 @@ const GenericObjectsURL = "/api/objects"
 // Obtain by query
 var dmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 	println("Checking MATCH")
-	return regexp.MustCompile(`^(\/api\/(domains|sites|buildings|rooms|acs|panels|cabinets|groups|corridors|racks|devices|stray-objects|(room|obj|bldg)-templates|tags|layers)\?.*)$`).
+	return regexp.MustCompile(`^(\/api\/(domains|sites|buildings|rooms|acs|panels|cabinets|groups|corridors|racks|devices|stray_objects|(room|obj|bldg)_templates|tags|layers)\?.*)$`).
 		MatchString(request.URL.String())
 }
 
 // For Obtaining hierarchy with hierarchyName
 var hnmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 	println("CHECKING HN-MATCH")
-	return regexp.MustCompile(`^\/api\/(sites|buildings|rooms|racks|devices|stray-objects|domains|hierarchy-objects)+\/[A-Za-z0-9_.-]+\/all(\?.*)*$`).
+	return regexp.MustCompile(`^\/api\/(sites|buildings|rooms|racks|devices|stray_objects|domains|hierarchy_objects|virtual_objs)+\/[A-Za-z0-9_.-]+\/all(\?.*)*$`).
 		MatchString(request.URL.String())
 }
 
@@ -154,7 +154,7 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 	router.HandleFunc("/api/{entity:building|room|ac|corridor|cabinet|panel|group|rack|device|hierarchy-object}s/{id}/unlink",
 		controllers.LinkEntity).Methods("PATCH")
 
-	router.HandleFunc("/api/stray-objects/{id}/link",
+	router.HandleFunc("/api/stray_objects/{id}/link",
 		controllers.LinkEntity).Methods("PATCH")
 
 	//VALIDATION

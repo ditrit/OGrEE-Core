@@ -1,0 +1,97 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "description": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string"
+    },
+    "domain": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "$ref": "refs/types.json#/definitions/name"
+    },
+    "parentId": {
+      "type": "string",
+      "$ref": "refs/types.json#/definitions/id"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "attributes": {
+      "type": "object",
+      "properties": {
+        "vlinks": {
+          "type": "array",
+          "items": [
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "virtual_config": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "role": {
+              "type": "string"
+            },
+            "clusterId": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "required": [
+        "virtual_config"
+      ]
+    }
+  },
+  "required": [
+    "category",
+    "description",
+    "domain",
+    "name",
+    "attributes"
+  ],
+  "examples": [
+    {
+      "description": "virtual object /dev/sda",
+      "tags": [],
+      "parentId": "site.bldg.room.rack1.pve1.dev",
+      "attributes": {
+        "vlinks": ["site.bldg.room.rack1.pve1.disk0_0_0_0"],
+        "virtual_config": {
+          "type": "storage"
+        }
+      },
+      "domain": "TenantName",
+      "name": "sda",
+      "category": "virtual_obj"
+    },
+    {
+      "description": "virtual object vm2",
+      "tags": [],
+      "parentId": "site.bldg.room.rack1.pve1",
+      "attributes": {
+        "virtual_config": {
+          "clusterId": "cluster-pve",
+          "type": "qemu/vm",
+          "role": "vm"
+        }
+      },
+      "domain": "TenantName",
+      "name": "vm2",
+      "category": "virtual_obj"
+    }
+  ]
+}

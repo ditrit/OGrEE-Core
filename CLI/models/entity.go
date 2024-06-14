@@ -19,6 +19,7 @@ const (
 	DOMAIN
 	TAG
 	LAYER
+	VIRTUALOBJ
 )
 
 func EntityToString(entity int) string {
@@ -59,6 +60,8 @@ func EntityToString(entity int) string {
 		return "layer"
 	case GENERIC:
 		return "generic"
+	case VIRTUALOBJ:
+		return "virtual_obj"
 	default:
 		return "INVALID"
 	}
@@ -102,6 +105,8 @@ func EntityStrToInt(entity string) int {
 		return LAYER
 	case "generic", "ge":
 		return GENERIC
+	case "vobj", "virtual_obj":
+		return VIRTUALOBJ
 	default:
 		return -1
 	}

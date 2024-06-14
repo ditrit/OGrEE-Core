@@ -79,44 +79,25 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 
 	//Check ParentID is valid
 	if t["parentId"] == nil || t["parentId"] == "" {
-		if entNum == u.DOMAIN || entNum == u.STRAYOBJ || entNum == u.APPLICATION {
+		if entNum == u.DOMAIN || entNum == u.STRAYOBJ || entNum == u.VIRTUALOBJ {
 			return nil, nil
 		}
 		return nil, &u.Error{Type: u.ErrBadFormat, Message: "ParentID is not valid"}
 	}
-	req := bson.M{"id": t["parentId"].(string)}
 
-	parent := map[string]interface{}{"parent": ""}
 	// Anyone can have a stray parent
-	stray, _ := GetObject(req, "stray_object", u.RequestFilters{}, nil)
-	if stray != nil {
-		parent["parent"] = "rack"
-		parent["domain"] = stray["domain"]
-		parent["id"] = stray["id"]
+	if parent := getParent([]string{"stray_object"}, t); parent != nil {
 		return parent, nil
 	}
+
 	// If not, search specific possibilities
 	switch entNum {
 	case u.DEVICE:
-		x, _ := GetObject(req, "rack", u.RequestFilters{}, nil)
-		if x != nil {
-			parent["parent"] = "rack"
-			parent["domain"] = x["domain"]
-			parent["id"] = x["id"]
-			if err := validateDeviceSlotExists(t, x); err != nil {
+		if parent := getParent([]string{"rack", "device"}, t); parent != nil {
+			if err := validateDeviceSlotExists(t, parent); err != nil {
 				return nil, err
 			}
-			return parent, nil
-		}
-
-		y, _ := GetObject(req, "device", u.RequestFilters{}, nil)
-		if y != nil {
-			parent["parent"] = "device"
-			parent["domain"] = y["domain"]
-			parent["id"] = y["id"]
-			if err := validateDeviceSlotExists(t, y); err != nil {
-				return nil, err
-			}
+			delete(parent, "attributes") // only used to check slots
 			return parent, nil
 		}
 
@@ -124,66 +105,49 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 			Message: "ParentID should correspond to existing rack or device ID"}
 
 	case u.GROUP:
-		x, _ := GetObject(req, "rack", u.RequestFilters{}, nil)
-		if x != nil {
-			parent["parent"] = "rack"
-			parent["domain"] = x["domain"]
-			parent["id"] = x["id"]
-			return parent, nil
-		}
-
-		y, _ := GetObject(req, "room", u.RequestFilters{}, nil)
-		if y != nil {
-			parent["parent"] = "room"
-			parent["domain"] = y["domain"]
-			parent["id"] = y["id"]
+		if parent := getParent([]string{"rack", "room"}, t); parent != nil {
 			return parent, nil
 		}
 
 		return nil, &u.Error{Type: u.ErrInvalidValue,
 			Message: "Group parent should correspond to existing rack or room"}
 
-	case u.GENERIC:
-		x, _ := GetObject(req, "room", u.RequestFilters{}, nil)
-		if x != nil {
-			parent["parent"] = "room"
-			parent["domain"] = x["domain"]
-			parent["id"] = x["id"]
+	case u.VIRTUALOBJ:
+		if parent := getParent([]string{"device", "virtual_obj"}, t); parent != nil {
 			return parent, nil
 		}
 
 		return nil, &u.Error{Type: u.ErrInvalidValue,
-			Message: "ParentID should correspond to existing room ID"}
-
-	case u.APPLICATION:
-		x, _ := GetObject(req, "application", u.RequestFilters{}, nil)
-		if x != nil {
-			parent["parent"] = "application"
-			parent["domain"] = x["domain"]
-			parent["id"] = x["id"]
-			return parent, nil
-		}
-
-		return nil, &u.Error{Type: u.ErrInvalidValue,
-			Message: "ParentID should correspond to existing application ID"}
+			Message: "Group parent should correspond to existing device or virtual_obj"}
 	default:
-		parentInt := u.GetParentOfEntityByInt(entNum)
-		parentStr := u.EntityToString(parentInt)
-
-		p, err := GetObject(req, parentStr, u.RequestFilters{}, nil)
-		if len(p) > 0 {
-			parent["parent"] = parentStr
-			parent["domain"] = p["domain"]
-			parent["id"] = p["id"]
+		parentStr := u.EntityToString(u.GetParentOfEntityByInt(entNum))
+		if parent := getParent([]string{parentStr}, t); parent != nil {
 			return parent, nil
-		} else if err != nil {
-			println("ENTITY VALUE: ", ent)
-			println("We got Parent: ", parent, " with ID:", t["parentId"].(string))
-			return nil, &u.Error{Type: u.ErrInvalidValue,
-				Message: fmt.Sprintf("ParentID should correspond to existing %s ID", parentStr)}
+		}
+
+		return nil, &u.Error{Type: u.ErrInvalidValue,
+			Message: fmt.Sprintf("ParentID should correspond to existing %s ID", parentStr)}
+
+	}
+}
+
+func getParent(parentEntities []string, t map[string]any) map[string]any {
+	parent := map[string]any{"parent": ""}
+	req := bson.M{"id": t["parentId"].(string)}
+	for _, parentEnt := range parentEntities {
+		obj, _ := GetObject(req, parentEnt, u.RequestFilters{}, nil)
+		if obj != nil {
+			parent["parent"] = parentEnt
+			parent["domain"] = obj["domain"]
+			parent["id"] = obj["id"]
+			if t["category"] == "device" {
+				// need attributes to check slots
+				parent["attributes"] = obj["attributes"]
+			}
+			return parent
 		}
 	}
-	return nil, nil
+	return nil
 }
 
 func validateDeviceSlotExists(deviceData map[string]interface{}, parentData map[string]interface{}) *u.Error {
@@ -306,7 +270,8 @@ func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 	}
 
 	// Check attributes
-	if entity == u.RACK || entity == u.GROUP || entity == u.CORRIDOR || entity == u.GENERIC || entity == u.DEVICE {
+	if entity == u.RACK || entity == u.GROUP || entity == u.CORRIDOR || entity == u.GENERIC ||
+		entity == u.DEVICE || entity == u.VIRTUALOBJ {
 		attributes := t["attributes"].(map[string]any)
 
 		if pie.Contains(u.RoomChildren, entity) {
@@ -433,6 +398,24 @@ func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 				}
 			} else if err != nil {
 				return err
+			}
+		case u.VIRTUALOBJ:
+			if attributes["vlinks"] != nil {
+				// check if all vlinks point to valid objects
+				for _, vlinkId := range attributes["vlinks"].([]any) {
+					count, err := repository.CountObjectsManyEntities([]int{u.DEVICE, u.VIRTUALOBJ},
+						bson.M{"id": strings.Split(vlinkId.(string), "#")[0]})
+					if err != nil {
+						return err
+					}
+
+					if count != 1 {
+						return &u.Error{
+							Type:    u.ErrBadFormat,
+							Message: "One or more vlink objects could not be found. Note that it must be device or virtual obj",
+						}
+					}
+				}
 			}
 		}
 	} else if entity == u.LAYER && !doublestar.ValidatePattern(t["applicability"].(string)) {

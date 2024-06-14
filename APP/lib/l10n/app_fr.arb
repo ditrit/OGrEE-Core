@@ -227,6 +227,7 @@
   "filter": "Filtre",
   "example": "Exemple :",
   "viewEditNode": "Visualiser et modifier ce noeud",
+  "viewJSON": "Afficher en JSON",
 
   "selectColor": "Choisir couleur",
   "colorPrimary": "Palette",

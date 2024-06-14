@@ -75,7 +75,7 @@ func TestCreateObjectWithTemplateErrors(t *testing.T) {
 
 	// Template does not exist
 	test_utils.MockGetObject(mockAPI, createRoom)
-	test_utils.MockObjectNotFound(mockAPI, "/api/obj-templates/not-exists")
+	test_utils.MockObjectNotFound(mockAPI, "/api/obj_templates/not-exists")
 
 	err := controller.CreateObject("/Physical/BASIC/A/R1/A01", models.RACK, rack)
 	assert.NotNil(t, err)
