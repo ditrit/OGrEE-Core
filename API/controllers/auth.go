@@ -582,6 +582,29 @@ func getModifyPassDataFromBody(r *http.Request, userEmail string) (string, strin
 	return currentPassword, newPassword, isReset, nil
 }
 
+func getModifyPassDataFromBody(r *http.Request, userEmail string) (string, string, bool, error) {
+	isReset := false
+	hasCurrent := true
+	currentPassword := ""
+	var data map[string]interface{}
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		return currentPassword, "", isReset, fmt.Errorf("invalid request")
+	}
+	if userEmail == u.RESET_TAG {
+		// it's not change, it's reset (no need for current password)
+		isReset = true
+	} else {
+		currentPassword, hasCurrent = data["currentPassword"].(string)
+	}
+	newPassword, hasNew := data["newPassword"].(string)
+	if !hasCurrent || !hasNew {
+		return currentPassword, "", isReset,
+			fmt.Errorf("invalid request: wrong body format")
+	}
+	return currentPassword, newPassword, isReset, nil
+}
+
 // swagger:operation POST /api/users/password/forgot Authentication UserForgotPassword
 // Forgot my password.
 // Public endpoint to request a reset of a user's password (forgot my password).
