@@ -21,14 +21,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func getObjID(x string) (primitive.ObjectID, error) {
-	objID, err := primitive.ObjectIDFromHex(x)
-	if err != nil {
-		return objID, err
-	}
-	return objID, nil
-}
-
 // This function is useful for debugging
 // purposes. It displays any JSON
 func viewJson(r *http.Request) {
@@ -51,6 +43,19 @@ func DispRequestMetaData(r *http.Request) {
 	fmt.Println("URL:", r.URL.String())
 	fmt.Println("IP-ADDR: ", r.RemoteAddr)
 	fmt.Println(time.Now().Format("2006-Jan-02 Monday 03:04:05 PM MST -07:00"))
+}
+
+const ErrDecodingBodyMsg = "Error while decoding request body"
+
+func decodeRequestBody(w http.ResponseWriter, r *http.Request, dataObj any) error {
+	err := json.NewDecoder(r.Body).Decode(dataObj)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message(ErrDecodingBodyMsg))
+		u.ErrLog(ErrDecodingBodyMsg, "decodeRequestBody", "", r)
+		return err
+	}
+	return nil
 }
 
 var decoder = schema.NewDecoder()
@@ -130,11 +135,7 @@ func CreateEntity(w http.ResponseWriter, r *http.Request) {
 
 	// Get request body
 	object := map[string]interface{}{}
-	err := json.NewDecoder(r.Body).Decode(&object)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		u.Respond(w, u.Message("Error while decoding request body"))
-		u.ErrLog("Error while decoding request body", "CREATE "+entStr, "", r)
+	if err := decodeRequestBody(w, r, &object); err != nil {
 		return
 	}
 
@@ -153,7 +154,6 @@ func CreateEntity(w http.ResponseWriter, r *http.Request) {
 			u.Respond(w, u.Message("Invalid category for a hierarchy object"))
 			u.ErrLog("Cannot create invalid hierarchy object", "CREATE "+mux.Vars(r)["entity"], "", r)
 			return
-
 		}
 	} else if u.IsEntityHierarchical(entInt) && entInt != u.STRAYOBJ {
 		// Check if category and endpoint match, except for non hierarchal entities and strays
@@ -215,11 +215,7 @@ func CreateBulkDomain(w http.ResponseWriter, r *http.Request) {
 
 	// Get domains to create from request body
 	listDomains := []map[string]interface{}{}
-	err := json.NewDecoder(r.Body).Decode(&listDomains)
-	if err != nil || len(listDomains) < 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		u.Respond(w, u.Message("Error while decoding request body"))
-		u.ErrLog("Error while decoding request body", "CREATE BULK DOMAIN", "", r)
+	if err := decodeRequestBody(w, r, &listDomains); err != nil {
 		return
 	}
 	domainsToCreate, e := getBulkDomainsRecursively("", listDomains)
@@ -258,29 +254,9 @@ func CreateBulkDomain(w http.ResponseWriter, r *http.Request) {
 func getBulkDomainsRecursively(parent string, listDomains []map[string]interface{}) ([]map[string]interface{}, error) {
 	domainsToCreate := []map[string]interface{}{}
 	for _, domain := range listDomains {
-		domainObj := map[string]interface{}{}
-		// Name is the only required attribute
-		name, ok := domain["name"].(string)
-		if !ok {
-			return nil, errors.New("Invalid format: Name is required for all domains")
-		}
-		domainObj["name"] = name
-
-		// Optional/default attributes
-		if parent != "" {
-			domainObj["parentId"] = parent
-		}
-		domainObj["category"] = "domain"
-		if desc, ok := domain["description"].(string); ok {
-			domainObj["description"] = desc
-		} else {
-			domainObj["description"] = name
-		}
-		domainObj["attributes"] = map[string]string{}
-		if color, ok := domain["color"].(string); ok {
-			domainObj["attributes"].(map[string]string)["color"] = color
-		} else {
-			domainObj["attributes"].(map[string]string)["color"] = "ffffff"
+		domainObj, err := setDomainAttributes(parent, domain)
+		if err != nil {
+			return nil, err
 		}
 
 		domainsToCreate = append(domainsToCreate, domainObj)
@@ -289,10 +265,8 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 		if children, ok := domain["domains"].([]interface{}); ok {
 			if len(children) > 0 {
 				// Convert from interface to map
-				dChildren := []map[string]interface{}{}
-				for _, d := range children {
-					dChildren = append(dChildren, d.(map[string]interface{}))
-				}
+				dChildren := listAnyTolistMap(children)
+
 				// Set parentId for children
 				var parentId string
 				if parent == "" {
@@ -300,6 +274,7 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 				} else {
 					parentId = parent + "." + domain["name"].(string)
 				}
+
 				// Add children
 				childDomains, e := getBulkDomainsRecursively(parentId, dChildren)
 				if e != nil {
@@ -310,6 +285,44 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 		}
 	}
 	return domainsToCreate, nil
+}
+
+func setDomainAttributes(parent string, domain map[string]any) (map[string]any, error) {
+	domainObj := map[string]any{}
+	// Name is the only required attribute
+	name, ok := domain["name"].(string)
+	if !ok {
+		return nil, errors.New("Invalid format: Name is required for all domains")
+	}
+	domainObj["name"] = name
+
+	// Default attributes
+	if parent != "" {
+		domainObj["parentId"] = parent
+	}
+	domainObj["category"] = "domain"
+	if desc, ok := domain["description"].(string); ok {
+		domainObj["description"] = desc
+	} else {
+		domainObj["description"] = name
+	}
+
+	// Optional attributes
+	domainObj["attributes"] = map[string]string{}
+	if color, ok := domain["color"].(string); ok {
+		domainObj["attributes"].(map[string]string)["color"] = color
+	} else {
+		domainObj["attributes"].(map[string]string)["color"] = "ffffff"
+	}
+	return domainObj, nil
+}
+
+func listAnyTolistMap(data []any) []map[string]interface{} {
+	converted := []map[string]interface{}{}
+	for _, d := range data {
+		converted = append(converted, d.(map[string]interface{}))
+	}
+	return converted
 }
 
 // swagger:operation GET /api/objects Objects GetGenericObject
@@ -645,16 +658,14 @@ func HandleComplexFilters(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := json.NewDecoder(r.Body).Decode(&complexFilters)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		u.Respond(w, u.Message("Error while decoding request body"))
-		u.ErrLog("Error while decoding request body", "HANDLE COMPLEX FILTERS", "", r)
+	if err := decodeRequestBody(w, r, &complexFilters); err != nil {
 		return
-	} else if complexFilterExp, ok = complexFilters["filter"].(string); !ok || len(complexFilterExp) == 0 {
+	}
+
+	if complexFilterExp, ok = complexFilters["filter"].(string); !ok || len(complexFilterExp) == 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message("Invalid body format: must contain a filter key with a not empty string as value"))
-		u.ErrLog("Error while decoding request body", "HANDLE COMPLEX FILTERS", "", r)
+		u.ErrLog(ErrDecodingBodyMsg, "HANDLE COMPLEX FILTERS", "", r)
 		return
 	}
 
@@ -1223,11 +1234,7 @@ func UpdateEntity(w http.ResponseWriter, r *http.Request) {
 
 	// Get request body
 	updateData := map[string]interface{}{}
-	err := json.NewDecoder(r.Body).Decode(&updateData)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		u.Respond(w, u.Message("Error while decoding request body"))
-		u.ErrLog("Error while decoding request body", "UPDATE ENTITY", "", r)
+	if err := decodeRequestBody(w, r, &updateData); err != nil {
 		return
 	}
 
@@ -2034,11 +2041,7 @@ func ValidateEntity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := json.NewDecoder(r.Body).Decode(&obj)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		u.Respond(w, u.Message("Error while decoding request body"))
-		u.ErrLog("Error while decoding request body", "VALIDATE "+entity, "", r)
+	if err := decodeRequestBody(w, r, &obj); err != nil {
 		return
 	}
 

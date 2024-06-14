@@ -509,52 +509,53 @@ func ModifyUserPassword(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "OPTIONS" {
 		u.WriteOptionsHeader(w, "POST, HEAD")
+		return
+	}
+
+	// Get user ID and email from token
+	userData := r.Context().Value("user")
+	if userData == nil {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message("Error while parsing path params"))
+		u.ErrLog("Error while parsing path params", "GET GENERIC", "", r)
+		return
+	}
+	userId := userData.(map[string]interface{})["userID"].(primitive.ObjectID)
+	userEmail := userData.(map[string]interface{})["email"].(string)
+
+	// Check if POST body is valid
+	currentPassword, newPassword, isReset,
+		err := getModifyPassDataFromBody(r, userEmail)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message(err.Error()))
+		return
+	}
+
+	// Check if user is valid
+	var user *models.Account
+	if isReset {
+		user = models.GetUser(userId)
 	} else {
-		// Get user ID and email from token
-		userData := r.Context().Value("user")
-		if userData == nil {
-			w.WriteHeader(http.StatusBadRequest)
-			u.Respond(w, u.Message("Error while parsing path params"))
-			u.ErrLog("Error while parsing path params", "GET GENERIC", "", r)
-			return
-		}
-		userId := userData.(map[string]interface{})["userID"].(primitive.ObjectID)
-		userEmail := userData.(map[string]interface{})["email"].(string)
+		user = models.GetUserByEmail(userEmail)
+	}
+	if user == nil {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message("Invalid token: no valid user found"))
+		u.ErrLog("Unable to find user associated to token", "GET GENERIC", "", r)
+		return
+	}
 
-		// Check if POST body is valid
-		currentPassword, newPassword, isReset,
-			err := getModifyPassDataFromBody(r, userEmail)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			u.Respond(w, u.Message(err.Error()))
-			return
+	// Change user password
+	newToken, e := user.ChangePassword(currentPassword, newPassword, isReset)
+	if e != nil {
+		u.RespondWithError(w, e)
+	} else {
+		resp := u.Message("successfully updated user password")
+		if !isReset {
+			resp["token"] = newToken
 		}
-
-		// Check if user is valid
-		var user *models.Account
-		if isReset {
-			user = models.GetUser(userId)
-		} else {
-			user = models.GetUserByEmail(userEmail)
-		}
-		if user == nil {
-			w.WriteHeader(http.StatusBadRequest)
-			u.Respond(w, u.Message("Invalid token: no valid user found"))
-			u.ErrLog("Unable to find user associated to token", "GET GENERIC", "", r)
-			return
-		}
-
-		// Change user password
-		newToken, e := user.ChangePassword(currentPassword, newPassword, isReset)
-		if e != nil {
-			u.RespondWithError(w, e)
-		} else {
-			resp := u.Message("successfully updated user password")
-			if !isReset {
-				resp["token"] = newToken
-			}
-			u.Respond(w, resp)
-		}
+		u.Respond(w, resp)
 	}
 }
 
