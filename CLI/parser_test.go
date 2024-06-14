@@ -364,6 +364,8 @@ var commandsMatching = map[string]node{
 	"+device:${toto}/tata@[slot42]@42@true":                        &createDeviceNode{testPath, []node{&valueNode{"slot42"}}, &valueNode{"42"}, true, nil},
 	"+device:${toto}/tata@[slot42,slot43]@template":                &createDeviceNode{testPath, []node{&valueNode{"slot42"}, &valueNode{"slot43"}}, &valueNode{"template"}, false, nil},
 	"+device:${toto}/tata@[slot42]@template@false@frontflipped ":   &createDeviceNode{testPath, []node{&valueNode{"slot42"}}, &valueNode{"template"}, false, &valueNode{"frontflipped"}},
+	"+vobj:${toto}/tata@vm ":                                       &createVirtualNode{testPath, &valueNode{"vm"}, nil, nil},
+	"+vobj:${toto}/tata@vm@[myvlink,onemore]@proxmox ":             &createVirtualNode{testPath, &valueNode{"vm"}, []node{&valueNode{"myvlink"}, &valueNode{"onemore"}}, &valueNode{"proxmox"}},
 	"+group:${toto}/tata@{c1, c2}":                                 &createGroupNode{testPath, []node{&pathNode{path: &valueNode{"c1"}}, &pathNode{path: &valueNode{"c2"}}}},
 	"+corridor:${toto}/tata@[1., 2.]@t@front@[.1, 2., 3.]@cold":    &createCorridorNode{testPath, vec2(1., 2.), &valueNode{"t"}, &valueNode{"front"}, vec3(.1, 2., 3.), &valueNode{"cold"}},
 	"${toto}/tata:areas=[1., 2., 3., 4.]@[1., 2., 3., 4.]":         &updateObjNode{testPathUpdate, "areas", []node{vec4(1., 2., 3., 4.), vec4(1., 2., 3., 4.)}, false},
