@@ -505,8 +505,7 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 		}
 		u.Respond(w, u.RespDataWrapper("successfully deleted objects", matchingObjects))
 	} else if r.Method == "OPTIONS" {
-		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "GET, OPTIONS")
+		u.WriteOptionsHeader(w, "GET")
 	} else {
 		matchingObjects = pie.Map(matchingObjects, func(object map[string]any) map[string]any {
 			entityStr := object["entity"].(string)
@@ -702,8 +701,7 @@ func HandleComplexFilters(w http.ResponseWriter, r *http.Request) {
 		}
 		u.Respond(w, u.RespDataWrapper("successfully deleted objects", matchingObjects))
 	} else if r.Method == "OPTIONS" {
-		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "POST, OPTIONS")
+		u.WriteOptionsHeader(w, "POST")
 	} else {
 		u.Respond(w, u.RespDataWrapper("successfully processed request", matchingObjects))
 	}
@@ -801,8 +799,7 @@ func GetEntity(w http.ResponseWriter, r *http.Request) {
 
 	// Respond
 	if r.Method == "OPTIONS" && data != nil {
-		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "GET, DELETE, OPTIONS, PATCH, PUT")
+		u.WriteOptionsHeader(w, "GET, DELETE, OPTIONS, PATCH, PUT")
 	} else {
 		if modelErr != nil {
 			u.ErrLog("Error while getting "+entityStr, "GET "+strings.ToUpper(entityStr),
@@ -911,8 +908,7 @@ func GetLayerObjects(w http.ResponseWriter, r *http.Request) {
 
 		// Respond
 		if r.Method == "OPTIONS" {
-			w.Header().Add("Content-Type", "application/json")
-			w.Header().Add("Allow", "GET, DELETE, OPTIONS, PATCH, PUT")
+			u.WriteOptionsHeader(w, "GET, DELETE, PATCH, PUT")
 		} else {
 			u.Respond(w, u.RespDataWrapper("successfully processed request", matchingObjects))
 		}
@@ -1443,8 +1439,7 @@ func GetSiteAttr(w http.ResponseWriter, r *http.Request) {
 		u.RespondWithError(w, err)
 	} else {
 		if r.Method == "OPTIONS" {
-			w.Header().Add("Content-Type", "application/json")
-			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
+			u.WriteOptionsHeader(w, "GET, HEAD")
 		} else {
 			resp := u.RespDataWrapper(
 				"successfully got attribute from object's parent site",
@@ -1540,8 +1535,7 @@ func GetEntitiesOfAncestor(w http.ResponseWriter, r *http.Request) {
 			"GET CHILDRENOFPARENT", modelErr.Message, r)
 		u.RespondWithError(w, modelErr)
 	} else if r.Method == "OPTIONS" {
-		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "GET, OPTIONS")
+		u.WriteOptionsHeader(w, "GET")
 	} else {
 		u.Respond(w, u.RespDataWrapper("successfully got object", data))
 	}
@@ -1663,8 +1657,7 @@ func GetHierarchyByName(w http.ResponseWriter, r *http.Request) {
 		u.ErrLog("Error while getting "+entity, "GET "+entity, modelErr.Message, r)
 		u.RespondWithError(w, modelErr)
 	} else if r.Method == "OPTIONS" {
-		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "GET, OPTIONS")
+		u.WriteOptionsHeader(w, "GET")
 	} else {
 		u.Respond(w, u.RespDataWrapper("successfully got object's hierarchy", data))
 	}
@@ -1723,8 +1716,7 @@ func GetCompleteHierarchy(w http.ResponseWriter, r *http.Request) {
 		u.RespondWithError(w, err)
 	} else {
 		if r.Method == "OPTIONS" {
-			w.Header().Add("Content-Type", "application/json")
-			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
+			u.WriteOptionsHeader(w, "GET, HEAD")
 		} else {
 			u.Respond(w, u.RespDataWrapper("successfully got hierarchy", data))
 		}
@@ -1763,8 +1755,7 @@ func GetCompleteHierarchyAttributes(w http.ResponseWriter, r *http.Request) {
 		u.RespondWithError(w, err)
 	} else {
 		if r.Method == "OPTIONS" {
-			w.Header().Add("Content-Type", "application/json")
-			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
+			u.WriteOptionsHeader(w, "GET, HEAD")
 		} else {
 			u.Respond(w, u.RespDataWrapper("successfully got attrs hierarchy", data))
 		}
@@ -1957,9 +1948,7 @@ func BaseOption(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	w.Header().Add("Content-Type", "application/json")
-	w.Header().Add("Allow", "GET, DELETE, OPTIONS, PATCH, POST, PUT")
-
+	u.WriteOptionsHeader(w, "GET, DELETE, PATCH, PUT, POST")
 }
 
 // swagger:operation GET /api/stats About GetStats
@@ -1982,13 +1971,10 @@ func GetStats(w http.ResponseWriter, r *http.Request) {
 	DispRequestMetaData(r)
 	if r.Method == "OPTIONS" {
 		w.Header().Add("Allow", "GET, HEAD, OPTIONS")
-		//w.WriteHeader(http.StatusOK)
 	} else {
 		r := models.GetStats()
 		u.Respond(w, r)
 	}
-	//w.Header().Add("Content-Type", "application/json")
-
 }
 
 // swagger:operation POST /api/validate/{entity} Objects ValidateObject
@@ -2044,8 +2030,7 @@ func ValidateEntity(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == "OPTIONS" {
-		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "POST, OPTIONS")
+		u.WriteOptionsHeader(w, "POST")
 		return
 	}
 
@@ -2093,8 +2078,7 @@ func ValidateEntity(w http.ResponseWriter, r *http.Request) {
 func GetVersion(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{}
 	if r.Method == "OPTIONS" {
-		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "GET, OPTIONS, HEAD")
+		u.WriteOptionsHeader(w, "GET, HEAD")
 		return
 	} else {
 		data["status"] = true

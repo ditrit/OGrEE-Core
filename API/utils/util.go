@@ -142,13 +142,20 @@ func Message(message string) map[string]interface{} {
 	return map[string]interface{}{"message": message}
 }
 
+const HttpResponseContentType = "application/json"
+
+func WriteOptionsHeader(w http.ResponseWriter, methods string) {
+	w.Header().Add("Content-Type", HttpResponseContentType)
+	w.Header().Add("Allow", methods+", OPTIONS")
+}
+
 func RespDataWrapper(message string, data interface{}) map[string]interface{} {
 	return map[string]interface{}{"message": message, "data": data}
 }
 
 func Respond(w http.ResponseWriter, data map[string]interface{}) {
 	json.NewEncoder(w).Encode(data)
-	w.Header().Add("Content-Type", "application/json")
+	w.Header().Add("Content-Type", HttpResponseContentType)
 }
 
 func RespondWithError(w http.ResponseWriter, err *Error) {
@@ -158,7 +165,7 @@ func RespondWithError(w http.ResponseWriter, err *Error) {
 	}
 	w.WriteHeader(ErrTypeToStatusCode(err.Type))
 	json.NewEncoder(w).Encode(errMap)
-	w.Header().Add("Content-Type", "application/json")
+	w.Header().Add("Content-Type", HttpResponseContentType)
 }
 
 func ErrLog(message, funcname, details string, r *http.Request) {
