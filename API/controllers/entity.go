@@ -92,7 +92,7 @@ func getUserFromToken(w http.ResponseWriter, r *http.Request) *models.Account {
 //     in: path
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
-//     cabinets, groups, corridors,
+//     cabinets, groups, corridors, virtual_objs
 //     room_templates, obj_templates, bldg_templates, tags,
 //     stray_objects, hierarchy_objects.'
 //     required: true
@@ -722,7 +722,7 @@ func HandleComplexFilters(w http.ResponseWriter, r *http.Request) {
 //     in: path
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
-//     cabinets, groups, corridors,
+//     cabinets, groups, corridors, virtual_objs
 //     room_templates, obj_templates, bldg_templates, tags,
 //     stray_objects, hierarchy_objects.'
 //     required: true
@@ -936,7 +936,7 @@ func GetLayerObjects(w http.ResponseWriter, r *http.Request) {
 //     in: path
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
-//     cabinets, groups, corridors,
+//     cabinets, groups, corridors, virtual_objs
 //     room_templates, obj_templates, bldg_templates, stray_objects, tags'
 //     required: true
 //     type: string
@@ -1032,7 +1032,6 @@ func getVirtualRootObjects(data []map[string]any) []map[string]any {
 			objects = append(objects, comparingObj)
 		}
 	}
-	fmt.Println(objects)
 	return objects
 }
 
@@ -1048,7 +1047,7 @@ func getVirtualRootObjects(data []map[string]any) []map[string]any {
 //     in: path
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
-//     cabinets, groups, corridors,
+//     cabinets, groups, corridors, virtual_objs
 //     room_templates, obj_templates, bldg_templates, tags,
 //     stray_objects, hierarchy_objects.'
 //     required: true
@@ -1138,7 +1137,7 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 //     in: path
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
-//     cabinets, groups, corridors,
+//     cabinets, groups, corridors, virtual_objs
 //     room_templates, obj_templates, bldg_templates, stray_objects, tags.'
 //     required: true
 //     type: string
@@ -1182,7 +1181,7 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 //     in: path
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
-//     cabinets, groups, corridors,
+//     cabinets, groups, corridors, virtual_objs
 //     room_templates, obj_templates, bldg_templates, tags,
 //     stray_objects, hierarchy_objects.'
 //     required: true
@@ -1290,7 +1289,7 @@ func UpdateEntity(w http.ResponseWriter, r *http.Request) {
 //     in: path
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
-//     cabinets, groups, corridors,
+//     cabinets, groups, corridors, virtual_objs
 //     room_templates, obj_templates, bldg_templates, stray_objects, tags.'
 //     required: true
 //     type: string
@@ -1561,7 +1560,7 @@ func GetEntitiesOfAncestor(w http.ResponseWriter, r *http.Request) {
 //   in: path
 //   description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //   buildings, rooms, racks, devices, acs, panels,
-//   cabinets, groups, corridors,
+//   cabinets, groups, corridors, virtual_objs
 //   stray_objects, hierarchy_objects.'
 //   required: true
 //   type: string
@@ -1792,7 +1791,7 @@ func GetCompleteHierarchyAttributes(w http.ResponseWriter, r *http.Request) {
 //     in: path
 //     description: 'Entity (same as category) of the object. Accepted values:
 //     buildings, rooms, racks, devices, acs, panels,
-//     cabinets, groups, corridors.'
+//     cabinets, groups, corridors, virtual_objs.'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -2004,7 +2003,7 @@ func GetStats(w http.ResponseWriter, r *http.Request) {
 //     in: path
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
-//     cabinets, groups, corridors,
+//     cabinets, groups, corridors, virtual_objs
 //     room_templates, obj_templates, bldg_templates, stray_objects, tags.'
 //     required: true
 //     type: string

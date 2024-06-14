@@ -401,6 +401,7 @@ func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 			}
 		case u.VIRTUALOBJ:
 			if attributes["vlinks"] != nil {
+				// check if all vlinks point to valid objects
 				for _, vlinkId := range attributes["vlinks"].([]any) {
 					count, err := repository.CountObjectsManyEntities([]int{u.DEVICE, u.VIRTUALOBJ},
 						bson.M{"id": strings.Split(vlinkId.(string), "#")[0]})

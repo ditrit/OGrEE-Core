@@ -190,7 +190,7 @@
         }
       }
     },
-    "/api/layers/{id}/objects": {
+    "/api/layers/{slug}/objects": {
       "get": {
         "security": [
           {
@@ -211,7 +211,7 @@
             "type": "string",
             "default": "layer_slug",
             "description": "ID of desired layer.",
-            "name": "id",
+            "name": "slug",
             "in": "path",
             "required": true
           },
@@ -502,7 +502,8 @@
             "default": "user@test.com",
             "description": "Email of the user whose projects are being requested. Example: /api/projects?user=user@test.com",
             "name": "user",
-            "in": "query"
+            "in": "query",
+            "required": true
           }
         ],
         "responses": {
@@ -732,8 +733,8 @@
         }
       }
     },
-    "/api/stray-objects/{id}/link": {
-      "post": {
+    "/api/stray_objects/{id}/link": {
+      "patch": {
         "security": [
           {
             "bearer": []
@@ -1165,7 +1166,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-objects, tags.",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, virtual_objs room_templates, obj_templates, bldg_templates, stray_objects, tags.",
             "name": "entity",
             "in": "path",
             "required": true
@@ -1232,7 +1233,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-objects, tags",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, virtual_objs room_templates, obj_templates, bldg_templates, stray_objects, tags",
             "name": "entity",
             "in": "path",
             "required": true
@@ -1280,7 +1281,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, tags, stray-objects, hierarchy-objects.",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, virtual_objs room_templates, obj_templates, bldg_templates, tags, stray_objects, hierarchy_objects.",
             "name": "entity",
             "in": "path",
             "required": true
@@ -1322,7 +1323,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, tags, stray-objects, hierarchy-objects.",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, virtual_objs room_templates, obj_templates, bldg_templates, tags, stray_objects, hierarchy_objects.",
             "name": "entity",
             "in": "path",
             "required": true
@@ -1382,7 +1383,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, tags, stray-objects, hierarchy-objects.",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, virtual_objs room_templates, obj_templates, bldg_templates, tags, stray_objects, hierarchy_objects.",
             "name": "entity",
             "in": "path",
             "required": true
@@ -1426,7 +1427,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, tags, stray-objects, hierarchy-objects.",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, virtual_objs room_templates, obj_templates, bldg_templates, tags, stray_objects, hierarchy_objects.",
             "name": "entity",
             "in": "path",
             "required": true
@@ -1468,7 +1469,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-objects, tags.",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, virtual_objs room_templates, obj_templates, bldg_templates, stray_objects, tags.",
             "name": "entity",
             "in": "path",
             "required": true
@@ -1523,7 +1524,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, stray-objects, hierarchy-objects.",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, virtual_objs stray_objects, hierarchy_objects.",
             "name": "entity",
             "in": "path",
             "required": true
@@ -1570,13 +1571,13 @@
       }
     },
     "/api/{entity}/{id}/unlink": {
-      "post": {
+      "patch": {
         "security": [
           {
             "bearer": []
           }
         ],
-        "description": "The object will no longer have a parent, its id will change as well as the id of all its children.\nThe object will then belong to the stray-objects entity.",
+        "description": "The object will no longer have a parent, its id will change as well as the id of all its children.\nThe object will then belong to the stray_objects entity.",
         "produces": [
           "application/json"
         ],
@@ -1597,7 +1598,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Entity (same as category) of the object. Accepted values: buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors.",
+            "description": "Entity (same as category) of the object. Accepted values: buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, virtual_objs.",
             "name": "entity",
             "in": "path",
             "required": true
@@ -1646,15 +1647,15 @@
             "default": "sites",
             "description": "Indicates the entity.",
             "name": "entity",
-            "in": "query",
+            "in": "path",
             "required": true
           },
           {
-            "type": "int",
+            "type": "string",
             "default": "siteA",
             "description": "ID of object",
             "name": "ID",
-            "in": "query",
+            "in": "path",
             "required": true
           },
           {
@@ -1662,7 +1663,7 @@
             "default": "buildings",
             "description": "Indicates the subentity to search for children.",
             "name": "subent",
-            "in": "query",
+            "in": "path",
             "required": true
           }
         ],
@@ -1696,7 +1697,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-objects, tags.",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, virtual_objs room_templates, obj_templates, bldg_templates, stray_objects, tags.",
             "name": "entity",
             "in": "path",
             "required": true

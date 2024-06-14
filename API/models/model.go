@@ -994,29 +994,29 @@ func getChildren(entity, hierarchyName string, limit int, filters u.RequestFilte
 	return allChildren, hierarchy, nil
 }
 
+// GetHierarchyByCluster: get children devices and vobjs of given cluster
 func GetHierarchyByCluster(clusterName string, limit int, filters u.RequestFilters) ([]map[string]interface{}, *u.Error) {
-	// Get all children and their relations
 	allChildren := map[string]interface{}{}
 	hierarchy := make(map[string][]string)
 
-	// Get children from all given collections
+	// Get children from device and vobjs
 	for _, checkEnt := range []int{u.DEVICE, u.VIRTUALOBJ} {
 		checkEntName := u.EntityToString(checkEnt)
 		var dbFilter primitive.M
 		if checkEnt == u.VIRTUALOBJ {
+			// linked by Id
 			pattern := primitive.Regex{Pattern: "^" + clusterName +
 				"(." + u.NAME_REGEX + "){1," + strconv.Itoa(limit) + "}$", Options: ""}
 			dbFilter = bson.M{"id": pattern}
-		} else { // DEVICE links to vobj via virtual config
+		} else {
+			// DEVICE links to vobj via virtual config
 			dbFilter = bson.M{"attributes.virtual_config.clusterId": clusterName}
 		}
 		children, e1 := GetManyObjects(checkEntName, dbFilter, filters, "", nil)
-		fmt.Println(children)
 		if e1 != nil {
 			return nil, e1
 		}
 		for _, child := range children {
-			// create hierarchy map
 			if checkEnt == u.VIRTUALOBJ {
 				allChildren[child["id"].(string)] = child
 				fillHierarchyMap(child["id"].(string), hierarchy)
@@ -1024,13 +1024,13 @@ func GetHierarchyByCluster(clusterName string, limit int, filters u.RequestFilte
 				// add namespace prefix to devices
 				child["id"] = "Physical." + child["id"].(string)
 				allChildren[child["id"].(string)] = child
-				// fill hierarchy map by cluster
+				// add as direct child to cluster
 				hierarchy[clusterName] = append(hierarchy[clusterName], child["id"].(string))
 			}
 		}
 	}
 
-	// Organize the family according to relations (nest children)
+	// Organize vobj family according to relations (nest children)
 	return recursivelyGetChildrenFromMaps(clusterName, hierarchy, allChildren), nil
 }
 
