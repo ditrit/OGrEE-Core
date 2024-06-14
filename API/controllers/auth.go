@@ -565,7 +565,7 @@ func getModifyPassDataFromBody(r *http.Request, userEmail string) (string, strin
 	var data map[string]interface{}
 	err := json.NewDecoder(r.Body).Decode(&data)
 	if err != nil {
-		return currentPassword, "", isReset, err
+		return currentPassword, "", isReset, fmt.Errorf("invalid request")
 	}
 	if userEmail == u.RESET_TAG {
 		// it's not change, it's reset (no need for current password)
