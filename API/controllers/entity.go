@@ -476,10 +476,6 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 		// Save entity to help delete and respond
 		for _, obj := range entData {
 			obj["entity"] = entStr
-			if entStr == "device" && req["attributes.virtual_config.clusterId"] != nil {
-				// add namespace prefix to nodes
-				obj["id"] = "Physical." + obj["id"].(string)
-			}
 		}
 
 		if nLimit, e := strconv.Atoi(filters.Limit); e == nil && nLimit > 0 && req["id"] != nil {
@@ -668,6 +664,7 @@ func HandleComplexFilters(w http.ResponseWriter, r *http.Request) {
 		u.ErrLog(ErrDecodingBodyMsg, "HANDLE COMPLEX FILTERS", "", r)
 		return
 	}
+	println(complexFilterExp)
 
 	// Get objects
 	filters := getFiltersFromQueryParams(r)
@@ -686,6 +683,10 @@ func HandleComplexFilters(w http.ResponseWriter, r *http.Request) {
 		// Save entity to help delete and respond
 		for _, obj := range entData {
 			obj["entity"] = entStr
+			if entStr == "device" && strings.Contains(complexFilterExp, "virtual_config.type=node") {
+				// add namespace prefix to device nodes
+				obj["id"] = "Physical." + obj["id"].(string)
+			}
 		}
 
 		matchingObjects = append(matchingObjects, entData...)

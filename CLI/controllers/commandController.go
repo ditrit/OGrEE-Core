@@ -115,10 +115,11 @@ func (controller Controller) ObjectUrlGeneric(pathStr string, depth int, filters
 
 	isNodeLayerInVirtualPath := false
 	if path.Layer != nil {
+		path.Layer.ApplyFilters(filters)
 		if path.Prefix == models.VirtualObjsPath && path.Layer.Name() == "#nodes" {
 			isNodeLayerInVirtualPath = true
-		} else {
-			path.Layer.ApplyFilters(filters)
+			filters["filter"] = strings.Replace(filters["filter"], "category=virtual_obj",
+				"virtual_config.clusterId="+path.ObjectID[:len(path.ObjectID)-2], 1)
 		}
 	}
 
@@ -152,10 +153,7 @@ func (controller Controller) ObjectUrlGeneric(pathStr string, depth int, filters
 		params.Add("namespace", "organisational")
 		params.Add("id", path.ObjectID)
 	case models.VirtualObjsPath:
-		if isNodeLayerInVirtualPath {
-			params.Add("category", "device")
-			params.Set("virtual_config.clusterId", path.ObjectID[:len(path.ObjectID)-2])
-		} else {
+		if !isNodeLayerInVirtualPath {
 			params.Add("category", "virtual_obj")
 			if path.ObjectID != "Logical."+models.VirtualObjsNode+".*" {
 				params.Add("id", path.ObjectID)
@@ -169,14 +167,11 @@ func (controller Controller) ObjectUrlGeneric(pathStr string, depth int, filters
 	}
 
 	endpoint := "/api/objects"
-
-	if !isNodeLayerInVirtualPath {
-		for key, value := range filters {
-			if key != "filter" {
-				params.Set(key, value)
-			} else {
-				endpoint = "/api/objects/search"
-			}
+	for key, value := range filters {
+		if key != "filter" {
+			params.Set(key, value)
+		} else {
+			endpoint = "/api/objects/search"
 		}
 	}
 
