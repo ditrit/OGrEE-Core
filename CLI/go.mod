@@ -7,7 +7,7 @@ require (
 	github.com/bmatcuk/doublestar/v4 v4.6.1
 	github.com/chzyer/test v1.0.0
 	github.com/davecgh/go-spew v1.1.1
-	github.com/elliotchance/pie/v2 v2.8.0
+	github.com/elliotchance/pie/v2 v2.8.1
 	github.com/gertd/go-pluralize v0.2.1
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/spf13/pflag v1.0.5
