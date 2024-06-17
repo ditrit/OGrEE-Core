@@ -61,6 +61,21 @@ class _NodeActionsChipState extends State<_NodeActionsChip> {
       }
     }
 
+    if (namespace == Namespace.Physical &&
+        '.'.allMatches(widget.node.id).length >= 4) {
+      menuEntries.add(
+        PopupMenuItem(
+          value: 4,
+          child: ListTile(
+            dense: true,
+            title: Text(AppLocalizations.of(context)!.viewGraph),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+            leading: const Icon(Icons.auto_graph, color: _kDarkBlue),
+          ),
+        ),
+      );
+    }
+
     return PopupMenuButton<int>(
       key: _popupMenuKey,
       tooltip: AppLocalizations.of(context)!.selectionOptions,
@@ -91,9 +106,12 @@ class _NodeActionsChipState extends State<_NodeActionsChip> {
                       objId: widget.node.id,
                     ),
               isDismissible: true);
-        } else {
+        } else if (selected == 3) {
           showCustomPopup(context,
               ViewObjectPopup(namespace: namespace, objId: widget.node.id),
+              isDismissible: true);
+        } else {
+          showCustomPopup(context, ObjectGraphView(widget.node.id),
               isDismissible: true);
         }
       },

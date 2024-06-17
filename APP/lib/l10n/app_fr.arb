@@ -228,6 +228,7 @@
   "example": "Exemple :",
   "viewEditNode": "Visualiser et modifier ce noeud",
   "viewJSON": "Afficher en JSON",
+  "viewGraph": "Afficher en graphe",
 
   "selectColor": "Choisir couleur",
   "colorPrimary": "Palette",

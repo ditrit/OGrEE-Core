@@ -190,6 +190,7 @@
   "example": "Ejemplo:",
   "viewEditNode": "Ver y editar este nodo",
   "viewJSON": "Ver en JSON",
+  "viewGraph": "Ver como grafo",
 
   "selectColor": "Seleccionar color",
   "colorPrimary": "Primarios",

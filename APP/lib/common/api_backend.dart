@@ -456,6 +456,24 @@ Future<Result<Map<String, dynamic>, Exception>> fetchObject(String id,
   }
 }
 
+Future<Result<Map<String, dynamic>, Exception>> fetchObjectChildren(
+    String id) async {
+  print("API fetch Object /all");
+  try {
+    Uri url = Uri.parse('$apiUrl/api/hierarchy_objects/$id/all');
+    final response = await http.get(url, headers: getHeader(token));
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      Map<String, dynamic> data = json.decode(response.body);
+      return Success(Map<String, dynamic>.from(data["data"]));
+    } else {
+      final Map<String, dynamic> data = json.decode(response.body);
+      return Failure(Exception(data["message"].toString()));
+    }
+  } on Exception catch (e) {
+    return Failure(e);
+  }
+}
+
 Future<Result<void, Exception>> updateObject(
     String objId, String category, Map<String, dynamic> object) async {
   print("API update object");
@@ -527,7 +545,6 @@ Future<Result<List<String>, Exception>> fetchGroupContent(
   print("API fetch GR content");
   try {
     Uri url = Uri.parse('$apiUrl/api/objects?id=$id.*&category=$category');
-    print('$apiUrl/api/objects?$id=$id.*&category=$category');
     final response = await http.get(url, headers: getHeader(token));
     if (response.statusCode == 200 || response.statusCode == 201) {
       Map<String, dynamic> data = json.decode(response.body);
@@ -537,11 +554,9 @@ Future<Result<List<String>, Exception>> fetchGroupContent(
         return Failure(Exception("No object found for to this request"));
       } else {
         List<String> content = [];
-        print("hey ya");
         for (var item in list) {
           content.add(item["name"].toString());
         }
-        print(content);
         return Success(content);
       }
     } else {
