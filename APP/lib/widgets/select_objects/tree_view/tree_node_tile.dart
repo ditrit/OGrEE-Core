@@ -5,7 +5,7 @@ import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:ogree_app/pages/layer_graph.dart';
+import 'package:ogree_app/widgets/object_graph_view.dart';
 import 'package:ogree_app/pages/tenant_page.dart';
 import 'package:ogree_app/widgets/select_objects/view_object_popup.dart';
 import 'package:ogree_app/widgets/select_objects/object_popup.dart';

@@ -6,7 +6,7 @@ import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/pages/login_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:ogree_app/widgets/login_card.dart';
+import 'package:ogree_app/widgets/login/login_card.dart';
 
 class ResetCard extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
@@ -57,7 +57,7 @@ class ResetCard extends StatelessWidget {
                       )
                     : Center(
                         child: Image.asset(
-                          "assets/edf_logo.png",
+                          "assets/custom/logo.png",
                           height: 30,
                         ),
                       ),

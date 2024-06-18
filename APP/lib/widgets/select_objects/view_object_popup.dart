@@ -19,7 +19,6 @@ class ViewObjectPopup extends StatefulWidget {
 }
 
 class _ViewObjectPopupState extends State<ViewObjectPopup> {
-  final _formKey = GlobalKey<FormState>();
   bool _isSmallDisplay = false;
   String _objCategory = LogCategories.group.name;
   String? _loadFileResult;
@@ -49,68 +48,61 @@ class _ViewObjectPopupState extends State<ViewObjectPopup> {
               decoration: PopupDecoration,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(40, 20, 40, 15),
-                child: Form(
-                    key: _formKey,
-                    child: ScaffoldMessenger(
-                        child: Builder(
-                      builder: (context) => Scaffold(
-                        backgroundColor: Colors.white,
-                        body: SingleChildScrollView(
-                          child: Column(
+                child: ScaffoldMessenger(
+                    child: Builder(
+                  builder: (context) => Scaffold(
+                    backgroundColor: Colors.white,
+                    body: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          Center(
+                            child: Text(
+                              localeMsg.viewJSON,
+                              style: Theme.of(context).textTheme.headlineMedium,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Center(
-                                child: Text(
-                                  localeMsg.viewJSON,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .headlineMedium,
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(localeMsg.objType),
-                                  const SizedBox(width: 20),
-                                  SizedBox(
-                                    height: 35,
-                                    width: 147,
-                                    child: DropdownButtonFormField<String>(
-                                        isExpanded: true,
-                                        borderRadius:
-                                            BorderRadius.circular(12.0),
-                                        decoration: GetFormInputDecoration(
-                                          false,
-                                          null,
-                                          icon: Icons.bookmark,
-                                        ),
-                                        value: _objCategory,
-                                        items: getCategoryMenuItems(),
-                                        onChanged: null),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 10),
+                              Text(localeMsg.objType),
+                              const SizedBox(width: 20),
                               SizedBox(
-                                  height: 270, child: getViewForm(localeMsg)),
-                              const SizedBox(height: 12),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  ElevatedButton.icon(
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                      label: const Text("OK"),
-                                      icon:
-                                          const Icon(Icons.thumb_up, size: 16))
-                                ],
-                              )
+                                height: 35,
+                                width: 147,
+                                child: DropdownButtonFormField<String>(
+                                    isExpanded: true,
+                                    borderRadius: BorderRadius.circular(12.0),
+                                    decoration: GetFormInputDecoration(
+                                      false,
+                                      null,
+                                      icon: Icons.bookmark,
+                                    ),
+                                    value: _objCategory,
+                                    items: getCategoryMenuItems(),
+                                    onChanged: null),
+                              ),
                             ],
                           ),
-                        ),
+                          const SizedBox(height: 10),
+                          SizedBox(height: 270, child: getViewForm(localeMsg)),
+                          const SizedBox(height: 12),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              ElevatedButton.icon(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  label: const Text("OK"),
+                                  icon: const Icon(Icons.thumb_up, size: 16))
+                            ],
+                          )
+                        ],
                       ),
-                    ))),
+                    ),
+                  ),
+                )),
               ),
             ),
           );
@@ -172,7 +164,7 @@ class _ViewObjectPopupState extends State<ViewObjectPopup> {
           color: Colors.black,
           child: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text(
+            child: SelectableText(
               _loadFileResult!,
               style: const TextStyle(color: Colors.white),
             ),

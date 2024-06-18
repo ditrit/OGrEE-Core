@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/definitions.dart';
+import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/widgets/common/form_field.dart';
-
-import '../common/snackbar.dart';
 
 class ChangePasswordPopup extends StatefulWidget {
   const ChangePasswordPopup({super.key});

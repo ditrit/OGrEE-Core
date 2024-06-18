@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ogree_app/widgets/common/language_toggle.dart';
-import 'package:ogree_app/widgets/login_card.dart';
-import 'package:ogree_app/widgets/reset_card.dart';
+import 'package:ogree_app/widgets/login/login_card.dart';
+import 'package:ogree_app/widgets/login/reset_card.dart';
 
 class LoginPage extends StatefulWidget {
   final bool isPasswordReset;
