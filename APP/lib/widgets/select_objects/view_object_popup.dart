@@ -128,7 +128,9 @@ class _ViewObjectPopupState extends State<ViewObjectPopup> {
     var errMsg = "";
     // Try both id and slug since we dont know the obj's category
     for (var keyId in ["id", "slug"]) {
-      var result = await fetchObject(widget.objId, idKey: keyId);
+      var result = await fetchObject(
+          widget.objId, AppLocalizations.of(context)!,
+          idKey: keyId);
       switch (result) {
         case Success(value: final value):
           if (widget.namespace == Namespace.Logical) {

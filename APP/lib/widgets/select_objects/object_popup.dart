@@ -457,7 +457,8 @@ class _ObjectPopupState extends State<ObjectPopup> {
   }
 
   Future<List<String>?> getGroupContent(String parentId, targetCategory) async {
-    var result = await fetchGroupContent(parentId, targetCategory);
+    var result = await fetchGroupContent(
+        parentId, targetCategory, AppLocalizations.of(context)!);
     switch (result) {
       case Success(value: final value):
         return value;
@@ -472,7 +473,8 @@ class _ObjectPopupState extends State<ObjectPopup> {
     var errMsg = "";
     // Try both id and slug since we dont know the obj's category
     for (var keyId in ["id", "slug", "name"]) {
-      var result = await fetchObject(_objId, idKey: keyId);
+      var result = await fetchObject(_objId, AppLocalizations.of(context)!,
+          idKey: keyId);
       switch (result) {
         case Success(value: final value):
           if (widget.namespace == Namespace.Logical) {
@@ -581,6 +583,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
           return TextFormField(
             controller: textEditingController,
             focusNode: focusNode,
+            style: const TextStyle(fontSize: 14),
             decoration: GetFormInputDecoration(
                 false, "$starSymbol${AppLocalizations.of(context)!.domain}",
                 icon: Icons.edit),

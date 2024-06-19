@@ -13,6 +13,7 @@ import 'package:ogree_app/models/tag.dart';
 import 'package:ogree_app/models/tenant.dart';
 import 'package:ogree_app/models/user.dart';
 import 'package:universal_html/html.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'definitions.dart';
 
@@ -434,7 +435,8 @@ Future<Result<void, Exception>> createObject(
   }
 }
 
-Future<Result<Map<String, dynamic>, Exception>> fetchObject(String id,
+Future<Result<Map<String, dynamic>, Exception>> fetchObject(
+    String id, AppLocalizations localeMsg,
     {String idKey = "id"}) async {
   print("API fetch Object");
   try {
@@ -444,7 +446,7 @@ Future<Result<Map<String, dynamic>, Exception>> fetchObject(String id,
       Map<String, dynamic> data = json.decode(response.body);
       var list = List<Map<String, dynamic>>.from(data["data"]);
       if (list.isEmpty) {
-        return Failure(Exception("No object found for to this request"));
+        return Failure(Exception(localeMsg.noObjectsFound));
       }
       return Success(list.first);
     } else {
@@ -465,6 +467,31 @@ Future<Result<Map<String, dynamic>, Exception>> fetchObjectChildren(
     if (response.statusCode == 200 || response.statusCode == 201) {
       Map<String, dynamic> data = json.decode(response.body);
       return Success(Map<String, dynamic>.from(data["data"]));
+    } else {
+      final Map<String, dynamic> data = json.decode(response.body);
+      return Failure(Exception(data["message"].toString()));
+    }
+  } on Exception catch (e) {
+    return Failure(e);
+  }
+}
+
+Future<Result<List<Map<String, dynamic>>, Exception>> fetchWithComplexFilter(
+    String filter, Namespace namespace, AppLocalizations localeMsg) async {
+  print("API fetch Complex Filter");
+  try {
+    Uri url = Uri.parse(
+        '$apiUrl/api/objects/search?namespace=${namespace.name.toLowerCase()}');
+    final response = await http.post(url,
+        body: json.encode(<String, dynamic>{'filter': filter}),
+        headers: getHeader(token));
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      Map<String, dynamic> data = json.decode(response.body);
+      var list = List<Map<String, dynamic>>.from(data["data"]);
+      if (list.isEmpty) {
+        return Failure(Exception(localeMsg.noObjectsFound));
+      }
+      return Success(list);
     } else {
       final Map<String, dynamic> data = json.decode(response.body);
       return Failure(Exception(data["message"].toString()));
@@ -541,7 +568,7 @@ Future<Result<void, Exception>> createTemplate(
 }
 
 Future<Result<List<String>, Exception>> fetchGroupContent(
-    String id, category) async {
+    String id, category, AppLocalizations localeMsg) async {
   print("API fetch GR content");
   try {
     Uri url = Uri.parse('$apiUrl/api/objects?id=$id.*&category=$category');
@@ -551,7 +578,7 @@ Future<Result<List<String>, Exception>> fetchGroupContent(
       var list = List<Map<String, dynamic>>.from(data["data"]);
       print(list);
       if (list.isEmpty) {
-        return Failure(Exception("No object found for to this request"));
+        return Failure(Exception(localeMsg.noObjectsFound));
       } else {
         List<String> content = [];
         for (var item in list) {

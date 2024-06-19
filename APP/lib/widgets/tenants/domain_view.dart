@@ -63,7 +63,10 @@ class _DomainViewState extends State<DomainView> {
                               width: 320,
                               height: 116,
                               child: Card(
-                                  child: SettingsView(isTenantMode: true))),
+                                  child: SettingsView(
+                                isTenantMode: true,
+                                namespace: Namespace.Organisational,
+                              ))),
                         ),
                       ),
               ]);

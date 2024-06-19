@@ -76,16 +76,29 @@
   "whatNamespace": "Sélectionnez le type de namespace :",
 
   "searchById": "Rechercher par ID",
+  "searchAdvanced": "Recherche avancée",
   "filters": "Filtres",
+  "categoryFilters": "Filtrer l'ID par categorie",
   "clearAllFilters": "Effacer tout",
   "noNodeFound": "Pas de noeud trouvé avec l'ID :",
   "nodeFound": "Noeud trouvé :",
+  "xNodesFound": "{count, plural, =1{1 noeud trouvé pour :} other{{count} noeud trouvés pour :}}",
+  "@xNodesFound": {
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
+  },
   "expandAll" : "Développer tout",
   "collapseAll": "Réduire tout",
   "selectAll": "Sélectionner tout",
   "deselectAll": "Désélectionner tout",
   "nodePath": "Chemin du noeud :",
   "toggleSelection": "Inverser sélection du noeud et de tous ses enfants",
+  "expression": "Expression",
+  "advancedSearchHint": "Composer des expressions booléennes complexes avec les opérateurs =, !=, <, <=, >, >=, & et |.\nLa parenthèse peut également être utilisée pour séparer les expressions.\nExemple :",
 
   "@result": { "description": "Result Page" },
   "result": "Résultat",
