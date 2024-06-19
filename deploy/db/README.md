@@ -6,7 +6,7 @@ To build the docker image we need to run the `docker build` command at the `depl
 
 ```
 # In the deploy directory, build the Docker image
-docker build -f db/Dockerfile -t <tag_name> .
+docker build -f db/Dockerfile -t ogree-mongo-rs .
 ```
 
 **WARNING:** do not build the image using a machine with ARM architecture (for example all Macs with chip M*) as it will not work in our cluster. 
