@@ -281,39 +281,6 @@ class _ProjectsPageState extends State<ProjectsPage> {
     );
   }
 
-  analysisViewButton() {
-    final localeMsg = AppLocalizations.of(context)!;
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.deepOrange,
-        foregroundColor: Colors.white,
-      ),
-      onPressed: () {
-        if (widget.isTenantMode) {
-          showCustomPopup(
-              context, CreateTenantPopup(parentCallback: refreshFromChildren));
-        } else {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => AlertPage(userEmail: widget.userEmail),
-            ),
-          );
-        }
-      },
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: EdgeInsets.only(
-                top: 8, bottom: 8, right: _isSmallDisplay ? 0 : 10),
-            child: const Icon(Icons.analytics),
-          ),
-          _isSmallDisplay ? Container() : Text(localeMsg.viewAlerts),
-        ],
-      ),
-    );
-  }
-
   createToolsButton() {
     final localeMsg = AppLocalizations.of(context)!;
     List<PopupMenuEntry<Tools>> entries = <PopupMenuEntry<Tools>>[

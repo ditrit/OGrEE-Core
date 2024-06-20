@@ -828,10 +828,7 @@ func prepareUpdateObject(ctx mongo.SessionContext, entity int, id string, update
 
 func UpdateObject(entityStr string, id string, updateData map[string]interface{}, isPatch bool, userRoles map[string]Role, isRecursive bool) (map[string]interface{}, *u.Error) {
 	var idFilter bson.M
-	if u.EntityStrToInt(entityStr) == u.APPLICATION {
-		idFilter = bson.M{"name": id}
-
-	} else if u.IsEntityNonHierarchical(u.EntityStrToInt(entityStr)) {
+	if u.IsEntityNonHierarchical(u.EntityStrToInt(entityStr)) {
 		idFilter = bson.M{"slug": id}
 	} else {
 		idFilter = bson.M{"id": id}
