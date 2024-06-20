@@ -71,7 +71,6 @@ class __FindNodeFieldState extends State<_FindNodeField> {
       }
       appController.treeController.expandAncestors(node);
       appController.scrollTo(node);
-      appController.selectNode(node.id);
     }
   }
 }
