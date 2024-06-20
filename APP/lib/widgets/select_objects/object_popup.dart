@@ -801,13 +801,26 @@ class _ObjectPopupState extends State<ObjectPopup> {
                   tipStr: examplesAttrs[_objCategory]
                           ?[attributes[index].replaceFirst(starSymbol, "")] ??
                       "",
+                  extraValidationFn:
+                      attributes[index].replaceFirst(starSymbol, "") ==
+                              "virtual_config"
+                          ? (newValue) {
+                              try {
+                                json.decode(newValue);
+                              } on Exception {
+                                return 'object format: {"type":"storage"}';
+                              }
+                            }
+                          : null,
                   save: (newValue) {
                     var attrKey =
                         attributes[index].replaceFirst(starSymbol, "");
                     if (newValue != null && newValue.isNotEmpty) {
                       // check type
                       var numValue = num.tryParse(newValue);
-                      if (numValue != null) {
+                      if (attrKey == "virtual_config") {
+                        objDataAttrs[attrKey] = json.decode(newValue);
+                      } else if (numValue != null) {
                         // is number
                         objDataAttrs[attrKey] = numValue.toDouble();
                       } else if (newValue.length >= 2 &&
