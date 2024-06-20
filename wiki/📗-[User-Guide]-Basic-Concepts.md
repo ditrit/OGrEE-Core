@@ -14,14 +14,27 @@ It's under Physical that we will find everything that occupies a physical space 
             ├── Rack
                 ├── Device
                     ├── Device [...]
-├── Stray Object
+└── Stray Object
 ```
 The root of Physical is one or multiple sites. A site can only have buildings. A building, only rooms. Under a room, we can create racks or generic objects. This last one is highly customizable, can be used to represent ACs, power panels, tables, chairs and much more. A rack can also have multiple devices, as a rack with multiple servers, for example. Each device can always have multiple devices, representing the multiple components (processors, slots, disks, ports) a server can have, for example. Not directly linked to this hierarchy, we can also have stray objects, this is pratical to, for example, temporarily represent a server that is not currently attached to a rack or is being moved.
 
 ### Logical
-Here is where we find templates and grouping entities. **Templates** are useful to quickly create physical objects that share the same properties. There are different types of templates: building, room, rack, device and generic template. This last one is used to create physical objects of type Generic. A device template, for example, can define the properties of a specific model of server, making it easy to create those servers as devices in the Physical namespace. More information about templates can be found [here](https://github.com/ditrit/OGrEE-Core/wiki/%F0%9F%93%97-%5BUser-Guide%5D-API-%E2%80%90-JSON-templates-definitions).
+Here is where we find templates and grouping entities as well as virtual objects. 
+
+**Templates** are useful to quickly create physical objects that share the same properties. There are different types of templates: building, room, rack, device and generic template. This last one is used to create physical objects of type Generic. A device template, for example, can define the properties of a specific model of server, making it easy to create those servers as devices in the Physical namespace. More information about templates can be found [here](https://github.com/ditrit/OGrEE-Core/wiki/%F0%9F%93%97-%5BUser-Guide%5D-API-%E2%80%90-JSON-templates-definitions).
 
 **Grouping entities** are tags, layers and groups. Every object from the Physical namespace can have one or more tags associated to it. This can help filtering and search. Groups can be created only under rooms or racks and need a pre-determined list of which of their children while layers can be applied everywhere in the physical namespace and only need a filtering expression. More information about it can be found [here](https://github.com/ditrit/OGrEE-Core/wiki/%F0%9F%93%97-%5BUser-Guide%5D-CLI-%E2%80%90-Language#layers). 
+
+**Virtual Objects** (vobjs) are logical elements in the datacenter. It can be used to represent virtual machines, kubernetes clusters, docker containers, logical volumes, virtual switches, etc. They can have a device or another vobj as parent, or even no parent at all. A vobj can have **vlinks**, those are virtual links, a way to "point" towards other devices. For example, a virtual object can be a network bond that has two vlinks, each pointing to a physical interface in a physical device. 
+
+```
+├── Physical device
+    ├── Virtual object network bond
+        ├── vlink to -> Physical device interface0
+        └── vlink to -> Physical device interface1
+    ├── Virtual object remote storage
+        └── vlink to -> Far away physical device disk
+```
 
 ### Organisational
 This namespace contains domains which are also organized in a hierarchical manner. A domain can have multiple domain children and are used for access control. All objects from the Physical namespace have a domain and can only be seen or managed by a user that has the right permission in such domain. More information below.
@@ -31,7 +44,7 @@ This namespace contains domains which are also organized in a hierarchical manne
         ├── SubDomainA2
 ├── DomainB
     ├── SubDomainB1
-├── DomainC
+└── DomainC
 ```
 
 ## Access Control (RBAC)

@@ -156,7 +156,7 @@ class _AutocompleteFilterState extends State<AutocompleteFilter> {
         widget.paramLevel == 0
             ? Wrap(
                 children: [
-                  SettingsHeader(text: localeMsg.filters),
+                  SettingsHeader(text: localeMsg.categoryFilters),
                   widget.showClearFilter
                       ? OutlinedButton(
                           style: OutlinedButton.styleFrom(
@@ -194,6 +194,7 @@ class _AutocompleteFilterState extends State<AutocompleteFilter> {
             return TextFormField(
               controller: textEditingController,
               focusNode: focusNode,
+              style: const TextStyle(fontSize: 14),
               decoration: GetFormInputDecoration(true, widget.param,
                   isEnabled: widget.enabled),
               onFieldSubmitted: (String value) {

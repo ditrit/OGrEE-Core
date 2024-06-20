@@ -65,9 +65,12 @@
   "whatNamespace": "Seleccionar un namespace:",
 
   "searchById": "Buscar por ID",
+  "searchAdvanced": "Búsqueda avanzada",
   "filters": "Filtros",
+  "categoryFilters": "Filtros de ID por categoría",
   "clearAllFilters": "Borrar todo",
   "noNodeFound": "No se encontró ningún nodo con ID:",
+  "xNodesFound": "{count, plural, =1{1 nodo encontrado para:} other{{count} nodos encontrados para:}}",
   "nodeFound": "Nodo encontrado:",
   "expandAll" : "Expandir Todo",
   "collapseAll": "Reducir Todo",
@@ -75,6 +78,8 @@
   "deselectAll": "Deseleccionar Todo",
   "nodePath": "Ruta del nodo:",
   "toggleSelection": "Invertir selección de este nodo y todos sus hijos",
+  "expression": "Expresión",
+  "advancedSearchHint": "Componga expresiones booleanas complejas con los operadores =, !=, <, <=, >, >=, & y |.\nTambién se pueden utilizar paréntesis para separar las expresiones.\nEjemplo:",
 
   "addColumnTip":  "Agregar una columna",
   "yourReport": "Su reporte",
@@ -189,6 +194,8 @@
   "filter": "Filtro",
   "example": "Ejemplo:",
   "viewEditNode": "Ver y editar este nodo",
+  "viewJSON": "Ver en JSON",
+  "viewGraph": "Ver como grafo",
 
   "selectColor": "Seleccionar color",
   "colorPrimary": "Primarios",

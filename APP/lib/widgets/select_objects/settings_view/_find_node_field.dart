@@ -1,7 +1,7 @@
 part of 'settings_view.dart';
 
 class _FindNodeField extends StatefulWidget {
-  const _FindNodeField({Key? key}) : super(key: key);
+  const _FindNodeField();
 
   @override
   __FindNodeFieldState createState() => __FindNodeFieldState();
@@ -18,15 +18,13 @@ class __FindNodeFieldState extends State<_FindNodeField> {
 
   @override
   Widget build(BuildContext context) {
-    final localeMsg = AppLocalizations.of(context)!;
-
     return TextField(
       controller: controller,
-      cursorColor: Colors.blueGrey,
       autofocus: false,
+      style: const TextStyle(fontSize: 14),
       decoration: GetFormInputDecoration(
         false,
-        '${localeMsg.search}...',
+        'ID',
         icon: Icons.search_rounded,
       ),
       onSubmitted: (_) => _submitted(),

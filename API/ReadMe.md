@@ -1,10 +1,5 @@
-# Notes for The API
-Designed with JWT, MongoDB and CI tested using Jenkins and docker with a
-script to start up MongoDB
+# OGrEE-API
 
-
-Introduction
-------------
 This is an API interfacing with a MongoDB cluster for data centre management.
 
 
@@ -49,15 +44,8 @@ For Linux, consult your respective Distribution docs
 
 Running
 -------------
-You can modify the port of the API in the .env file. This is the port that the API will use to listen for requests.
- - Navigate in your terminal to the ```init_db``` directory  
- - Execute the bash script ```ogreeBoot.sh```
- - Enter your password when the prompt asks you
- - Be sure to enter your user password and the desired the DB access password
- - Update your .env file ```db_user=myCompanyName``` and ```db_pass=dbAccessPassword```
- - Execute the binary ```main```
 
-This .env file is not provided, so you must create it yourself. Here is an example of the ```.env``` file:
+This .env file is not provided, so you must create it yourself. Here is an example of the ```.env``` file to be placed in this same directory (`API/`):
 ```
 PORT = 3001
 db_host = 0.0.0.0
@@ -72,59 +60,28 @@ email_password = ""
 reset_url = "http://localhost:8082/#/reset?token="
 ``` 
 
-Jenkins
---------------------------
+### With Docker Compose
 
-### Jenkins Standalone
+There is a development version of the docker deploy with the following features:
 
-### External URL
-```
-ci.ogree.ditrit.io
-```
+* The MongoDB database is accessible on the `DB_PORT` (27017 by default) port. This will allow you to connect to the database using mongosh or mongodb-compass using the following url: `mongodb://ogreemytenantAdmin:pass123@localhost:27017/ogreemytenant?authSource=ogreemytenant&directConnection=true`.
+* HotReload for the api: each time a change is made to the code, the api is recompiled and relaunched.
 
-This is easier but less portable 
-Execute the following:
-```
-wget -q -O - https://pkg.jenkins.io/debian/jenkins.io.key | sudo apt-key add -
-sudo sh -c 'echo deb https://pkg.jenkins.io/debian binary/ > \
-    /etc/apt/sources.list.d/jenkins.list'
-sudo apt-get update
-sudo apt-get install jenkins
+This version can be launched by running the following command in the `OGrEE-Core/deploy/` folder:
+
+```bash
+OGrEE-Core/deploy/> make dev_api
 ```
 
-I then got an error with Failed to start LSB: Start Jenkins at boot time.
-This was fixed by installing default-jre default-jdk and ensuring that
-Java is installed. Strangely, it requires Java 8 while insisting that support
-for Java 11 is limited but works with Java 11
+### With local Mongo
 
-Now to select the HTTP Port edit the file: /etc/default/jenkins
-
-Jenkins username: 
-```
-admin
-``` 
-Jenkins password: 
-```
-9f4e634c5d174af9b2f35f30abe2a0d5
-```
-
-Encountered a permission denied error while trying to build a docker container in the pipeline which was solved by using these commands:
-```
-sudo usermod -aG docker jenkins
-sudo systemctl restart jenkins
-```
-The problem with this is that the docker group has root permissions so this is risky, I will look into a better solution later
-
-MongoDB
---------------------------
-A document (JSON) Based Database. The current DB can be started using the **ogreemdb.sh** script found in the root dir. The most useful interface for the DB is to access the shell. If you have started the DB already using the script you can directly execute this command to access the DB Shell
-```
-mongo --shell
-```
-
-Running a MongoDB container
---------------------------
-docker run --name mdb -v /home/ziad/mongoDir:/docker-entrypoint-initdb.d/ -p 27017:27017 -d mongo:latest
+Considering you have a local Mongo installed, you can create a database locally to then connect your local API:
+ - Navigate in your terminal to the ```deploy/db``` directory  
+ - Execute the bash script ```ogreeBoot.sh```
+ - Enter your password when the prompt asks you
+ - Be sure to enter your user password and the desired the DB access password
+ - Update your .env file ```db_user=myCompanyName``` and ```db_pass=dbAccessPassword```
+ - Execute the binary ```main```
 
 Swagger Docs
 --------------------------

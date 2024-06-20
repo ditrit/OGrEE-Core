@@ -15,7 +15,7 @@ func TestCreateTemplateOfTypeGenericWorks(t *testing.T) {
 
 	template := test_utils.GetEntity("genericTableTemplate", "generic-template", "", "")
 
-	test_utils.MockCreateObject(mockAPI, "obj-template", template)
+	test_utils.MockCreateObject(mockAPI, "obj_template", template)
 
 	err := controller.LoadTemplate(template)
 	assert.Nil(t, err)
@@ -150,7 +150,7 @@ func TestLoadTemplateRoom(t *testing.T) {
 		"sizeWDHm":    []any{216, 659, 41},
 	}
 
-	test_utils.MockCreateObject(mockAPI, "room-template", template)
+	test_utils.MockCreateObject(mockAPI, "room_template", template)
 
 	err := controller.LoadTemplate(template)
 	assert.Nil(t, err)
@@ -167,7 +167,7 @@ func TestLoadTemplateBuilding(t *testing.T) {
 		"center":      []any{0, 0},
 	}
 
-	test_utils.MockCreateObject(mockAPI, "bldg-template", template)
+	test_utils.MockCreateObject(mockAPI, "bldg_template", template)
 
 	err := controller.LoadTemplate(template)
 	assert.Nil(t, err)

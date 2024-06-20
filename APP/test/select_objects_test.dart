@@ -71,8 +71,8 @@ void main() {
     )));
 
     const searchStr = "rack2.devB.devB-2";
-    final searchInput = find.ancestor(
-        of: find.text('Rechercher...'), matching: find.byType(TextField));
+    final searchInput =
+        find.ancestor(of: find.text('ID'), matching: find.byType(TextField));
     await tester.enterText(searchInput, searchStr);
     await tester.testTextInput.receiveAction(TextInputAction.done);
     await tester.pumpAndSettle();

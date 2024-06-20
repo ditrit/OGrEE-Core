@@ -108,6 +108,17 @@ var roomGroup = map[string]any{
 	"parentId": "BASIC.A.R1",
 }
 
+var vobjCluster = map[string]any{
+	"category": "virtual_obj",
+	"attributes": map[string]any{
+		"virtual_config": map[string]any{"role": "proxmox", "type": "cluster"},
+	},
+	"children": []any{},
+	"id":       "cluster",
+	"name":     "cluster",
+	"parentId": "",
+}
+
 func layersSetup(t *testing.T) (controllers.Controller, *mocks.APIPort, *mocks.Ogree3DPort) {
 	controller, mockAPI, mockOgree3d, clockMock := test_utils.NewControllerWithMocks(t)
 	controllers.State.Hierarchy = controllers.BuildBaseTree(controller)
@@ -228,6 +239,18 @@ func TestLsOnARackShowsOneLayerForEachTypeOfDevice(t *testing.T) {
 	utils.ContainsObjectNamed(t, objects, "#chassis")
 	utils.ContainsObjectNamed(t, objects, models.GroupsLayer.Name())
 	utils.ContainsObjectNamed(t, objects, "#pdus")
+}
+
+func TestLsOnLogicalVObjsShowsOneLayerForEachTypeOfVObj(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+
+	test_utils.MockGetVirtualObjects(mockAPI, "limit=1", []any{vobjCluster})
+
+	objects, err := controller.Ls("/Logical/VirtualObjects", nil, nil)
+	assert.Nil(t, err)
+	assert.Len(t, objects, 2)
+	utils.ContainsObjectNamed(t, objects, "cluster")
+	utils.ContainsObjectNamed(t, objects, "#clusters")
 }
 
 func TestLsOnRacksLayerShowsRacks(t *testing.T) {

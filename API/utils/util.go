@@ -48,7 +48,7 @@ const (
 	BLDGTMPL
 	TAG
 	LAYER
-	APPLICATION
+	VIRTUALOBJ
 )
 
 type Namespace string
@@ -142,13 +142,20 @@ func Message(message string) map[string]interface{} {
 	return map[string]interface{}{"message": message}
 }
 
+const HttpResponseContentType = "application/json"
+
+func WriteOptionsHeader(w http.ResponseWriter, methods string) {
+	w.Header().Add("Content-Type", HttpResponseContentType)
+	w.Header().Add("Allow", methods+", OPTIONS")
+}
+
 func RespDataWrapper(message string, data interface{}) map[string]interface{} {
 	return map[string]interface{}{"message": message, "data": data}
 }
 
 func Respond(w http.ResponseWriter, data map[string]interface{}) {
 	json.NewEncoder(w).Encode(data)
-	w.Header().Add("Content-Type", "application/json")
+	w.Header().Add("Content-Type", HttpResponseContentType)
 }
 
 func RespondWithError(w http.ResponseWriter, err *Error) {
@@ -158,7 +165,7 @@ func RespondWithError(w http.ResponseWriter, err *Error) {
 	}
 	w.WriteHeader(ErrTypeToStatusCode(err.Type))
 	json.NewEncoder(w).Encode(errMap)
-	w.Header().Add("Content-Type", "application/json")
+	w.Header().Add("Content-Type", HttpResponseContentType)
 }
 
 func ErrLog(message, funcname, details string, r *http.Request) {
@@ -239,11 +246,11 @@ var Entities = []int{
 	DOMAIN,
 	STRAYOBJ, SITE,
 	BLDG, ROOM, RACK, DEVICE, AC, CABINET, CORRIDOR, GENERIC, PWRPNL, GROUP,
-	ROOMTMPL, OBJTMPL, BLDGTMPL, TAG, LAYER, APPLICATION,
+	ROOMTMPL, OBJTMPL, BLDGTMPL, TAG, LAYER, VIRTUALOBJ,
 }
 
 var EntitiesWithTags = []int{
-	STRAYOBJ, SITE, BLDG, ROOM, RACK, DEVICE, AC, CABINET, CORRIDOR, GENERIC, PWRPNL, GROUP,
+	STRAYOBJ, SITE, BLDG, ROOM, RACK, DEVICE, AC, CABINET, CORRIDOR, GENERIC, PWRPNL, GROUP, VIRTUALOBJ,
 }
 
 var RoomChildren = []int{RACK, CORRIDOR, GENERIC}
@@ -257,7 +264,7 @@ func IsEntityHierarchical(entity int) bool {
 }
 
 func IsEntityNonHierarchical(entity int) bool {
-	return entity >= ROOMTMPL && entity != APPLICATION
+	return entity >= ROOMTMPL && entity < VIRTUALOBJ
 }
 
 func EntityToString(entity int) string {
@@ -298,8 +305,8 @@ func EntityToString(entity int) string {
 		return "tag"
 	case LAYER:
 		return "layer"
-	case APPLICATION:
-		return "application"
+	case VIRTUALOBJ:
+		return "virtual_obj"
 	default:
 		return "INVALID"
 	}
@@ -343,8 +350,8 @@ func EntityStrToInt(entity string) int {
 		return TAG
 	case "layer":
 		return LAYER
-	case "application":
-		return APPLICATION
+	case "virtual_obj":
+		return VIRTUALOBJ
 	default:
 		return -1
 	}
@@ -361,7 +368,7 @@ func GetEntitiesByNamespace(namespace Namespace, hierarchyName string) []string 
 	case Organisational:
 		entNames = append(entNames, EntityToString(DOMAIN))
 	case Logical:
-		for entity := GROUP; entity <= APPLICATION; entity++ {
+		for entity := GROUP; entity <= VIRTUALOBJ; entity++ {
 			entNames = append(entNames, EntityToString(entity))
 		}
 	case LObjTemplate:
@@ -377,7 +384,7 @@ func GetEntitiesByNamespace(namespace Namespace, hierarchyName string) []string 
 	case PStray:
 		entNames = append(entNames, EntityToString(STRAYOBJ))
 	case Physical, PHierarchy, Any:
-		entities := []int{}
+		entities := []int{VIRTUALOBJ}
 
 		if hierarchyName == "" || hierarchyName == "**" {
 			// All entities of each namespace
@@ -396,7 +403,6 @@ func GetEntitiesByNamespace(namespace Namespace, hierarchyName string) []string 
 		} else {
 			if namespace == Any {
 				entities = append(entities, DOMAIN)
-				entities = append(entities, APPLICATION)
 			}
 
 			// Add entities according to hierarchyName possibilities

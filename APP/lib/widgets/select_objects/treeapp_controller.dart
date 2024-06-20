@@ -103,13 +103,23 @@ class TreeAppController with ChangeNotifier {
   void toggleSelection(String id,
       {bool? shouldSelect, bool shouldNotify = true}) {
     shouldSelect ??= !isSelected(id);
-    shouldSelect ? _select(id) : _deselect(id);
+    shouldSelect ? select(id) : deselect(id);
 
     if (shouldNotify) notifyListeners();
   }
 
-  void _select(String id) => selectedNodes[id] = true;
-  void _deselect(String id) => selectedNodes.remove(id);
+  void selectNode(String id) {
+    select(id);
+    notifyListeners();
+  }
+
+  void deselectNode(String id) {
+    selectedNodes.remove(id);
+    notifyListeners();
+  }
+
+  void select(String id) => selectedNodes[id] = true;
+  void deselect(String id) => selectedNodes.remove(id);
 
   void selectAll([bool select = true]) {
     //treeController.expandAll();

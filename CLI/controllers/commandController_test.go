@@ -13,6 +13,8 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+const testRackObjPath = "/api/hierarchy_objects/BASIC.A.R1.A01"
+
 // Test PWD
 func TestPWD(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
@@ -67,11 +69,11 @@ func TestObjectUrlInvalidPath(t *testing.T) {
 
 func TestObjectUrlPaths(t *testing.T) {
 	paths := map[string]any{
-		models.StrayPath + "stray-object":                     "/api/stray-objects/stray-object",
-		models.PhysicalPath + "BASIC/A":                       "/api/hierarchy-objects/BASIC.A",
-		models.ObjectTemplatesPath + "my-template":            "/api/obj-templates/my-template",
-		models.RoomTemplatesPath + "my-room-template":         "/api/room-templates/my-room-template",
-		models.BuildingTemplatesPath + "my-building-template": "/api/bldg-templates/my-building-template",
+		models.StrayPath + "stray-object":                     "/api/stray_objects/stray-object",
+		models.PhysicalPath + "BASIC/A":                       "/api/hierarchy_objects/BASIC.A",
+		models.ObjectTemplatesPath + "my-template":            "/api/obj_templates/my-template",
+		models.RoomTemplatesPath + "my-room-template":         "/api/room_templates/my-room-template",
+		models.BuildingTemplatesPath + "my-building-template": "/api/bldg_templates/my-building-template",
 		models.GroupsPath + "group1":                          "/api/groups/group1",
 		models.TagsPath + "my-tag":                            "/api/tags/my-tag",
 		models.LayersPath + "my-layer":                        "/api/layers/my-layer",
@@ -302,7 +304,7 @@ func TestGetSlotWithTemplateWorks(t *testing.T) {
 func TestUnsetAttributeObjectNotFound(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	test_utils.MockObjectNotFound(mockAPI, "/api/hierarchy-objects/BASIC.A.R1.A01")
+	test_utils.MockObjectNotFound(mockAPI, testRackObjPath)
 
 	err := controller.UnsetAttribute("/Physical/BASIC/A/R1/A01", "color")
 	assert.NotNil(t, err)
@@ -353,7 +355,7 @@ func TestUnsetInObjInvalidIndex(t *testing.T) {
 func TestUnsetInObjObjectNotFound(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	test_utils.MockObjectNotFound(mockAPI, "/api/hierarchy-objects/BASIC.A.R1.A01")
+	test_utils.MockObjectNotFound(mockAPI, testRackObjPath)
 
 	result, err := controller.UnsetInObj("/Physical/BASIC/A/R1/A01", "color", 0)
 	assert.NotNil(t, err)
@@ -543,7 +545,7 @@ func TestUIToggle(t *testing.T) {
 
 func TestUIHighlightObjectNotFound(t *testing.T) {
 	controller, mockAPI, ogree3D := layersSetup(t)
-	path := "/api/hierarchy-objects/BASIC.A.R1.A01"
+	path := testRackObjPath
 
 	test_utils.MockObjectNotFound(mockAPI, path)
 
@@ -628,7 +630,7 @@ func TestCameraWait(t *testing.T) {
 func TestFocusUIObjectNotFound(t *testing.T) {
 	controller, mockAPI, ogree3D := layersSetup(t)
 
-	test_utils.MockObjectNotFound(mockAPI, "/api/hierarchy-objects/"+rack1["id"].(string))
+	test_utils.MockObjectNotFound(mockAPI, "/api/hierarchy_objects/"+rack1["id"].(string))
 	err := controller.FocusUI("/Physical/" + strings.Replace(rack1["id"].(string), ".", "/", -1))
 	ogree3D.AssertNotCalled(t, "Inform", "mock.Anything", "mock.Anything", "mock.Anything")
 	assert.NotNil(t, err)
@@ -769,7 +771,7 @@ func TestUnlinkObjectWithValidPath(t *testing.T) {
 func TestIsEntityDrawableObjectNotFound(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
-	test_utils.MockObjectNotFound(mockAPI, "/api/hierarchy-objects/BASIC.A.R1.A01")
+	test_utils.MockObjectNotFound(mockAPI, testRackObjPath)
 
 	isDrawable, err := controller.IsEntityDrawable(models.PhysicalPath + "BASIC/A/R1/A01")
 	assert.False(t, isDrawable)
@@ -804,7 +806,7 @@ func TestIsEntityDrawable(t *testing.T) {
 // Tests IsAttrDrawable (and IsCategoryAttrDrawable)
 func TestIsAttrDrawableObjectNotFound(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
-	path := "/api/hierarchy-objects/BASIC.A.R1.A01"
+	path := testRackObjPath
 
 	test_utils.MockObjectNotFound(mockAPI, path)
 

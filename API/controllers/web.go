@@ -53,8 +53,7 @@ func GetProjects(w http.ResponseWriter, r *http.Request) {
 		u.RespondWithError(w, err)
 	} else {
 		if r.Method == "OPTIONS" {
-			w.Header().Add("Content-Type", "application/json")
-			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
+			u.WriteOptionsHeader(w, "GET, HEAD")
 		} else {
 			resp := map[string]interface{}{}
 			resp["projects"] = projects
@@ -147,8 +146,7 @@ func CreateOrUpdateProject(w http.ResponseWriter, r *http.Request) {
 		u.RespondWithError(w, modelErr)
 	} else {
 		if r.Method == "OPTIONS" {
-			w.Header().Add("Content-Type", "application/json")
-			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
+			u.WriteOptionsHeader(w, "GET, HEAD")
 		} else {
 			resp := u.Message("successfully handled project request")
 			resp["data"] = project
@@ -190,8 +188,7 @@ func DeleteProject(w http.ResponseWriter, r *http.Request) {
 		u.RespondWithError(w, err)
 	} else {
 		if r.Method == "OPTIONS" {
-			w.Header().Add("Content-Type", "application/json")
-			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
+			u.WriteOptionsHeader(w, "GET, HEAD")
 		} else {
 			u.Respond(w, u.Message("successfully removed project"))
 		}
