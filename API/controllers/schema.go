@@ -42,10 +42,9 @@ func GetSchemaJSON(w http.ResponseWriter, r *http.Request) {
 			"GET GetSchemaJSON", err.Message, r)
 		u.RespondWithError(w, err)
 	} else if r.Method == "OPTIONS" {
-		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "GET, OPTIONS")
+		u.WriteOptionsHeader(w, "GET")
 	} else {
-		w.Header().Add("Content-Type", "application/json")
+		w.Header().Add("Content-Type", u.HttpResponseContentType)
 		w.Write(file)
 	}
 }

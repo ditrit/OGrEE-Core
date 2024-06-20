@@ -48,7 +48,6 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 		if tokenHeader == "" {
 			response = u.Message("Missing auth token")
 			w.WriteHeader(http.StatusForbidden)
-			w.Header().Add("Content-Type", "application/json")
 			u.Respond(w, response)
 			return
 		}
@@ -58,7 +57,6 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 		if len(splitted) != 2 {
 			response = u.Message("Invalid/Malformed auth token")
 			w.WriteHeader(http.StatusForbidden)
-			w.Header().Add("Content-Type", "application/json")
 			u.Respond(w, response)
 			return
 		}
@@ -75,7 +73,6 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 		if err != nil {
 			response = u.Message("Malformed authentication token")
 			w.WriteHeader(http.StatusForbidden)
-			w.Header().Add("Content-Type", "application/json")
 			u.Respond(w, response)
 			return
 		}
@@ -84,7 +81,6 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 		if !token.Valid || ((tk.Email == u.RESET_TAG) != (requestPath == "/api/users/password/reset")) {
 			response = u.Message("Token is not valid.")
 			w.WriteHeader(http.StatusForbidden)
-			w.Header().Add("Content-Type", "application/json")
 			u.Respond(w, response)
 			return
 		}

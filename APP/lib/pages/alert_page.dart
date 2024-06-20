@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:ogree_app/common/appbar.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/models/tenant.dart';
 import 'package:ogree_app/pages/projects_page.dart';
 import 'package:ogree_app/widgets/select_objects/treeapp_controller.dart';
+
+// THIS IS A DEMO
 
 class AlertPage extends StatefulWidget {
   final String userEmail;
@@ -23,7 +24,6 @@ class AlertPageState extends State<AlertPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final localeMsg = AppLocalizations.of(context)!;
     return Scaffold(
         backgroundColor: const Color.fromARGB(255, 238, 238, 241),
         appBar: myAppBar(context, widget.userEmail,
@@ -88,7 +88,7 @@ class AlertPageState extends State<AlertPage> with TickerProviderStateMixin {
                                   ],
                                 ),
                               ),
-                              VerticalDivider(
+                              const VerticalDivider(
                                 width: 30,
                                 thickness: 0.5,
                                 color: Colors.grey,
@@ -139,7 +139,7 @@ class AlertPageState extends State<AlertPage> with TickerProviderStateMixin {
               backgroundColor: typeColor,
               label: Text(
                 " $type ",
-                style: TextStyle(
+                style: const TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                     color: Colors.black),
@@ -165,7 +165,7 @@ class AlertPageState extends State<AlertPage> with TickerProviderStateMixin {
       TextSpan(
         children: [
           TextSpan(
-            style: new TextStyle(
+            style: const TextStyle(
               fontSize: 14.0,
               color: Colors.black,
             ),
@@ -174,31 +174,29 @@ class AlertPageState extends State<AlertPage> with TickerProviderStateMixin {
                 text: 'Minor Alert\n',
                 style: Theme.of(context).textTheme.headlineLarge,
               ),
-              TextSpan(text: '\nThe temperature of device '),
-              TextSpan(
+              const TextSpan(text: '\nThe temperature of device '),
+              const TextSpan(
                   text: 'BASIC.A.R1.A02.chassis01',
-                  style: new TextStyle(fontWeight: FontWeight.bold)),
-              TextSpan(
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              const TextSpan(
                   text:
                       ' is higher than usual. This could impact the performance of your applications running in a Kubernetes cluster with nodes in this device: "my-frontend-app" and "my-backend-app".\n'),
               ...getSubtitle("Details:"),
-              TextSpan(
+              const TextSpan(
                   text:
                       'The last measurement of temperature for the device in question reads '),
-              TextSpan(
-                  text: '64°C',
-                  style: new TextStyle(fontWeight: FontWeight.bold)),
-              TextSpan(
+              const TextSpan(
+                  text: '64°C', style: TextStyle(fontWeight: FontWeight.bold)),
+              const TextSpan(
                   text:
                       '. The temperature recommendation for a chassis of this type is to not surpass '),
-              TextSpan(
-                  text: '55°C',
-                  style: new TextStyle(fontWeight: FontWeight.bold)),
-              TextSpan(text: '.\n'),
+              const TextSpan(
+                  text: '55°C', style: TextStyle(fontWeight: FontWeight.bold)),
+              const TextSpan(text: '.\n'),
               ...getSubtitle("Impacted by this alert:"),
               getWidgetSpan(" BASIC.A.R1.A02.chassis01", "Physical - Device",
                   Colors.teal),
-              TextSpan(text: '\n'),
+              const TextSpan(text: '\n'),
               ...getSubtitle("May also be impacted:"),
               getWidgetSpan(" BASIC.A.R1.A02.chassis01.blade01",
                   "Physical - Device", Colors.teal),
@@ -222,7 +220,7 @@ class AlertPageState extends State<AlertPage> with TickerProviderStateMixin {
       TextSpan(
         children: [
           TextSpan(
-            style: new TextStyle(
+            style: const TextStyle(
               fontSize: 14.0,
               color: Colors.black,
             ),
@@ -231,15 +229,15 @@ class AlertPageState extends State<AlertPage> with TickerProviderStateMixin {
                 text: 'Hint\n',
                 style: Theme.of(context).textTheme.headlineLarge,
               ),
-              TextSpan(
+              const TextSpan(
                   text:
                       '\nAll nodes of a kubernetes cluster are servers from the same rack.\n'),
               ...getSubtitle("Details:"),
-              TextSpan(
+              const TextSpan(
                   text:
                       'The Kubernetes cluster "kubernetes-cluster" has the following devices as its nodes: "chassis01.blade01" , "chassis01.blade02" and "chassis01.blade03". All of these devices are in the same rack "BASIC.A.R1.A02".\n'),
               ...getSubtitle("Suggestion:"),
-              TextSpan(
+              const TextSpan(
                   text:
                       'To limit impacts to the cluster and its applications in case of issue with this rack, consider adding a server from a different rack as a node to this cluster.\n'),
               ...getSubtitle("Impacted by this hint:"),
@@ -247,7 +245,7 @@ class AlertPageState extends State<AlertPage> with TickerProviderStateMixin {
                   " BASIC.A.R1.A02", "Physical - Device", Colors.teal),
               getWidgetSpan(" kubernetes-cluster", "Logical - Application",
                   Colors.deepPurple),
-              TextSpan(text: '\n'),
+              const TextSpan(text: '\n'),
               ...getSubtitle("May also be impacted:"),
               getWidgetSpan(" kubernetes-cluster.my-frontend-app",
                   "Logical - Application", Colors.deepPurple),
@@ -293,7 +291,7 @@ class AlertPageState extends State<AlertPage> with TickerProviderStateMixin {
         text: '\n$subtitle\n',
         style: Theme.of(context).textTheme.headlineMedium,
       ),
-      TextSpan(text: '\n'),
+      const TextSpan(text: '\n'),
     ];
   }
 }

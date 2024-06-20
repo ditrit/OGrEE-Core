@@ -18,7 +18,7 @@ import 'package:ogree_app/widgets/projects/project_card.dart';
 import 'package:ogree_app/widgets/tenants/tenant_card.dart';
 import 'package:ogree_app/widgets/tools/create_netbox_popup.dart';
 import 'package:ogree_app/widgets/tools/create_opendcim_popup.dart';
-import 'package:ogree_app/widgets/tools/download_cli_popup.dart';
+import 'package:ogree_app/widgets/tools/download_tool_popup.dart';
 import 'package:ogree_app/widgets/tools/tool_card.dart';
 
 class ProjectsPage extends StatefulWidget {
@@ -54,6 +54,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            ...getAlertDemoWidgets(localeMsg),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -332,6 +333,10 @@ class _ProjectsPageState extends State<ProjectsPage> {
         value: Tools.cli,
         child: Text(localeMsg.downloadCli),
       ),
+      PopupMenuItem(
+        value: Tools.unity,
+        child: Text(localeMsg.downloadUnity),
+      ),
     ];
 
     return ElevatedButton(
@@ -378,7 +383,11 @@ class _ProjectsPageState extends State<ProjectsPage> {
               }
               break;
             case Tools.cli:
-              showCustomPopup(context, const DownloadCliPopup(),
+              showCustomPopup(context, DownloadToolPopup(tool: Tools.cli),
+                  isDismissible: true);
+              break;
+            case Tools.unity:
+              showCustomPopup(context, DownloadToolPopup(tool: Tools.unity),
                   isDismissible: true);
               break;
           }
@@ -433,10 +442,11 @@ class _ProjectsPageState extends State<ProjectsPage> {
         }
       }
     } else {
-      cards.add(AutoUnityProjectCard(
-        userEmail: widget.userEmail,
-        parentCallback: refreshFromChildren,
-      ));
+      if (isDemo) {
+        cards.add(AutoUnityProjectCard(
+          userEmail: widget.userEmail,
+        ));
+      }
       for (var namespace in Namespace.values) {
         if (namespace != Namespace.Test) {
           cards.add(AutoProjectCard(
@@ -455,5 +465,103 @@ class _ProjectsPageState extends State<ProjectsPage> {
       }
     }
     return cards;
+  }
+
+// DEMO ONLY
+  List<Widget> getAlertDemoWidgets(AppLocalizations localeMsg) {
+    if (!isDemo) {
+      return [];
+    }
+    return [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(localeMsg.myAlerts,
+              style: Theme.of(context).textTheme.headlineLarge),
+          Row(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(right: 10.0, bottom: 10),
+                child: analysisViewButton(),
+              ),
+            ],
+          ),
+        ],
+      ),
+      const SizedBox(height: 20),
+      Padding(
+        padding: const EdgeInsets.only(right: 20.0),
+        child: InkWell(
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => AlertPage(userEmail: widget.userEmail),
+            ),
+          ),
+          child: MaterialBanner(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+            content: _isSmallDisplay
+                ? Text(localeMsg.oneAlert)
+                : RichText(
+                    text: TextSpan(
+                      style: const TextStyle(
+                        fontSize: 14.0,
+                        color: Colors.black,
+                      ),
+                      children: <TextSpan>[
+                        TextSpan(text: localeMsg.temperatureAlert1),
+                        const TextSpan(
+                            text: 'BASIC.A.R1.A02.chassis01',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        TextSpan(text: localeMsg.temperatureAlert2),
+                      ],
+                    ),
+                  ),
+            leading: const Icon(Icons.info),
+            backgroundColor: Colors.amber.shade100,
+            dividerColor: Colors.transparent,
+            actions: const <Widget>[
+              TextButton(
+                onPressed: null,
+                child: Text(''),
+              ),
+            ],
+          ),
+        ),
+      ),
+      const SizedBox(height: 30),
+    ];
+  }
+
+  analysisViewButton() {
+    final localeMsg = AppLocalizations.of(context)!;
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.deepOrange,
+        foregroundColor: Colors.white,
+      ),
+      onPressed: () {
+        if (widget.isTenantMode) {
+          showCustomPopup(
+              context, CreateTenantPopup(parentCallback: refreshFromChildren));
+        } else {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => AlertPage(userEmail: widget.userEmail),
+            ),
+          );
+        }
+      },
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: EdgeInsets.only(
+                top: 8, bottom: 8, right: _isSmallDisplay ? 0 : 10),
+            child: const Icon(Icons.analytics),
+          ),
+          _isSmallDisplay ? Container() : Text(localeMsg.viewAlerts),
+        ],
+      ),
+    );
   }
 }

@@ -321,6 +321,15 @@ func RemoveTenant(c *gin.Context) {
 				c.IndentedJSON(http.StatusInternalServerError, stderr.String())
 				return
 			}
+
+			cmd = exec.Command("docker", "network", "rm", "-f", tenantName+"_default")
+			cmd.Dir = DOCKER_DIR
+			cmd.Stderr = &stderr
+			if _, err := cmd.Output(); err != nil {
+				fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+				c.IndentedJSON(http.StatusInternalServerError, stderr.String())
+				return
+			}
 		}
 	}
 

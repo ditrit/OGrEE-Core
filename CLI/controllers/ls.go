@@ -44,12 +44,13 @@ func (controller Controller) lsObjectsWithoutFilters(path string) ([]map[string]
 			if isMap {
 				if models.IsGroup(path) {
 					childObj["name"] = strings.ReplaceAll(childObj["id"].(string), ".", "/")
+				} else if models.IsVirtual(path) {
+					adaptObjectNameForVirtual(path, childObj)
 				}
 				objects = append(objects, childObj)
 				continue
 			}
 		}
-
 		objects = append(objects, map[string]any{"name": child.Name})
 	}
 
@@ -86,11 +87,24 @@ func (controller Controller) lsObjectsWithFilters(path string, filters map[strin
 		if !ok {
 			return nil, fmt.Errorf("invalid response from API on POST %s", url)
 		}
+		if models.IsVirtual(path) {
+			adaptObjectNameForVirtual(path, obj)
+		}
 
 		objects = append(objects, obj)
 	}
 
 	return objects, nil
+}
+
+func adaptObjectNameForVirtual(path string, obj map[string]any) {
+	if strings.HasPrefix(path, models.VirtualObjsPath+"#") || path+"/" == models.VirtualObjsPath {
+		// is layer right under virtual root or is virtual root, use full id
+		obj["name"] = obj["id"].(string)
+	} else if strings.Contains(obj["id"].(string), "Physical.") {
+		// is physical, point to that namespace
+		obj["name"] = "/" + strings.ReplaceAll(obj["id"].(string), ".", "/")
+	}
 }
 
 // Obtains a HierarchyNode using Tree and adds the layers
@@ -136,16 +150,25 @@ func (controller Controller) addUserDefinedLayers(path string, rootNode *Hierarc
 // Adds to the children the automatic layers, depending of the category of the rootObject
 // and if any of the children is part of that layer (to avoid displaying empty layers)
 func addAutomaticLayers(rootNode *HierarchyNode) {
+	var category string
+	categoryPresent := false
 	rootObject, objIsMap := rootNode.Obj.(map[string]any)
+
 	if !objIsMap {
-		return
+		if rootNode.Name == models.VirtualObjsNode {
+			category = "virtual_obj"
+			categoryPresent = true
+		} else {
+			return
+		}
+	} else {
+		category, categoryPresent = rootObject["category"].(string)
 	}
 
 	children := pie.Map(maps.Values(rootNode.Children), func(node *HierarchyNode) any {
 		return node.Obj
 	})
 
-	category, categoryPresent := rootObject["category"].(string)
 	if categoryPresent {
 		entity := models.EntityStrToInt(category)
 		layerFactories := models.LayersByEntity[entity]

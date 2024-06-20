@@ -75,7 +75,6 @@ class _SelectObjectsState extends State<SelectObjects> {
                       ])
                     : _ResponsiveBody(
                         namespace: widget.namespace,
-                        noFilters: widget.namespace != Namespace.Physical,
                         controller: appController,
                         callback: () => setState(() {
                               widget.load = true;
@@ -107,14 +106,12 @@ class _Unfocus extends StatelessWidget {
 
 class _ResponsiveBody extends StatelessWidget {
   final Namespace namespace;
-  final bool noFilters;
   final TreeAppController controller;
   final Function() callback;
   const _ResponsiveBody(
       {Key? key,
       required this.namespace,
       required this.controller,
-      this.noFilters = false,
       required this.callback})
       : super(key: key);
 
@@ -135,6 +132,7 @@ class _ResponsiveBody extends StatelessWidget {
                     context,
                     SettingsViewPopup(
                       controller: controller,
+                      namespace: namespace,
                     ),
                     isDismissible: true),
                 icon: const Icon(Icons.filter_alt_outlined),
@@ -163,7 +161,7 @@ class _ResponsiveBody extends StatelessWidget {
             color: Colors.black26,
           ),
           Expanded(
-              child: SettingsView(isTenantMode: false, noFilters: noFilters)),
+              child: SettingsView(isTenantMode: false, namespace: namespace)),
         ],
       ),
     );
@@ -203,8 +201,10 @@ addObjectButton(
 
 class SettingsViewPopup extends StatelessWidget {
   final TreeAppController controller;
+  final Namespace namespace;
 
-  const SettingsViewPopup({super.key, required this.controller});
+  const SettingsViewPopup(
+      {super.key, required this.controller, required this.namespace});
 
   @override
   Widget build(BuildContext context) {
@@ -226,9 +226,12 @@ class SettingsViewPopup extends StatelessWidget {
                         padding: EdgeInsets.zero,
                         shrinkWrap: true,
                         children: [
-                          const SizedBox(
+                          SizedBox(
                             height: 420,
-                            child: SettingsView(isTenantMode: false),
+                            child: SettingsView(
+                              isTenantMode: false,
+                              namespace: namespace,
+                            ),
                           ),
                           const SizedBox(height: 10),
                           TextButton.icon(

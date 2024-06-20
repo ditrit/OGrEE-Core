@@ -1,19 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:ogree_app/common/definitions.dart';
-import 'package:ogree_app/models/project.dart';
-import 'package:ogree_app/pages/select_page.dart';
 import 'package:ogree_app/pages/unity_page.dart';
 
 class AutoUnityProjectCard extends StatelessWidget {
-  // final Project project;
   final String userEmail;
-  final Function parentCallback;
-  const AutoUnityProjectCard(
-      {Key? key,
-      // required this.project,
-      required this.userEmail,
-      required this.parentCallback})
+  const AutoUnityProjectCard({Key? key, required this.userEmail})
       : super(key: key);
   @override
   Widget build(BuildContext context) {

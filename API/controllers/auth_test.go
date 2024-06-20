@@ -181,7 +181,7 @@ func TestModifyRole(t *testing.T) {
 		statusCode         int
 		message            string
 	}{
-		{"ExtraDataReturnsError", e2e.ValidateRequestWithToken, userToken, userId, `{"roles": {"*": "user"},"name": "other name"}`, http.StatusBadRequest, "Only 'roles' should be provided to patch"},
+		{"ExtraDataReturnsError", e2e.ValidateRequestWithToken, userToken, userId, `{"roles": {"*": "user"},"name": "other name"}`, http.StatusBadRequest, "only 'roles' should be provided to patch"},
 		{"InvalidRole", e2e.ValidateRequestWithToken, userToken, userId, `{"roles": {"*": "invalid"}}`, http.StatusInternalServerError, "Role assigned is not valid: "},
 		{"InvalidId", e2e.ValidateRequestWithToken, userToken, "invalid", `{"roles": {"*": "user"}}`, http.StatusBadRequest, "User ID is not valid"},
 		{"ModifyRoleWithNormalUser", e2e.ValidateRequestWithUser, "user", userId, `{"roles": {"*": "manager"}}`, http.StatusUnauthorized, "Caller does not have permission to modify this user"},
@@ -210,12 +210,11 @@ func TestModifyPassword(t *testing.T) {
 		statusCode  int
 		message     string
 	}{
-		{"NotEnoughArguments", `{"newPassword": "fake_password"}`, http.StatusBadRequest, "Invalid request: wrong body format"},
+		{"NotEnoughArguments", `{"newPassword": "fake_password"}`, http.StatusBadRequest, "invalid request: wrong body format"},
 		{"Success", correctRequestBody, http.StatusOK, "successfully updated user password"},
 	}
 
 	changePasswordEndpoint := test_utils.GetEndpoint("changePassword")
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			e2e.ValidateRequestWithToken(t, "POST", changePasswordEndpoint, []byte(tt.requestBody), userToken, tt.statusCode, tt.message)
@@ -235,7 +234,7 @@ func TestResetPassword(t *testing.T) {
 		message     string
 	}{
 		{"InvalidResetToken", test_utils.GetUserToken(email, password), correctRequestBody, http.StatusForbidden, "Token is not valid."}, // User token is not a reset token
-		{"NotEnoughArguments", models.GenerateToken(u.RESET_TAG, userId, time.Minute), `{}`, http.StatusBadRequest, "Invalid request: wrong body format"},
+		{"NotEnoughArguments", models.GenerateToken(u.RESET_TAG, userId, time.Minute), `{}`, http.StatusBadRequest, "invalid request: wrong body format"},
 		{"Success", models.GenerateToken(u.RESET_TAG, userId, time.Minute), correctRequestBody, http.StatusOK, "successfully updated user password"},
 	}
 
@@ -261,8 +260,8 @@ func TestRequestsWithInvalidBody(t *testing.T) {
 		{"CreateUser", "POST", test_utils.GetEndpoint("users"), "Invalid request: wrong format body"},
 		{"CreateBulkUsers", "POST", test_utils.GetEndpoint("usersBulk"), "Invalid request"},
 		{"Login", "POST", test_utils.GetEndpoint("login"), "Invalid request"},
-		{"ModifyUser", "PATCH", test_utils.GetEndpoint("usersInstance", userId), "Invalid request"},
-		{"ModifyPassword", "POST", test_utils.GetEndpoint("changePassword"), "Invalid request"},
+		{"ModifyUser", "PATCH", test_utils.GetEndpoint("usersInstance", userId), "invalid request"},
+		{"ModifyPassword", "POST", test_utils.GetEndpoint("changePassword"), "invalid request"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

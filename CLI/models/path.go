@@ -18,6 +18,8 @@ const (
 	GroupsPath            = LogicalPath + "Groups/"
 	TagsPath              = LogicalPath + "Tags/"
 	LayersPath            = LogicalPath + "Layers/"
+	VirtualObjsNode       = "VirtualObjects"
+	VirtualObjsPath       = LogicalPath + VirtualObjsNode + "/"
 	OrganisationPath      = "/Organisation/"
 	DomainsPath           = OrganisationPath + "Domain/"
 )
@@ -32,6 +34,7 @@ var PathPrefixes = []string{
 	TagsPath,
 	LayersPath,
 	DomainsPath,
+	VirtualObjsPath,
 }
 
 type Path struct {
@@ -108,6 +111,10 @@ func IsLayer(path string) bool {
 
 func IsGroup(path string) bool {
 	return pathIs(path, GroupsPath)
+}
+
+func IsVirtual(path string) bool {
+	return pathIs(path, VirtualObjsPath)
 }
 
 func pathIs(path, prefix string) bool {

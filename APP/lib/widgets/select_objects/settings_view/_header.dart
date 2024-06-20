@@ -22,42 +22,11 @@ class SettingsHeader extends StatelessWidget {
       child: Text(
         text,
         style: GoogleFonts.inter(
-          fontSize: 17,
+          fontSize: 15,
           color: Colors.black,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w400,
         ),
       ),
-    );
-  }
-}
-
-class _ActionsHeader extends StatelessWidget {
-  const _ActionsHeader({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return const Row(
-      children: [
-        SettingsHeader(text: 'Actions'),
-        Spacer(),
-        Tooltip(
-          message: 'Quick shortcuts',
-          verticalOffset: 13,
-          decoration: BoxDecoration(
-            color: Colors.blueAccent,
-            borderRadius: BorderRadius.all(Radius.circular(12)),
-          ),
-          textStyle: TextStyle(
-            fontSize: 13,
-            color: Colors.white,
-            letterSpacing: 1.025,
-            height: 1.5,
-          ),
-          padding: EdgeInsets.all(16),
-          child: Icon(Icons.info_outline_rounded, color: Colors.blueAccent),
-        ),
-        SizedBox(width: 10),
-      ],
     );
   }
 }

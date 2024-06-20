@@ -41,15 +41,19 @@ func mockResponseWithParams(mockAPI *mocks.APIPort, httpMethod string, urlPath s
 }
 
 func MockGetObjectHierarchy(mockAPI *mocks.APIPort, object map[string]any) {
-	mockResponse(mockAPI, http.MethodGet, "/api/hierarchy-objects/"+object["id"].(string)+"/all?limit=1", nil, http.StatusOK, KeepOnlyDirectChildren(object))
+	mockResponse(mockAPI, http.MethodGet, "/api/hierarchy_objects/"+object["id"].(string)+"/all?limit=1", nil, http.StatusOK, KeepOnlyDirectChildren(object))
 }
 
 func MockGetObject(mockAPI *mocks.APIPort, object map[string]any) {
-	mockResponse(mockAPI, http.MethodGet, "/api/hierarchy-objects/"+object["id"].(string), nil, http.StatusOK, RemoveChildren(object))
+	mockResponse(mockAPI, http.MethodGet, "/api/hierarchy_objects/"+object["id"].(string), nil, http.StatusOK, RemoveChildren(object))
 }
 
 func MockGetObjects(mockAPI *mocks.APIPort, queryParams string, result []any) {
 	mockResponseWithParams(mockAPI, http.MethodGet, "/api/objects", queryParams, nil, http.StatusOK, RemoveChildrenFromList(result))
+}
+
+func MockGetVirtualObjects(mockAPI *mocks.APIPort, queryParams string, result []any) {
+	mockResponseWithParams(mockAPI, http.MethodGet, "/api/virtual_objs", queryParams, nil, http.StatusOK, RemoveChildrenFromList(result))
 }
 
 func MockGetObjectsWithComplexFilters(mockAPI *mocks.APIPort, queryParams string, body map[string]any, result []any) {
@@ -74,9 +78,7 @@ func MockDeleteObjectsWithComplexFilters(mockAPI *mocks.APIPort, queryParams str
 }
 
 func MockGetObjectsByEntity(mockAPI *mocks.APIPort, entity string, objects []any) {
-	mockResponse(mockAPI, http.MethodGet, "/api/"+entity, nil, http.StatusOK, map[string]any{
-		"objects": RemoveChildrenFromList(objects),
-	})
+	mockResponse(mockAPI, http.MethodGet, "/api/"+entity, nil, http.StatusOK, RemoveChildrenFromList(objects))
 }
 
 func MockCreateObject(mockAPI *mocks.APIPort, entity string, data map[string]any) {
@@ -104,9 +106,9 @@ func MockObjectNotFound(mockAPI *mocks.APIPort, path string) {
 }
 
 func MockGetObjTemplate(mockAPI *mocks.APIPort, template map[string]any) {
-	mockResponse(mockAPI, http.MethodGet, "/api/obj-templates/"+template["slug"].(string), nil, http.StatusOK, template)
+	mockResponse(mockAPI, http.MethodGet, "/api/obj_templates/"+template["slug"].(string), nil, http.StatusOK, template)
 }
 
 func MockGetRoomTemplate(mockAPI *mocks.APIPort, template map[string]any) {
-	mockResponse(mockAPI, http.MethodGet, "/api/room-templates/"+template["slug"].(string), nil, http.StatusOK, template)
+	mockResponse(mockAPI, http.MethodGet, "/api/room_templates/"+template["slug"].(string), nil, http.StatusOK, template)
 }

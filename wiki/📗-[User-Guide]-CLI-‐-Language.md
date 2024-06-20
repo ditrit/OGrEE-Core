@@ -53,6 +53,7 @@
       + [Interact with Group](#interact-with-group)
    * [Corridor](#corridor)
    * [Generic Object](#generic-object)
+   * [Virtual Object](#virtual-object)
    * [Tag](#tag)
       + [Apply tags to objects](#apply-tags-to-objects)
    * [Layer](#layer)
@@ -1012,6 +1013,40 @@ Examples:
 +ge:/P/SI/BLDG/ROOM/BOX@[0,6,10]@t@[0,0,90]@[10,10,10]@cube@box
 +ge:/P/SI/BLDG/ROOM/CHAIR@[5,5]@t@front@chair // with template
 ```
+
+## Virtual Object
+
+Virtual objects allow you to model any type of logical element that does not occupy a physical space (VMs, kubernetes clusters, docker containers, logical volumes, virtual switches, etc.).
+
+It may not have a parent. If it does have a parent, it must be a device or another virtual object.
+
+To create them, use one of the following options:
+
+```
++vobj:[name]@[type]
++vobj:[name]@[type]@[vlinks]
++vobj:[name]@[type]@[vlinks]@[role]
+```
+
+Where:
+
+- `[type]` is a string defining the type of the object.
+- `[vlinks]` is an array with zero or more device ou virtual object IDs.
+- `[role]` is a string defining the role of the object.
+
+Examples:
+
+```
++vobj:/P/SI/BLDG/ROOM/RACK/DEVICE/VM@vm
++vobj:/P/SI/BLDG/ROOM/RACK/DEVICE/LOGICALDISK@storage@[SI/BLDG/ROOM/RACK/DEVICE/PHYSICALDISK]
+```
+
+To add or remove vlinks to an existing virtual object use the following commands:
+```
+LOGICALDISK:vlinks+=SI/BLDG/ROOM/RACK/DEVICE/PHYSICALDISK
+LOGICALDISK:vlinks-=SI/BLDG/ROOM/RACK/DEVICE/PHYSICALDISK
+```
+
 
 
 ## Tag

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:ogree_app/common/api_backend.dart';
+import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/theme.dart';
@@ -12,6 +14,7 @@ part '_actions.dart';
 part '_find_node_field.dart';
 part '_header.dart';
 part '_selected_chips.dart';
+part '_advanced_find_field.dart';
 
 const Duration kAnimationDuration = Duration(milliseconds: 300);
 
@@ -19,10 +22,9 @@ const Color kDarkBlue = Color(0xff1565c0);
 
 class SettingsView extends StatelessWidget {
   final bool isTenantMode;
-  final bool noFilters;
+  final Namespace namespace;
   const SettingsView(
-      {Key? key, required this.isTenantMode, this.noFilters = false})
-      : super(key: key);
+      {super.key, required this.isTenantMode, required this.namespace});
 
   @override
   Widget build(BuildContext context) {
@@ -52,13 +54,18 @@ class SettingsView extends StatelessWidget {
           padding: const EdgeInsets.only(left: 16),
           children: [
             const SelectedChips(),
-            const _ActionsHeader(),
+            const SettingsHeader(text: 'Actions'),
             const _Actions(isTenantMode: false),
             const SizedBox(height: 8),
             SettingsHeader(text: localeMsg.searchById),
             const _FindNodeField(),
             const SizedBox(height: 8),
-            noFilters ? Container() : const TreeFilter(),
+            SettingsHeader(text: localeMsg.searchAdvanced),
+            _AdvancedFindField(
+              namespace: namespace,
+            ),
+            const SizedBox(height: 8),
+            namespace != Namespace.Physical ? Container() : const TreeFilter(),
           ],
         ),
       );

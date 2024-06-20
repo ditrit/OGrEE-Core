@@ -11,7 +11,7 @@ import (
 
 func TestValidateJsonSchemaExamples(t *testing.T) {
 	// Test schemas examples
-	testingEntities := []int{u.SITE, u.BLDG, u.ROOM, u.RACK, u.DEVICE, u.GROUP, u.BLDGTMPL, u.OBJTMPL, u.ROOMTMPL, u.TAG, u.LAYER, u.APPLICATION}
+	testingEntities := []int{u.SITE, u.BLDG, u.ROOM, u.RACK, u.DEVICE, u.GROUP, u.BLDGTMPL, u.OBJTMPL, u.ROOMTMPL, u.TAG, u.LAYER, u.VIRTUALOBJ}
 	for _, entInt := range testingEntities {
 		entStr := u.EntityToString(entInt)
 		println("*** Testing " + entStr)

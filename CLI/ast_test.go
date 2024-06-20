@@ -146,9 +146,7 @@ func TestLsNodeExecute(t *testing.T) {
 	).Return(
 		&controllers.Response{
 			Body: map[string]any{
-				"data": map[string]any{
-					"objects": []any{},
-				},
+				"data": []any{},
 			},
 		}, nil,
 	).Once()
@@ -714,28 +712,6 @@ func TestUnsetVarNodeExecution(t *testing.T) {
 
 	// unset a non existent variable does not generate an error
 	value, err = unsetVarNode.execute()
-
-	assert.Nil(t, err)
-	assert.Nil(t, value)
-}
-
-func TestUnsetAttrNodeExecution(t *testing.T) {
-	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
-	rack := test_utils.GetEntity("rack", "rack", "site.building.room", "domain")
-	updatedRack := test_utils.GetEntity("rack", "rack", "site.building.room", "domain")
-	delete(updatedRack, "id")
-	delete(updatedRack, "children")
-	rack["attributes"].(map[string]any)["color"] = "ffffff"
-
-	test_utils.MockGetObject(mockAPI, rack)
-	test_utils.MockPutObject(mockAPI, updatedRack, updatedRack)
-
-	executionNode := unsetAttrNode{
-		path: pathNode{path: &valueNode{"/Physical/site/building/room/rack"}},
-		attr: "color",
-	}
-
-	value, err := executionNode.execute()
 
 	assert.Nil(t, err)
 	assert.Nil(t, value)

@@ -7,6 +7,7 @@ import 'package:ogree_app/models/tenant.dart';
 import 'package:ogree_app/pages/projects_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+// Demo for Unity WebGL
 class UnityPage extends StatefulWidget {
   final String userEmail;
   final Tenant? tenant;

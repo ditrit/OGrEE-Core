@@ -11,6 +11,8 @@ name: 🕵️‍♂️ CLI Unit Tests
 jobs:
   cli-unit-test:
     runs-on: ubuntu-latest
+    # permissions:
+    #   contents: write
     defaults:
       run:
         working-directory: ./CLI
@@ -26,6 +28,12 @@ jobs:
 
     - name: Install gotestsum
       run: go install gotest.tools/gotestsum@latest
+
+    - name: Install gocov
+      run: go install github.com/axw/gocov/gocov@latest
+
+    - name: Install gocov-xml
+      run: go install github.com/AlekSi/gocov-xml@latest
       
     - name: Build
       run: make
@@ -36,14 +44,72 @@ jobs:
     - name: Log Test Coverage
       run: go tool cover -func coverage_cli.out | grep total
 
+    - name: Generate coverage XML report
+      run: gocov convert coverage_cli.out | gocov-xml > coverage_cli.xml
+
     - name: Test Report
       uses: dorny/test-reporter@v1
-      if: always() # run this step even if previous steps failed
+      if: github.actor != 'dependabot[bot]'
       with:
         name: CLI Tests Report  # Name of the check run which will be created
         path: ./CLI/tests-cli.xml     # Path to test results
         reporter: java-junit                 # Format of test results
-    - uses: actions/upload-artifact@v3
+
+    - uses: actions/upload-artifact@v4
       with:
         name: coverage_cli
         path: ./CLI/coverage_cli.out
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: coverage_cli_xml
+        path: ./CLI/coverage_cli.xml
+
+  generate-coverage-badge:
+    needs: cli-unit-test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: ./
+    if: github.ref == 'refs/heads/main' && github.event.head_commit.author.name != 'GitHubActions'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: "0"
+
+      - name: Generate Badge
+        uses: ./.github/actions/coverage/generate-badge
+        with:
+          COVERAGE_REPORT_ARTIFACT: coverage_cli_xml
+          COVERAGE_REPORT_NAME: coverage_cli.xml
+          LABEL: "CLI coverage"
+          OUTPUT_FILE: cli_coverage_badge.svg
+          RED_LIMIT: "50"
+          GREEN_LIMIT: "65"
+          BADGE_ARTIFACT_NAME: cli_coverage_badge
+
+  upload-coverage-badge:
+    needs: generate-coverage-badge
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: ./
+    if: github.ref == 'refs/heads/main' && github.event.head_commit.author.name != 'GitHubActions'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: "0"
+
+      - name: Upload Badge
+        uses: ./.github/actions/coverage/upload-badge
+        with:
+          BADGE_ARTIFACT_NAME: cli_coverage_badge
+          BADGE_FILE_NAME: cli_coverage_badge.svg
+          BRANCH_NAME: cli_coverage_badge
+          github_token: ${{ secrets.GITHUB_TOKEN }}

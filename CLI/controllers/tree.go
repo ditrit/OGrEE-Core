@@ -285,7 +285,7 @@ func BuildBaseTree(controller Controller) *HierarchyNode {
 	root.AddChild(physical)
 
 	stray := NewNode("Stray")
-	stray.FillFn = FillUrlTreeFn[map[string]any]("/api/stray-objects", controller.FillObjectTree, false, controller.API)
+	stray.FillFn = FillUrlTreeFn[map[string]any]("/api/stray_objects", controller.FillObjectTree, false, controller.API)
 	physical.AddChild(stray)
 
 	logical := NewNode("Logical")
@@ -293,15 +293,15 @@ func BuildBaseTree(controller Controller) *HierarchyNode {
 	root.AddChild(logical)
 
 	objectTemplates := NewNode("ObjectTemplates")
-	objectTemplates.FillFn = FillUrlTreeFn[map[string]any]("/api/obj-templates", nil, false, controller.API)
+	objectTemplates.FillFn = FillUrlTreeFn[map[string]any]("/api/obj_templates", nil, false, controller.API)
 	logical.AddChild(objectTemplates)
 
 	roomTemplates := NewNode("RoomTemplates")
-	roomTemplates.FillFn = FillUrlTreeFn[map[string]any]("/api/room-templates", nil, false, controller.API)
+	roomTemplates.FillFn = FillUrlTreeFn[map[string]any]("/api/room_templates", nil, false, controller.API)
 	logical.AddChild(roomTemplates)
 
 	bldgTemplates := NewNode("BldgTemplates")
-	bldgTemplates.FillFn = FillUrlTreeFn[map[string]any]("/api/bldg-templates", nil, false, controller.API)
+	bldgTemplates.FillFn = FillUrlTreeFn[map[string]any]("/api/bldg_templates", nil, false, controller.API)
 	logical.AddChild(bldgTemplates)
 
 	layers := NewCachedNode("Layers")
@@ -315,6 +315,10 @@ func BuildBaseTree(controller Controller) *HierarchyNode {
 	groups := NewNode("Groups")
 	groups.FillFn = FillUrlTreeFn[map[string]any]("/api/groups", nil, true, controller.API)
 	logical.AddChild(groups)
+
+	virtual := NewNode(models.VirtualObjsNode)
+	virtual.FillFn = FillUrlTreeFn[map[string]any]("/api/virtual_objs?limit=1", controller.FillObjectTree, true, controller.API)
+	logical.AddChild(virtual)
 
 	organisation := NewNode("Organisation")
 	organisation.FillFn = FillChildren
@@ -364,12 +368,7 @@ func FillUrlTree[T any](n *HierarchyNode, api APIPort, path string, depth int, u
 	}
 
 	invalidRespErr := fmt.Errorf("invalid response from API on GET %s", url)
-	data, hasData := resp.Body["data"].(map[string]any)
-	if !hasData {
-		return invalidRespErr
-	}
-
-	objects, hasObjects := data["objects"].([]any)
+	objects, hasObjects := resp.Body["data"].([]any)
 	if !hasObjects {
 		return invalidRespErr
 	}
@@ -388,7 +387,7 @@ func FillUrlTree[T any](n *HierarchyNode, api APIPort, path string, depth int, u
 
 		var objName string
 		if fullId {
-			objName = strings.Replace(obj["id"].(string), ".", "/", -1)
+			objName = obj["id"].(string)
 		} else {
 			objName = utils.NameOrSlug(obj)
 			objId, hasID := obj["id"].(string)

@@ -172,13 +172,13 @@ func (controller Controller) LoadTemplate(data map[string]interface{}) error {
 	var URL string
 	if cat := data["category"]; cat == "room" {
 		//Room template
-		URL = "/api/room-templates"
+		URL = "/api/room_templates"
 	} else if cat == "bldg" || cat == "building" {
 		//Bldg template
-		URL = "/api/bldg-templates"
+		URL = "/api/bldg_templates"
 	} else if cat == "rack" || cat == "device" || cat == "generic" {
 		// Obj template
-		URL = "/api/obj-templates"
+		URL = "/api/obj_templates"
 	} else {
 		return fmt.Errorf("this template does not have a valid category. Please add a category attribute with a value of building, room, rack, device or generic")
 	}

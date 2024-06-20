@@ -307,10 +307,7 @@ func TestGetDomainEntity(t *testing.T) {
 	response := e2e.ValidateManagedRequest(t, "GET", test_utils.GetEndpoint("domains"), nil, http.StatusOK, "successfully got domains")
 
 	// we have multiple domains
-	data, exists := response["data"].(map[string]interface{})
-	assert.True(t, exists)
-
-	objects, exists := data["objects"].([]interface{})
+	objects, exists := response["data"].([]interface{})
 	assert.True(t, exists)
 	assert.Equal(t, true, len(objects) > 0) // we have domains created in this file and others
 
@@ -325,10 +322,7 @@ func TestGetBuildingsEntity(t *testing.T) {
 	response := e2e.ValidateManagedRequest(t, "GET", test_utils.GetEndpoint("entity", "buildings"), nil, http.StatusOK, "successfully got buildings")
 
 	// we have multiple buildings
-	data, exists := response["data"].(map[string]interface{})
-	assert.True(t, exists)
-
-	objects, exists := data["objects"].([]interface{})
+	objects, exists := response["data"].([]interface{})
 	assert.True(t, exists)
 	assert.Equal(t, true, len(objects) > 0)
 }
@@ -347,10 +341,7 @@ func TestGetDomainEntitiesFilteredByColor(t *testing.T) {
 	response := e2e.ValidateManagedRequest(t, "GET", endpoint, nil, http.StatusOK, "successfully got query for domain")
 
 	// we have multiple domains
-	data, exists := response["data"].(map[string]interface{})
-	assert.True(t, exists)
-
-	objects, exists := data["objects"].([]interface{})
+	objects, exists := response["data"].([]interface{})
 	assert.True(t, exists)
 	assert.Equal(t, 2, len(objects)) // temporaryDomain1 and temporaryDomain3
 }
@@ -401,9 +392,7 @@ func TestGetSitesRooms(t *testing.T) {
 	message := "successfully got object"
 	response := e2e.ValidateManagedRequest(t, "GET", endpoint, nil, http.StatusOK, message)
 
-	data, exists := response["data"].(map[string]interface{})
-	assert.True(t, exists)
-	objects, exists := data["objects"].([]interface{})
+	objects, exists := response["data"].([]interface{})
 	assert.True(t, exists)
 	assert.Equal(t, 3, len(objects))
 
@@ -445,9 +434,9 @@ func TestLinkUnlinkRoomss(t *testing.T) {
 	integration.CreateTestPhysicalEntity(t, utils.ROOM, roomName, parentId, true)
 
 	unlinkEndpoint := test_utils.GetEndpoint("entityUnlink", "rooms", parentId+"."+roomName)
-	linkEndpoint := test_utils.GetEndpoint("entityLink", "stray-objects", "StrayRoom")
+	linkEndpoint := test_utils.GetEndpoint("entityLink", "stray_objects", "StrayRoom")
 	roomEndpoint := test_utils.GetEndpoint("entityInstance", "rooms", parentId+"."+roomName)
-	strayObjectEndpoint := test_utils.GetEndpoint("entityInstance", "stray-objects", strayName)
+	strayObjectEndpoint := test_utils.GetEndpoint("entityInstance", "stray_objects", strayName)
 	tests := []struct {
 		name        string
 		isUnlink    bool

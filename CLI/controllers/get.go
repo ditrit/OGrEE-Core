@@ -114,7 +114,11 @@ func (controller Controller) PollObjectWithChildren(path string, depth int) (map
 
 	obj, ok := resp.Body["data"].(map[string]any)
 	if !ok {
-		return nil, fmt.Errorf("invalid response from API on GET %s", url)
+		if listObj, ok := resp.Body["data"].([]any); !ok || len(listObj) < 1 {
+			return nil, fmt.Errorf("invalid response from API on GET %s", url)
+		} else {
+			obj = listObj[0].(map[string]any)
+		}
 	}
 
 	return obj, nil
