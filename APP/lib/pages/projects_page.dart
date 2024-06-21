@@ -55,64 +55,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             ...getAlertDemoWidgets(localeMsg),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(localeMsg.myAlerts,
-                    style: Theme.of(context).textTheme.headlineLarge),
-                Row(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(right: 10.0, bottom: 10),
-                      child: analysisViewButton(),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.only(right: 20.0),
-              child: InkWell(
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        AlertPage(userEmail: widget.userEmail),
-                  ),
-                ),
-                child: MaterialBanner(
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-                  content: _isSmallDisplay
-                      ? Text(localeMsg.oneAlert)
-                      : RichText(
-                          text: TextSpan(
-                            style: new TextStyle(
-                              fontSize: 14.0,
-                              color: Colors.black,
-                            ),
-                            children: <TextSpan>[
-                              TextSpan(text: localeMsg.temperatureAlert1),
-                              TextSpan(
-                                  text: 'BASIC.A.R1.A02.chassis01',
-                                  style: new TextStyle(
-                                      fontWeight: FontWeight.bold)),
-                              TextSpan(text: localeMsg.temperatureAlert2),
-                            ],
-                          ),
-                        ),
-                  leading: Icon(Icons.info),
-                  backgroundColor: Colors.amber.shade100,
-                  dividerColor: Colors.transparent,
-                  actions: <Widget>[
-                    TextButton(
-                      onPressed: null,
-                      child: Text(''),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(height: 30),
+            // SizedBox(height: 30),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
