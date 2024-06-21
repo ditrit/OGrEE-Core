@@ -198,11 +198,11 @@ class AlertPageState extends State<AlertPage> with TickerProviderStateMixin {
                   Colors.teal),
               const TextSpan(text: '\n'),
               ...getSubtitle("May also be impacted:"),
-              getWidgetSpan(" BASIC.A.R1.A02.chassis01.blade01",
+              getWidgetSpan(" BASIC.A.R1.A02.chassis01.bladeA",
                   "Physical - Device", Colors.teal),
-              getWidgetSpan(" BASIC.A.R1.A02.chassis01.blade02",
+              getWidgetSpan(" BASIC.A.R1.A02.chassis01.bladeB",
                   "Physical - Device", Colors.teal),
-              getWidgetSpan(" BASIC.A.R1.A02.chassis01.blade03",
+              getWidgetSpan(" BASIC.A.R1.A02.chassis01.bladeC",
                   "Physical - Device", Colors.teal),
               getWidgetSpan(" kubernetes-cluster.my-frontend-app",
                   "Logical - Application", Colors.deepPurple),
@@ -235,7 +235,7 @@ class AlertPageState extends State<AlertPage> with TickerProviderStateMixin {
               ...getSubtitle("Details:"),
               const TextSpan(
                   text:
-                      'The Kubernetes cluster "kubernetes-cluster" has the following devices as its nodes: "chassis01.blade01" , "chassis01.blade02" and "chassis01.blade03". All of these devices are in the same rack "BASIC.A.R1.A02".\n'),
+                      'The Kubernetes cluster "kubernetes-cluster" has the following devices as its nodes: "chassis01.bladeA" , "chassis01.bladeB" and "chassis01.bladeC". All of these devices are in the same rack "BASIC.A.R1.A02".\n'),
               ...getSubtitle("Suggestion:"),
               const TextSpan(
                   text:

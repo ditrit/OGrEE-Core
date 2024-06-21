@@ -303,7 +303,10 @@ class _ObjectPopupState extends State<ObjectPopup> {
         case 3:
           categories = [PhyCategories.device.name, PhyCategories.group.name];
         default:
-          categories = [PhyCategories.device.name];
+          categories = [
+            PhyCategories.device.name,
+            PhyCategories.virtual_obj.name
+          ];
       }
     }
     return categories.map<DropdownMenuItem<String>>((String value) {

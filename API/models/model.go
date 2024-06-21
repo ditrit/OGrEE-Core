@@ -97,7 +97,7 @@ func updateOldObjWithPatch(old map[string]interface{}, patch map[string]interfac
 					return err
 				}
 			default:
-				return errors.New("Wrong format for property " + k)
+				old[k] = v
 			}
 		default:
 			if k == "filter" && strings.HasPrefix(v.(string), "&") {
