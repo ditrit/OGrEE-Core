@@ -90,14 +90,18 @@ func updateOldObjWithPatch(old map[string]interface{}, patch map[string]interfac
 	for k, v := range patch {
 		switch patchValueCasted := v.(type) {
 		case map[string]interface{}:
-			switch oldValueCasted := old[k].(type) {
-			case map[string]interface{}:
-				err := updateOldObjWithPatch(oldValueCasted, patchValueCasted)
-				if err != nil {
-					return err
+			if k == "pillars" || k == "separators" {
+				old[k] = v
+			} else {
+				switch oldValueCasted := old[k].(type) {
+				case map[string]interface{}:
+					err := updateOldObjWithPatch(oldValueCasted, patchValueCasted)
+					if err != nil {
+						return err
+					}
+				default:
+					old[k] = v
 				}
-			default:
-				return errors.New("Wrong format for property " + k)
 			}
 		default:
 			if k == "filter" && strings.HasPrefix(v.(string), "&") {

@@ -387,14 +387,14 @@ func TestSetLabel(t *testing.T) {
 	assert.Nil(t, value)
 }
 
-func TestAddToStringMap(t *testing.T) {
-	newMap, replaced := addToStringMap[int]("{\"a\":3}", "b", 10)
+func TestAddToMap(t *testing.T) {
+	newMap, replaced := addToMap[int](map[string]any{"a": 3}, "b", 10)
 
-	assert.Equal(t, "{\"a\":3,\"b\":10}", newMap)
+	assert.Equal(t, map[string]any{"a": 3, "b": 10}, newMap)
 	assert.False(t, replaced)
 
-	newMap, replaced = addToStringMap[int](newMap, "b", 15)
-	assert.Equal(t, "{\"a\":3,\"b\":15}", newMap)
+	newMap, replaced = addToMap[int](newMap, "b", 15)
+	assert.Equal(t, map[string]any{"a": 3, "b": 15}, newMap)
 	assert.True(t, replaced)
 }
 

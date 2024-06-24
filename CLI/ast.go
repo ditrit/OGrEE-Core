@@ -546,15 +546,14 @@ func setLabelBackground(path string, values []any) (map[string]any, error) {
 	return nil, cmd.C.InteractObject(path, "labelBackground", c, false)
 }
 
-func addToStringMap[T any](stringMap string, key string, val T) (string, bool) {
-	m := map[string]T{}
-	if stringMap != "" {
-		json.Unmarshal([]byte(stringMap), &m)
+func addToMap[T any](mapToAdd any, key string, val T) (map[string]any, bool) {
+	attrMap, ok := mapToAdd.(map[string]any)
+	if !ok {
+		attrMap = map[string]any{}
 	}
-	_, keyExist := m[key]
-	m[key] = val
-	mBytes, _ := json.Marshal(m)
-	return string(mBytes), keyExist
+	_, keyExist := attrMap[key]
+	attrMap[key] = val
+	return attrMap, keyExist
 }
 
 func removeFromStringMap[T any](stringMap string, key string) (string, bool) {
@@ -602,10 +601,9 @@ func addRoomSeparator(path string, values []any) (map[string]any, error) {
 		return nil, err
 	}
 	attr := obj["attributes"].(map[string]any)
-	separators, _ := attr["separators"].(string)
 	newSeparator := Separator{startPos, endPos, sepType}
 	var keyExist bool
-	attr["separators"], keyExist = addToStringMap[Separator](separators, name, newSeparator)
+	attr["separators"], keyExist = addToMap[Separator](attr["separators"], name, newSeparator)
 	obj, err = cmd.C.UpdateObj(path, map[string]any{"attributes": attr}, false)
 	if err != nil {
 		return nil, err
@@ -647,10 +645,9 @@ func addRoomPillar(path string, values []any) (map[string]any, error) {
 		return nil, err
 	}
 	attr := obj["attributes"].(map[string]any)
-	pillars, _ := attr["pillars"].(string)
 	newPillar := Pillar{centerXY, sizeXY, rotation}
 	var keyExist bool
-	attr["pillars"], keyExist = addToStringMap[Pillar](pillars, name, newPillar)
+	attr["pillars"], keyExist = addToMap[Pillar](attr["pillars"], name, newPillar)
 	obj, err = cmd.C.UpdateObj(path, map[string]any{"attributes": attr}, false)
 	if err != nil {
 		return nil, err
@@ -668,21 +665,12 @@ func deleteRoomPillarOrSeparator(path, attribute, name string) (map[string]any, 
 		return nil, err
 	}
 	attributes := obj["attributes"].(map[string]any)
-	stringMap, _ := attributes[attribute+"s"].(string)
-	var ok bool
-	switch attribute {
-	case "pillar":
-		stringMap, ok = removeFromStringMap[Pillar](stringMap, name)
-	case "separator":
-		stringMap, ok = removeFromStringMap[Separator](stringMap, name)
-	default:
-		return nil, errors.New("\"separator\" or \"pillar\" expected")
-	}
-
-	if !ok {
+	attrMap, ok := attributes[attribute+"s"].(map[string]any)
+	if !ok || attrMap[name] == nil {
 		return nil, fmt.Errorf("%s %s does not exist", attribute, name)
 	}
-	attributes[attribute+"s"] = stringMap
+	delete(attrMap, name)
+	attributes[attribute+"s"] = attrMap
 	return cmd.C.UpdateObj(path, map[string]any{"attributes": attributes}, false)
 }
 
