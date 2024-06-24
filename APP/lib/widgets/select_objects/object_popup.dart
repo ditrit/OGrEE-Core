@@ -303,7 +303,10 @@ class _ObjectPopupState extends State<ObjectPopup> {
         case 3:
           categories = [PhyCategories.device.name, PhyCategories.group.name];
         default:
-          categories = [PhyCategories.device.name];
+          categories = [
+            PhyCategories.device.name,
+            PhyCategories.virtual_obj.name
+          ];
       }
     }
     return categories.map<DropdownMenuItem<String>>((String value) {
@@ -398,6 +401,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
         var attrs = Map<String, dynamic>.from(
             jsonResult["properties"]["attributes"]["properties"]);
         categoryAttrs[obj] = attrs.keys.toList();
+        categoryAttrs[obj]!.remove("virtual_config");
         if (jsonResult["properties"]["attributes"]["required"] != null) {
           // Get required ones
           var requiredAttrs = List<String>.from(
@@ -526,7 +530,8 @@ class _ObjectPopupState extends State<ObjectPopup> {
                   for (var attr in objDataAttrs.entries) {
                     if (!categoryAttrs[_objCategory]!.contains(attr.key) &&
                         !categoryAttrs[_objCategory]!
-                            .contains(starSymbol + attr.key)) {
+                            .contains(starSymbol + attr.key) &&
+                        attr.key != "virtual_config") {
                       // add custom attribute
                       customAttributesRows.add(CustomAttrRow(
                           customAttributesRows.length,
@@ -545,7 +550,8 @@ class _ObjectPopupState extends State<ObjectPopup> {
             for (var attr in objDataAttrs.entries) {
               if (!categoryAttrs[_objCategory]!.contains(attr.key) &&
                   !categoryAttrs[_objCategory]!
-                      .contains(starSymbol + attr.key)) {
+                      .contains(starSymbol + attr.key) &&
+                  attr.key != "virtual_config") {
                 // add custom attribute
                 customAttributesRows.add(CustomAttrRow(
                     customAttributesRows.length,
@@ -807,7 +813,9 @@ class _ObjectPopupState extends State<ObjectPopup> {
                     if (newValue != null && newValue.isNotEmpty) {
                       // check type
                       var numValue = num.tryParse(newValue);
-                      if (numValue != null) {
+                      if (attrKey == "virtual_config") {
+                        objDataAttrs[attrKey] = json.decode(newValue);
+                      } else if (numValue != null) {
                         // is number
                         objDataAttrs[attrKey] = numValue.toDouble();
                       } else if (newValue.length >= 2 &&
@@ -868,6 +876,57 @@ class _ObjectPopupState extends State<ObjectPopup> {
                     }),
                 icon: const Icon(Icons.add),
                 label: Text(localeMsg.attribute)),
+          ),
+        ),
+        virtualConfigInput(),
+      ],
+    );
+  }
+
+  virtualConfigInput() {
+    if (_objCategory != "virtual_obj" && _objCategory != "device") {
+      return Container();
+    }
+    Map<String, String> virtualAttrs = {
+      "clusterId": "string (e.g. kube-cluster)",
+      "type": "string (e.g. node)",
+      "role": "string (e.g. master)"
+    };
+    List<String> virtualAttrsKeys = virtualAttrs.keys.toList();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 8.0, left: 6, bottom: 6),
+          child: Text(AppLocalizations.of(context)!.virtualConfigTitle),
+        ),
+        SizedBox(
+          height:
+              (virtualAttrsKeys.length ~/ 2 + virtualAttrsKeys.length % 2) * 60,
+          child: GridView.count(
+            physics: const NeverScrollableScrollPhysics(),
+            childAspectRatio: 3.5,
+            shrinkWrap: true,
+            padding: const EdgeInsets.only(left: 4),
+            crossAxisCount: 2,
+            children: List.generate(virtualAttrsKeys.length, (index) {
+              return CustomFormField(
+                  tipStr: virtualAttrs[virtualAttrsKeys[index]] ?? "string",
+                  save: (newValue) {
+                    if (objDataAttrs["virtual_config"] == null) {
+                      objDataAttrs["virtual_config"] = {};
+                    }
+                    objDataAttrs["virtual_config"][virtualAttrsKeys[index]] =
+                        newValue;
+                  },
+                  label: virtualAttrsKeys[index],
+                  icon: Icons.tag_sharp,
+                  isCompact: true,
+                  shouldValidate: false,
+                  initialValue: objDataAttrs["virtual_config"]
+                          ?[virtualAttrsKeys[index]]
+                      ?.toString());
+            }),
           ),
         ),
       ],
