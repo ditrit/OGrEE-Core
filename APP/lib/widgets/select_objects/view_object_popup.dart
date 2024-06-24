@@ -110,16 +110,15 @@ class _ViewObjectPopupState extends State<ViewObjectPopup> {
   }
 
   List<DropdownMenuItem<String>> getCategoryMenuItems() {
-    List<String> categories = objsByNamespace[widget.namespace]!;
-    return categories.map<DropdownMenuItem<String>>((String value) {
-      return DropdownMenuItem<String>(
-        value: value,
+    return [
+      DropdownMenuItem<String>(
+        value: _objCategory,
         child: Text(
-          value,
+          _objCategory,
           overflow: TextOverflow.ellipsis,
         ),
-      );
-    }).toList();
+      )
+    ];
   }
 
   getObject() async {

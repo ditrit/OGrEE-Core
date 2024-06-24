@@ -438,8 +438,8 @@ func TestAddRoomSeparatorOrPillarWorks(t *testing.T) {
 		values        []any
 		newAttributes map[string]any
 	}{
-		{"AddRoomSeparator", addRoomSeparator, []any{"mySeparator", []float64{1., 2.}, []float64{1., 2.}, "wireframe"}, map[string]interface{}{"separators": "{\"mySeparator\":{\"startPosXYm\":[1,2],\"endPosXYm\":[1,2],\"type\":\"wireframe\"}}"}},
-		{"AddRoomPillar", addRoomPillar, []any{"myPillar", []float64{1., 2.}, []float64{1., 2.}, 2.5}, map[string]interface{}{"pillars": "{\"myPillar\":{\"centerXY\":[1,2],\"sizeXY\":[1,2],\"rotation\":2.5}}"}},
+		{"AddRoomSeparator", addRoomSeparator, []any{"mySeparator", []float64{1., 2.}, []float64{1., 2.}, "wireframe"}, map[string]interface{}{"separators": map[string]interface{}{"mySeparator": Separator{StartPos: []float64{1, 2}, EndPos: []float64{1, 2}, Type: "wireframe"}}}},
+		{"AddRoomPillar", addRoomPillar, []any{"myPillar", []float64{1., 2.}, []float64{1., 2.}, 2.5}, map[string]interface{}{"pillars": map[string]interface{}{"myPillar": Pillar{CenterXY: []float64{1, 2}, SizeXY: []float64{1, 2}, Rotation: 2.5}}}},
 	}
 
 	for _, tt := range tests {
@@ -467,7 +467,7 @@ func TestDeleteRoomPillarOrSeparatorWithError(t *testing.T) {
 		separatorName string
 		errorMessage  string
 	}{
-		{"InvalidArgument", "other", "separator", "\"separator\" or \"pillar\" expected"},
+		{"InvalidArgument", "other", "separator", "other separator does not exist"},
 		{"SeparatorDoesNotExist", "separator", "mySeparator", "separator mySeparator does not exist"},
 	}
 
@@ -490,15 +490,15 @@ func TestDeleteRoomPillarOrSeparatorSeparator(t *testing.T) {
 	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
 
 	room := test_utils.GetEntity("room", "room", "site.building", "domain")
-	room["attributes"].(map[string]any)["separators"] = "{\"mySeparator\":{\"startPosXYm\":[1,2],\"endPosXYm\":[1,2],\"type\":\"wireframe\"}}"
+	room["attributes"].(map[string]any)["separators"] = map[string]interface{}{"mySeparator": Separator{StartPos: []float64{1, 2}, EndPos: []float64{1, 2}, Type: "wireframe"}}
 
 	updatedRoom := test_utils.GetEntity("room", "room", "site.building", "domain")
-	updatedRoom["attributes"] = map[string]any{"separators": "{}"}
+	updatedRoom["attributes"] = map[string]any{"separators": map[string]interface{}{}}
 
 	test_utils.MockGetObject(mockAPI, room)
 	test_utils.MockGetObject(mockAPI, room)
 
-	test_utils.MockUpdateObject(mockAPI, map[string]interface{}{"attributes": map[string]interface{}{"separators": "{}"}}, updatedRoom)
+	test_utils.MockUpdateObject(mockAPI, map[string]interface{}{"attributes": map[string]interface{}{"separators": map[string]interface{}{}}}, updatedRoom)
 	obj, err := deleteRoomPillarOrSeparator("/Physical/site/building/room", "separator", "mySeparator")
 
 	assert.Nil(t, err)
@@ -509,14 +509,14 @@ func TestDeleteRoomPillarOrSeparatorPillar(t *testing.T) {
 	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
 
 	room := test_utils.GetEntity("room", "room", "site.building", "domain")
-	room["attributes"].(map[string]any)["pillars"] = "{\"myPillar\":{\"centerXY\":[1,2],\"sizeXY\":[1,2],\"rotation\":\"2.5\"}}"
+	room["attributes"].(map[string]any)["pillars"] = map[string]interface{}{"myPillar": Pillar{CenterXY: []float64{1, 2}, SizeXY: []float64{1, 2}, Rotation: 2.5}}
 
 	updatedRoom := maps.Clone(room)
-	updatedRoom["attributes"] = map[string]any{"pillars": "{}"}
+	updatedRoom["attributes"] = map[string]any{"pillars": map[string]interface{}{}}
 
 	test_utils.MockGetObject(mockAPI, room)
 	test_utils.MockGetObject(mockAPI, room)
-	test_utils.MockUpdateObject(mockAPI, map[string]interface{}{"attributes": map[string]interface{}{"pillars": "{}"}}, updatedRoom)
+	test_utils.MockUpdateObject(mockAPI, map[string]interface{}{"attributes": map[string]interface{}{"pillars": map[string]interface{}{}}}, updatedRoom)
 	obj, err := deleteRoomPillarOrSeparator("/Physical/site/building/room", "pillar", "myPillar")
 
 	assert.Nil(t, err)

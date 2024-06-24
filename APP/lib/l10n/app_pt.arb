@@ -215,5 +215,7 @@
   "viewAlerts": "Ver alertas",
   "temperatureAlert1": "A temperature do device ",
   "temperatureAlert2": " está acima do normal. Isso pode impactar a performance de suas aplicações: \"my-frontend-app\" e \"my-backend-app\"",
-  "oneAlert": "1 alerta menor"
+  "oneAlert": "1 alerta menor",
+
+  "virtualConfigTitle" : "Virtual Config:"
 }

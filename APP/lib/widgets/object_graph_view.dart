@@ -143,8 +143,8 @@ class _ObjectGraphViewState extends State<ObjectGraphView> {
     final node = Node.Id(value["id"]);
     graph.addNode(node);
     idCategory[value["id"]] = value["category"];
-    if (value["attributes"] != null && value["attributes"]["vlink"] != null) {
-      for (var vlink in List<String>.from(value["attributes"]["vlink"])) {
+    if (value["attributes"] != null && value["attributes"]["vlinks"] != null) {
+      for (var vlink in List<String>.from(value["attributes"]["vlinks"])) {
         graph.addEdge(node, Node.Id(vlink),
             paint: Paint()..color = Colors.purple);
       }
