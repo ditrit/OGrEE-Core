@@ -313,7 +313,7 @@ loop:
 		}
 	}
 	if trim {
-		s = strings.Trim(s, " \n")
+		s = strings.Trim(s, " \t\n")
 	}
 	if len(subExpr) == 0 {
 		return &valueNode{s}
@@ -903,6 +903,11 @@ func (p *parser) parseLoad() node {
 	return &loadNode{p.parseString("file path")}
 }
 
+func (p *parser) parseDryLoad() node {
+	defer un(trace(p, "load"))
+	return &dryLoadNode{p.parseString("file path")}
+}
+
 func (p *parser) parseTemplate() node {
 	defer un(trace(p, "template"))
 	return &loadTemplateNode{p.parseString("template path")}
@@ -1447,6 +1452,7 @@ func newParser(buffer string) *parser {
 		"=":                p.parseEqual,
 		".var:":            p.parseVar,
 		".cmds:":           p.parseLoad,
+		".dryrun:":         p.parseDryLoad,
 		".template:":       p.parseTemplate,
 		"len":              p.parseLen,
 		"link":             p.parseLink,

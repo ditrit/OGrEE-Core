@@ -22,6 +22,8 @@ func InitVars(variables []config.Vardef) (err error) {
 	}()
 	cmd.State.DynamicSymbolTable = make(map[string]interface{})
 	cmd.State.FuncTable = make(map[string]interface{})
+	cmd.State.DryRun = false
+	cmd.State.DryRunErrors = []error{}
 	for _, v := range variables {
 		var varNode node
 		switch val := v.Value.(type) {
@@ -152,6 +154,9 @@ func (n *focusNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	if cmd.State.DryRun {
+		return nil, nil
+	}
 	return nil, cmd.C.FocusUI(path)
 }
 
@@ -163,6 +168,9 @@ func (n *cdNode) execute() (interface{}, error) {
 	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
+	}
+	if cmd.State.DryRun {
+		return nil, nil
 	}
 	return nil, cmd.C.CD(path)
 }
@@ -194,6 +202,10 @@ func (n *lsNode) execute() (interface{}, error) {
 	recursive, err := n.recursive.toParams(pathEntered)
 	if err != nil {
 		return nil, err
+	}
+
+	if cmd.State.DryRun {
+		return nil, nil
 	}
 
 	objects, err := cmd.C.Ls(path, filters, recursive)
@@ -242,7 +254,11 @@ func (n *getUNode) execute() (interface{}, error) {
 		return nil, err
 	}
 	if u < 0 {
-		return nil, fmt.Errorf("The U value must be positive")
+		return nil, fmt.Errorf("the U value must be positive")
+	}
+
+	if cmd.State.DryRun {
+		return nil, nil
 	}
 
 	return nil, cmd.C.GetByAttr(path, u)
@@ -263,6 +279,9 @@ func (n *getSlotNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
+	if cmd.State.DryRun {
+		return nil, nil
+	}
 	return nil, cmd.C.GetByAttr(path, slot)
 }
 
@@ -280,6 +299,40 @@ func (n *loadNode) execute() (interface{}, error) {
 	return nil, LoadFile(path)
 }
 
+type dryLoadNode struct {
+	path node
+}
+
+func (n *dryLoadNode) execute() (interface{}, error) {
+	path, err := nodeToString(n.path, "path")
+	if err != nil {
+		return nil, err
+	}
+	cmd.State.DryRun = true
+	cmd.State.DryRunErrors = []error{}
+	// run ocli file
+	LoadFile(path)
+
+	// print result
+	fmt.Println("####################")
+	errCountMsg := fmt.Sprint("Errors found: ", len(cmd.State.DryRunErrors))
+	if len(cmd.State.DryRunErrors) > 0 {
+		fmt.Println("\033[31m" + errCountMsg + "\033[0m")
+	} else {
+		fmt.Println("\u001b[32m" + errCountMsg + "\u001b[0m")
+	}
+
+	// print error recap
+	for idx, err := range cmd.State.DryRunErrors {
+		fmt.Println("\033[31m# Error", idx, "\033[0m")
+		fmt.Println(err)
+	}
+
+	cmd.State.DryRun = false
+	cmd.State.DryRunErrors = []error{}
+	return nil, nil
+}
+
 type loadTemplateNode struct {
 	path node
 }
@@ -292,6 +345,9 @@ func (n *loadTemplateNode) execute() (interface{}, error) {
 	data := fileToJSON(path)
 	if data == nil {
 		return nil, fmt.Errorf("cannot read json file : %s", path)
+	}
+	if cmd.State.DryRun {
+		return nil, nil
 	}
 	return path, cmd.C.LoadTemplate(data)
 }
@@ -318,6 +374,9 @@ func (n *deleteObjNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	if cmd.State.DryRun {
+		return nil, nil
+	}
 	paths, err := cmd.C.DeleteObj(path)
 	if err != nil {
 		return nil, err
@@ -338,6 +397,9 @@ type deleteSelectionNode struct{}
 func (n *deleteSelectionNode) execute() (interface{}, error) {
 	var errBuilder strings.Builder
 	deleted := 0
+	if cmd.State.DryRun {
+		return nil, nil
+	}
 	if cmd.State.ClipBoard != nil {
 		for _, obj := range cmd.State.ClipBoard {
 			_, err := cmd.C.DeleteObj(obj)
@@ -365,6 +427,9 @@ func (n *deleteAttrNode) execute() (interface{}, error) {
 	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
+	}
+	if cmd.State.DryRun {
+		return nil, nil
 	}
 	return nil, cmd.C.UnsetAttribute(path, n.attr)
 }
@@ -432,6 +497,10 @@ func (n *getObjectNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
+	if cmd.State.DryRun {
+		return nil, nil
+	}
+
 	objs, _, err := cmd.C.GetObjectsWildcard(path, filters, recursive)
 	if err != nil {
 		return nil, err
@@ -474,6 +543,10 @@ func (n *selectObjectNode) execute() (interface{}, error) {
 	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
+	}
+
+	if cmd.State.DryRun {
+		return nil, nil
 	}
 
 	selection, err := cmd.C.Select(path)
@@ -757,6 +830,9 @@ func (n *updateObjNode) execute() (interface{}, error) {
 		}
 		values = append(values, val)
 	}
+	if cmd.State.DryRun {
+		return nil, nil
+	}
 	paths, err := cmd.C.UnfoldPath(path)
 	if err != nil {
 		return nil, err
@@ -828,7 +904,7 @@ func updateAttributes(path, attributeName string, values []any) (map[string]any,
 			vecStr = append(vecStr, value.(string))
 		}
 		var err error
-		if vecStr, err = controllers.ExpandStrVector(vecStr); err != nil {
+		if vecStr, err = models.ExpandStrVector(vecStr); err != nil {
 			return nil, err
 		}
 		attributes = map[string]any{attributeName: vecStr}
@@ -860,6 +936,9 @@ func (n *treeNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	if cmd.State.DryRun {
+		return nil, nil
+	}
 	root, err := cmd.C.Tree(path, n.depth)
 	if err != nil {
 		return nil, err
@@ -886,6 +965,9 @@ func (n *drawNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
+	if cmd.State.DryRun {
+		return nil, nil
+	}
 	return nil, cmd.C.Draw(path, n.depth, n.force)
 }
 
@@ -895,6 +977,9 @@ type undrawNode struct {
 
 func (n *undrawNode) execute() (interface{}, error) {
 	if n.path == nil {
+		if cmd.State.DryRun {
+			return nil, nil
+		}
 		return nil, cmd.C.Undraw("")
 	}
 
@@ -903,18 +988,27 @@ func (n *undrawNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
+	if cmd.State.DryRun {
+		return nil, nil
+	}
 	return nil, cmd.C.Undraw(path)
 }
 
 type lsogNode struct{}
 
 func (n *lsogNode) execute() (interface{}, error) {
+	if cmd.State.DryRun {
+		return nil, nil
+	}
 	return nil, cmd.LSOG()
 }
 
 type lsenterpriseNode struct{}
 
 func (n *lsenterpriseNode) execute() (interface{}, error) {
+	if cmd.State.DryRun {
+		return nil, nil
+	}
 	return nil, cmd.LSEnterprise()
 }
 
@@ -959,6 +1053,9 @@ func (n *selectChildrenNode) execute() (interface{}, error) {
 	paths, err := evalNodeArr[string](&n.paths, []string{})
 	if err != nil {
 		return nil, err
+	}
+	if cmd.State.DryRun {
+		return nil, nil
 	}
 	v, err := cmd.C.SetClipBoard(paths)
 	if err != nil {
@@ -1023,7 +1120,7 @@ func (n *createDomainNode) execute() (interface{}, error) {
 
 	attributes := map[string]interface{}{"attributes": map[string]interface{}{"color": color}}
 
-	return nil, cmd.C.CreateObject(path, models.DOMAIN, attributes)
+	return nil, cmd.C.CreateObject(path, models.DOMAIN, attributes, cmd.State.DryRun)
 }
 
 type createSiteNode struct {
@@ -1036,7 +1133,7 @@ func (n *createSiteNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	return nil, cmd.C.CreateObject(path, models.SITE, map[string]any{})
+	return nil, cmd.C.CreateObject(path, models.SITE, map[string]any{}, cmd.State.DryRun)
 }
 
 type createBuildingNode struct {
@@ -1064,7 +1161,7 @@ func (n *createBuildingNode) execute() (interface{}, error) {
 
 	addSizeOrTemplate(n.sizeOrTemplate, attributes, models.BLDG)
 
-	return nil, cmd.C.CreateObject(path, models.BLDG, map[string]any{"attributes": attributes})
+	return nil, cmd.C.CreateObject(path, models.BLDG, map[string]any{"attributes": attributes}, cmd.State.DryRun)
 }
 
 type createRoomNode struct {
@@ -1122,7 +1219,8 @@ func (n *createRoomNode) execute() (interface{}, error) {
 		}
 	}
 
-	return nil, cmd.C.CreateObject(path, models.ROOM, map[string]any{"attributes": attributes})
+	return nil, cmd.C.CreateObject(path, models.ROOM,
+		map[string]any{"attributes": attributes}, cmd.State.DryRun)
 }
 
 type createRackNode struct {
@@ -1158,7 +1256,8 @@ func (n *createRackNode) execute() (interface{}, error) {
 
 	addSizeOrTemplate(n.sizeOrTemplate, attributes, models.RACK)
 
-	return nil, cmd.C.CreateObject(path, models.RACK, map[string]any{"attributes": attributes})
+	return nil, cmd.C.CreateObject(path, models.RACK,
+		map[string]any{"attributes": attributes}, cmd.State.DryRun)
 }
 
 type createGenericNode struct {
@@ -1210,7 +1309,8 @@ func (n *createGenericNode) execute() (interface{}, error) {
 
 	addSizeOrTemplate(n.sizeOrTemplate, attributes, models.GENERIC)
 
-	return nil, cmd.C.CreateObject(path, models.GENERIC, map[string]any{"attributes": attributes})
+	return nil, cmd.C.CreateObject(path, models.GENERIC,
+		map[string]any{"attributes": attributes}, cmd.State.DryRun)
 }
 
 type createDeviceNode struct {
@@ -1263,7 +1363,8 @@ func (n *createDeviceNode) execute() (interface{}, error) {
 		attributes["orientation"] = side
 	}
 
-	return nil, cmd.C.CreateObject(path, models.DEVICE, map[string]any{"attributes": attributes})
+	return nil, cmd.C.CreateObject(path, models.DEVICE,
+		map[string]any{"attributes": attributes}, cmd.State.DryRun)
 }
 
 type createVirtualNode struct {
@@ -1306,7 +1407,8 @@ func (n *createVirtualNode) execute() (interface{}, error) {
 		attributes[controllers.VIRTUALCONFIG].(map[string]any)["role"] = role
 	}
 
-	return nil, cmd.C.CreateObject(path, models.VIRTUALOBJ, map[string]any{"attributes": attributes})
+	return nil, cmd.C.CreateObject(path, models.VIRTUALOBJ,
+		map[string]any{"attributes": attributes}, cmd.State.DryRun)
 }
 
 type createGroupNode struct {
@@ -1331,7 +1433,7 @@ func (n *createGroupNode) execute() (interface{}, error) {
 	}
 	data["attributes"] = map[string]interface{}{"content": objs}
 
-	return nil, cmd.C.CreateObject(path, models.GROUP, data)
+	return nil, cmd.C.CreateObject(path, models.GROUP, data, cmd.State.DryRun)
 }
 
 type createTagNode struct {
@@ -1350,6 +1452,9 @@ func (n *createTagNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
+	if cmd.State.DryRun {
+		return nil, nil
+	}
 	return nil, cmd.C.CreateTag(slug, color)
 }
 
@@ -1375,6 +1480,9 @@ func (n *createLayerNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
+	if cmd.State.DryRun {
+		return nil, nil
+	}
 	return nil, cmd.C.CreateLayer(slug, applicability, filterValue)
 }
 
@@ -1419,7 +1527,8 @@ func (n *createCorridorNode) execute() (interface{}, error) {
 	}
 	attributes := map[string]any{"posXYZ": pos, "posXYUnit": unit, "rotation": rotation, "size": size, "temperature": temp}
 
-	return nil, cmd.C.CreateObject(path, models.CORRIDOR, map[string]any{"attributes": attributes})
+	return nil, cmd.C.CreateObject(path, models.CORRIDOR,
+		map[string]any{"attributes": attributes}, cmd.State.DryRun)
 }
 
 type createOrphanNode struct {
@@ -1440,7 +1549,8 @@ func (n *createOrphanNode) execute() (interface{}, error) {
 
 	attributes := map[string]any{"template": template}
 
-	return nil, cmd.C.CreateObject(path, models.STRAY_DEV, map[string]any{"attributes": attributes})
+	return nil, cmd.C.CreateObject(path, models.STRAY_DEV,
+		map[string]any{"attributes": attributes}, cmd.State.DryRun)
 }
 
 type createUserNode struct {
@@ -1463,6 +1573,9 @@ func (n *createUserNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
+	if cmd.State.DryRun {
+		return nil, nil
+	}
 	return nil, cmd.C.CreateUser(email, role, domain)
 }
 
@@ -1486,12 +1599,18 @@ func (n *addRoleNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
+	if cmd.State.DryRun {
+		return nil, nil
+	}
 	return nil, cmd.C.AddRole(email, role, domain)
 }
 
 type changePasswordNode struct{}
 
 func (n *changePasswordNode) execute() (interface{}, error) {
+	if cmd.State.DryRun {
+		return nil, nil
+	}
 	return nil, cmd.ChangePassword()
 }
 
@@ -1500,12 +1619,18 @@ type connect3DNode struct {
 }
 
 func (n *connect3DNode) execute() (interface{}, error) {
+	if cmd.State.DryRun {
+		return nil, nil
+	}
 	return nil, cmd.Connect3D(n.url)
 }
 
 type disconnect3DNode struct{}
 
 func (n *disconnect3DNode) execute() (interface{}, error) {
+	if cmd.State.DryRun {
+		return nil, nil
+	}
 	cmd.Disconnect3D()
 	return nil, nil
 }
@@ -1515,6 +1640,9 @@ type uiDelayNode struct {
 }
 
 func (n *uiDelayNode) execute() (interface{}, error) {
+	if cmd.State.DryRun {
+		return nil, nil
+	}
 	return nil, cmd.C.UIDelay(n.time)
 }
 
@@ -1524,6 +1652,9 @@ type uiToggleNode struct {
 }
 
 func (n *uiToggleNode) execute() (interface{}, error) {
+	if cmd.State.DryRun {
+		return nil, nil
+	}
 	return nil, cmd.C.UIToggle(n.feature, n.enable)
 }
 
@@ -1536,6 +1667,9 @@ func (n *uiHighlightNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	if cmd.State.DryRun {
+		return nil, nil
+	}
 	return nil, cmd.C.UIHighlight(path)
 }
 
@@ -1543,6 +1677,9 @@ type uiClearCacheNode struct {
 }
 
 func (n *uiClearCacheNode) execute() (interface{}, error) {
+	if cmd.State.DryRun {
+		return nil, nil
+	}
 	return nil, cmd.C.UIClearCache()
 }
 
@@ -1562,6 +1699,9 @@ func (n *cameraMoveNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
+	if cmd.State.DryRun {
+		return nil, nil
+	}
 	return nil, cmd.C.CameraMove(n.command, position, rotation)
 }
 
@@ -1612,6 +1752,9 @@ func (n *linkObjectNode) execute() (interface{}, error) {
 		}
 	}
 
+	if cmd.State.DryRun {
+		return nil, nil
+	}
 	return nil, cmd.C.LinkObject(source, dest, n.attrs, values, slots)
 }
 
@@ -1623,6 +1766,9 @@ func (n *unlinkObjectNode) execute() (interface{}, error) {
 	source, err := nodeToString(n.source, "source object path")
 	if err != nil {
 		return nil, err
+	}
+	if cmd.State.DryRun {
+		return nil, nil
 	}
 	return nil, cmd.C.UnlinkObject(source)
 }
@@ -1728,5 +1874,8 @@ func (n *cpNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
+	if cmd.State.DryRun {
+		return nil, nil
+	}
 	return nil, cmd.C.Cp(source, dest)
 }

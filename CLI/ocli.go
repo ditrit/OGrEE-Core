@@ -107,8 +107,13 @@ func (s *stackTraceError) Error() string {
 func LoadFile(path string) error {
 	filename := filepath.Base(path)
 	file, err := parseFile(path)
-	if err != nil {
+	if err != nil && !c.State.DryRun {
+		// if c.State.DryRun {
+		fmt.Println(err)
+		// 	// c.State.DryRunErrors = append(c.State.DryRunErrors, err)
+		// } else {
 		return err
+		// }
 	}
 	for i := range file {
 		fmt.Println(file[i].line)
@@ -128,8 +133,14 @@ func LoadFile(path string) error {
 			} else {
 				stackTraceErr = newStackTraceError(err, filename, file[i].line, file[i].lineNumber)
 			}
-			return stackTraceErr
+			if c.State.DryRun {
+				fmt.Println(stackTraceErr)
+				c.State.DryRunErrors = append(c.State.DryRunErrors, stackTraceErr)
+			} else {
+				return err
+			}
 		}
 	}
-	return nil
+	// fmt.Println("END LOAD ", errCount)
+	return err
 }
