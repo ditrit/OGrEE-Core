@@ -2047,7 +2047,13 @@ func ValidateEntity(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if u.IsEntityHierarchical(entInt) {
-		if permission := models.CheckUserPermissions(user.Roles, entInt, obj["domain"].(string)); permission < models.WRITE {
+		var domain string
+		if entInt == u.DOMAIN {
+			domain = obj["parentId"].(string) + obj["name"].(string)
+		} else {
+			domain = obj["domain"].(string)
+		}
+		if permission := models.CheckUserPermissions(user.Roles, entInt, domain); permission < models.WRITE {
 			w.WriteHeader(http.StatusUnauthorized)
 			u.Respond(w, u.Message("This user"+
 				" does not have sufficient permissions to create"+
@@ -2058,12 +2064,11 @@ func ValidateEntity(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	uErr := models.ValidateEntity(entInt, obj)
-	if uErr == nil {
-		u.Respond(w, u.Message("This object can be created"))
-		return
+	// ok, err := models.ValidateEntity(entInt, obj)
+	if ok, err := models.ValidateJsonSchema(entInt, obj); !ok {
+		u.RespondWithError(w, err)
 	} else {
-		u.RespondWithError(w, uErr)
+		u.Respond(w, u.Message("This object can be created"))
 	}
 }
 

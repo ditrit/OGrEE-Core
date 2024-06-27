@@ -176,7 +176,7 @@ func validateDeviceSlotExists(deviceData map[string]interface{}, parentData map[
 	return nil
 }
 
-func validateJsonSchema(entity int, t map[string]interface{}) (bool, *u.Error) {
+func ValidateJsonSchema(entity int, t map[string]interface{}) (bool, *u.Error) {
 	// Get JSON schema
 	var schemaName string
 	switch entity {
@@ -236,7 +236,7 @@ func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 	}
 
 	// Validate JSON Schema
-	if ok, err := validateJsonSchema(entity, t); !ok {
+	if ok, err := ValidateJsonSchema(entity, t); !ok {
 		return err
 	}
 
