@@ -32,9 +32,20 @@ func (controller Controller) PostObj(ent int, entity string, data map[string]any
 	return nil
 }
 
-func (controller Controller) CreateObject(path string, ent int, data map[string]any) error {
-	var parent map[string]any
+func (controller Controller) ValidateObj(ent int, entity string, data map[string]any, path string) error {
+	fmt.Println(data)
+	resp, err := controller.API.Request(http.MethodPost, "/api/validate/"+entity+"s", data, http.StatusOK)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("RESP:")
+		fmt.Println(resp)
+		return err
+	}
 
+	return nil
+}
+
+func (controller Controller) CreateObject(path string, ent int, data map[string]any, isValidate bool) error {
 	name := pathutil.Base(path)
 	path = pathutil.Dir(path)
 	if name == "." || name == "" {
@@ -46,39 +57,29 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 	data["description"] = ""
 
 	//Retrieve Parent
-	if ent != models.SITE && ent != models.STRAY_DEV {
-		var err error
-		parent, err = controller.PollObject(path)
-		if err != nil {
-			return err
-		}
-		if parent == nil && (ent != models.DOMAIN || path != "/Organisation/Domain") &&
-			ent != models.VIRTUALOBJ {
-			return fmt.Errorf("parent not found")
-		}
+	parentId, parent, err := controller.GetParentFromPath(path, ent, isValidate)
+	if err != nil {
+		return err
 	}
 
+	// Set domain
 	if ent != models.DOMAIN {
-		if parent != nil {
-			data["domain"] = parent["domain"]
-		} else {
+		if parent == nil || isValidate {
 			data["domain"] = State.Customer
+		} else {
+			data["domain"] = parent["domain"]
 		}
 	}
 
+	// Attributes
 	attr, hasAttributes := data["attributes"].(map[string]any)
 	if !hasAttributes {
 		attr = map[string]any{}
 	}
 
-	var err error
 	switch ent {
 	case models.DOMAIN:
-		if parent != nil {
-			data["parentId"] = parent["id"]
-		} else {
-			data["parentId"] = ""
-		}
+		data["parentId"] = parentId
 
 	case models.SITE:
 		break
@@ -86,49 +87,31 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 	case models.BLDG:
 		//Check for template
 		if _, ok := attr["template"]; ok {
+			if isValidate {
+				return nil
+			}
 			err := controller.ApplyTemplate(attr, data, models.BLDG)
 			if err != nil {
 				return err
 			}
 		} else {
 			//Serialise size and posXY manually instead
-			attr["size"] = serialiseVector(attr, "size")
+			attr["size"] = models.SerialiseVector(attr, "size")
 		}
 
-		if _, ok := attr["size"].([]any); !ok {
-			if size, ok := attr["size"].([]float64); !ok || len(size) == 0 {
-				if State.DebugLvl > 0 {
-					l.GetErrorLogger().Println(
-						"User gave invalid size value for creating building")
-					return fmt.Errorf("Invalid size attribute provided." +
-						" \nIt must be an array/list/vector with 3 elements." +
-						" Please refer to the wiki or manual reference" +
-						" for more details on how to create objects " +
-						"using this syntax")
-				}
-				return nil
-			}
+		if err := models.CheckSize(attr); err != nil {
+			return err
 		}
 
-		attr["posXY"] = serialiseVector(attr, "posXY")
-		if posXY, ok := attr["posXY"].([]float64); !ok || len(posXY) != 2 {
-			if State.DebugLvl > 0 {
-				l.GetErrorLogger().Println(
-					"User gave invalid posXY value for creating building")
-				return fmt.Errorf("Invalid posXY attribute provided." +
-					" \nIt must be an array/list/vector with 2 elements." +
-					" Please refer to the wiki or manual reference" +
-					" for more details on how to create objects " +
-					"using this syntax")
-			}
-			return nil
+		if err := models.SetPosXY(attr); err != nil {
+			return err
 		}
 
 		attr["posXYUnit"] = "m"
 		attr["sizeUnit"] = "m"
 		attr["heightUnit"] = "m"
 		//attr["height"] = 0 //Should be set from parser by default
-		data["parentId"] = parent["id"]
+		data["parentId"] = parentId
 
 	case models.ROOM:
 		baseAttrs := map[string]any{
@@ -138,47 +121,26 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			"heightUnit": "m",
 		}
 
-		MergeMaps(attr, baseAttrs, false)
+		models.MergeMaps(attr, baseAttrs, false)
 
 		//If user provided templates, get the JSON
 		//and parse into templates
 		//NOTE this function also assigns value for "size" attribute
+		if _, ok := attr["template"]; ok && isValidate {
+			return nil
+		}
 		err := controller.ApplyTemplate(attr, data, ent)
 		if err != nil {
 			return err
 		}
 
-		attr["posXY"] = serialiseVector(attr, "posXY")
+		models.SetPosXY(attr)
 
-		if posXY, ok := attr["posXY"].([]float64); !ok || len(posXY) != 2 {
-			if State.DebugLvl > 0 {
-				l.GetErrorLogger().Println(
-					"User gave invalid posXY value for creating room")
-				return fmt.Errorf("Invalid posXY attribute provided." +
-					" \nIt must be an array/list/vector with 2 elements." +
-					" Please refer to the wiki or manual reference" +
-					" for more details on how to create objects " +
-					"using this syntax")
-			}
-			return nil
+		if err := models.CheckSize(attr); err != nil {
+			return err
 		}
 
-		if _, ok := attr["size"].([]any); !ok {
-			if size, ok := attr["size"].([]float64); !ok || len(size) == 0 {
-				if State.DebugLvl > 0 {
-					l.GetErrorLogger().Println(
-						"User gave invalid size value for creating room")
-					return fmt.Errorf("Invalid size attribute provided." +
-						" \nIt must be an array/list/vector with 3 elements." +
-						" Please refer to the wiki or manual reference" +
-						" for more details on how to create objects " +
-						"using this syntax")
-				}
-				return nil
-			}
-		}
-
-		data["parentId"] = parent["id"]
+		data["parentId"] = parentId
 		if State.DebugLvl >= 3 {
 			println("DEBUG VIEW THE JSON")
 			Disp(data)
@@ -193,38 +155,26 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			baseAttrs["heightUnit"] = "cm"
 		}
 
-		MergeMaps(attr, baseAttrs, false)
+		models.MergeMaps(attr, baseAttrs, false)
 
 		//If user provided templates, get the JSON
 		//and parse into templates
+		if _, ok := attr["template"]; ok && isValidate {
+			return nil
+		}
 		err := controller.ApplyTemplate(attr, data, ent)
 		if err != nil {
 			return err
 		}
 
-		if _, ok := attr["size"].([]any); !ok {
-			if size, ok := attr["size"].([]float64); !ok || len(size) == 0 {
-				if State.DebugLvl > 0 {
-					l.GetErrorLogger().Println(
-						"User gave invalid size value for creating rack")
-					return fmt.Errorf("Invalid size attribute/template provided." +
-						" \nThe size must be an array/list/vector with " +
-						"3 elements." + "\n\nIf you have provided a" +
-						" template, please check that you are referring to " +
-						"an existing template" +
-						"\n\nFor more information " +
-						"please refer to the wiki or manual reference" +
-						" for more details on how to create objects " +
-						"using this syntax")
-				}
-				return nil
-			}
+		if err := models.CheckSize(attr); err != nil {
+			return err
 		}
 
 		//Serialise posXY if given
-		attr["posXYZ"] = serialiseVector(attr, "posXYZ")
+		attr["posXYZ"] = models.SerialiseVector(attr, "posXYZ")
 
-		data["parentId"] = parent["id"]
+		data["parentId"] = parentId
 
 	case models.DEVICE:
 		//Special routine to perform on device
@@ -233,10 +183,14 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 		//First check if attr has only posU & sizeU
 		//reject if true while also converting sizeU to string if numeric
 		//if len(attr) == 2 {
+		_, hasTemplate := attr["template"]
 		if sizeU, ok := attr["sizeU"]; ok {
-			sizeUValid := checkNumeric(attr["sizeU"])
+			sizeUValid := models.CheckNumeric(attr["sizeU"])
 
-			if _, ok := attr["template"]; !ok && !sizeUValid {
+			if hasTemplate && isValidate {
+				return nil
+			}
+			if !hasTemplate && !sizeUValid {
 				l.GetWarningLogger().Println("Invalid template / sizeU parameter provided for device ")
 				return fmt.Errorf("Please provide a valid device template or sizeU")
 			}
@@ -264,7 +218,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			if posU, err := strconv.Atoi(x[0]); len(x) == 1 && err == nil {
 				attr["posU"] = posU
 			} else {
-				if slots, err := ExpandStrVector(x); err != nil {
+				if slots, err := models.ExpandStrVector(x); err != nil {
 					return err
 				} else {
 					attr["slot"] = slots
@@ -274,33 +228,16 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 
 		//If user provided templates, get the JSON
 		//and parse into templates
-		if _, ok := attr["template"]; ok {
+		if hasTemplate {
+			if isValidate {
+				return nil
+			}
 			err := controller.ApplyTemplate(attr, data, models.DEVICE)
 			if err != nil {
 				return err
 			}
 		} else {
-			var slot map[string]any
-			if attr["slot"] != nil {
-				slots := attr["slot"].([]string)
-				if len(slots) != 1 {
-					return fmt.Errorf("Invalid device syntax: only one slot can be provided if no template")
-				}
-				slot, err = C.GetSlot(parent, slots[0])
-				if err != nil {
-					return err
-				}
-			}
-			if slot != nil {
-				size := slot["elemSize"].([]any)
-				attr["size"] = []float64{size[0].(float64) / 10., size[1].(float64) / 10.}
-			} else {
-				if parAttr, ok := parent["attributes"].(map[string]interface{}); ok {
-					if rackSize, ok := parAttr["size"]; ok {
-						attr["size"] = rackSize
-					}
-				}
-			}
+			setDeviceNoTemplateSlotSize(attr, parent, isValidate)
 		}
 		//End of device special routine
 
@@ -310,15 +247,18 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			"heightUnit":  "mm",
 		}
 
-		MergeMaps(attr, baseAttrs, false)
+		models.MergeMaps(attr, baseAttrs, false)
 
-		data["parentId"] = parent["id"]
+		data["parentId"] = parentId
 
 	case models.GROUP:
-		data["parentId"] = parent["id"]
+		data["parentId"] = parentId
 
 	case models.STRAY_DEV:
 		if _, ok := attr["template"]; ok {
+			if isValidate {
+				return nil
+			}
 			err := controller.ApplyTemplate(attr, data, models.DEVICE)
 			if err != nil {
 				return err
@@ -327,7 +267,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 
 	case models.VIRTUALOBJ:
 		if parent != nil {
-			data["parentId"] = parent["id"]
+			data["parentId"] = parentId
 		}
 	default:
 		//Execution should not reach here!
@@ -336,6 +276,9 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 
 	data["attributes"] = attr
 
+	if isValidate {
+		return controller.ValidateObj(ent, data["category"].(string), data, path)
+	}
 	return controller.PostObj(ent, data["category"].(string), data, path)
 }
 
@@ -346,3 +289,39 @@ func (controller Controller) CreateTag(slug, color string) error {
 		"color":       color,
 	}, models.TagsPath+slug)
 }
+
+func setDeviceNoTemplateSlotSize(attr map[string]any, parent map[string]any, isValidate bool) error {
+	var slot map[string]any
+	var err error
+	// get slot (no template -> only one slot accepted)
+	if attr["slot"] != nil {
+		slots := attr["slot"].([]string)
+		if len(slots) != 1 {
+			return fmt.Errorf("Invalid device syntax: only one slot can be provided if no template")
+		}
+		if !isValidate {
+			slot, err = C.GetSlot(parent, slots[0])
+			if err != nil {
+				return err
+			}
+		}
+	}
+	if slot != nil {
+		// apply size from slot
+		size := slot["elemSize"].([]any)
+		attr["size"] = []float64{size[0].(float64) / 10., size[1].(float64) / 10.}
+	} else {
+		if isValidate {
+			// apply random size to validate
+			attr["size"] = []float64{10, 10, 10}
+		} else if parAttr, ok := parent["attributes"].(map[string]interface{}); ok {
+			if rackSize, ok := parAttr["size"]; ok {
+				// apply size from rack
+				attr["size"] = rackSize
+			}
+		}
+	}
+	return nil
+}/
+
+

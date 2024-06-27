@@ -576,3 +576,129 @@ func TestCreateTag(t *testing.T) {
 	err := controller.CreateTag(slug, color)
 	assert.Nil(t, err)
 }
+
+// Tests GetSlot
+func TestGetSlotWithNoTemplate(t *testing.T) {
+	rack := map[string]any{
+		"attributes": map[string]any{},
+	}
+	result, err := controllers.C.GetSlot(rack, "")
+	assert.Nil(t, err)
+	assert.Nil(t, result)
+
+	rack["attributes"].(map[string]any)["template"] = ""
+	result, err = controllers.C.GetSlot(rack, "")
+	assert.Nil(t, err)
+	assert.Nil(t, result)
+}
+
+func TestGetSlotWithTemplateNonExistentSlot(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+
+	template := map[string]any{
+		"slug":        "rack-template",
+		"description": "",
+		"category":    "rack",
+		"sizeWDHmm":   []any{605, 1200, 2003},
+		"fbxModel":    "",
+		"attributes": map[string]any{
+			"vendor": "IBM",
+			"model":  "9360-4PX",
+		},
+		"slots": []any{},
+	}
+
+	test_utils.MockGetObjTemplate(mockAPI, template)
+	rack := map[string]any{
+		"attributes": map[string]any{
+			"template": "rack-template",
+		},
+	}
+	_, err := controller.GetSlot(rack, "u02")
+	assert.NotNil(t, err)
+	assert.Equal(t, "the slot u02 does not exist", err.Error())
+}
+
+func TestGetSlotWithTemplateWorks(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+	slot := map[string]any{
+		"location":   "u01",
+		"type":       "u",
+		"elemOrient": []any{33.3, -44.4, 107},
+		"elemPos":    []any{58, 51, 44.45},
+		"elemSize":   []any{482.6, 1138, 44.45},
+		"mandatory":  "no",
+		"labelPos":   "frontrear",
+	}
+
+	template := map[string]any{
+		"slug":        "rack-template",
+		"description": "",
+		"category":    "rack",
+		"sizeWDHmm":   []any{605, 1200, 2003},
+		"fbxModel":    "",
+		"attributes": map[string]any{
+			"vendor": "IBM",
+			"model":  "9360-4PX",
+		},
+		"slots": []any{
+			slot,
+		},
+	}
+
+	test_utils.MockGetObjTemplate(mockAPI, template)
+	rack := map[string]any{
+		"attributes": map[string]any{
+			"template": "rack-template",
+		},
+	}
+	result, err := controller.GetSlot(rack, "u01")
+	assert.Nil(t, err)
+	assert.Equal(t, slot["location"], result["location"])
+}
+
+// Tests GetByAttr
+func TestGetByAttrErrorWhenObjIsNotRack(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+
+	test_utils.MockGetObjectHierarchy(mockAPI, chassis)
+
+	err := controller.GetByAttr(models.PhysicalPath+"BASIC/A/R1/A01/chT", "colors")
+	assert.NotNil(t, err)
+	assert.Equal(t, "command may only be performed on rack objects", err.Error())
+}
+
+func TestGetByAttrErrorWhenObjIsRackWithSlotName(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+
+	rack := test_utils.CopyMap(rack1)
+	rack["attributes"] = map[string]any{
+		"slot": []any{
+			map[string]any{
+				"location":   "u01",
+				"type":       "u",
+				"elemOrient": []any{33.3, -44.4, 107},
+				"elemPos":    []any{58, 51, 44.45},
+				"elemSize":   []any{482.6, 1138, 44.45},
+				"mandatory":  "no",
+				"labelPos":   "frontrear",
+				"color":      "@color1",
+			},
+		},
+	}
+	test_utils.MockGetObjectHierarchy(mockAPI, rack)
+
+	err := controller.GetByAttr(models.PhysicalPath+"BASIC/A/R1/A01", "u01")
+	assert.Nil(t, err)
+}
+
+func TestGetByAttrErrorWhenObjIsRackWithHeight(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+
+	rack := test_utils.CopyMap(rack1)
+	rack["height"] = "47"
+	test_utils.MockGetObjectHierarchy(mockAPI, rack)
+
+	err := controller.GetByAttr(models.PhysicalPath+"BASIC/A/R1/A01", 47)
+	assert.Nil(t, err)
+}

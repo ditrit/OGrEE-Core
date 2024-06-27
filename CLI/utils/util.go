@@ -255,3 +255,13 @@ func ObjectAttr(obj map[string]any, attr string) (any, bool) {
 	}
 	return val, true
 }
+
+// Convert []interface{} array to
+// []map[string]interface{} array
+func AnyArrToMapArr(x []interface{}) []map[string]interface{} {
+	ans := []map[string]interface{}{}
+	for i := range x {
+		ans = append(ans, x[i].(map[string]interface{}))
+	}
+	return ans
+}

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"cli/models"
 	"fmt"
 	"strconv"
 )
@@ -106,4 +107,66 @@ func (controller Controller) Undraw(path string) error {
 	}
 
 	return nil
+}
+
+func IsCategoryAttrDrawable(category string, attr string) bool {
+	templateJson := State.DrawableJsons[category]
+	if templateJson == nil {
+		return true
+	}
+
+	switch attr {
+	case "id", "name", "category", "parentID",
+		"description", "domain", "parentid", "parentId", "tags":
+		if val, ok := templateJson[attr]; ok {
+			if valBool, ok := val.(bool); ok {
+				return valBool
+			}
+		}
+		return false
+	default:
+		if tmp, ok := templateJson["attributes"]; ok {
+			if attributes, ok := tmp.(map[string]interface{}); ok {
+				if val, ok := attributes[attr]; ok {
+					if valBool, ok := val.(bool); ok {
+						return valBool
+					}
+				}
+			}
+		}
+		return false
+	}
+}
+
+func (controller Controller) IsEntityDrawable(path string) (bool, error) {
+	obj, err := controller.GetObject(path)
+	if err != nil {
+		return false, err
+	}
+	if catInf, ok := obj["category"]; ok {
+		if category, ok := catInf.(string); ok {
+			return IsDrawableEntity(category), nil
+		}
+	}
+	return false, nil
+}
+
+func IsDrawableEntity(x string) bool {
+	entInt := models.EntityStrToInt(x)
+
+	for idx := range State.DrawableObjs {
+		if State.DrawableObjs[idx] == entInt {
+			return true
+		}
+	}
+	return false
+}
+
+func (controller Controller) IsAttrDrawable(path string, attr string) (bool, error) {
+	obj, err := controller.GetObject(path)
+	if err != nil {
+		return false, err
+	}
+	category := obj["category"].(string)
+	return IsCategoryAttrDrawable(category, attr), nil
 }

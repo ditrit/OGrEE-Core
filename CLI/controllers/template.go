@@ -63,7 +63,7 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 		if sizeInf, hasSize := tmpl[key].([]any); hasSize && len(sizeInf) == 3 {
 			attr["size"] = sizeInf[:2]
 			attr["height"] = sizeInf[2]
-			CopyAttr(attr, tmpl, "shape")
+			models.CopyAttr(attr, tmpl, "shape")
 
 			if ent == models.DEVICE {
 				attr["sizeUnit"] = "mm"
@@ -93,29 +93,23 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 				attr["heightUnit"] = "m"
 
 				//Copy additional Room specific attributes
-				CopyAttr(attr, tmpl, "technicalArea")
+				models.CopyAttr(attr, tmpl, "technicalArea")
 				if _, ok := attr["technicalArea"]; ok {
 					attr["technical"] = attr["technicalArea"]
 					delete(attr, "technicalArea")
 				}
 
-				CopyAttr(attr, tmpl, "axisOrientation")
-
-				CopyAttr(attr, tmpl, "reservedArea")
+				models.CopyAttr(attr, tmpl, "reservedArea")
 				if _, ok := attr["reservedArea"]; ok {
 					attr["reserved"] = attr["reservedArea"]
 					delete(attr, "reservedArea")
 				}
 
-				CopyAttr(attr, tmpl, "separators")
-				CopyAttr(attr, tmpl, "pillars")
-				CopyAttr(attr, tmpl, "floorUnit")
-				CopyAttr(attr, tmpl, "tiles")
-				CopyAttr(attr, tmpl, "rows")
-				CopyAttr(attr, tmpl, "aisles")
-				CopyAttr(attr, tmpl, "vertices")
-				CopyAttr(attr, tmpl, "colors")
-				CopyAttr(attr, tmpl, "tileAngle")
+				for _, attrName := range []string{"axisOrientation", "separators",
+					"pillars", "floorUnit", "tiles", "rows", "aisles",
+					"vertices", "colors", "tileAngle"} {
+					models.CopyAttr(attr, tmpl, attrName)
+				}
 
 			} else if ent == models.BLDG {
 				attr["sizeUnit"] = "m"
@@ -141,19 +135,19 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 			}
 
 			//fbxModel section
-			if check := CopyAttr(attr, tmpl, "fbxModel"); !check {
+			if check := models.CopyAttr(attr, tmpl, "fbxModel"); !check {
 				if ent != models.BLDG {
 					attr["fbxModel"] = ""
 				}
 			}
 
 			//Copy orientation if available
-			CopyAttr(attr, tmpl, "orientation")
+			models.CopyAttr(attr, tmpl, "orientation")
 
 			//Merge attributes if available
 			if tmplAttrsInf, ok := tmpl["attributes"]; ok {
 				if tmplAttrs, ok := tmplAttrsInf.(map[string]interface{}); ok {
-					MergeMaps(attr, tmplAttrs, false)
+					models.MergeMaps(attr, tmplAttrs, false)
 				}
 			}
 		} else {
@@ -162,7 +156,7 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 		}
 	} else {
 		//Serialise size and posXY if given
-		attr["size"] = serialiseVector(attr, "size")
+		attr["size"] = models.SerialiseVector(attr, "size")
 	}
 
 	return nil
