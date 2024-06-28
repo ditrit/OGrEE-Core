@@ -137,7 +137,7 @@ func LoadFile(path string) error {
 				fmt.Println(stackTraceErr)
 				c.State.DryRunErrors = append(c.State.DryRunErrors, stackTraceErr)
 			} else {
-				return err
+				return stackTraceErr
 			}
 		}
 	}

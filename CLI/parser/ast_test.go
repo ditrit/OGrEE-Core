@@ -175,7 +175,7 @@ func TestGetUNodeExecute(t *testing.T) {
 
 	assert.Nil(t, value)
 	assert.NotNil(t, err)
-	assert.ErrorContains(t, err, "The U value must be positive")
+	assert.ErrorContains(t, err, "the U value must be positive")
 
 	uNode = getUNode{
 		path: &pathNode{path: &valueNode{"/Physical/site/building/room/rack"}},

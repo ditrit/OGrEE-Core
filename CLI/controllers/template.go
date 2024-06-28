@@ -56,10 +56,7 @@ func (controller Controller) ApplyTemplateIfExists(attr, data map[string]any, en
 			return true, nil
 		}
 		// apply template
-		err := controller.ApplyTemplate(attr, data, ent)
-		if err != nil {
-			return true, err
-		}
+		return true, controller.ApplyTemplate(attr, data, ent)
 	}
 	return false, nil
 }

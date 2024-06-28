@@ -199,18 +199,9 @@ func TestCreateBuildingInvalidSize(t *testing.T) {
 	buildingInvalidSize["attributes"].(map[string]any)["size"] = "[1,2,3]"
 
 	test_utils.MockGetObject(mockAPI, baseSite)
-
-	// with state.DebugLvl = 0
 	err := controller.CreateObject("/Physical/BASIC/A", models.BLDG, buildingInvalidSize)
-	// returns nil but the object is not created
-	assert.Nil(t, err)
-
-	// with state.DebugLvl > 0
-	controllers.State.DebugLvl = 1
-	test_utils.MockGetObject(mockAPI, baseSite)
-	err = controller.CreateObject("/Physical/BASIC/A", models.BLDG, buildingInvalidSize)
 	assert.NotNil(t, err)
-	assert.ErrorContains(t, err, "Invalid size attribute provided."+
+	assert.ErrorContains(t, err, "invalid size attribute provided."+
 		" \nIt must be an array/list/vector with 3 elements."+
 		" Please refer to the wiki or manual reference"+
 		" for more details on how to create objects "+
@@ -224,18 +215,10 @@ func TestCreateBuildingInvalidPosXY(t *testing.T) {
 	buildingInvalidPosXY := maps.Clone(baseBuilding)
 	buildingInvalidPosXY["attributes"].(map[string]any)["posXY"] = []float64{}
 
-	// with state.DebugLvl = 0
 	test_utils.MockGetObject(mockAPI, baseSite)
-	err := controller.CreateObject("/Physical/BASIC/A", models.BLDG, maps.Clone(buildingInvalidPosXY))
-	// returns nil but the object is not created
-	assert.Nil(t, err)
-
-	// with state.DebugLvl > 0
-	controllers.State.DebugLvl = 1
-	test_utils.MockGetObject(mockAPI, baseSite)
-	err = controller.CreateObject("/Physical/BASIC/A", models.BLDG, buildingInvalidPosXY)
+	err := controller.CreateObject("/Physical/BASIC/A", models.BLDG, buildingInvalidPosXY)
 	assert.NotNil(t, err)
-	assert.ErrorContains(t, err, "Invalid posXY attribute provided."+
+	assert.ErrorContains(t, err, "invalid posXY attribute provided."+
 		" \nIt must be an array/list/vector with 2 elements."+
 		" Please refer to the wiki or manual reference"+
 		" for more details on how to create objects "+
@@ -291,17 +274,10 @@ func TestCreateRoomInvalidSize(t *testing.T) {
 		},
 	}
 
-	// with state.DebugLvl = 0
 	test_utils.MockGetObject(mockAPI, roomsBuilding)
 	err := controller.CreateObject("/Physical/BASIC/A/R1", models.ROOM, room)
-	assert.Nil(t, err)
-
-	// with state.DebugLvl > 0
-	controllers.State.DebugLvl = 1
-	test_utils.MockGetObject(mockAPI, roomsBuilding)
-	err = controller.CreateObject("/Physical/BASIC/A/R1", models.ROOM, room)
 	assert.NotNil(t, err)
-	assert.ErrorContains(t, err, "Invalid size attribute provided."+
+	assert.ErrorContains(t, err, "invalid size attribute provided."+
 		" \nIt must be an array/list/vector with 3 elements."+
 		" Please refer to the wiki or manual reference"+
 		" for more details on how to create objects "+
@@ -330,18 +306,10 @@ func TestCreateRoomInvalidPosXY(t *testing.T) {
 		},
 	}
 
-	// with state.DebugLvl = 0
 	test_utils.MockGetObject(mockAPI, roomsBuilding)
-
-	err := controller.CreateObject("/Physical/BASIC/A/R1", models.ROOM, test_utils.CopyMap(room))
-	assert.Nil(t, err)
-
-	// with state.DebugLvl > 0
-	controllers.State.DebugLvl = 1
-	test_utils.MockGetObject(mockAPI, roomsBuilding)
-	err = controller.CreateObject("/Physical/BASIC/A/R1", models.ROOM, room)
+	err := controller.CreateObject("/Physical/BASIC/A/R1", models.ROOM, room)
 	assert.NotNil(t, err)
-	assert.ErrorContains(t, err, "Invalid posXY attribute provided."+
+	assert.ErrorContains(t, err, "invalid posXY attribute provided."+
 		" \nIt must be an array/list/vector with 2 elements."+
 		" Please refer to the wiki or manual reference"+
 		" for more details on how to create objects "+
@@ -420,25 +388,10 @@ func TestCreateRackInvalidSize(t *testing.T) {
 		},
 	}
 
-	// with state.DebugLvl = 0
 	test_utils.MockGetObject(mockAPI, room)
 	err := controller.CreateObject("/Physical/BASIC/A/R1/A01", models.RACK, rack)
-	assert.Nil(t, err)
-
-	// with state.DebugLvl > 0
-	controllers.State.DebugLvl = 1
-	test_utils.MockGetObject(mockAPI, room)
-	err = controller.CreateObject("/Physical/BASIC/A/R1/A01", models.RACK, rack)
 	assert.NotNil(t, err)
-	assert.ErrorContains(t, err, "Invalid size attribute/template provided."+
-		" \nThe size must be an array/list/vector with "+
-		"3 elements."+"\n\nIf you have provided a"+
-		" template, please check that you are referring to "+
-		"an existing template"+
-		"\n\nFor more information "+
-		"please refer to the wiki or manual reference"+
-		" for more details on how to create objects "+
-		"using this syntax")
+	assert.ErrorContains(t, err, "invalid size attribute provided.")
 	controllers.State.DebugLvl = 0
 }
 
