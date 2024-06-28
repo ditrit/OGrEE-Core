@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"bytes"
 	"cli/models"
 	"encoding/json"
 	"fmt"
@@ -27,7 +28,7 @@ type apiPortImpl struct{}
 // Request
 func (api *apiPortImpl) Request(method string, endpoint string, body map[string]any, expectedStatus int) (*Response, error) {
 	URL := State.APIURL + endpoint
-	httpResponse, err := models.Send(method, URL, GetKey(), body)
+	httpResponse, err := Send(method, URL, GetKey(), body)
 	if err != nil {
 		return nil, err
 	}
@@ -51,6 +52,20 @@ func (api *apiPortImpl) Request(method string, endpoint string, body map[string]
 		return response, fmt.Errorf(msg)
 	}
 	return response, nil
+}
+
+func Send(method, URL, key string, data map[string]any) (*http.Response, error) {
+	client := &http.Client{}
+	dataJSON, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequest(method, URL, bytes.NewBuffer(dataJSON))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+key)
+	return client.Do(req)
 }
 
 // Response handling

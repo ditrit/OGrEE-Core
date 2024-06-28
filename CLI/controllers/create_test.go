@@ -150,7 +150,7 @@ func TestCreateGenericWithTemplateWorks(t *testing.T) {
 			"posXYUnit": "m",
 			"template":  "generic-template",
 		},
-	})
+	}, false)
 	assert.Nil(t, err)
 }
 

@@ -3,6 +3,7 @@ package controllers
 import (
 	l "cli/logger"
 	"cli/models"
+	"cli/utils"
 	"fmt"
 	"net/http"
 	pathutil "path"
@@ -45,12 +46,16 @@ func (controller Controller) ValidateObj(ent int, entity string, data map[string
 	return nil
 }
 
-func (controller Controller) CreateObject(path string, ent int, data map[string]any, isValidate bool) error {
+func (controller Controller) CreateObject(path string, ent int, data map[string]any, validate ...bool) error {
+	isValidate := false
+	if len(validate) > 0 {
+		isValidate = validate[0]
+	}
 	name := pathutil.Base(path)
 	path = pathutil.Dir(path)
 	if name == "." || name == "" {
 		l.GetWarningLogger().Println("Invalid path name provided for OCLI object creation")
-		return fmt.Errorf("Invalid path name provided for OCLI object creation")
+		return fmt.Errorf("invalid path name provided for OCLI object creation")
 	}
 	data["name"] = name
 	data["category"] = models.EntityToString(ent)
@@ -121,7 +126,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			"heightUnit": "m",
 		}
 
-		models.MergeMaps(attr, baseAttrs, false)
+		utils.MergeMaps(attr, baseAttrs, false)
 
 		//If user provided templates, get the JSON
 		//and parse into templates
@@ -155,7 +160,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			baseAttrs["heightUnit"] = "cm"
 		}
 
-		models.MergeMaps(attr, baseAttrs, false)
+		utils.MergeMaps(attr, baseAttrs, false)
 
 		//If user provided templates, get the JSON
 		//and parse into templates
@@ -185,14 +190,14 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 		//if len(attr) == 2 {
 		_, hasTemplate := attr["template"]
 		if sizeU, ok := attr["sizeU"]; ok {
-			sizeUValid := models.CheckNumeric(attr["sizeU"])
+			sizeUValid := utils.IsNumeric(attr["sizeU"])
 
 			if hasTemplate && isValidate {
 				return nil
 			}
 			if !hasTemplate && !sizeUValid {
 				l.GetWarningLogger().Println("Invalid template / sizeU parameter provided for device ")
-				return fmt.Errorf("Please provide a valid device template or sizeU")
+				return fmt.Errorf("please provide a valid device template or sizeU")
 			}
 
 			//Convert block
@@ -207,7 +212,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			//End of convert block
 			if _, ok := attr["slot"]; ok {
 				l.GetWarningLogger().Println("Invalid device syntax encountered")
-				return fmt.Errorf("Invalid device syntax: If you have provided a template, it was not found")
+				return fmt.Errorf("invalid device syntax: If you have provided a template, it was not found")
 			}
 		}
 		//}
@@ -247,7 +252,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			"heightUnit":  "mm",
 		}
 
-		models.MergeMaps(attr, baseAttrs, false)
+		utils.MergeMaps(attr, baseAttrs, false)
 
 		data["parentId"] = parentId
 
@@ -271,7 +276,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 		}
 	default:
 		//Execution should not reach here!
-		return fmt.Errorf("Invalid Object Specified!")
+		return fmt.Errorf("invalid Object Specified!")
 	}
 
 	data["attributes"] = attr
@@ -322,6 +327,4 @@ func setDeviceNoTemplateSlotSize(attr map[string]any, parent map[string]any, isV
 		}
 	}
 	return nil
-}/
-
-
+}

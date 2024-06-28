@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"cli/models"
+	"cli/utils"
 	"errors"
 	"fmt"
 	"net/http"
@@ -63,7 +64,7 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 		if sizeInf, hasSize := tmpl[key].([]any); hasSize && len(sizeInf) == 3 {
 			attr["size"] = sizeInf[:2]
 			attr["height"] = sizeInf[2]
-			models.CopyAttr(attr, tmpl, "shape")
+			utils.CopyMapVal(attr, tmpl, "shape")
 
 			if ent == models.DEVICE {
 				attr["sizeUnit"] = "mm"
@@ -93,13 +94,13 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 				attr["heightUnit"] = "m"
 
 				//Copy additional Room specific attributes
-				models.CopyAttr(attr, tmpl, "technicalArea")
+				utils.CopyMapVal(attr, tmpl, "technicalArea")
 				if _, ok := attr["technicalArea"]; ok {
 					attr["technical"] = attr["technicalArea"]
 					delete(attr, "technicalArea")
 				}
 
-				models.CopyAttr(attr, tmpl, "reservedArea")
+				utils.CopyMapVal(attr, tmpl, "reservedArea")
 				if _, ok := attr["reservedArea"]; ok {
 					attr["reserved"] = attr["reservedArea"]
 					delete(attr, "reservedArea")
@@ -108,7 +109,7 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 				for _, attrName := range []string{"axisOrientation", "separators",
 					"pillars", "floorUnit", "tiles", "rows", "aisles",
 					"vertices", "colors", "tileAngle"} {
-					models.CopyAttr(attr, tmpl, attrName)
+					utils.CopyMapVal(attr, tmpl, attrName)
 				}
 
 			} else if ent == models.BLDG {
@@ -135,19 +136,19 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 			}
 
 			//fbxModel section
-			if check := models.CopyAttr(attr, tmpl, "fbxModel"); !check {
+			if check := utils.CopyMapVal(attr, tmpl, "fbxModel"); !check {
 				if ent != models.BLDG {
 					attr["fbxModel"] = ""
 				}
 			}
 
 			//Copy orientation if available
-			models.CopyAttr(attr, tmpl, "orientation")
+			utils.CopyMapVal(attr, tmpl, "orientation")
 
 			//Merge attributes if available
 			if tmplAttrsInf, ok := tmpl["attributes"]; ok {
 				if tmplAttrs, ok := tmplAttrsInf.(map[string]interface{}); ok {
-					models.MergeMaps(attr, tmplAttrs, false)
+					utils.MergeMaps(attr, tmplAttrs, false)
 				}
 			}
 		} else {
