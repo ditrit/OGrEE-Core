@@ -52,6 +52,17 @@ var BaseAttrs = map[int]EntityAttributes{
 	CORRIDOR: CorridorBaseAttrs,
 }
 
+func SetPosAttr(ent int, attr EntityAttributes) error {
+	switch ent {
+	case BLDG, ROOM:
+		return SetPosXY(attr)
+	case RACK, CORRIDOR, GENERIC:
+		return SetPosXYZ(attr)
+	default:
+		return fmt.Errorf("invalid entity for pos attribution")
+	}
+}
+
 func SetPosXY(attr EntityAttributes) error {
 	attr["posXY"] = SerialiseVector(attr, "posXY")
 	if posXY, ok := attr["posXY"].([]float64); !ok || len(posXY) != 2 {
@@ -66,8 +77,18 @@ func SetPosXY(attr EntityAttributes) error {
 	return nil
 }
 
-func SetOptionalPosXYZ(attr EntityAttributes) {
+func SetPosXYZ(attr EntityAttributes) error {
 	attr["posXYZ"] = SerialiseVector(attr, "posXYZ")
+	if posXY, ok := attr["posXYZ"].([]float64); !ok || len(posXY) != 3 {
+		l.GetErrorLogger().Println(
+			"User gave invalid pos value")
+		return fmt.Errorf("invalid pos attribute provided." +
+			" \nIt must be an array/list/vector with 2 or 3 elements." +
+			" Please refer to the wiki or manual reference" +
+			" for more details on how to create objects " +
+			"using this syntax")
+	}
+	return nil
 }
 
 func SetSize(attr map[string]any) error {

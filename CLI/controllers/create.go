@@ -33,7 +33,6 @@ func (controller Controller) PostObj(ent int, entity string, data map[string]any
 }
 
 func (controller Controller) ValidateObj(ent int, entity string, data map[string]any, path string) error {
-	fmt.Println(data)
 	resp, err := controller.API.Request(http.MethodPost, "/api/validate/"+entity+"s", data, http.StatusOK)
 	if err != nil {
 		fmt.Println(err)
@@ -87,24 +86,18 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 		attr = map[string]any{}
 	}
 	switch ent {
-	case models.BLDG, models.ROOM:
+	case models.BLDG, models.ROOM, models.RACK, models.CORRIDOR, models.GENERIC:
 		utils.MergeMaps(attr, models.BaseAttrs[ent], false)
-		if err := controller.ApplyTemplateOrSetSize(attr, data, ent,
+		if hasTemplate, err := controller.ApplyTemplateOrSetSize(attr, data, ent,
 			isValidate); err != nil {
 			return err
+		} else if hasTemplate && isValidate {
+			return nil
 		}
 
-		if err := models.SetPosXY(attr); err != nil {
+		if err := models.SetPosAttr(ent, attr); err != nil {
 			return err
 		}
-	case models.RACK, models.CORRIDOR, models.GENERIC:
-		utils.MergeMaps(attr, models.BaseAttrs[ent], false)
-		if err := controller.ApplyTemplateOrSetSize(attr, data, ent,
-			isValidate); err != nil {
-			return err
-		}
-
-		models.SetOptionalPosXYZ(attr)
 	case models.DEVICE:
 		models.SetDeviceSizeUIfExists(attr)
 		if err := models.SetDeviceSlotOrPosU(attr); err != nil {
@@ -117,6 +110,8 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			setDeviceNoTemplateSlotSize(attr, parent, isValidate)
 		} else if err != nil {
 			return err
+		} else if isValidate {
+			return nil
 		}
 
 		utils.MergeMaps(attr, models.DeviceBaseAttrs, false)

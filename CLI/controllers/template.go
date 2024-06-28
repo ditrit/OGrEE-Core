@@ -61,17 +61,14 @@ func (controller Controller) ApplyTemplateIfExists(attr, data map[string]any, en
 	return false, nil
 }
 
-func (controller Controller) ApplyTemplateOrSetSize(attr, data map[string]any, ent int, isValidate bool) error {
+func (controller Controller) ApplyTemplateOrSetSize(attr, data map[string]any, ent int, isValidate bool) (bool, error) {
 	if hasTemplate, err := controller.ApplyTemplateIfExists(attr, data, ent,
 		isValidate); !hasTemplate {
 		// apply user input
-		if err := models.SetSize(attr); err != nil {
-			return err
-		}
+		return hasTemplate, models.SetSize(attr)
 	} else {
-		return err
+		return hasTemplate, err
 	}
-	return nil
 }
 
 // If user provided templates, get the JSON

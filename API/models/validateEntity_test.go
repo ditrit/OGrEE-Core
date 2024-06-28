@@ -21,7 +21,7 @@ func TestValidateJsonSchemaExamples(t *testing.T) {
 			t.Error(e.Error())
 		}
 		json.Unmarshal(data, &obj) // only one example per schema
-		ok, err := validateJsonSchema(entInt, obj["examples"].([]interface{})[0].(map[string]interface{}))
+		ok, err := ValidateJsonSchema(entInt, obj["examples"].([]interface{})[0].(map[string]interface{}))
 		if !ok {
 			t.Errorf("Error validating json schema: %s", err.Message)
 		}
@@ -51,7 +51,7 @@ func TestValidateJsonSchema(t *testing.T) {
 		}
 
 		println("*** Testing " + testObjName)
-		ok, err := validateJsonSchema(entInt, testObj)
+		ok, err := ValidateJsonSchema(entInt, testObj)
 		if !ok {
 			t.Errorf("Error validating json schema: %s", err.Message)
 		}
@@ -123,7 +123,7 @@ func TestErrorValidateJsonSchema(t *testing.T) {
 				t.Error("Unable to convert json test file")
 			}
 
-			ok, err := validateJsonSchema(entInt, testObj)
+			ok, err := ValidateJsonSchema(entInt, testObj)
 			if ok {
 				t.Errorf("Validated json schema that should have these errors: %v", expectedErrors[testObjName])
 			} else {
