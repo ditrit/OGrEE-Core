@@ -2,6 +2,7 @@ package controllers_test
 
 import (
 	"cli/controllers"
+	l "cli/logger"
 	"cli/models"
 	test_utils "cli/test"
 	"maps"
@@ -43,13 +44,17 @@ var createRoom = map[string]any{
 	"domain":   "test-domain",
 }
 
+func init() {
+	l.InitLogs()
+}
+
 func TestCreateObjectPathErrors(t *testing.T) {
 	tests := []struct {
 		name         string
 		path         string
 		errorMessage string
 	}{
-		{"InvalidPath", "/.", "Invalid path name provided for OCLI object creation"},
+		{"InvalidPath", "/.", "invalid path name provided for OCLI object creation"},
 		{"ParentNotFound", "/", "parent not found"},
 	}
 
