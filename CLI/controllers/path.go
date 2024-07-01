@@ -59,24 +59,28 @@ func (controller Controller) SplitPath(pathStr string) (models.Path, error) {
 func (controller Controller) GetParentFromPath(path string, ent int, isValidate bool) (string, map[string]any, error) {
 	var parent map[string]any
 	parentId := ""
-	if ent != models.SITE && ent != models.STRAY_DEV {
-		if isValidate {
-			parentId = models.GetObjectIDFromPath(path)
-		} else {
-			var err error
-			parent, err = controller.PollObject(path)
-			if err != nil {
-				return parentId, nil, err
-			}
-			if parent == nil && (ent != models.DOMAIN || path != "/Organisation/Domain") &&
-				ent != models.VIRTUALOBJ {
-				return parentId, nil, fmt.Errorf("parent not found")
-			}
-			if parent != nil {
-				parentId = parent["id"].(string)
-			}
+	if ent == models.SITE || ent == models.STRAY_DEV {
+		// no parent
+		return parentId, parent, nil
+	}
+
+	if isValidate {
+		parentId = models.GetObjectIDFromPath(path)
+	} else {
+		var err error
+		parent, err = controller.PollObject(path)
+		if err != nil {
+			return parentId, nil, err
+		}
+		if parent == nil && (ent != models.DOMAIN || path != "/Organisation/Domain") &&
+			ent != models.VIRTUALOBJ {
+			return parentId, nil, fmt.Errorf("parent not found")
+		}
+		if parent != nil {
+			parentId = parent["id"].(string)
 		}
 	}
+
 	return parentId, parent, nil
 }
 

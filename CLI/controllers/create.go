@@ -107,7 +107,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 		if hasTemplate, err := controller.ApplyTemplateIfExists(attr, data, ent,
 			isValidate); !hasTemplate {
 			// apply user input
-			setDeviceNoTemplateSlotSize(attr, parent, isValidate)
+			setDevNoTemplateSize(attr, parent, isValidate)
 		} else if err != nil {
 			return err
 		} else if isValidate {
@@ -139,21 +139,12 @@ func (controller Controller) CreateTag(slug, color string) error {
 	}, models.TagsPath+slug)
 }
 
-func setDeviceNoTemplateSlotSize(attr map[string]any, parent map[string]any, isValidate bool) error {
+func setDevNoTemplateSize(attr map[string]any, parent map[string]any, isValidate bool) error {
 	var slot map[string]any
 	var err error
-	// get slot (no template -> only one slot accepted)
-	if attr["slot"] != nil {
-		slots := attr["slot"].([]string)
-		if len(slots) != 1 {
-			return fmt.Errorf("Invalid device syntax: only one slot can be provided if no template")
-		}
-		if !isValidate {
-			slot, err = C.GetSlot(parent, slots[0])
-			if err != nil {
-				return err
-			}
-		}
+	// get slot, if possible
+	if slot, err = getSlotDevNoTemplate(attr, parent, isValidate); err != nil {
+		return err
 	}
 	if slot != nil {
 		// apply size from slot
@@ -171,4 +162,21 @@ func setDeviceNoTemplateSlotSize(attr map[string]any, parent map[string]any, isV
 		}
 	}
 	return nil
+}
+
+func getSlotDevNoTemplate(attr map[string]any, parent map[string]any, isValidate bool) (map[string]any, error) {
+	// get slot (no template -> only one slot accepted)
+	if attr["slot"] != nil {
+		slots := attr["slot"].([]string)
+		if len(slots) != 1 {
+			return nil, fmt.Errorf("invalid device syntax: only one slot can be provided if no template")
+		}
+		if !isValidate {
+			slot, err := C.GetSlot(parent, slots[0])
+			if err != nil {
+				return slot, err
+			}
+		}
+	}
+	return nil, nil
 }

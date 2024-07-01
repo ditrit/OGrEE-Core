@@ -180,35 +180,30 @@ func Disconnect3D() {
 
 // This func is used for when the user wants to filter certain
 // attributes from being sent/displayed to Unity viewer client
-func GenerateFilteredJson(x map[string]interface{}) map[string]interface{} {
-	ans := map[string]interface{}{}
-	attrs := map[string]interface{}{}
-	if catInf, ok := x["category"]; ok {
-		if cat, ok := catInf.(string); ok {
-			if models.EntityStrToInt(cat) != -1 {
-
-				//Start the filtration
-				for i := range x {
-					if i == "attributes" {
-						for idx := range x[i].(map[string]interface{}) {
-							if IsCategoryAttrDrawable(x["category"].(string), idx) {
-								attrs[idx] = x[i].(map[string]interface{})[idx]
-							}
-						}
-					} else {
-						if IsCategoryAttrDrawable(x["category"].(string), i) {
-							ans[i] = x[i]
-						}
+func GenerateFilteredJson(data map[string]interface{}) map[string]interface{} {
+	if category, ok := data["category"].(string); ok && models.EntityStrToInt(category) != -1 {
+		//Start the filtration
+		ans := map[string]interface{}{}
+		attrs := map[string]interface{}{}
+		for key := range data {
+			if key == "attributes" {
+				for attrName, attrValue := range data[key].(map[string]interface{}) {
+					if IsCategoryAttrDrawable(category, attrName) {
+						attrs[attrName] = attrValue
 					}
 				}
-				if len(attrs) > 0 {
-					ans["attributes"] = attrs
+			} else {
+				if IsCategoryAttrDrawable(category, key) {
+					ans[key] = data[key]
 				}
-				return ans
 			}
 		}
+		if len(attrs) > 0 {
+			ans["attributes"] = attrs
+		}
+		return ans
 	}
-	return x //Nothing will be filtered
+	return data //Nothing will be filtered
 }
 
 func IsInObjForUnity(entityStr string) bool {
