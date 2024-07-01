@@ -120,7 +120,7 @@ func TestLoadFileError(t *testing.T) {
 		errorMessage         string
 	}{
 		{"ParseError", "siteName=siteB\n", &fileParseError{}, "Syntax errors were found in the file: " + filename + "\nThe following commands were invalid\n  LINE#: 1\tCOMMAND:siteName=siteB"},
-		{"StackError", ".var: i = eval 10/0\n", &StackTraceError{}, "Stack trace (most recent call last):\n  File \"" + filename + "\", line 1\n    .var: i = eval 10/0\nError : cannot divide by 0"},
+		{"StackError", ".var: i = eval 10/0\n", &StackTraceError{}, "Stack trace (most recent call last):\n  File \"" + filename + "\", line 1\n    .var: i = eval 10/0\nError : " + ZeroDivisionErrMeg},
 	}
 
 	for _, tt := range tests {

@@ -904,7 +904,7 @@ func updateAttributes(path, attributeName string, values []any) (map[string]any,
 			vecStr = append(vecStr, value.(string))
 		}
 		var err error
-		if vecStr, err = models.ExpandStrVector(vecStr); err != nil {
+		if vecStr, err = models.CheckExpandStrVector(vecStr); err != nil {
 			return nil, err
 		}
 		attributes = map[string]any{attributeName: vecStr}

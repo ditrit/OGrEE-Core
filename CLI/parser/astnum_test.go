@@ -36,7 +36,7 @@ func TestArithNodeExecute(t *testing.T) {
 	valNode = arithNode{"/", &valueNode{10}, &valueNode{0}}
 	_, err = valNode.execute()
 	assert.NotNil(t, err)
-	assert.ErrorContains(t, err, "cannot divide by 0")
+	assert.ErrorContains(t, err, ZeroDivisionErrMeg)
 
 	valNode = arithNode{"/", &valueNode{10.0}, &valueNode{4}}
 	value, err = valNode.execute()
@@ -46,7 +46,7 @@ func TestArithNodeExecute(t *testing.T) {
 	valNode = arithNode{"/", &valueNode{10.0}, &valueNode{0}}
 	_, err = valNode.execute()
 	assert.NotNil(t, err)
-	assert.ErrorContains(t, err, "cannot divide by 0")
+	assert.ErrorContains(t, err, ZeroDivisionErrMeg)
 
 	// integer division
 	valNode = arithNode{"\\", &valueNode{10}, &valueNode{4}}
@@ -57,7 +57,7 @@ func TestArithNodeExecute(t *testing.T) {
 	valNode = arithNode{"\\", &valueNode{10}, &valueNode{0}}
 	_, err = valNode.execute()
 	assert.NotNil(t, err)
-	assert.ErrorContains(t, err, "cannot divide by 0")
+	assert.ErrorContains(t, err, ZeroDivisionErrMeg)
 
 	valNode = arithNode{"%", &valueNode{10}, &valueNode{4}}
 	value, err = valNode.execute()

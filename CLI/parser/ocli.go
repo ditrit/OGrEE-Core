@@ -93,6 +93,16 @@ func newStackTraceError(err error, filename string, line string, lineNumber int)
 	return stackErr
 }
 
+func convertToStackTraceError(err error, filename string, line string, lineNumber int) *StackTraceError {
+	stackTraceErr, ok := err.(*StackTraceError)
+	if ok {
+		stackTraceErr.extend(filename, line, lineNumber)
+	} else {
+		stackTraceErr = newStackTraceError(err, filename, line, lineNumber)
+	}
+	return stackTraceErr
+}
+
 func (s *StackTraceError) extend(filename string, line string, lineNumber int) {
 	trace := fmt.Sprintf("  File \"%s\", line %d\n", filename, lineNumber)
 	trace += "    " + line + "\n"
@@ -108,31 +118,18 @@ func LoadFile(path string) error {
 	filename := filepath.Base(path)
 	file, err := parseFile(path)
 	if err != nil && !c.State.DryRun {
-		// if c.State.DryRun {
 		fmt.Println(err)
-		// 	// c.State.DryRunErrors = append(c.State.DryRunErrors, err)
-		// } else {
 		return err
-		// }
 	}
 	for i := range file {
 		fmt.Println(file[i].line)
 		_, err := file[i].root.execute()
 		if err != nil {
-			errMsg := err.Error()
-			if strings.Contains(errMsg, "Duplicate") || strings.Contains(errMsg, "duplicate") {
-				l.GetWarningLogger().Println(errMsg)
-				if c.State.DebugLvl > c.NONE {
-					fmt.Println(errMsg)
-				}
+			if ok := isDuplicateErr(err); ok {
+				// do not interrupt ocli execution
 				continue
 			}
-			stackTraceErr, ok := err.(*StackTraceError)
-			if ok {
-				stackTraceErr.extend(filename, file[i].line, file[i].lineNumber)
-			} else {
-				stackTraceErr = newStackTraceError(err, filename, file[i].line, file[i].lineNumber)
-			}
+			stackTraceErr := convertToStackTraceError(err, filename, file[i].line, file[i].lineNumber)
 			if c.State.DryRun {
 				fmt.Println(stackTraceErr)
 				c.State.DryRunErrors = append(c.State.DryRunErrors, stackTraceErr)
@@ -141,6 +138,17 @@ func LoadFile(path string) error {
 			}
 		}
 	}
-	// fmt.Println("END LOAD ", errCount)
 	return err
+}
+
+func isDuplicateErr(err error) bool {
+	errMsg := err.Error()
+	if strings.Contains(errMsg, "Duplicate") || strings.Contains(errMsg, "duplicate") {
+		l.GetWarningLogger().Println(errMsg)
+		if c.State.DebugLvl > c.NONE {
+			fmt.Println(errMsg)
+		}
+		return true
+	}
+	return false
 }

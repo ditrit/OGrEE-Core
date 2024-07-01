@@ -52,6 +52,10 @@ var BaseAttrs = map[int]EntityAttributes{
 	CORRIDOR: CorridorBaseAttrs,
 }
 
+const referToWikiMsg = " Please refer to the wiki or manual reference" +
+	" for more details on how to create objects " +
+	"using this syntax"
+
 func SetPosAttr(ent int, attr EntityAttributes) error {
 	switch ent {
 	case BLDG, ROOM:
@@ -70,9 +74,7 @@ func SetPosXY(attr EntityAttributes) error {
 			"User gave invalid posXY value")
 		return fmt.Errorf("invalid posXY attribute provided." +
 			" \nIt must be an array/list/vector with 2 elements." +
-			" Please refer to the wiki or manual reference" +
-			" for more details on how to create objects " +
-			"using this syntax")
+			referToWikiMsg)
 	}
 	return nil
 }
@@ -84,9 +86,7 @@ func SetPosXYZ(attr EntityAttributes) error {
 			"User gave invalid pos value")
 		return fmt.Errorf("invalid pos attribute provided." +
 			" \nIt must be an array/list/vector with 2 or 3 elements." +
-			" Please refer to the wiki or manual reference" +
-			" for more details on how to create objects " +
-			"using this syntax")
+			referToWikiMsg)
 	}
 	return nil
 }
@@ -99,9 +99,7 @@ func SetSize(attr map[string]any) error {
 				"User gave invalid size value")
 			return fmt.Errorf("invalid size attribute provided." +
 				" \nIt must be an array/list/vector with 3 elements." +
-				" Please refer to the wiki or manual reference" +
-				" for more details on how to create objects " +
-				"using this syntax")
+				referToWikiMsg)
 
 		}
 	}
@@ -143,7 +141,7 @@ func SetDeviceSlotOrPosU(attr EntityAttributes) error {
 		if posU, err := strconv.Atoi(x[0]); len(x) == 1 && err == nil {
 			attr["posU"] = posU
 		} else {
-			if slots, err := ExpandStrVector(x); err != nil {
+			if slots, err := CheckExpandStrVector(x); err != nil {
 				return err
 			} else {
 				attr["slot"] = slots
@@ -153,36 +151,43 @@ func SetDeviceSlotOrPosU(attr EntityAttributes) error {
 	return nil
 }
 
-// ExpandStrVector: allow usage of .. on device slot and group content vector
+// CheckExpandStrVector: allow usage of .. on device slot and group content vector
 // converting [slot01..slot03] on [slot01,slot02,slot03]
-func ExpandStrVector(slotVector []string) ([]string, error) {
+func CheckExpandStrVector(slotVector []string) ([]string, error) {
 	slots := []string{}
 	for _, slot := range slotVector {
 		if strings.Contains(slot, "..") {
 			if len(slotVector) != 1 {
 				return nil, fmt.Errorf("Invalid device syntax: .. can only be used in a single element vector")
 			}
-			parts := strings.Split(slot, "..")
-			if len(parts) != 2 ||
-				(parts[0][:len(parts[0])-1] != parts[1][:len(parts[1])-1]) {
-				l.GetWarningLogger().Println("Invalid device syntax encountered")
-				return nil, fmt.Errorf("Invalid device syntax: incorrect use of .. for slot")
-			} else {
-				start, errS := strconv.Atoi(string(parts[0][len(parts[0])-1]))
-				end, errE := strconv.Atoi(string(parts[1][len(parts[1])-1]))
-				if errS != nil || errE != nil {
-					l.GetWarningLogger().Println("Invalid device syntax encountered")
-					return nil, fmt.Errorf("Invalid device syntax: incorrect use of .. for slot")
-				} else {
-					prefix := parts[0][:len(parts[0])-1]
-					for i := start; i <= end; i++ {
-						slots = append(slots, prefix+strconv.Itoa(i))
-					}
-				}
-			}
+			return expandStrToVector(slot)
 		} else {
 			slots = append(slots, slot)
 		}
 	}
 	return slots, nil
+}
+
+func expandStrToVector(slot string) ([]string, error) {
+	slots := []string{}
+	errMsg := "Invalid device syntax: incorrect use of .. for slot"
+	parts := strings.Split(slot, "..")
+	if len(parts) != 2 ||
+		(parts[0][:len(parts[0])-1] != parts[1][:len(parts[1])-1]) {
+		l.GetWarningLogger().Println(errMsg)
+		return nil, fmt.Errorf(errMsg)
+	} else {
+		start, errS := strconv.Atoi(string(parts[0][len(parts[0])-1]))
+		end, errE := strconv.Atoi(string(parts[1][len(parts[1])-1]))
+		if errS != nil || errE != nil {
+			l.GetWarningLogger().Println(errMsg)
+			return nil, fmt.Errorf(errMsg)
+		} else {
+			prefix := parts[0][:len(parts[0])-1]
+			for i := start; i <= end; i++ {
+				slots = append(slots, prefix+strconv.Itoa(i))
+			}
+			return slots, nil
+		}
+	}
 }

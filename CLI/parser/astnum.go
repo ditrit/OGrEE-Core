@@ -4,6 +4,8 @@ import (
 	"fmt"
 )
 
+const ZeroDivisionErrMeg = "cannot divide by 0"
+
 type arithNode struct {
 	op    string
 	left  node
@@ -33,12 +35,12 @@ func (a *arithNode) execute() (interface{}, error) {
 			return leftIntVal * rightIntVal, nil
 		case "/":
 			if rightIntVal == 0 {
-				return nil, fmt.Errorf("cannot divide by 0")
+				return nil, fmt.Errorf(ZeroDivisionErrMeg)
 			}
 			return float64(leftIntVal) / float64(rightIntVal), nil
 		case "\\":
 			if rightIntVal == 0 {
-				return nil, fmt.Errorf("cannot divide by 0")
+				return nil, fmt.Errorf(ZeroDivisionErrMeg)
 			}
 			return leftIntVal / rightIntVal, nil
 		case "%":
@@ -62,7 +64,7 @@ func (a *arithNode) execute() (interface{}, error) {
 		return leftFloatVal * rightFloatVal, nil
 	case "/":
 		if rightFloatVal == 0. {
-			return nil, fmt.Errorf("cannot divide by 0")
+			return nil, fmt.Errorf(ZeroDivisionErrMeg)
 		}
 		return leftFloatVal / rightFloatVal, nil
 	default:

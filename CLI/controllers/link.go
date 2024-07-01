@@ -22,7 +22,7 @@ func (controller Controller) LinkObject(source string, destination string, attrs
 	payload := map[string]any{"parentId": destPath.ObjectID}
 
 	if slots != nil {
-		if slots, err = models.ExpandStrVector(slots); err != nil {
+		if slots, err = models.CheckExpandStrVector(slots); err != nil {
 			return err
 		}
 		payload["slot"] = slots

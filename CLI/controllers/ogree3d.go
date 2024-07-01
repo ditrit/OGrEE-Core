@@ -188,14 +188,10 @@ func GenerateFilteredJson(data map[string]interface{}) map[string]interface{} {
 		for key := range data {
 			if key == "attributes" {
 				for attrName, attrValue := range data[key].(map[string]interface{}) {
-					if IsCategoryAttrDrawable(category, attrName) {
-						attrs[attrName] = attrValue
-					}
+					copyAttrIfDrawable(attrs, category, attrName, attrValue)
 				}
 			} else {
-				if IsCategoryAttrDrawable(category, key) {
-					ans[key] = data[key]
-				}
+				copyAttrIfDrawable(ans, category, key, data[key])
 			}
 		}
 		if len(attrs) > 0 {
@@ -204,6 +200,12 @@ func GenerateFilteredJson(data map[string]interface{}) map[string]interface{} {
 		return ans
 	}
 	return data //Nothing will be filtered
+}
+
+func copyAttrIfDrawable(attrs map[string]interface{}, category, attrName string, attrValue any) {
+	if IsCategoryAttrDrawable(category, attrName) {
+		attrs[attrName] = attrValue
+	}
 }
 
 func IsInObjForUnity(entityStr string) bool {
