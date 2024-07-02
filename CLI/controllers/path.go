@@ -124,14 +124,14 @@ func TranslatePath(p string, acceptSelection bool) string {
 	return path.Clean("/" + strings.Join(outputWords, "/"))
 }
 
-func translatePathShortcuts(output_words []string) {
-	if len(output_words) > 0 {
-		if output_words[0] == "P" {
-			output_words[0] = "Physical"
-		} else if output_words[0] == "L" {
-			output_words[0] = "Logical"
-		} else if output_words[0] == "O" {
-			output_words[0] = "Organisation"
+func translatePathShortcuts(outputWords []string) {
+	if len(outputWords) > 0 {
+		if outputWords[0] == "P" {
+			outputWords[0] = "Physical"
+		} else if outputWords[0] == "L" {
+			outputWords[0] = "Logical"
+		} else if outputWords[0] == "O" {
+			outputWords[0] = "Organisation"
 		}
 	}
 }

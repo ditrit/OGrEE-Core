@@ -145,7 +145,7 @@ func SetObjectBaseData(entity int, path string, data map[string]any) error {
 	data["category"] = EntityToString(entity)
 	data["description"] = ""
 	if _, hasAttributes := data["attributes"].(map[string]any); !hasAttributes {
-		data["attributes"] = EntityAttributes{}
+		data["attributes"] = map[string]any{}
 	}
 	return nil
 }

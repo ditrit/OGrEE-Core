@@ -51,7 +51,9 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 	}
 
 	// Object base data
-	models.SetObjectBaseData(ent, path, data)
+	if err := models.SetObjectBaseData(ent, path, data); err != nil {
+		return err
+	}
 
 	// Retrieve parent
 	parentId, parent, err := controller.GetParentFromPath(pathutil.Dir(path), ent, isValidate)
