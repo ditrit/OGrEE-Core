@@ -2047,11 +2047,11 @@ func ValidateEntity(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if u.IsEntityHierarchical(entInt) {
-		var domain string
+		domain := ""
 		if entInt == u.DOMAIN {
 			domain = obj["parentId"].(string) + obj["name"].(string)
-		} else {
-			domain = obj["domain"].(string)
+		} else if domainStr, ok := obj["domain"].(string); ok {
+			domain = domainStr
 		}
 		if permission := models.CheckUserPermissions(user.Roles, entInt, domain); permission < models.WRITE {
 			w.WriteHeader(http.StatusUnauthorized)

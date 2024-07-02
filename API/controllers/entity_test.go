@@ -513,20 +513,21 @@ func TestValidateEntityWithoutAttributes(t *testing.T) {
 func TestValidateEntity(t *testing.T) {
 	integration.CreateTestDomain(t, "temporaryDomain", "", "")
 	integration.CreateTestPhysicalEntity(t, utils.BLDG, "tempBldg", "tempSite", true)
-	room := test_utils.GetEntityMap("room", "roomA", "tempSite.tempBldg", "")
+	room := test_utils.GetEntityMap("room", "roomA", "tempSite.tempBldg", integration.TestDBName)
 
 	endpoint := test_utils.GetEndpoint("validateEntity", "rooms")
 	tests := []struct {
 		name       string
-		domain     string
+		domain     any
 		statusCode int
 		message    string
 	}{
-		// {"NonExistentDomain", "invalid", http.StatusNotFound, "Domain not found: invalid"},
-		// {"InvalidDomain", "temporaryDomain", http.StatusBadRequest, "Object domain is not equal or child of parent's domain"},
+
 		{"ValidRoomEntity", integration.TestDBName, http.StatusOK, "This object can be created"},
+		{"NonExistentDomain", 222, http.StatusBadRequest, "JSON body doesn't validate with the expected JSON schema"},
 	}
 	for _, tt := range tests {
+
 		t.Run(tt.name, func(t *testing.T) {
 			room["domain"] = tt.domain
 			requestBody, _ := json.Marshal(room)
