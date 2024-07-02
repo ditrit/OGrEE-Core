@@ -21,7 +21,7 @@ import (
 //go:embed schemas/refs/*.json
 var embeddfs embed.FS
 var c *jsonschema.Compiler
-var types map[string]any
+var schemaTypes map[string]any
 
 func init() {
 	// Load JSON schemas
@@ -43,30 +43,31 @@ func loadJsonSchemas(schemaPrefix string) {
 	for _, e := range entries {
 		if strings.HasSuffix(e.Name(), ".json") {
 			file, err := embeddfs.Open(schemaPath + schemaPrefix + e.Name())
-			if err == nil {
-				if e.Name() == "types.json" {
-					// Make two copies of the reader stream
-					var buf bytes.Buffer
-					tee := io.TeeReader(file, &buf)
+			if err != nil {
+				continue
+			}
+			if e.Name() == "types.json" {
+				// Make two copies of the reader stream
+				var buf bytes.Buffer
+				tee := io.TeeReader(file, &buf)
 
-					print(schemaPrefix + e.Name() + " ")
-					c.AddResource(schemaPrefix+e.Name(), tee)
+				print(schemaPrefix + e.Name() + " ")
+				c.AddResource(schemaPrefix+e.Name(), tee)
 
-					// Read and unmarshall types.json file
-					typesBytes, _ := io.ReadAll(&buf)
-					json.Unmarshal(typesBytes, &types)
+				// Read and unmarshall types.json file
+				typesBytes, _ := io.ReadAll(&buf)
+				json.Unmarshal(typesBytes, &schemaTypes)
 
-					// Remove types that do not have a "pattern" attribute
-					types = types["definitions"].(map[string]any)
-					for key, definition := range types {
-						if _, ok := definition.(map[string]any)["pattern"]; !ok {
-							delete(types, key)
-						}
+				// Remove types that do not have a "pattern" attribute
+				schemaTypes = schemaTypes["definitions"].(map[string]any)
+				for key, definition := range schemaTypes {
+					if _, ok := definition.(map[string]any)["pattern"]; !ok {
+						delete(schemaTypes, key)
 					}
-				} else {
-					print(schemaPrefix + e.Name() + " ")
-					c.AddResource(schemaPrefix+e.Name(), file)
 				}
+			} else {
+				print(schemaPrefix + e.Name() + " ")
+				c.AddResource(schemaPrefix+e.Name(), file)
 			}
 		}
 	}
@@ -151,29 +152,58 @@ func getParent(parentEntities []string, t map[string]any) map[string]any {
 }
 
 func validateDeviceSlotExists(deviceData map[string]interface{}, parentData map[string]interface{}) *u.Error {
-	fmt.Println(deviceData["attributes"].(map[string]any)["slot"])
-	if deviceSlots, err := slotToValidSlice(deviceData["attributes"].(map[string]any)); err == nil {
-		// check if requested slots exist in parent device
-		countFound := 0
-		if templateSlug, ok := parentData["attributes"].(map[string]any)["template"].(string); ok {
-			template, _ := GetObject(bson.M{"slug": templateSlug}, "obj_template", u.RequestFilters{}, nil)
-			if ps, ok := template["slots"].(primitive.A); ok {
-				parentSlots := []interface{}(ps)
-				for _, parentSlot := range parentSlots {
-					if pie.Contains(deviceSlots, parentSlot.(map[string]any)["location"].(string)) {
-						countFound = countFound + 1
-					}
+	// get requested slots
+	deviceSlots, err := slotToValidSlice(deviceData["attributes"].(map[string]any))
+	if err != nil {
+		return err
+	}
+
+	// check if requested slots exist in parent device
+	countFound := 0
+	if templateSlug, ok := parentData["attributes"].(map[string]any)["template"].(string); ok {
+		// get parent slots from its template
+		template, _ := GetObject(bson.M{"slug": templateSlug}, "obj_template", u.RequestFilters{}, nil)
+		if ps, ok := template["slots"].(primitive.A); ok {
+			parentSlots := []interface{}(ps)
+			for _, parentSlot := range parentSlots {
+				if pie.Contains(deviceSlots, parentSlot.(map[string]any)["location"].(string)) {
+					countFound = countFound + 1
 				}
 			}
 		}
-		if len(deviceSlots) != countFound {
-			return &u.Error{Type: u.ErrInvalidValue,
-				Message: "Invalid slot: parent does not have all the requested slots"}
-		}
-	} else if err != nil {
-		return err
 	}
+
+	// check if all was found
+	if len(deviceSlots) != countFound {
+		return &u.Error{Type: u.ErrInvalidValue,
+			Message: "Invalid slot: parent does not have all the requested slots"}
+	}
+
 	return nil
+}
+
+func formatJsonSchemaErrors(errors []jsonschema.BasicError) []string {
+	errSlice := []string{}
+	for _, schErr := range errors {
+		// Check all json schema defined types
+		for _, definition := range schemaTypes {
+			pattern := definition.(map[string]any)["pattern"].(string)
+			// If the pattern is in the error message
+			patternErrPrefix := "does not match pattern "
+			if strings.Contains(schErr.Error, patternErrPrefix+quote(pattern)) || strings.Contains(schErr.Error, patternErrPrefix+pattern) {
+				// Substitute it for the more user-friendly description given by the schema
+				schErr.Error = "should be " + definition.(map[string]any)["descriptions"].(map[string]any)["en"].(string)
+			}
+		}
+		if len(schErr.Error) > 0 && !strings.Contains(schErr.Error, "doesn't validate with") {
+			if len(schErr.InstanceLocation) > 0 {
+				errSlice = append(errSlice, schErr.InstanceLocation+" "+schErr.Error)
+			} else {
+				errSlice = append(errSlice, schErr.Error)
+			}
+		}
+	}
+	return errSlice
 }
 
 func ValidateJsonSchema(entity int, t map[string]interface{}) (bool, *u.Error) {
@@ -200,25 +230,7 @@ func ValidateJsonSchema(entity int, t map[string]interface{}) (bool, *u.Error) {
 			fmt.Println(t)
 			println(v.GoString())
 			// Format errors array
-			errSlice := []string{}
-			for _, schErr := range v.BasicOutput().Errors {
-				// Check all types
-				for _, definition := range types {
-					pattern := definition.(map[string]any)["pattern"].(string)
-					// If the pattern is in the error message
-					if strings.Contains(schErr.Error, "does not match pattern "+quote(pattern)) || strings.Contains(schErr.Error, "does not match pattern "+pattern) {
-						// Substitute it for the more user-friendly description
-						schErr.Error = "should be " + definition.(map[string]any)["descriptions"].(map[string]any)["en"].(string)
-					}
-				}
-				if len(schErr.Error) > 0 && !strings.Contains(schErr.Error, "doesn't validate with") {
-					if len(schErr.InstanceLocation) > 0 {
-						errSlice = append(errSlice, schErr.InstanceLocation+" "+schErr.Error)
-					} else {
-						errSlice = append(errSlice, schErr.Error)
-					}
-				}
-			}
+			errSlice := formatJsonSchemaErrors(v.BasicOutput().Errors)
 			return false, &u.Error{Type: u.ErrBadFormat,
 				Message: "JSON body doesn't validate with the expected JSON schema",
 				Details: errSlice}
