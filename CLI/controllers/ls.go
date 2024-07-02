@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"cli/models"
+	"cli/views"
 	"errors"
 	"fmt"
 	"net/http"
@@ -179,4 +180,13 @@ func addAutomaticLayers(rootNode *HierarchyNode) {
 			}
 		}
 	}
+}
+
+func LSEnterprise() error {
+	resp, err := API.Request("GET", "/api/stats", nil, http.StatusOK)
+	if err != nil {
+		return err
+	}
+	views.DisplayJson("", resp.Body)
+	return nil
 }

@@ -1,5 +1,11 @@
 package models
 
+import (
+	l "cli/logger"
+	"fmt"
+	pathutil "path"
+)
+
 const (
 	SITE = iota
 	BLDG
@@ -127,4 +133,19 @@ func GetParentOfEntity(ent int) int {
 
 func EntityCreationMustBeInformed(entity int) bool {
 	return entity != TAG
+}
+
+func SetObjectBaseData(entity int, path string, data map[string]any) error {
+	name := pathutil.Base(path)
+	if name == "." || name == "" {
+		l.GetWarningLogger().Println("Invalid path name provided for OCLI object creation")
+		return fmt.Errorf("invalid path name provided for OCLI object creation")
+	}
+	data["name"] = name
+	data["category"] = EntityToString(entity)
+	data["description"] = ""
+	if _, hasAttributes := data["attributes"].(map[string]any); !hasAttributes {
+		data["attributes"] = map[string]any{}
+	}
+	return nil
 }

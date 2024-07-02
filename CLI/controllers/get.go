@@ -3,9 +3,11 @@ package controllers
 import (
 	"cli/models"
 	"cli/utils"
+	"cli/views"
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -62,7 +64,7 @@ func (controller Controller) ParseWildcardResponse(resp *Response, pathStr strin
 		return nil, nil, err
 	}
 
-	objs := infArrToMapStrinfArr(objsAny)
+	objs := utils.AnyArrToMapArr(objsAny)
 	paths := []string{}
 	for _, obj := range objs {
 		var suffix string
@@ -122,4 +124,71 @@ func (controller Controller) PollObjectWithChildren(path string, depth int) (map
 	}
 
 	return obj, nil
+}
+
+func (controller Controller) GetByAttr(path string, u interface{}) error {
+	obj, err := controller.GetObjectWithChildren(path, 1)
+	if err != nil {
+		return err
+	}
+	cat := obj["category"].(string)
+	if cat != "rack" {
+		return fmt.Errorf("command may only be performed on rack objects")
+	}
+	children := obj["children"].([]any)
+	devices := utils.AnyArrToMapArr(children)
+	switch u.(type) {
+	case int:
+		for i := range devices {
+			if attr, ok := devices[i]["attributes"].(map[string]interface{}); ok {
+				uStr := strconv.Itoa(u.(int))
+				if attr["height"] == uStr {
+					views.DisplayJson("", devices[i])
+					return nil //What if the user placed multiple devices at same height?
+				}
+			}
+		}
+		if State.DebugLvl > NONE {
+			println("The 'U' you provided does not correspond to any device in this rack")
+		}
+	default: //String
+		for i := range devices {
+			if attr, ok := devices[i]["attributes"].(map[string]interface{}); ok {
+				if attr["slot"] == u.(string) {
+					views.DisplayJson("", devices[i])
+					return nil //What if the user placed multiple devices at same slot?
+				}
+			}
+		}
+		if State.DebugLvl > NONE {
+			println("The slot you provided does not correspond to any device in this rack")
+		}
+	}
+	return nil
+}
+
+func (controller Controller) GetSlot(rack map[string]any, location string) (map[string]any, error) {
+	templateAny, ok := rack["attributes"].(map[string]any)["template"]
+	if !ok {
+		return nil, nil
+	}
+	template := templateAny.(string)
+	if template == "" {
+		return nil, nil
+	}
+	resp, err := controller.API.Request("GET", "/api/obj_templates/"+template, nil, http.StatusOK)
+	if err != nil {
+		return nil, err
+	}
+	slots, ok := resp.Body["data"].(map[string]any)["slots"]
+	if !ok {
+		return nil, nil
+	}
+	for _, slotAny := range slots.([]any) {
+		slot := slotAny.(map[string]any)
+		if slot["location"] == location {
+			return slot, nil
+		}
+	}
+	return nil, fmt.Errorf("the slot %s does not exist", location)
 }

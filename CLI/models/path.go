@@ -155,6 +155,17 @@ func PhysicalIDToPath(id string) string {
 	return PhysicalPath + strings.ReplaceAll(id, ".", "/")
 }
 
+func GetObjectIDFromPath(pathStr string) string {
+	for _, prefix := range PathPrefixes {
+		if strings.HasPrefix(pathStr, string(prefix)) {
+			id := pathStr[len(prefix):]
+			id = strings.ReplaceAll(id, "/", ".")
+			return id
+		}
+	}
+	return ""
+}
+
 // Removes last "amount" elements from the "path"
 func PathRemoveLast(path string, amount int) string {
 	pathSplit := SplitPath(path)

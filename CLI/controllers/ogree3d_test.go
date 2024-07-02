@@ -1,7 +1,9 @@
-package controllers
+package controllers_test
 
 import (
+	"cli/controllers"
 	"cli/readline"
+	test_utils "cli/test"
 	"fmt"
 	"net"
 	"sync"
@@ -13,79 +15,79 @@ import (
 
 func init() {
 	rl, _ := readline.New("")
-	State.Terminal = &rl
+	controllers.State.Terminal = &rl
 }
 
 func TestConnect3DReturnsErrorIfProvidedURLIsInvalid(t *testing.T) {
-	err := Connect3D("not.valid")
+	err := controllers.Connect3D("not.valid")
 	assert.ErrorContains(t, err, "OGrEE-3D URL is not valid: not.valid")
-	assert.False(t, Ogree3D.IsConnected())
-	assert.NotEqual(t, Ogree3D.URL(), "not.valid")
+	assert.False(t, controllers.Ogree3D.IsConnected())
+	assert.NotEqual(t, controllers.Ogree3D.URL(), "not.valid")
 }
 
 func TestConnect3DDoesNotConnectIfOgree3DIsUnreachable(t *testing.T) {
-	err := Connect3D("localhost:3000")
+	err := controllers.Connect3D("localhost:3000")
 	assert.ErrorContains(t, err, "OGrEE-3D is not reachable caused by OGrEE-3D (localhost:3000) unreachable\ndial tcp")
 	assert.ErrorContains(t, err, "connect: connection refused")
-	assert.False(t, Ogree3D.IsConnected())
-	assert.Equal(t, Ogree3D.URL(), "localhost:3000")
+	assert.False(t, controllers.Ogree3D.IsConnected())
+	assert.Equal(t, controllers.Ogree3D.URL(), "localhost:3000")
 }
 
 func TestConnect3DConnectsToProvidedURL(t *testing.T) {
 	fakeOgree3D(t, "3000")
 
-	err := Connect3D("localhost:3000")
+	err := controllers.Connect3D("localhost:3000")
 	assert.Nil(t, err)
-	assert.True(t, Ogree3D.IsConnected())
-	assert.Equal(t, Ogree3D.URL(), "localhost:3000")
+	assert.True(t, controllers.Ogree3D.IsConnected())
+	assert.Equal(t, controllers.Ogree3D.URL(), "localhost:3000")
 }
 
 func TestConnect3DConnectsToStateOgreeURLIfNotProvidedURL(t *testing.T) {
 	fakeOgree3D(t, "3000")
 
-	Ogree3D.SetURL("localhost:3000")
-	err := Connect3D("")
+	controllers.Ogree3D.SetURL("localhost:3000")
+	err := controllers.Connect3D("")
 	assert.Nil(t, err)
-	assert.True(t, Ogree3D.IsConnected())
-	assert.Equal(t, Ogree3D.URL(), "localhost:3000")
+	assert.True(t, controllers.Ogree3D.IsConnected())
+	assert.Equal(t, controllers.Ogree3D.URL(), "localhost:3000")
 }
 
 func TestConnect3DReturnsErrorIfAlreadyConnectedAndNotUrlProvided(t *testing.T) {
 	fakeOgree3D(t, "3000")
 
-	err := Connect3D("localhost:3000")
+	err := controllers.Connect3D("localhost:3000")
 	require.Nil(t, err)
-	require.True(t, Ogree3D.IsConnected())
+	require.True(t, controllers.Ogree3D.IsConnected())
 
-	err = Connect3D("")
+	err = controllers.Connect3D("")
 	assert.ErrorContains(t, err, "already connected to OGrEE-3D url: localhost:3000")
-	assert.True(t, Ogree3D.IsConnected())
+	assert.True(t, controllers.Ogree3D.IsConnected())
 }
 
 func TestConnect3DReturnsErrorIfAlreadyConnectedAndSameUrlProvided(t *testing.T) {
 	fakeOgree3D(t, "3000")
 
-	err := Connect3D("localhost:3000")
+	err := controllers.Connect3D("localhost:3000")
 	require.Nil(t, err)
-	require.True(t, Ogree3D.IsConnected())
+	require.True(t, controllers.Ogree3D.IsConnected())
 
-	err = Connect3D("localhost:3000")
+	err = controllers.Connect3D("localhost:3000")
 	assert.ErrorContains(t, err, "already connected to OGrEE-3D url: localhost:3000")
-	assert.True(t, Ogree3D.IsConnected())
+	assert.True(t, controllers.Ogree3D.IsConnected())
 }
 
 func TestConnect3DTriesToConnectIfAlreadyConnectedAndDifferentUrlProvided(t *testing.T) {
 	wg := fakeOgree3D(t, "3000")
 
-	err := Connect3D("localhost:3000")
+	err := controllers.Connect3D("localhost:3000")
 	require.Nil(t, err)
-	require.True(t, Ogree3D.IsConnected())
+	require.True(t, controllers.Ogree3D.IsConnected())
 
-	err = Connect3D("localhost:5000")
+	err = controllers.Connect3D("localhost:5000")
 	assert.ErrorContains(t, err, "OGrEE-3D is not reachable caused by OGrEE-3D (localhost:5000) unreachable\ndial tcp")
 	assert.ErrorContains(t, err, "connect: connection refused")
-	assert.False(t, Ogree3D.IsConnected())
-	assert.Equal(t, Ogree3D.URL(), "localhost:5000")
+	assert.False(t, controllers.Ogree3D.IsConnected())
+	assert.Equal(t, controllers.Ogree3D.URL(), "localhost:5000")
 
 	wg.Wait()
 }
@@ -93,63 +95,63 @@ func TestConnect3DTriesToConnectIfAlreadyConnectedAndDifferentUrlProvided(t *tes
 func TestConnect3DConnectsIfAlreadyConnectedAndDifferentUrlProvidedIsReachable(t *testing.T) {
 	wg := fakeOgree3D(t, "3000")
 
-	err := Connect3D("localhost:3000")
+	err := controllers.Connect3D("localhost:3000")
 	require.Nil(t, err)
-	require.True(t, Ogree3D.IsConnected())
+	require.True(t, controllers.Ogree3D.IsConnected())
 
 	fakeOgree3D(t, "5000")
 
-	err = Connect3D("localhost:5000")
+	err = controllers.Connect3D("localhost:5000")
 	assert.Nil(t, err)
-	assert.True(t, Ogree3D.IsConnected())
-	assert.Equal(t, Ogree3D.URL(), "localhost:5000")
+	assert.True(t, controllers.Ogree3D.IsConnected())
+	assert.Equal(t, controllers.Ogree3D.URL(), "localhost:5000")
 
 	wg.Wait()
 }
 
 func TestInformOgree3DOptionalDoesNothingIfOgree3DNotConnected(t *testing.T) {
-	require.False(t, Ogree3D.IsConnected())
-	err := Ogree3D.InformOptional("Interact", -1, map[string]any{})
+	require.False(t, controllers.Ogree3D.IsConnected())
+	err := controllers.Ogree3D.InformOptional("Interact", -1, map[string]any{})
 	assert.Nil(t, err)
 }
 
 func TestInformOgree3DOptionalSendDataWhenOgree3DIsConnected(t *testing.T) {
 	fakeOgree3D(t, "3000")
 
-	err := Connect3D("localhost:3000")
+	err := controllers.Connect3D("localhost:3000")
 	require.Nil(t, err)
-	require.True(t, Ogree3D.IsConnected())
+	require.True(t, controllers.Ogree3D.IsConnected())
 
-	err = Ogree3D.InformOptional("Interact", -1, map[string]any{})
+	err = controllers.Ogree3D.InformOptional("Interact", -1, map[string]any{})
 	assert.Nil(t, err)
 }
 
 func TestInformOgree3DFailsIfOgree3DNotReachable(t *testing.T) {
-	require.False(t, Ogree3D.IsConnected())
-	Ogree3D.SetURL("localhost:3000")
-	err := Ogree3D.Inform("Interact", -1, map[string]any{})
+	require.False(t, controllers.Ogree3D.IsConnected())
+	controllers.Ogree3D.SetURL("localhost:3000")
+	err := controllers.Ogree3D.Inform("Interact", -1, map[string]any{})
 	assert.ErrorContains(t, err, "OGrEE-3D is not reachable caused by OGrEE-3D (localhost:3000) unreachable\ndial tcp")
 	assert.ErrorContains(t, err, "connect: connection refused")
 }
 
 func TestInformOgree3DEstablishConnectionIfOgree3DIsReachable(t *testing.T) {
-	require.False(t, Ogree3D.IsConnected())
+	require.False(t, controllers.Ogree3D.IsConnected())
 
-	Ogree3D.SetURL("localhost:3000")
+	controllers.Ogree3D.SetURL("localhost:3000")
 	fakeOgree3D(t, "3000")
 
-	err := Ogree3D.Inform("Interact", -1, map[string]any{})
+	err := controllers.Ogree3D.Inform("Interact", -1, map[string]any{})
 	assert.Nil(t, err)
 }
 
 func TestInformOgree3DSendsDataIfEstablishConnectionWithOgree3DAlreadyEstablished(t *testing.T) {
 	fakeOgree3D(t, "3000")
 
-	err := Connect3D("localhost:3000")
+	err := controllers.Connect3D("localhost:3000")
 	require.Nil(t, err)
-	require.True(t, Ogree3D.IsConnected())
+	require.True(t, controllers.Ogree3D.IsConnected())
 
-	err = Ogree3D.Inform("Interact", -1, map[string]any{})
+	err = controllers.Ogree3D.Inform("Interact", -1, map[string]any{})
 	assert.Nil(t, err)
 }
 
@@ -183,10 +185,36 @@ func fakeOgree3D(t *testing.T, port string) *sync.WaitGroup {
 
 	t.Cleanup(func() {
 		ln.Close()
-		if Ogree3D.IsConnected() {
-			Ogree3D.Disconnect()
+		if controllers.Ogree3D.IsConnected() {
+			controllers.Ogree3D.Disconnect()
 		}
 	})
 
 	return &wg
+}
+
+// Test GenerateFilteredJson
+func TestGenerateFilteredJson(t *testing.T) {
+	controllers.State.DrawableJsons = test_utils.GetTestDrawableJson()
+
+	object := map[string]any{
+		"name":        "rack",
+		"parentId":    "site.building.room",
+		"category":    "rack",
+		"description": "",
+		"domain":      "domain",
+		"attributes": map[string]any{
+			"color": "aaaaaa",
+		},
+	}
+
+	filteredObject := controllers.GenerateFilteredJson(object)
+
+	assert.Contains(t, filteredObject, "name")
+	assert.Contains(t, filteredObject, "parentId")
+	assert.Contains(t, filteredObject, "category")
+	assert.Contains(t, filteredObject, "domain")
+	assert.NotContains(t, filteredObject, "description")
+	assert.Contains(t, filteredObject, "attributes")
+	assert.Contains(t, filteredObject["attributes"], "color")
 }

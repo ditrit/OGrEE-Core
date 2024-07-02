@@ -1,6 +1,7 @@
 package utils_test
 
 import (
+	test_utils "cli/test"
 	"cli/utils"
 	"testing"
 
@@ -304,11 +305,11 @@ func TestObjectAttr(t *testing.T) {
 	object := map[string]any{
 		"name": "my-name",
 	}
-	value, ok := utils.ObjectAttr(object, "name")
+	value, ok := utils.GetValFromObj(object, "name")
 	assert.True(t, ok)
 	assert.Equal(t, object["name"], value)
 
-	value, ok = utils.ObjectAttr(object, "color")
+	value, ok = utils.GetValFromObj(object, "color")
 	assert.False(t, ok)
 	assert.Nil(t, value)
 
@@ -316,11 +317,50 @@ func TestObjectAttr(t *testing.T) {
 		"color": "blue",
 	}
 
-	value, ok = utils.ObjectAttr(object, "color")
+	value, ok = utils.GetValFromObj(object, "color")
 	assert.True(t, ok)
 	assert.Equal(t, object["attributes"].(map[string]any)["color"], value)
 
-	value, ok = utils.ObjectAttr(object, "other")
+	value, ok = utils.GetValFromObj(object, "other")
 	assert.False(t, ok)
 	assert.Nil(t, value)
+}
+
+func TestStringify(t *testing.T) {
+	assert.Equal(t, "text", utils.Stringify("text"))
+	assert.Equal(t, "35", utils.Stringify(35))
+	assert.Equal(t, "35", utils.Stringify(35.0))
+	assert.Equal(t, "true", utils.Stringify(true))
+	assert.Equal(t, "hello,world", utils.Stringify([]string{"hello", "world"}))
+	assert.Equal(t, "[45,21]", utils.Stringify([]float64{45, 21}))
+	assert.Equal(t, "[hello,5,[world,450]]", utils.Stringify([]any{"hello", 5, []any{"world", 450}}))
+	assert.Equal(t, "", utils.Stringify(map[string]any{"hello": 5}))
+}
+
+func TestMergeMaps(t *testing.T) {
+	x := map[string]any{
+		"a": "10",
+		"b": "11",
+	}
+	y := map[string]any{
+		"b": "25",
+		"c": "40",
+	}
+	testMap := test_utils.CopyMap(x)
+	utils.MergeMaps(testMap, y, false)
+	assert.Contains(t, testMap, "a")
+	assert.Contains(t, testMap, "b")
+	assert.Contains(t, testMap, "c")
+	assert.Equal(t, x["a"], testMap["a"])
+	assert.Equal(t, x["b"], testMap["b"])
+	assert.Equal(t, y["c"], testMap["c"])
+
+	testMap = test_utils.CopyMap(x)
+	utils.MergeMaps(testMap, y, true)
+	assert.Contains(t, testMap, "a")
+	assert.Contains(t, testMap, "b")
+	assert.Contains(t, testMap, "c")
+	assert.Equal(t, x["a"], testMap["a"])
+	assert.Equal(t, y["b"], testMap["b"])
+	assert.Equal(t, y["c"], testMap["c"])
 }
