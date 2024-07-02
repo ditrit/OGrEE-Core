@@ -1837,25 +1837,27 @@ func (a *assignNode) execute() (interface{}, error) {
 
 // Validate format for cmd [room]:areas=[r1,r2,r3,r4]@[t1,t2,t3,t4]
 func validateAreas(areas map[string]interface{}) error {
-	if reserved, ok := areas["reserved"].([]float64); ok {
-		if tech, ok := areas["technical"].([]float64); ok {
-			if len(reserved) == 4 && len(tech) == 4 {
-				return nil
-			} else {
-				if len(reserved) != 4 && len(tech) == 4 {
-					return errorResponder("reserved", "4", false)
-				} else if len(tech) != 4 && len(reserved) == 4 {
-					return errorResponder("technical", "4", false)
-				} else { //Both invalid
-					return errorResponder("reserved and technical", "4", true)
-				}
-			}
-		} else {
-			return errorResponder("technical", "4", false)
-		}
-	} else {
+	reserved, hasReserved := areas["reserved"].([]float64)
+	if !hasReserved {
 		return errorResponder("reserved", "4", false)
 	}
+	tech, hasTechnical := areas["technical"].([]float64)
+	if !hasTechnical {
+		return errorResponder("technical", "4", false)
+	}
+
+	if len(reserved) == 4 && len(tech) == 4 {
+		return nil
+	} else {
+		if len(reserved) != 4 && len(tech) == 4 {
+			return errorResponder("reserved", "4", false)
+		} else if len(tech) != 4 && len(reserved) == 4 {
+			return errorResponder("technical", "4", false)
+		} else { //Both invalid
+			return errorResponder("reserved and technical", "4", true)
+		}
+	}
+
 }
 
 type cpNode struct {

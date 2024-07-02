@@ -15,8 +15,9 @@ func (controller Controller) DeleteObj(path string) ([]string, error) {
 
 	var resp *Response
 	if models.PathHasLayer(path) {
+		var pathSplit models.Path
 		filters := map[string]string{}
-		pathSplit, err := controller.SplitPath(path)
+		pathSplit, err = controller.SplitPath(path)
 		if err != nil {
 			return nil, err
 		}

@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	l "cli/logger"
 	"cli/models"
 	"cli/utils"
 	"fmt"
@@ -52,18 +51,10 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 	}
 
 	// Object base data
-	name := pathutil.Base(path)
-	path = pathutil.Dir(path)
-	if name == "." || name == "" {
-		l.GetWarningLogger().Println("Invalid path name provided for OCLI object creation")
-		return fmt.Errorf("invalid path name provided for OCLI object creation")
-	}
-	data["name"] = name
-	data["category"] = models.EntityToString(ent)
-	data["description"] = ""
+	models.SetObjectBaseData(ent, path, data)
 
 	// Retrieve parent
-	parentId, parent, err := controller.GetParentFromPath(path, ent, isValidate)
+	parentId, parent, err := controller.GetParentFromPath(pathutil.Dir(path), ent, isValidate)
 	if err != nil {
 		return err
 	}
@@ -81,10 +72,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 	}
 
 	// Attributes
-	attr, hasAttributes := data["attributes"].(map[string]any)
-	if !hasAttributes {
-		attr = map[string]any{}
-	}
+	attr := data["attributes"].(map[string]any)
 	switch ent {
 	case models.BLDG, models.ROOM, models.RACK, models.CORRIDOR, models.GENERIC:
 		utils.MergeMaps(attr, models.BaseAttrs[ent], false)

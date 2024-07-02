@@ -94,32 +94,37 @@ func TranslatePath(p string, acceptSelection bool) string {
 	if p == "-" {
 		return State.PrevPath
 	}
-	var output_words []string
+	var outputWords []string
 	if p[0] != '/' {
 		outputBase := State.CurrPath
 		if p[0] == '-' {
 			outputBase = State.PrevPath
 		}
 
-		output_words = strings.Split(outputBase, "/")[1:]
-		if len(output_words) == 1 && output_words[0] == "" {
-			output_words = output_words[0:0]
+		outputWords = strings.Split(outputBase, "/")[1:]
+		if len(outputWords) == 1 && outputWords[0] == "" {
+			outputWords = outputWords[0:0]
 		}
 	} else {
 		p = p[1:]
 	}
-	input_words := strings.Split(p, "/")
-	for i, word := range input_words {
+	inputWords := strings.Split(p, "/")
+	for i, word := range inputWords {
 		if word == "." || (i == 0 && word == "-") {
 			continue
 		} else if word == ".." {
-			if len(output_words) > 0 {
-				output_words = output_words[:len(output_words)-1]
+			if len(outputWords) > 0 {
+				outputWords = outputWords[:len(outputWords)-1]
 			}
 		} else {
-			output_words = append(output_words, word)
+			outputWords = append(outputWords, word)
 		}
 	}
+	translatePathShortcuts(outputWords)
+	return path.Clean("/" + strings.Join(outputWords, "/"))
+}
+
+func translatePathShortcuts(output_words []string) {
 	if len(output_words) > 0 {
 		if output_words[0] == "P" {
 			output_words[0] = "Physical"
@@ -129,5 +134,4 @@ func TranslatePath(p string, acceptSelection bool) string {
 			output_words[0] = "Organisation"
 		}
 	}
-	return path.Clean("/" + strings.Join(output_words, "/"))
 }

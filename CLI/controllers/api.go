@@ -152,7 +152,6 @@ func (controller Controller) ObjectUrl(pathStr string, depth int) (string, error
 }
 
 func (controller Controller) ObjectUrlGeneric(pathStr string, depth int, filters map[string]string, recursive *RecursiveParams) (string, error) {
-	params := url.Values{}
 	path, err := controller.SplitPath(pathStr)
 	if err != nil {
 		return "", err
@@ -179,6 +178,32 @@ func (controller Controller) ObjectUrlGeneric(pathStr string, depth int, filters
 		}
 	}
 
+	params, err := getUrlParamsFromPath(path, isNodeLayerInVirtualPath)
+	if err != nil {
+		return "", err
+	}
+
+	if depth > 0 {
+		params.Add("limit", strconv.Itoa(depth))
+	}
+
+	endpoint := "/api/objects"
+	for key, value := range filters {
+		if key != "filter" {
+			params.Set(key, value)
+		} else {
+			endpoint = "/api/objects/search"
+		}
+	}
+
+	url, _ := url.Parse(endpoint)
+	url.RawQuery = params.Encode()
+
+	return url.String(), nil
+}
+
+func getUrlParamsFromPath(path models.Path, isNodeLayerInVirtualPath bool) (url.Values, error) {
+	params := url.Values{}
 	switch path.Prefix {
 	case models.StrayPath:
 		params.Add("namespace", "physical.stray")
@@ -216,25 +241,9 @@ func (controller Controller) ObjectUrlGeneric(pathStr string, depth int, filters
 			}
 		}
 	default:
-		return "", fmt.Errorf("invalid object path")
+		return params, fmt.Errorf("invalid object path")
 	}
-	if depth > 0 {
-		params.Add("limit", strconv.Itoa(depth))
-	}
-
-	endpoint := "/api/objects"
-	for key, value := range filters {
-		if key != "filter" {
-			params.Set(key, value)
-		} else {
-			endpoint = "/api/objects/search"
-		}
-	}
-
-	url, _ := url.Parse(endpoint)
-	url.RawQuery = params.Encode()
-
-	return url.String(), nil
+	return params, nil
 }
 
 func GetKey() string {
