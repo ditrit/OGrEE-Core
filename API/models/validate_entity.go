@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/fs"
 	"p3/repository"
 	u "p3/utils"
 	"strings"
@@ -26,10 +27,8 @@ var schemaTypes map[string]any
 func init() {
 	// Load JSON schemas
 	c = jsonschema.NewCompiler()
-	println("Loaded json schemas for validation:")
 	loadJsonSchemas("")
 	loadJsonSchemas("refs/")
-	println()
 }
 
 func loadJsonSchemas(schemaPrefix string) {
@@ -46,30 +45,33 @@ func loadJsonSchemas(schemaPrefix string) {
 			if err != nil {
 				continue
 			}
-			if e.Name() == "types.json" {
-				// Make two copies of the reader stream
-				var buf bytes.Buffer
-				tee := io.TeeReader(file, &buf)
+			loadJsonSchema(schemaPrefix, e.Name(), file)
+		}
+	}
+}
 
-				print(schemaPrefix + e.Name() + " ")
-				c.AddResource(schemaPrefix+e.Name(), tee)
+func loadJsonSchema(schemaPrefix, fileName string, file fs.File) {
+	fullFileName := schemaPrefix + fileName
+	if fileName == "types.json" {
+		// Make two copies of the reader stream
+		var buf bytes.Buffer
+		tee := io.TeeReader(file, &buf)
 
-				// Read and unmarshall types.json file
-				typesBytes, _ := io.ReadAll(&buf)
-				json.Unmarshal(typesBytes, &schemaTypes)
+		c.AddResource(fullFileName, tee)
 
-				// Remove types that do not have a "pattern" attribute
-				schemaTypes = schemaTypes["definitions"].(map[string]any)
-				for key, definition := range schemaTypes {
-					if _, ok := definition.(map[string]any)["pattern"]; !ok {
-						delete(schemaTypes, key)
-					}
-				}
-			} else {
-				print(schemaPrefix + e.Name() + " ")
-				c.AddResource(schemaPrefix+e.Name(), file)
+		// Read and unmarshall types.json file
+		typesBytes, _ := io.ReadAll(&buf)
+		json.Unmarshal(typesBytes, &schemaTypes)
+
+		// Remove types that do not have a "pattern" attribute
+		schemaTypes = schemaTypes["definitions"].(map[string]any)
+		for key, definition := range schemaTypes {
+			if _, ok := definition.(map[string]any)["pattern"]; !ok {
+				delete(schemaTypes, key)
 			}
 		}
+	} else {
+		c.AddResource(fullFileName, file)
 	}
 }
 
@@ -107,17 +109,25 @@ func getParentSetId(entity int, obj map[string]any) (map[string]any, *u.Error) {
 	return parent, nil
 }
 
-func validateParent(ent string, entNum int, t map[string]interface{}) (map[string]interface{}, *u.Error) {
+func validateParentId(entNum int, parentId any) (bool, *u.Error) {
 	if entNum == u.SITE {
-		return nil, nil
+		// never has a parent
+		return false, nil
 	}
-
-	//Check ParentID is valid
-	if t["parentId"] == nil || t["parentId"] == "" {
+	// Check ParentID is valid
+	if parentId == nil || parentId == "" {
 		if entNum == u.DOMAIN || entNum == u.STRAYOBJ || entNum == u.VIRTUALOBJ {
-			return nil, nil
+			// allowed to not have a parent
+			return false, nil
 		}
-		return nil, &u.Error{Type: u.ErrBadFormat, Message: "ParentID is not valid"}
+		return false, &u.Error{Type: u.ErrBadFormat, Message: "ParentID is not valid"}
+	}
+	return true, nil
+}
+
+func validateParent(ent string, entNum int, t map[string]interface{}) (map[string]interface{}, *u.Error) {
+	if hasParentId, err := validateParentId(entNum, t["parentId"]); !hasParentId {
+		return nil, err
 	}
 
 	// Anyone can have a stray parent
@@ -162,7 +172,6 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 
 		return nil, &u.Error{Type: u.ErrInvalidValue,
 			Message: fmt.Sprintf("ParentID should correspond to existing %s ID", parentStr)}
-
 	}
 }
 
