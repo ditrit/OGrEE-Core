@@ -10,7 +10,8 @@
             "content": {
               "type": "array",
               "items": {
-                  "type": "string"
+                  "type": "string",
+                  "$ref": "refs/types.json#/definitions/name"
               },
               "minItems": 1
             },

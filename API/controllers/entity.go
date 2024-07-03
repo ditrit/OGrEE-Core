@@ -462,7 +462,7 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 	// Get objects
 	filters := getFiltersFromQueryParams(r)
 	req := u.FilteredReqFromQueryParams(r.URL)
-	entities := u.GetEntitiesByNamespace(filters.Namespace, filters.Id)
+	entities := u.GetEntitiesById(filters.Namespace, filters.Id)
 
 	for _, entStr := range entities {
 		// Get objects
@@ -669,7 +669,7 @@ func HandleComplexFilters(w http.ResponseWriter, r *http.Request) {
 	// Get objects
 	filters := getFiltersFromQueryParams(r)
 	req := u.FilteredReqFromQueryParams(r.URL)
-	entities := u.GetEntitiesByNamespace(filters.Namespace, filters.Id)
+	entities := u.GetEntitiesById(filters.Namespace, filters.Id)
 
 	for _, entStr := range entities {
 		// Get objects
@@ -906,7 +906,7 @@ func GetLayerObjects(w http.ResponseWriter, r *http.Request) {
 
 		// Get objects
 		matchingObjects := []map[string]interface{}{}
-		entities := u.GetEntitiesByNamespace(u.Any, searchId)
+		entities := u.GetEntitiesById(u.Any, searchId)
 		fmt.Println(req)
 		fmt.Println(entities)
 		for _, entStr := range entities {
@@ -2064,7 +2064,6 @@ func ValidateEntity(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// ok, err := models.ValidateEntity(entInt, obj)
 	if ok, err := models.ValidateJsonSchema(entInt, obj); !ok {
 		u.RespondWithError(w, err)
 	} else {

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	u "p3/utils"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -29,4 +30,13 @@ func GetDateFilters(req bson.M, startDate string, endDate string) error {
 		req["lastUpdated"] = lastUpdateReq
 	}
 	return nil
+}
+
+func GroupContentToOrFilter(content []any, parentId string) primitive.M {
+	orReq := bson.A{}
+	for _, objectName := range content {
+		orReq = append(orReq, bson.M{"id": parentId + u.HN_DELIMETER + objectName.(string)})
+	}
+	filter := bson.M{"$or": orReq}
+	return filter
 }

@@ -73,6 +73,40 @@ func loadJsonSchemas(schemaPrefix string) {
 	}
 }
 
+func validateDomain(entity int, obj, parent map[string]any) *u.Error {
+	if entity == u.DOMAIN || !u.IsEntityHierarchical(entity) {
+		return nil
+	}
+	if !CheckDomainExists(obj["domain"].(string)) {
+		return &u.Error{Type: u.ErrNotFound,
+			Message: "Domain not found: " + obj["domain"].(string)}
+	}
+	if parentDomain, ok := parent["domain"].(string); ok {
+		if !DomainIsEqualOrChild(parentDomain, obj["domain"].(string)) {
+			return &u.Error{Type: u.ErrBadFormat,
+				Message: "Object domain is not equal or child of parent's domain"}
+		}
+	}
+	return nil
+}
+
+func getParentSetId(entity int, obj map[string]any) (map[string]any, *u.Error) {
+	var parent map[string]interface{}
+	if u.IsEntityHierarchical(entity) {
+		var err *u.Error
+		parent, err = validateParent(u.EntityToString(entity), entity, obj)
+		if err != nil {
+			return parent, err
+		} else if parent["id"] != nil {
+			obj["id"] = parent["id"].(string) +
+				u.HN_DELIMETER + obj["name"].(string)
+		} else {
+			obj["id"] = obj["name"].(string)
+		}
+	}
+	return parent, nil
+}
+
 func validateParent(ent string, entNum int, t map[string]interface{}) (map[string]interface{}, *u.Error) {
 	if entNum == u.SITE {
 		return nil, nil
@@ -252,185 +286,30 @@ func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 		return err
 	}
 
-	// Extra checks
 	// Check parent and domain for objects
 	var parent map[string]interface{}
-	if u.IsEntityHierarchical(entity) {
-		var err *u.Error
-		parent, err = validateParent(u.EntityToString(entity), entity, t)
-		if err != nil {
-			return err
-		} else if parent["id"] != nil {
-			t["id"] = parent["id"].(string) +
-				u.HN_DELIMETER + t["name"].(string)
-		} else {
-			t["id"] = t["name"].(string)
-		}
-		//Check domain
-		if entity != u.DOMAIN {
-			if !CheckDomainExists(t["domain"].(string)) {
-				return &u.Error{Type: u.ErrNotFound,
-					Message: "Domain not found: " + t["domain"].(string)}
-			}
-			if parentDomain, ok := parent["domain"].(string); ok {
-				if !DomainIsEqualOrChild(parentDomain, t["domain"].(string)) {
-					return &u.Error{Type: u.ErrBadFormat,
-						Message: "Object domain is not equal or child of parent's domain"}
-				}
-			}
-		}
+	parent, err := getParentSetId(entity, t)
+	if err != nil {
+		return err
+	}
+	if err := validateDomain(entity, t, parent); err != nil {
+		return err
+	}
+
+	// Check ID unique for some entities
+	if err := checkIdUnique(entity, t["id"]); err != nil {
+		return err
 	}
 
 	// Check attributes
-	if entity == u.RACK || entity == u.GROUP || entity == u.CORRIDOR || entity == u.GENERIC ||
-		entity == u.DEVICE || entity == u.VIRTUALOBJ {
-		attributes := t["attributes"].(map[string]any)
-
-		if pie.Contains(u.RoomChildren, entity) {
-			// if entity is room children, verify that the id (name) is not repeated in other children
-			idIsPresent, err := ObjectsHaveAttribute(
-				u.SliceRemove(u.RoomChildren, entity),
-				"id",
-				t["id"].(string),
-			)
-			if err != nil {
-				return err
-			}
-
-			if idIsPresent {
-				return &u.Error{
-					Type:    u.ErrBadFormat,
-					Message: "Object name must be unique among corridors, racks and generic objects",
-				}
-			}
+	if pie.Contains(u.EntitiesWithAttributeCheck, entity) {
+		if err := validateAttributes(entity, t, parent); err != nil {
+			return err
 		}
+	}
 
-		switch entity {
-		case u.CORRIDOR:
-			// Set the color manually based on temp. as specified by client
-			if attributes["temperature"] == "warm" {
-				attributes["color"] = "990000"
-			} else if attributes["temperature"] == "cold" {
-				attributes["color"] = "000099"
-			}
-		case u.GROUP:
-			objects := attributes["content"].([]interface{})
-			if len(objects) <= 1 && objects[0] == "" {
-				return &u.Error{
-					Type:    u.ErrBadFormat,
-					Message: "objects separated by a comma must be on the payload",
-				}
-			}
-
-			// Ensure objects are all unique
-			if !pie.AreUnique(objects) {
-				return &u.Error{
-					Type:    u.ErrBadFormat,
-					Message: "The group cannot have duplicate objects",
-				}
-			}
-
-			// Ensure objects all exist
-			orReq := bson.A{}
-			for _, objectName := range objects {
-				if strings.Contains(objectName.(string), u.HN_DELIMETER) {
-					return &u.Error{
-						Type:    u.ErrBadFormat,
-						Message: "All group objects must be directly under the parent (no . allowed)",
-					}
-				}
-				orReq = append(orReq, bson.M{"id": t["parentId"].(string) + u.HN_DELIMETER + objectName.(string)})
-			}
-			filter := bson.M{"$or": orReq}
-
-			// If parent is rack, retrieve devices
-			if parent["parent"].(string) == "rack" {
-				count, err := repository.CountObjects(u.DEVICE, filter)
-				if err != nil {
-					return err
-				}
-
-				if count != len(objects) {
-					return &u.Error{Type: u.ErrBadFormat,
-						Message: "Unable to verify objects in specified group" +
-							" please check and try again"}
-				}
-			} else if parent["parent"].(string) == "room" {
-				// If parent is room, retrieve room children
-				count, err := repository.CountObjectsManyEntities(u.RoomChildren, filter)
-				if err != nil {
-					return err
-				}
-
-				if count != len(objects) {
-					return &u.Error{
-						Type:    u.ErrBadFormat,
-						Message: "Some object(s) could not be found. Please check and try again",
-					}
-				}
-			}
-
-			// Check if Group ID is unique
-			entities := u.GetEntitiesByNamespace(u.Physical, t["id"].(string))
-			for _, entStr := range entities {
-				if entStr != u.EntityToString(u.GROUP) {
-					// Get objects
-					entData, err := GetManyObjects(entStr, bson.M{"id": t["id"]}, u.RequestFilters{}, "", nil)
-					if err != nil {
-						err.Message = "Error while check id unicity at " + entStr + ":" + err.Message
-						return err
-					}
-					if len(entData) > 0 {
-						return &u.Error{Type: u.ErrBadFormat,
-							Message: "This group ID is not unique among " + entStr + "s"}
-					}
-				}
-			}
-		case u.DEVICE:
-			if deviceSlots, err := slotToValidSlice(attributes); err == nil {
-				// check if all requested slots are free
-				idPattern := primitive.Regex{Pattern: "^" + t["parentId"].(string) +
-					"(." + u.NAME_REGEX + "){1}$", Options: ""} // find siblings
-				if siblings, err := GetManyObjects(u.EntityToString(u.DEVICE), bson.M{"id": idPattern},
-					u.RequestFilters{}, "", nil); err != nil {
-					return err
-				} else {
-					for _, obj := range siblings {
-						if obj["name"] != t["name"] { // do not check itself
-							if siblingSlots, err := slotToValidSlice(obj["attributes"].(map[string]any)); err == nil {
-								for _, requestedSlot := range deviceSlots {
-									if pie.Contains(siblingSlots, requestedSlot) {
-										return &u.Error{Type: u.ErrBadFormat,
-											Message: "Invalid slot: one or more requested slots are already in use"}
-									}
-								}
-							}
-						}
-					}
-				}
-			} else if err != nil {
-				return err
-			}
-		case u.VIRTUALOBJ:
-			if attributes["vlinks"] != nil {
-				// check if all vlinks point to valid objects
-				for _, vlinkId := range attributes["vlinks"].([]any) {
-					count, err := repository.CountObjectsManyEntities([]int{u.DEVICE, u.VIRTUALOBJ},
-						bson.M{"id": strings.Split(vlinkId.(string), "#")[0]})
-					if err != nil {
-						return err
-					}
-
-					if count != 1 {
-						return &u.Error{
-							Type:    u.ErrBadFormat,
-							Message: "One or more vlink objects could not be found. Note that it must be device or virtual obj",
-						}
-					}
-				}
-			}
-		}
-	} else if entity == u.LAYER && !doublestar.ValidatePattern(t["applicability"].(string)) {
+	// Layer extra check
+	if entity == u.LAYER && !doublestar.ValidatePattern(t["applicability"].(string)) {
 		return &u.Error{
 			Type:    u.ErrBadFormat,
 			Message: "Layer applicability pattern is not valid",
@@ -483,4 +362,44 @@ func quote(s string) string {
 	s = strings.ReplaceAll(s, `\"`, `"`)
 	s = strings.ReplaceAll(s, `'`, `\'`)
 	return "'" + s[1:len(s)-1] + "'"
+}
+
+// ID is guaranteed to be unique for each entity by mongo
+// but some entities need some extra checks
+func checkIdUnique(entity int, id any) *u.Error {
+	// Check if Room Child ID is unique among all room children
+	if pie.Contains(u.RoomChildren, entity) {
+		if err := checkIdUniqueAmongEntities(u.SliceRemove(u.RoomChildren, entity),
+			id.(string)); err != nil {
+			return err
+		}
+	}
+	// Check if Group ID is unique
+	if entity == u.GROUP {
+		entities := u.GetEntitiesById(u.Physical, id.(string))
+		if err := checkIdUniqueAmongEntities(u.EntitiesStrToInt(entities),
+			id.(string)); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func checkIdUniqueAmongEntities(entities []int, id string) *u.Error {
+	idIsPresent, err := ObjectsHaveAttribute(
+		entities,
+		"id",
+		id,
+	)
+	if err != nil {
+		return err
+	}
+
+	if idIsPresent {
+		return &u.Error{
+			Type:    u.ErrBadFormat,
+			Message: "This object ID is not unique",
+		}
+	}
+	return nil
 }

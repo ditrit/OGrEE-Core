@@ -175,7 +175,7 @@ func prepareCreateEntity(entity int, t map[string]interface{}, userRoles map[str
 
 func GetHierarchyObjectById(hierarchyName string, filters u.RequestFilters, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
 	// Get possible collections for this name
-	rangeEntities := u.GetEntitiesByNamespace(u.PHierarchy, hierarchyName)
+	rangeEntities := u.GetEntitiesById(u.PHierarchy, hierarchyName)
 	req := bson.M{"id": hierarchyName}
 
 	// Search each collection
@@ -460,7 +460,7 @@ func getHierarchyWithNamespace(namespace u.Namespace, userRoles map[string]Role,
 	}
 
 	// Search collections according to namespace
-	entities := u.GetEntitiesByNamespace(namespace, "")
+	entities := u.GetEntitiesById(namespace, "")
 
 	for _, entityName := range entities {
 		// Get data

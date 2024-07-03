@@ -253,6 +253,10 @@ var EntitiesWithTags = []int{
 	STRAYOBJ, SITE, BLDG, ROOM, RACK, DEVICE, AC, CABINET, CORRIDOR, GENERIC, PWRPNL, GROUP, VIRTUALOBJ,
 }
 
+var EntitiesWithAttributeCheck = []int{
+	CORRIDOR, GROUP, DEVICE, VIRTUALOBJ,
+}
+
 var RoomChildren = []int{RACK, CORRIDOR, GENERIC}
 
 func EntityHasTags(entity int) bool {
@@ -312,6 +316,10 @@ func EntityToString(entity int) string {
 	}
 }
 
+func EntitiesStrToInt(entities []string) []int {
+	return pie.Map[string, int](entities, EntityStrToInt)
+}
+
 func EntityStrToInt(entity string) int {
 	switch entity {
 	case "site":
@@ -362,7 +370,7 @@ func NamespaceToString(namespace Namespace) string {
 	return ref.String()
 }
 
-func GetEntitiesByNamespace(namespace Namespace, hierarchyName string) []string {
+func GetEntitiesById(namespace Namespace, hierarchyId string) []string {
 	var entNames []string
 	switch namespace {
 	case Organisational:
@@ -386,7 +394,7 @@ func GetEntitiesByNamespace(namespace Namespace, hierarchyName string) []string 
 	case Physical, PHierarchy, Any:
 		entities := []int{VIRTUALOBJ}
 
-		if hierarchyName == "" || hierarchyName == "**" {
+		if hierarchyId == "" || hierarchyId == "**" {
 			// All entities of each namespace
 			switch namespace {
 			case Physical:
@@ -406,11 +414,11 @@ func GetEntitiesByNamespace(namespace Namespace, hierarchyName string) []string 
 			}
 
 			// Add entities according to hierarchyName possibilities
-			if strings.Contains(hierarchyName, ".**") {
+			if strings.Contains(hierarchyId, ".**") {
 				var initialEntity int
 				finalEntity := GROUP
 
-				switch strings.Count(hierarchyName, HN_DELIMETER) {
+				switch strings.Count(hierarchyId, HN_DELIMETER) {
 				case 1, 2:
 					initialEntity = BLDG
 				case 3:
@@ -429,7 +437,7 @@ func GetEntitiesByNamespace(namespace Namespace, hierarchyName string) []string 
 					entities = append(entities, entity)
 				}
 			} else {
-				switch strings.Count(hierarchyName, HN_DELIMETER) {
+				switch strings.Count(hierarchyId, HN_DELIMETER) {
 				case 0:
 					entities = append(entities, SITE)
 					if namespace == Any {
