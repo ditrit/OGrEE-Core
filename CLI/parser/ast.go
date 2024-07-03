@@ -294,43 +294,28 @@ func (n *loadNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	//Usually functions from 'controller' pkg are called
-	//But in this case we are calling a function from 'main' pkg
-	return nil, LoadFile(path)
-}
 
-type dryLoadNode struct {
-	path node
-}
+	isDryRun := false
+	path, isDryRun = strings.CutSuffix(path, " -d")
+	if isDryRun {
+		// set dry run state
+		path = strings.TrimSpace(path)
+		cmd.State.DryRun = true
+		cmd.State.DryRunErrors = []error{}
+		// run ocli file
+		LoadFile(path)
 
-func (n *dryLoadNode) execute() (interface{}, error) {
-	path, err := nodeToString(n.path, "path")
-	if err != nil {
-		return nil, err
-	}
-	cmd.State.DryRun = true
-	cmd.State.DryRunErrors = []error{}
-	// run ocli file
-	LoadFile(path)
+		// print result
+		views.PrintDryRunErrors(cmd.State.DryRunErrors)
 
-	// print result
-	fmt.Println("####################")
-	errCountMsg := fmt.Sprint("Errors found: ", len(cmd.State.DryRunErrors))
-	if len(cmd.State.DryRunErrors) > 0 {
-		fmt.Println("\033[31m" + errCountMsg + "\033[0m")
+		cmd.State.DryRun = false
+		cmd.State.DryRunErrors = []error{}
+		return nil, nil
 	} else {
-		fmt.Println("\u001b[32m" + errCountMsg + "\u001b[0m")
+		//Usually functions from 'controller' pkg are called
+		//But in this case we are calling a function from 'parser' pkg
+		return nil, LoadFile(path)
 	}
-
-	// print error recap
-	for idx, err := range cmd.State.DryRunErrors {
-		fmt.Println("\033[31m# Error", idx, "\033[0m")
-		fmt.Println(err)
-	}
-
-	cmd.State.DryRun = false
-	cmd.State.DryRunErrors = []error{}
-	return nil, nil
 }
 
 type loadTemplateNode struct {
