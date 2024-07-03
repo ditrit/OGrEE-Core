@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"strconv"
+	"strings"
 )
 
 func ExeDir() string {
@@ -213,6 +214,10 @@ func IsFloat(x interface{}) bool {
 	return ok || ok2
 }
 
+func IsNumeric(x interface{}) bool {
+	return IsInt(x) || IsFloat(x)
+}
+
 func CompareVals(val1 any, val2 any) (bool, bool) {
 	val1Float, err1 := ValToFloat(val1, "")
 	val2Float, err2 := ValToFloat(val2, "")
@@ -240,8 +245,8 @@ func NameOrSlug(obj map[string]any) string {
 	panic("child has no name/slug")
 }
 
-func ObjectAttr(obj map[string]any, attr string) (any, bool) {
-	val, ok := obj[attr]
+func GetValFromObj(obj map[string]any, key string) (any, bool) {
+	val, ok := obj[key]
 	if ok {
 		return val, true
 	}
@@ -249,9 +254,70 @@ func ObjectAttr(obj map[string]any, attr string) (any, bool) {
 	if !ok {
 		return nil, false
 	}
-	val, ok = attributes[attr]
+	val, ok = attributes[key]
 	if !ok {
 		return nil, false
 	}
 	return val, true
+}
+
+// Helper func that safely copies a value in a map
+func CopyMapVal(dest, source map[string]interface{}, key string) bool {
+	if _, ok := source[key]; ok {
+		dest[key] = source[key]
+		return true
+	}
+	return false
+}
+
+// Convert []interface{} array to
+// []map[string]interface{} array
+func AnyArrToMapArr(x []interface{}) []map[string]interface{} {
+	ans := []map[string]interface{}{}
+	for i := range x {
+		ans = append(ans, x[i].(map[string]interface{}))
+	}
+	return ans
+}
+
+func Stringify(x interface{}) string {
+	switch xArr := x.(type) {
+	case string:
+		return x.(string)
+	case int:
+		return strconv.Itoa(x.(int))
+	case float32, float64:
+		return strconv.FormatFloat(float64(x.(float64)), 'f', -1, 64)
+	case bool:
+		return strconv.FormatBool(x.(bool))
+	case []string:
+		return strings.Join(x.([]string), ",")
+	case []interface{}:
+		var arrStr []string
+		for i := range xArr {
+			arrStr = append(arrStr, Stringify(xArr[i]))
+		}
+		return "[" + strings.Join(arrStr, ",") + "]"
+	case []float64:
+		var arrStr []string
+		for i := range xArr {
+			arrStr = append(arrStr, Stringify(xArr[i]))
+		}
+		return "[" + strings.Join(arrStr, ",") + "]"
+	}
+	return ""
+}
+
+func MergeMaps(x, y map[string]interface{}, overwrite bool) {
+	for i := range y {
+		//Conflict case
+		if _, ok := x[i]; ok {
+			if overwrite {
+				x[i] = y[i]
+			}
+		} else {
+			x[i] = y[i]
+		}
+
+	}
 }

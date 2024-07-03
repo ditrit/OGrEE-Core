@@ -462,7 +462,7 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 	// Get objects
 	filters := getFiltersFromQueryParams(r)
 	req := u.FilteredReqFromQueryParams(r.URL)
-	entities := u.GetEntitiesByNamespace(filters.Namespace, filters.Id)
+	entities := u.GetEntitiesById(filters.Namespace, filters.Id)
 
 	for _, entStr := range entities {
 		// Get objects
@@ -669,7 +669,7 @@ func HandleComplexFilters(w http.ResponseWriter, r *http.Request) {
 	// Get objects
 	filters := getFiltersFromQueryParams(r)
 	req := u.FilteredReqFromQueryParams(r.URL)
-	entities := u.GetEntitiesByNamespace(filters.Namespace, filters.Id)
+	entities := u.GetEntitiesById(filters.Namespace, filters.Id)
 
 	for _, entStr := range entities {
 		// Get objects
@@ -906,7 +906,7 @@ func GetLayerObjects(w http.ResponseWriter, r *http.Request) {
 
 		// Get objects
 		matchingObjects := []map[string]interface{}{}
-		entities := u.GetEntitiesByNamespace(u.Any, searchId)
+		entities := u.GetEntitiesById(u.Any, searchId)
 		fmt.Println(req)
 		fmt.Println(entities)
 		for _, entStr := range entities {
@@ -2047,7 +2047,13 @@ func ValidateEntity(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if u.IsEntityHierarchical(entInt) {
-		if permission := models.CheckUserPermissions(user.Roles, entInt, obj["domain"].(string)); permission < models.WRITE {
+		domain := ""
+		if entInt == u.DOMAIN {
+			domain = obj["parentId"].(string) + obj["name"].(string)
+		} else if domainStr, ok := obj["domain"].(string); ok {
+			domain = domainStr
+		}
+		if permission := models.CheckUserPermissions(user.Roles, entInt, domain); permission < models.WRITE {
 			w.WriteHeader(http.StatusUnauthorized)
 			u.Respond(w, u.Message("This user"+
 				" does not have sufficient permissions to create"+
@@ -2058,12 +2064,10 @@ func ValidateEntity(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	uErr := models.ValidateEntity(entInt, obj)
-	if uErr == nil {
-		u.Respond(w, u.Message("This object can be created"))
-		return
+	if ok, err := models.ValidateJsonSchema(entInt, obj); !ok {
+		u.RespondWithError(w, err)
 	} else {
-		u.RespondWithError(w, uErr)
+		u.Respond(w, u.Message("This object can be created"))
 	}
 }
 

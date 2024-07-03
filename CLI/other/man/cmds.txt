@@ -1,10 +1,16 @@
-USAGE: .cmds: [PATH]    
+USAGE: .cmds: [PATH] [OPTIONS] 
 Loads script file and executes OGREE commands in file   
 
 NOTE   
 Complete path must be provided. At this time it is preferable to enclose the path in quotes.      
 
+OPTIONS
+    -d 
+        Specifies dry run mode. 
+        Commands will only be validated, not effectively executed.
+
 EXAMPLE   
 
     .cmds: ../../scripts/ocliScript   
     .cmds: "path/to/scriptFile/ocliScript.ocli" 
+    .cmds: ocliScriptToDryRun -d

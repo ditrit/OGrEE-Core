@@ -154,13 +154,13 @@ func TestValidateEntityGroupParent(t *testing.T) {
 	}
 	err := models.ValidateEntity(u.GROUP, template)
 	assert.NotNil(t, err)
-	assert.Equal(t, "Group parent should correspond to existing rack or room", err.Message)
+	assert.Equal(t, "JSON body doesn't validate with the expected JSON schema", err.Message)
 
 	template["parentId"] = "temporarySite.temporaryBuilding.temporaryRoom"
 	template["name"] = "groupA"
 	err = models.ValidateEntity(u.GROUP, template)
 	assert.NotNil(t, err)
-	assert.Equal(t, "All group objects must be directly under the parent (no . allowed)", err.Message)
+	assert.Equal(t, "JSON body doesn't validate with the expected JSON schema", err.Message)
 
 	template["parentId"] = "temporarySite.temporaryBuilding.temporaryRoom"
 	template["name"] = "groupA"
@@ -225,7 +225,7 @@ func TestCreateCorridorOrGenericWithSameNameAsRackReturnsError(t *testing.T) {
 			_, err := tt.createFunction(roomId, childName)
 			assert.NotNil(t, err)
 			assert.Equal(t, u.ErrBadFormat, err.Type)
-			assert.Equal(t, "Object name must be unique among corridors, racks and generic objects", err.Message)
+			assert.Equal(t, "This object ID is not unique", err.Message)
 		})
 	}
 }

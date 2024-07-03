@@ -168,3 +168,59 @@ func (ogree3D *ogree3DPortImpl) InformOptional(caller string, entity int, data m
 	}
 	return nil
 }
+
+func Connect3D(url string) error {
+	return Ogree3D.Connect(url, *State.Terminal)
+}
+
+func Disconnect3D() {
+	Ogree3D.InformOptional("Disconnect3d", -1, map[string]interface{}{"type": "logout", "data": ""})
+	Ogree3D.Disconnect()
+}
+
+// This func is used for when the user wants to filter certain
+// attributes from being sent/displayed to Unity viewer client
+func GenerateFilteredJson(data map[string]interface{}) map[string]interface{} {
+	if category, ok := data["category"].(string); ok && models.EntityStrToInt(category) != -1 {
+		//Start the filtration
+		ans := map[string]interface{}{}
+		attrs := map[string]interface{}{}
+		for key := range data {
+			if key == "attributes" {
+				for attrName, attrValue := range data[key].(map[string]interface{}) {
+					copyAttrIfDrawable(attrs, category, attrName, attrValue)
+				}
+			} else {
+				copyAttrIfDrawable(ans, category, key, data[key])
+			}
+		}
+		if len(attrs) > 0 {
+			ans["attributes"] = attrs
+		}
+		return ans
+	}
+	return data //Nothing will be filtered
+}
+
+func copyAttrIfDrawable(attrs map[string]interface{}, category, attrName string, attrValue any) {
+	if IsCategoryAttrDrawable(category, attrName) {
+		attrs[attrName] = attrValue
+	}
+}
+
+func IsInObjForUnity(entityStr string) bool {
+	entInt := models.EntityStrToInt(entityStr)
+	return IsEntityTypeForOGrEE3D(entInt)
+}
+
+func IsEntityTypeForOGrEE3D(entityType int) bool {
+	if entityType != -1 {
+		for idx := range State.ObjsForUnity {
+			if State.ObjsForUnity[idx] == entityType {
+				return true
+			}
+		}
+	}
+
+	return false
+}

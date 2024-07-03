@@ -2,6 +2,7 @@ package controllers_test
 
 import (
 	"cli/controllers"
+	l "cli/logger"
 	"cli/models"
 	test_utils "cli/test"
 	"maps"
@@ -43,13 +44,17 @@ var createRoom = map[string]any{
 	"domain":   "test-domain",
 }
 
+func init() {
+	l.InitLogs()
+}
+
 func TestCreateObjectPathErrors(t *testing.T) {
 	tests := []struct {
 		name         string
 		path         string
 		errorMessage string
 	}{
-		{"InvalidPath", "/.", "Invalid path name provided for OCLI object creation"},
+		{"InvalidPath", "/.", "invalid path name provided for OCLI object creation"},
 		{"ParentNotFound", "/", "parent not found"},
 	}
 
@@ -150,7 +155,7 @@ func TestCreateGenericWithTemplateWorks(t *testing.T) {
 			"posXYUnit": "m",
 			"template":  "generic-template",
 		},
-	})
+	}, false)
 	assert.Nil(t, err)
 }
 
@@ -194,18 +199,9 @@ func TestCreateBuildingInvalidSize(t *testing.T) {
 	buildingInvalidSize["attributes"].(map[string]any)["size"] = "[1,2,3]"
 
 	test_utils.MockGetObject(mockAPI, baseSite)
-
-	// with state.DebugLvl = 0
 	err := controller.CreateObject("/Physical/BASIC/A", models.BLDG, buildingInvalidSize)
-	// returns nil but the object is not created
-	assert.Nil(t, err)
-
-	// with state.DebugLvl > 0
-	controllers.State.DebugLvl = 1
-	test_utils.MockGetObject(mockAPI, baseSite)
-	err = controller.CreateObject("/Physical/BASIC/A", models.BLDG, buildingInvalidSize)
 	assert.NotNil(t, err)
-	assert.ErrorContains(t, err, "Invalid size attribute provided."+
+	assert.ErrorContains(t, err, "invalid size attribute provided."+
 		" \nIt must be an array/list/vector with 3 elements."+
 		" Please refer to the wiki or manual reference"+
 		" for more details on how to create objects "+
@@ -219,18 +215,10 @@ func TestCreateBuildingInvalidPosXY(t *testing.T) {
 	buildingInvalidPosXY := maps.Clone(baseBuilding)
 	buildingInvalidPosXY["attributes"].(map[string]any)["posXY"] = []float64{}
 
-	// with state.DebugLvl = 0
 	test_utils.MockGetObject(mockAPI, baseSite)
-	err := controller.CreateObject("/Physical/BASIC/A", models.BLDG, maps.Clone(buildingInvalidPosXY))
-	// returns nil but the object is not created
-	assert.Nil(t, err)
-
-	// with state.DebugLvl > 0
-	controllers.State.DebugLvl = 1
-	test_utils.MockGetObject(mockAPI, baseSite)
-	err = controller.CreateObject("/Physical/BASIC/A", models.BLDG, buildingInvalidPosXY)
+	err := controller.CreateObject("/Physical/BASIC/A", models.BLDG, buildingInvalidPosXY)
 	assert.NotNil(t, err)
-	assert.ErrorContains(t, err, "Invalid posXY attribute provided."+
+	assert.ErrorContains(t, err, "invalid posXY attribute provided."+
 		" \nIt must be an array/list/vector with 2 elements."+
 		" Please refer to the wiki or manual reference"+
 		" for more details on how to create objects "+
@@ -286,17 +274,10 @@ func TestCreateRoomInvalidSize(t *testing.T) {
 		},
 	}
 
-	// with state.DebugLvl = 0
 	test_utils.MockGetObject(mockAPI, roomsBuilding)
 	err := controller.CreateObject("/Physical/BASIC/A/R1", models.ROOM, room)
-	assert.Nil(t, err)
-
-	// with state.DebugLvl > 0
-	controllers.State.DebugLvl = 1
-	test_utils.MockGetObject(mockAPI, roomsBuilding)
-	err = controller.CreateObject("/Physical/BASIC/A/R1", models.ROOM, room)
 	assert.NotNil(t, err)
-	assert.ErrorContains(t, err, "Invalid size attribute provided."+
+	assert.ErrorContains(t, err, "invalid size attribute provided."+
 		" \nIt must be an array/list/vector with 3 elements."+
 		" Please refer to the wiki or manual reference"+
 		" for more details on how to create objects "+
@@ -325,18 +306,10 @@ func TestCreateRoomInvalidPosXY(t *testing.T) {
 		},
 	}
 
-	// with state.DebugLvl = 0
 	test_utils.MockGetObject(mockAPI, roomsBuilding)
-
-	err := controller.CreateObject("/Physical/BASIC/A/R1", models.ROOM, test_utils.CopyMap(room))
-	assert.Nil(t, err)
-
-	// with state.DebugLvl > 0
-	controllers.State.DebugLvl = 1
-	test_utils.MockGetObject(mockAPI, roomsBuilding)
-	err = controller.CreateObject("/Physical/BASIC/A/R1", models.ROOM, room)
+	err := controller.CreateObject("/Physical/BASIC/A/R1", models.ROOM, room)
 	assert.NotNil(t, err)
-	assert.ErrorContains(t, err, "Invalid posXY attribute provided."+
+	assert.ErrorContains(t, err, "invalid posXY attribute provided."+
 		" \nIt must be an array/list/vector with 2 elements."+
 		" Please refer to the wiki or manual reference"+
 		" for more details on how to create objects "+
@@ -415,25 +388,10 @@ func TestCreateRackInvalidSize(t *testing.T) {
 		},
 	}
 
-	// with state.DebugLvl = 0
 	test_utils.MockGetObject(mockAPI, room)
 	err := controller.CreateObject("/Physical/BASIC/A/R1/A01", models.RACK, rack)
-	assert.Nil(t, err)
-
-	// with state.DebugLvl > 0
-	controllers.State.DebugLvl = 1
-	test_utils.MockGetObject(mockAPI, room)
-	err = controller.CreateObject("/Physical/BASIC/A/R1/A01", models.RACK, rack)
 	assert.NotNil(t, err)
-	assert.ErrorContains(t, err, "Invalid size attribute/template provided."+
-		" \nThe size must be an array/list/vector with "+
-		"3 elements."+"\n\nIf you have provided a"+
-		" template, please check that you are referring to "+
-		"an existing template"+
-		"\n\nFor more information "+
-		"please refer to the wiki or manual reference"+
-		" for more details on how to create objects "+
-		"using this syntax")
+	assert.ErrorContains(t, err, "invalid size attribute provided.")
 	controllers.State.DebugLvl = 0
 }
 
@@ -574,5 +532,131 @@ func TestCreateTag(t *testing.T) {
 	})
 
 	err := controller.CreateTag(slug, color)
+	assert.Nil(t, err)
+}
+
+// Tests GetSlot
+func TestGetSlotWithNoTemplate(t *testing.T) {
+	rack := map[string]any{
+		"attributes": map[string]any{},
+	}
+	result, err := controllers.C.GetSlot(rack, "")
+	assert.Nil(t, err)
+	assert.Nil(t, result)
+
+	rack["attributes"].(map[string]any)["template"] = ""
+	result, err = controllers.C.GetSlot(rack, "")
+	assert.Nil(t, err)
+	assert.Nil(t, result)
+}
+
+func TestGetSlotWithTemplateNonExistentSlot(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+
+	template := map[string]any{
+		"slug":        "rack-template",
+		"description": "",
+		"category":    "rack",
+		"sizeWDHmm":   []any{605, 1200, 2003},
+		"fbxModel":    "",
+		"attributes": map[string]any{
+			"vendor": "IBM",
+			"model":  "9360-4PX",
+		},
+		"slots": []any{},
+	}
+
+	test_utils.MockGetObjTemplate(mockAPI, template)
+	rack := map[string]any{
+		"attributes": map[string]any{
+			"template": "rack-template",
+		},
+	}
+	_, err := controller.GetSlot(rack, "u02")
+	assert.NotNil(t, err)
+	assert.Equal(t, "the slot u02 does not exist", err.Error())
+}
+
+func TestGetSlotWithTemplateWorks(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+	slot := map[string]any{
+		"location":   "u01",
+		"type":       "u",
+		"elemOrient": []any{33.3, -44.4, 107},
+		"elemPos":    []any{58, 51, 44.45},
+		"elemSize":   []any{482.6, 1138, 44.45},
+		"mandatory":  "no",
+		"labelPos":   "frontrear",
+	}
+
+	template := map[string]any{
+		"slug":        "rack-template",
+		"description": "",
+		"category":    "rack",
+		"sizeWDHmm":   []any{605, 1200, 2003},
+		"fbxModel":    "",
+		"attributes": map[string]any{
+			"vendor": "IBM",
+			"model":  "9360-4PX",
+		},
+		"slots": []any{
+			slot,
+		},
+	}
+
+	test_utils.MockGetObjTemplate(mockAPI, template)
+	rack := map[string]any{
+		"attributes": map[string]any{
+			"template": "rack-template",
+		},
+	}
+	result, err := controller.GetSlot(rack, "u01")
+	assert.Nil(t, err)
+	assert.Equal(t, slot["location"], result["location"])
+}
+
+// Tests GetByAttr
+func TestGetByAttrErrorWhenObjIsNotRack(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+
+	test_utils.MockGetObjectHierarchy(mockAPI, chassis)
+
+	err := controller.GetByAttr(models.PhysicalPath+"BASIC/A/R1/A01/chT", "colors")
+	assert.NotNil(t, err)
+	assert.Equal(t, "command may only be performed on rack objects", err.Error())
+}
+
+func TestGetByAttrErrorWhenObjIsRackWithSlotName(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+
+	rack := test_utils.CopyMap(rack1)
+	rack["attributes"] = map[string]any{
+		"slot": []any{
+			map[string]any{
+				"location":   "u01",
+				"type":       "u",
+				"elemOrient": []any{33.3, -44.4, 107},
+				"elemPos":    []any{58, 51, 44.45},
+				"elemSize":   []any{482.6, 1138, 44.45},
+				"mandatory":  "no",
+				"labelPos":   "frontrear",
+				"color":      "@color1",
+			},
+		},
+	}
+	test_utils.MockGetObjectHierarchy(mockAPI, rack)
+
+	err := controller.GetByAttr(models.PhysicalPath+"BASIC/A/R1/A01", "u01")
+	assert.Nil(t, err)
+}
+
+func TestGetByAttrErrorWhenObjIsRackWithHeight(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+
+	rack := test_utils.CopyMap(rack1)
+	rack["height"] = "47"
+	test_utils.MockGetObjectHierarchy(mockAPI, rack)
+
+	err := controller.GetByAttr(models.PhysicalPath+"BASIC/A/R1/A01", 47)
 	assert.Nil(t, err)
 }

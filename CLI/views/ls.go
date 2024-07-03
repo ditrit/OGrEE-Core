@@ -97,7 +97,7 @@ func LsWithFormat(objects []map[string]any, sortAttr string, relativePath *Relat
 			attrVals := []any{getObjectNameOrPath(obj, relativePath)}
 
 			for _, attr := range attributes {
-				attrVal, hasAttr := utils.ObjectAttr(obj, attr)
+				attrVal, hasAttr := utils.GetValFromObj(obj, attr)
 				if !hasAttr {
 					attrVal = "-"
 				}
@@ -131,7 +131,7 @@ func SortObjects(objects []map[string]any, sortAttr string) ([]map[string]any, e
 		orderObjectsBy(objects, idOrName)
 	} else {
 		objects = pie.Filter(objects, func(object map[string]any) bool {
-			_, hasAttr := utils.ObjectAttr(object, sortAttr)
+			_, hasAttr := utils.GetValFromObj(object, sortAttr)
 			return hasAttr
 		})
 
@@ -140,8 +140,8 @@ func SortObjects(objects []map[string]any, sortAttr string) ([]map[string]any, e
 		}
 
 		sort.Slice(objects, func(i, j int) bool {
-			vali, _ := utils.ObjectAttr(objects[i], sortAttr)
-			valj, _ := utils.ObjectAttr(objects[j], sortAttr)
+			vali, _ := utils.GetValFromObj(objects[i], sortAttr)
+			valj, _ := utils.GetValFromObj(objects[j], sortAttr)
 			res, _ := utils.CompareVals(vali, valj)
 			return res
 		})
@@ -176,8 +176,8 @@ func isObjectLayer(object map[string]any) bool {
 
 func objectsAreSortable(objects []map[string]any, attr string) bool {
 	for i := 1; i < len(objects); i++ {
-		val0, _ := utils.ObjectAttr(objects[0], attr)
-		vali, _ := utils.ObjectAttr(objects[i], attr)
+		val0, _ := utils.GetValFromObj(objects[0], attr)
+		vali, _ := utils.GetValFromObj(objects[i], attr)
 		_, comparable := utils.CompareVals(val0, vali)
 		if !comparable {
 			return false
