@@ -13,16 +13,16 @@ require (
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1
 	github.com/stretchr/testify v1.9.0
 	github.com/vincent-petithory/dataurl v1.0.0
-	go.mongodb.org/mongo-driver v1.13.1
+	go.mongodb.org/mongo-driver v1.16.0
 	golang.org/x/crypto v0.24.0
 )
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/felixge/httpsnoop v1.0.3 // indirect
-	github.com/golang/snappy v0.0.1 // indirect
+	github.com/golang/snappy v0.0.4 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
-	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
+	github.com/montanaflynn/stats v0.7.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.2 // indirect
