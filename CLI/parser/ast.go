@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -716,19 +717,97 @@ func addRoomPillar(path string, values []any) (map[string]any, error) {
 	return obj, nil
 }
 
-// attribute must be "separator" or "pillar"
-func deleteRoomPillarOrSeparator(path, attribute, name string) (map[string]any, error) {
+type Breaker struct {
+	Powerpanel string  `json:"powerpanel"`
+	Type       string  `json:"type,omitempty"`
+	Circuit    string  `json:"circuit,omitempty"`
+	Intensity  float64 `json:"intensity,omitempty"`
+	Tag        string  `json:"tag,omitempty"`
+}
+
+type FloatOrString interface {
+	string | float64
+}
+
+func addRackBreaker(path string, values []any) (map[string]any, error) {
+	// mandatory params
+	mandatoryErr := fmt.Errorf("at least 2 values (name and powerpanel) expected to add a breaker")
+	nMandatory := 2
+	if len(values) < nMandatory {
+		return nil, mandatoryErr
+	}
+	name, err := utils.ValToString(values[0], "name")
+	if err != nil {
+		return nil, err
+	}
+	powerpanel, err := utils.ValToString(values[1], "powerpanel")
+	if err != nil {
+		return nil, err
+	}
+	if len(name) <= 0 || len(powerpanel) <= 0 {
+		return nil, mandatoryErr
+	}
+	// optional params
+	var breakerType string
+	var circuit string
+	var intensityStr string
+	var tag string
+	for index, receiver := range []*string{&breakerType, &circuit, &intensityStr, &tag} {
+		err = setOptinalParam(index+nMandatory, values, receiver)
+		if err != nil {
+			return nil, err
+		}
+	}
+	var intensity float64
+	if intensity, err = strconv.ParseFloat(intensityStr, 64); err != nil {
+		return nil, fmt.Errorf("invalid value for intensity, it should be a float number")
+	}
+
+	// get rack and modify breakers
+	obj, err := cmd.C.GetObject(path)
+	if err != nil {
+		return nil, err
+	}
+	attr := obj["attributes"].(map[string]any)
+	newBreaker := Breaker{powerpanel, breakerType, circuit, intensity, tag}
+	fmt.Println(newBreaker)
+	var keyExist bool
+	attr["breakers"], keyExist = addToMap[Breaker](attr["breakers"], name, newBreaker)
+	obj, err = cmd.C.UpdateObj(path, map[string]any{"attributes": attr}, false)
+	if err != nil {
+		return nil, err
+	}
+	if keyExist {
+		fmt.Printf("Breaker %s replaced\n", name)
+	}
+	return obj, nil
+}
+
+func setOptinalParam(index int, values []any, receiver *string) error {
+	if len(values) > index {
+		value, err := utils.ValToString(values[index], fmt.Sprintf("optional %d", index))
+		if err != nil {
+			return err
+		}
+		*receiver = value
+	}
+	return nil
+}
+
+// attribute must be "separators", "pillars" or "breakers"
+func deleteInnerAttrObj(path, attribute, name string) (map[string]any, error) {
 	obj, err := cmd.C.GetObject(path)
 	if err != nil {
 		return nil, err
 	}
 	attributes := obj["attributes"].(map[string]any)
-	attrMap, ok := attributes[attribute+"s"].(map[string]any)
+	attrMap, ok := attributes[attribute].(map[string]any)
 	if !ok || attrMap[name] == nil {
 		return nil, fmt.Errorf("%s %s does not exist", attribute, name)
 	}
 	delete(attrMap, name)
-	attributes[attribute+"s"] = attrMap
+	attributes[attribute] = attrMap
+	fmt.Println(attributes)
 	return cmd.C.UpdateObj(path, map[string]any{"attributes": attributes}, false)
 }
 
@@ -851,10 +930,10 @@ func (n *updateObjNode) execute() (interface{}, error) {
 				_, err = addRoomSeparator(path, values)
 			case "pillars+":
 				_, err = addRoomPillar(path, values)
-			case "separators-":
-				_, err = deleteRoomPillarOrSeparator(path, "separator", values[0].(string))
-			case "pillars-":
-				_, err = deleteRoomPillarOrSeparator(path, "pillar", values[0].(string))
+			case "breakers+":
+				_, err = addRackBreaker(path, values)
+			case "pillars-", "separators-", "breakers-":
+				_, err = deleteInnerAttrObj(path, strings.TrimSuffix(n.attr, "-"), values[0].(string))
 			case "vlinks+", "vlinks-":
 				_, err = updateVirtualLink(path, n.attr, values[0].(string))
 			case "domain", "tags+", "tags-":

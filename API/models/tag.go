@@ -87,8 +87,29 @@ func addAndRemoveFromTags(entity int, objectID string, object map[string]interfa
 
 			delete(object, "tags-")
 		}
+
+		// check tags for rack breakers
+		if err := verifyTagForRackBreaker(object); err != nil {
+			return err
+		}
 	}
 
+	return nil
+}
+
+func verifyTagForRackBreaker(object map[string]interface{}) *u.Error {
+	if breakers, ok := object["attributes"].(map[string]any)["breakers"].(map[string]any); ok {
+		tagsToCheck := []any{}
+		for _, breaker := range breakers {
+			if tag, ok := breaker.(map[string]any)["tag"]; ok {
+				tagsToCheck = append(tagsToCheck, tag)
+			}
+		}
+		err := verifyTagList(tagsToCheck)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

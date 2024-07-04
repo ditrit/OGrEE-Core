@@ -14,12 +14,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/elliotchance/pie/v2"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
+
+var AttrsWithInnerIbj = []string{"pillars", "separators", "breakers"}
 
 // Helper functions
 
@@ -90,7 +93,7 @@ func updateOldObjWithPatch(old map[string]interface{}, patch map[string]interfac
 	for k, v := range patch {
 		switch patchValueCasted := v.(type) {
 		case map[string]interface{}:
-			if k == "pillars" || k == "separators" {
+			if pie.Contains(AttrsWithInnerIbj, k) {
 				old[k] = v
 			} else {
 				switch oldValueCasted := old[k].(type) {

@@ -22,7 +22,11 @@
         },
         "posXYUnit": {
           "type": "string",
-          "enum": ["m", "t", "f"]
+          "enum": [
+            "m",
+            "t",
+            "f"
+          ]
         },
         "posZUnit": {
           "type": "string",
@@ -44,6 +48,32 @@
         },
         "clearance": {
           "$ref": "refs/types.json#/definitions/clearanceVector"
+        },
+        "breakers": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "powerpanel"
+            ],
+            "properties": {
+              "powerpanel": {
+                "type": "string"
+              },
+              "circuit": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "tag": {
+                "type": "string"
+              },
+              "intensity": {
+                "type": "number"
+              }
+            }
+          }
         }
       },
       "required": [
@@ -63,7 +93,7 @@
         "height": 47,
         "heightUnit": "U",
         "rotation": [45, 45, 45],
-        "posXYZ": [4.6666666666667,  -2, 0],
+        "posXYZ": [4.6666666666667, -2, 0],
         "posXYUnit": "m",
         "size": [80, 100.532442],
         "sizeUnit": "cm",
