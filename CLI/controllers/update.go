@@ -16,11 +16,9 @@ func (controller Controller) UpdateObj(pathStr string, data map[string]any, with
 		category = obj["category"].(string)
 	}
 
-	println(category)
-	Disp(data)
-	newAttrs := data["attributes"].(map[string]any)
-	Disp(newAttrs)
-	if category == "device" {
+	newAttrs, ok := data["attributes"].(map[string]any)
+	if ok {
+		if category == models.EntityToString(models.DEVICE) {
 		currentAttrs := obj["attributes"].(map[string]any)
 		if newAttrs["sizeU"] != nil {
 			var height = float32((newAttrs["sizeU"].(int))) * RACKUNIT
@@ -41,6 +39,7 @@ func (controller Controller) UpdateObj(pathStr string, data map[string]any, with
 				sizeU /= 1000
 			}
 			newAttrs["sizeU"] = sizeU
+			}
 		}
 	}
 
