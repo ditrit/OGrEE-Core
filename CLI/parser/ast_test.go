@@ -467,8 +467,8 @@ func TestDeleteRoomPillarOrSeparatorWithError(t *testing.T) {
 		separatorName string
 		errorMessage  string
 	}{
-		{"InvalidArgument", "other", "separator", "other separator does not exist"},
-		{"SeparatorDoesNotExist", "separator", "mySeparator", "separator mySeparator does not exist"},
+		{"InvalidArgument", "other", "separator", "others separator does not exist"},
+		{"SeparatorDoesNotExist", "separator", "mySeparator", "separators mySeparator does not exist"},
 	}
 
 	for _, tt := range tests {
