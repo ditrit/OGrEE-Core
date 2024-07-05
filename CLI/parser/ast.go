@@ -753,14 +753,14 @@ func addRackBreaker(path string, values []any) (map[string]any, error) {
 	var intensityStr string
 	var tag string
 	for index, receiver := range []*string{&breakerType, &circuit, &intensityStr, &tag} {
-		err = setOptinalParam(index+nMandatory, values, receiver)
+		err = setOptionalParam(index+nMandatory, values, receiver)
 		if err != nil {
 			return nil, err
 		}
 	}
 	var intensity float64
-	if intensity, err = strconv.ParseFloat(intensityStr, 64); err != nil {
-		return nil, fmt.Errorf("invalid value for intensity, it should be a float number")
+	if intensity, err = strconv.ParseFloat(intensityStr, 64); err != nil || intensity <= 0 {
+		return nil, fmt.Errorf("invalid value for intensity, it should be a positive number")
 	}
 
 	// get rack and modify breakers
@@ -783,7 +783,7 @@ func addRackBreaker(path string, values []any) (map[string]any, error) {
 	return obj, nil
 }
 
-func setOptinalParam(index int, values []any, receiver *string) error {
+func setOptionalParam(index int, values []any, receiver *string) error {
 	if len(values) > index {
 		value, err := utils.ValToString(values[index], fmt.Sprintf("optional %d", index))
 		if err != nil {

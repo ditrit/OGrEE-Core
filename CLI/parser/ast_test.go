@@ -477,7 +477,7 @@ func TestDeleteRoomPillarOrSeparatorWithError(t *testing.T) {
 
 			room := test_utils.GetEntity("room", "room", "site.building", "domain")
 			test_utils.MockGetObject(mockAPI, room)
-			obj, err := deleteRoomPillarOrSeparator("/Physical/site/building/room", tt.attributeName, tt.separatorName)
+			obj, err := deleteInnerAttrObj("/Physical/site/building/room", tt.attributeName+"s", tt.separatorName)
 
 			assert.Nil(t, obj)
 			assert.NotNil(t, err)
@@ -499,7 +499,7 @@ func TestDeleteRoomPillarOrSeparatorSeparator(t *testing.T) {
 	test_utils.MockGetObject(mockAPI, room)
 
 	test_utils.MockUpdateObject(mockAPI, map[string]interface{}{"attributes": map[string]interface{}{"separators": map[string]interface{}{}}}, updatedRoom)
-	obj, err := deleteRoomPillarOrSeparator("/Physical/site/building/room", "separator", "mySeparator")
+	obj, err := deleteInnerAttrObj("/Physical/site/building/room", "separators", "mySeparator")
 
 	assert.Nil(t, err)
 	assert.NotNil(t, obj)
@@ -517,7 +517,7 @@ func TestDeleteRoomPillarOrSeparatorPillar(t *testing.T) {
 	test_utils.MockGetObject(mockAPI, room)
 	test_utils.MockGetObject(mockAPI, room)
 	test_utils.MockUpdateObject(mockAPI, map[string]interface{}{"attributes": map[string]interface{}{"pillars": map[string]interface{}{}}}, updatedRoom)
-	obj, err := deleteRoomPillarOrSeparator("/Physical/site/building/room", "pillar", "myPillar")
+	obj, err := deleteInnerAttrObj("/Physical/site/building/room", "pillars", "myPillar")
 
 	assert.Nil(t, err)
 	assert.NotNil(t, obj)
