@@ -10,6 +10,8 @@ import (
 	"strings"
 )
 
+const RACKUNIT = .04445 //meter
+
 type EntityAttributes map[string]any
 
 var BldgBaseAttrs = EntityAttributes{
@@ -126,10 +128,10 @@ func SetDeviceSizeUIfExists(attr EntityAttributes) {
 		//And Set height
 		if sizeUInt, ok := sizeU.(int); ok {
 			attr["sizeU"] = sizeUInt
-			attr["height"] = float64(sizeUInt) * 44.5
+			attr["height"] = float64(sizeUInt) * RACKUNIT * 1000
 		} else if sizeUFloat, ok := sizeU.(float64); ok {
 			attr["sizeU"] = sizeUFloat
-			attr["height"] = sizeUFloat * 44.5
+			attr["height"] = sizeUFloat * RACKUNIT * 1000
 		}
 	}
 }

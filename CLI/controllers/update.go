@@ -25,7 +25,7 @@ func (controller Controller) UpdateObj(pathStr string, data map[string]any, with
 				if err != nil {
 					return nil, err
 				}
-				var height = sizeU * RACKUNIT
+				var height = sizeU * models.RACKUNIT
 				switch heightUnit := currentAttrs["heightUnit"]; heightUnit {
 				case "cm":
 					height *= 100
@@ -39,7 +39,7 @@ func (controller Controller) UpdateObj(pathStr string, data map[string]any, with
 				if err != nil {
 					return nil, err
 				}
-				var sizeU = height / RACKUNIT
+				var sizeU = height / models.RACKUNIT
 				switch heightUnit := currentAttrs["heightUnit"]; heightUnit {
 				case "cm":
 					sizeU /= 100

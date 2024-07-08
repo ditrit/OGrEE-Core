@@ -94,9 +94,9 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 							if t == "chassis" || t == "server" {
 								res := 0
 								if val, ok := sizeInf[2].(float64); ok {
-									res = int((val / 1000) / RACKUNIT)
+									res = int((val / 1000) / models.RACKUNIT)
 								} else if val, ok := sizeInf[2].(int); ok {
-									res = int((float64(val) / 1000) / RACKUNIT)
+									res = int((float64(val) / 1000) / models.RACKUNIT)
 								} else {
 									return errors.New("invalid size vector on given template")
 								}

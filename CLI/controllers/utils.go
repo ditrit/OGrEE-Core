@@ -16,7 +16,6 @@ const (
 	DEBUG
 )
 
-const RACKUNIT = .04445 //meter
 const VIRTUALCONFIG = "virtual_config"
 
 // displays contents of maps
