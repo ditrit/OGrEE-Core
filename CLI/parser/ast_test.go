@@ -892,26 +892,20 @@ func TestCreateDeviceNodeExecution(t *testing.T) {
 	_, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
 	rack := test_utils.GetEntity("rack", "myRack", "mySite.myBuilding.myRoom", "")
 	device := test_utils.GetEntity("device", "myDevice", "mySite.myBuilding.myRoom.myRack", "")
-	device["attributes"].(map[string]any)["posU/slot"] = []string{}
-	device["attributes"].(map[string]any)["sizeU"] = 10
-	device["attributes"].(map[string]any)["sizeUnit"] = "mm"
-	device["attributes"].(map[string]any)["height"] = 445.0
-	device["attributes"].(map[string]any)["heightUnit"] = "mm"
-	device["attributes"].(map[string]any)["orientation"] = "front"
-	device["attributes"].(map[string]any)["invertOffset"] = false
-	delete(device["attributes"].(map[string]any), "size")
 
+	delete(device["attributes"].(map[string]any), "size")
 	delete(device, "id")
 	delete(device, "children")
+	delete(device, "tags")
 
 	test_utils.MockGetObject(mockAPI, rack)
 	test_utils.MockCreateObject(mockAPI, "device", device)
 
 	executionNode := createDeviceNode{
 		path:            pathNode{path: &valueNode{"/Physical/mySite/myBuilding/myRoom/myRack/myDevice"}},
-		posUOrSlot:      []node{},
+		posUOrSlot:      []node{&valueNode{1}},
 		invertOffset:    false,
-		sizeUOrTemplate: &valueNode{10},
+		sizeUOrTemplate: &valueNode{2},
 		side:            &valueNode{"front"},
 	}
 

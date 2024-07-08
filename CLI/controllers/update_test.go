@@ -13,28 +13,8 @@ func TestUpdateDeviceSizeUmm(t *testing.T) {
 
 	path := models.PhysicalIDToPath("BASIC.A.R1.A01.chU1")
 
-	test_utils.MockGetObject(mockAPI, map[string]any{
-		"attributes": map[string]any{
-			"height":       88.9,
-			"heightUnit":   "mm",
-			"invertOffset": false,
-			"orientation":  "front",
-			"posU":         1,
-			"size":         []float64{60, 120},
-			"sizeU":        2,
-			"sizeUnit":     "mm",
-			"type":         "chassis",
-		},
-		"category":    "device",
-		"createdDate": "2024-07-04T15:33:57.941Z",
-		"description": "poor chassis",
-		"domain":      "dev",
-		"id":          "BASIC.A.R1.A01.chU1",
-		"lastUpdated": "2024-07-04T16:33:12.22Z",
-		"name":        "chU1",
-		"parentId":    "BASIC.A.R1.A01",
-		"tags":        []any{},
-	})
+	device := test_utils.GetEntity("device", "chU1", "BASIC.A.R1.A01", "test")
+	test_utils.MockGetObject(mockAPI, device)
 
 	dataUpdate := map[string]any{
 		"attributes": map[string]any{
@@ -62,7 +42,7 @@ func TestUpdateDeviceSizeUmm(t *testing.T) {
 		"category":    "device",
 		"createdDate": "2024-07-04T15:33:57.941Z",
 		"description": "poor chassis",
-		"domain":      "dev",
+		"domain":      "test",
 		"id":          "BASIC.A.R1.A01.chU1",
 		"lastUpdated": "2024-07-04T16:33:12.22Z",
 		"name":        "chU1",

@@ -176,19 +176,23 @@ func GetEntity(entityName string, name string, parentId string, domain string) m
 		}
 	case "device":
 		return map[string]any{
+			"attributes": map[string]any{
+				"height":       88.9,
+				"heightUnit":   "mm",
+				"invertOffset": false,
+				"orientation":  "front",
+				"posU":         1,
+				"size":         []float64{60, 120},
+				"sizeU":        2,
+				"sizeUnit":     "mm",
+			},
 			"category":    "device",
+			"description": "",
+			"domain":      domain,
 			"id":          id,
 			"name":        name,
 			"parentId":    parentId,
-			"domain":      domain,
-			"description": "",
-			"attributes": map[string]any{
-				"height":      47,
-				"heightUnit":  "U",
-				"orientation": "front",
-				"size":        []float64{1, 1},
-				"sizeUnit":    "cm",
-			},
+			"tags":        []any{},
 		}
 	case "generic":
 		return map[string]any{
