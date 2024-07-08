@@ -170,7 +170,7 @@ func CheckExpandStrVector(slotVector []string) ([]string, error) {
 
 func expandStrToVector(slot string) ([]string, error) {
 	slots := []string{}
-	errMsg := "Invalid device syntax: incorrect use of .. for slot"
+	errMsg := "invalid device syntax: incorrect use of .. for slot"
 	parts := strings.Split(slot, "..")
 	if len(parts) != 2 ||
 		(parts[0][:len(parts[0])-1] != parts[1][:len(parts[1])-1]) {
