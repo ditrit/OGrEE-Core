@@ -158,7 +158,7 @@ func CheckExpandStrVector(slotVector []string) ([]string, error) {
 	for _, slot := range slotVector {
 		if strings.Contains(slot, "..") {
 			if len(slotVector) != 1 {
-				return nil, fmt.Errorf("Invalid device syntax: .. can only be used in a single element vector")
+				return nil, fmt.Errorf("invalid device syntax: .. can only be used in a single element vector")
 			}
 			return expandStrToVector(slot)
 		} else {
@@ -189,5 +189,31 @@ func expandStrToVector(slot string) ([]string, error) {
 			}
 			return slots, nil
 		}
+	}
+}
+
+// Check the format of a sizeU attribute and return it as a float32 is possible
+func CheckSizeUFormat(value any) (float32, error) {
+	switch v := value.(type) {
+	case int:
+		return float32(v), nil
+	case float32:
+		return v, nil
+	case float64:
+		return float32(v), nil
+	default:
+		return 0, fmt.Errorf("sizeU should be an int of a float")
+	}
+}
+
+// Check the format of a height attribute and return it as a float32 is possible
+func CheckHeightFormat(value any) (float32, error) {
+	switch v := value.(type) {
+	case float32:
+		return v, nil
+	case float64:
+		return float32(v), nil
+	default:
+		return 0, fmt.Errorf("height should be a float")
 	}
 }
