@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"cli/models"
+	"cli/utils"
 	"net/http"
 )
 
@@ -16,38 +17,39 @@ func (controller Controller) UpdateObj(pathStr string, data map[string]any, with
 		category = obj["category"].(string)
 	}
 
-	newAttrs, ok := data["attributes"].(map[string]any)
-	if ok {
-		if category == models.EntityToString(models.DEVICE) {
-			currentAttrs := obj["attributes"].(map[string]any)
-			if newAttrs["sizeU"] != nil {
-				sizeU, err := models.CheckSizeUFormat(newAttrs["sizeU"])
-				if err != nil {
-					return nil, err
-				}
-				var height = sizeU * models.RACKUNIT
-				switch heightUnit := currentAttrs["heightUnit"]; heightUnit {
-				case "cm":
-					height *= 100
-				case "mm":
-					height *= 1000
-				}
-				newAttrs["height"] = height
+	if category == models.EntityToString(models.DEVICE) && data["attributes"] != nil {
+		newAttrs, err := models.MapStringAny(data["attributes"])
+		if err != nil {
+			return nil, err
+		}
+		currentAttrs, _ := models.MapStringAny(obj["attributes"])
+		if newAttrs["sizeU"] != nil {
+			sizeU, err := utils.GetFloat(newAttrs["sizeU"])
+			if err != nil {
+				return nil, err
 			}
-			if newAttrs["height"] != nil {
-				height, err := models.CheckHeightFormat(newAttrs["height"])
-				if err != nil {
-					return nil, err
-				}
-				var sizeU = height / models.RACKUNIT
-				switch heightUnit := currentAttrs["heightUnit"]; heightUnit {
-				case "cm":
-					sizeU /= 100
-				case "mm":
-					sizeU /= 1000
-				}
-				newAttrs["sizeU"] = sizeU
+			var height = sizeU * models.RACKUNIT
+			switch heightUnit := currentAttrs["heightUnit"]; heightUnit {
+			case "cm":
+				height *= 100
+			case "mm":
+				height *= 1000
 			}
+			newAttrs["height"] = height
+		}
+		if newAttrs["height"] != nil {
+			height, err := utils.GetFloat(newAttrs["height"])
+			if err != nil {
+				return nil, err
+			}
+			var sizeU = height / models.RACKUNIT
+			switch heightUnit := currentAttrs["heightUnit"]; heightUnit {
+			case "cm":
+				sizeU /= 100
+			case "mm":
+				sizeU /= 1000
+			}
+			newAttrs["sizeU"] = sizeU
 		}
 	}
 
