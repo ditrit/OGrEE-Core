@@ -140,3 +140,13 @@ func TestInteractObjectWithMock(t *testing.T) {
 		})
 	}
 }
+
+func TestSetLabel(t *testing.T) {
+	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
+
+	room := test_utils.GetEntity("rack", "rack", "site.building.room", "domain")
+	test_utils.MockGetObject(mockAPI, room)
+	err := controller.SetLabel("/Physical/site/building/room/rack", []any{"myLabel"}, false)
+
+	assert.Nil(t, err)
+}

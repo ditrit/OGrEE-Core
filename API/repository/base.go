@@ -48,7 +48,8 @@ func ConnectToDB(host, port, user, pass, dbName, tenantName string) error {
 func SetupDB(db *mongo.Database) error {
 	// Indexes creation
 	// Enforce unique children
-	for _, entity := range []int{u.DOMAIN, u.SITE, u.BLDG, u.ROOM, u.RACK, u.DEVICE, u.AC, u.PWRPNL, u.CABINET, u.CORRIDOR, u.GROUP, u.STRAYOBJ, u.GENERIC} {
+	for _, entity := range []int{u.DOMAIN, u.SITE, u.BLDG, u.ROOM, u.RACK, u.DEVICE, u.AC,
+		u.PWRPNL, u.CABINET, u.CORRIDOR, u.GROUP, u.STRAYOBJ, u.GENERIC, u.VIRTUALOBJ} {
 		if err := createUniqueIndex(db, u.EntityToString(entity), bson.M{"id": 1}); err != nil {
 			return err
 		}

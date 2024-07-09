@@ -2,16 +2,13 @@ package parser
 
 import (
 	"cli/config"
-	"cli/controllers"
 	cmd "cli/controllers"
 	"cli/models"
 	"cli/utils"
 	"cli/views"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"path/filepath"
-	"strconv"
 	"strings"
 )
 
@@ -546,328 +543,6 @@ func (n *selectObjectNode) execute() (interface{}, error) {
 	return nil, nil
 }
 
-func setRoomAreas(path string, values []any) (map[string]any, error) {
-	if len(values) != 2 {
-		return nil, fmt.Errorf("2 values (reserved, technical) expected to set room areas")
-	}
-	attributes := map[string]any{"reserved": values[0], "technical": values[1]}
-	if e := validateAreas(attributes); e != nil {
-		return nil, e
-	}
-	return cmd.C.UpdateObj(path, map[string]any{"attributes": attributes}, false)
-}
-
-func setLabel(path string, values []any, hasSharpe bool) (map[string]any, error) {
-	if len(values) != 1 {
-		return nil, fmt.Errorf("only 1 value expected")
-	}
-	value, err := utils.ValToString(values[0], "value")
-	if err != nil {
-		return nil, err
-	}
-	return nil, cmd.C.InteractObject(path, "label", value, hasSharpe)
-}
-
-func setLabelFont(path string, values []any) (map[string]any, error) {
-	msg := "The font can only be bold or italic" +
-		" or be in the form of color@[colorValue]." +
-		"\n\nFor more information please refer to: " +
-		"\nhttps://github.com/ditrit/OGrEE-3D/wiki/CLI-langage#interact-with-objects"
-
-	switch len(values) {
-	case 1:
-		if values[0] != "bold" && values[0] != "italic" {
-			return nil, fmt.Errorf(msg)
-		}
-		return nil, cmd.C.InteractObject(path, "labelFont", values[0], false)
-	case 2:
-		if values[0] != "color" {
-			return nil, fmt.Errorf(msg)
-		}
-		c, ok := utils.ValToColor(values[1])
-		if !ok {
-			return nil, fmt.Errorf("please provide a valid 6 length hex value for the color")
-		}
-		return nil, cmd.C.InteractObject(path, "labelFont", "color@"+c, false)
-	default:
-		return nil, fmt.Errorf(msg)
-	}
-}
-
-func setLabelBackground(path string, values []any) (map[string]any, error) {
-	if len(values) != 1 {
-		return nil, fmt.Errorf("only 1 value expected")
-	}
-	c, ok := utils.ValToColor(values[0])
-	if !ok {
-		return nil, fmt.Errorf("please provide a valid 6 length hex value for the color")
-	}
-	return nil, cmd.C.InteractObject(path, "labelBackground", c, false)
-}
-
-func addToMap[T any](mapToAdd any, key string, val T) (map[string]any, bool) {
-	attrMap, ok := mapToAdd.(map[string]any)
-	if !ok {
-		attrMap = map[string]any{}
-	}
-	_, keyExist := attrMap[key]
-	attrMap[key] = val
-	return attrMap, keyExist
-}
-
-func removeFromStringMap[T any](stringMap string, key string) (string, bool) {
-	m := map[string]T{}
-	if stringMap != "" {
-		json.Unmarshal([]byte(stringMap), &m)
-	}
-	_, ok := m[key]
-	if !ok {
-		return stringMap, false
-	}
-	delete(m, key)
-	mBytes, _ := json.Marshal(m)
-	return string(mBytes), true
-}
-
-type Separator struct {
-	StartPos []float64 `json:"startPosXYm"`
-	EndPos   []float64 `json:"endPosXYm"`
-	Type     string    `json:"type"`
-}
-
-func addRoomSeparator(path string, values []any) (map[string]any, error) {
-	if len(values) != 4 {
-		return nil, fmt.Errorf("4 values (name, startPos, endPos, type) expected to add a separator")
-	}
-	name, err := utils.ValToString(values[0], "name")
-	if err != nil {
-		return nil, err
-	}
-	startPos, err := utils.ValToVec(values[1], 2, "startPos")
-	if err != nil {
-		return nil, err
-	}
-	endPos, err := utils.ValToVec(values[2], 2, "endPos")
-	if err != nil {
-		return nil, err
-	}
-	sepType, err := utils.ValToString(values[3], "separator type")
-	if err != nil {
-		return nil, err
-	}
-	obj, err := cmd.C.GetObject(path)
-	if err != nil {
-		return nil, err
-	}
-	attr := obj["attributes"].(map[string]any)
-	newSeparator := Separator{startPos, endPos, sepType}
-	var keyExist bool
-	attr["separators"], keyExist = addToMap[Separator](attr["separators"], name, newSeparator)
-	obj, err = cmd.C.UpdateObj(path, map[string]any{"attributes": attr}, false)
-	if err != nil {
-		return nil, err
-	}
-	if keyExist {
-		fmt.Printf("Separator %s replaced\n", name)
-	}
-	return obj, nil
-}
-
-type Pillar struct {
-	CenterXY []float64 `json:"centerXY"`
-	SizeXY   []float64 `json:"sizeXY"`
-	Rotation float64   `json:"rotation"`
-}
-
-func addRoomPillar(path string, values []any) (map[string]any, error) {
-	if len(values) != 4 {
-		return nil, fmt.Errorf("4 values (name, centerXY, sizeXY, rotation) expected to add a pillar")
-	}
-	name, err := utils.ValToString(values[0], "name")
-	if err != nil {
-		return nil, err
-	}
-	centerXY, err := utils.ValToVec(values[1], 2, "centerXY")
-	if err != nil {
-		return nil, err
-	}
-	sizeXY, err := utils.ValToVec(values[2], 2, "sizeXY")
-	if err != nil {
-		return nil, err
-	}
-	rotation, err := utils.ValToFloat(values[3], "rotation")
-	if err != nil {
-		return nil, err
-	}
-	obj, err := cmd.C.GetObject(path)
-	if err != nil {
-		return nil, err
-	}
-	attr := obj["attributes"].(map[string]any)
-	newPillar := Pillar{centerXY, sizeXY, rotation}
-	var keyExist bool
-	attr["pillars"], keyExist = addToMap[Pillar](attr["pillars"], name, newPillar)
-	obj, err = cmd.C.UpdateObj(path, map[string]any{"attributes": attr}, false)
-	if err != nil {
-		return nil, err
-	}
-	if keyExist {
-		fmt.Printf("Pillar %s replaced\n", name)
-	}
-	return obj, nil
-}
-
-type Breaker struct {
-	Powerpanel string  `json:"powerpanel"`
-	Type       string  `json:"type,omitempty"`
-	Circuit    string  `json:"circuit,omitempty"`
-	Intensity  float64 `json:"intensity,omitempty"`
-	Tag        string  `json:"tag,omitempty"`
-}
-
-type FloatOrString interface {
-	string | float64
-}
-
-func addRackBreaker(path string, values []any) (map[string]any, error) {
-	// mandatory params
-	mandatoryErr := fmt.Errorf("at least 2 values (name and powerpanel) expected to add a breaker")
-	nMandatory := 2
-	if len(values) < nMandatory {
-		return nil, mandatoryErr
-	}
-	name, err := utils.ValToString(values[0], "name")
-	if err != nil {
-		return nil, err
-	}
-	powerpanel, err := utils.ValToString(values[1], "powerpanel")
-	if err != nil {
-		return nil, err
-	}
-	if len(name) <= 0 || len(powerpanel) <= 0 {
-		return nil, mandatoryErr
-	}
-	// optional params
-	var breakerType string
-	var circuit string
-	var intensityStr string
-	var tag string
-	for index, receiver := range []*string{&breakerType, &circuit, &intensityStr, &tag} {
-		err = setOptionalParam(index+nMandatory, values, receiver)
-		if err != nil {
-			return nil, err
-		}
-	}
-	var intensity float64
-	if intensity, err = strconv.ParseFloat(intensityStr, 64); err != nil || intensity <= 0 {
-		return nil, fmt.Errorf("invalid value for intensity, it should be a positive number")
-	}
-
-	// get rack and modify breakers
-	obj, err := cmd.C.GetObject(path)
-	if err != nil {
-		return nil, err
-	}
-	attr := obj["attributes"].(map[string]any)
-	newBreaker := Breaker{powerpanel, breakerType, circuit, intensity, tag}
-	fmt.Println(newBreaker)
-	var keyExist bool
-	attr["breakers"], keyExist = addToMap[Breaker](attr["breakers"], name, newBreaker)
-	obj, err = cmd.C.UpdateObj(path, map[string]any{"attributes": attr}, false)
-	if err != nil {
-		return nil, err
-	}
-	if keyExist {
-		fmt.Printf("Breaker %s replaced\n", name)
-	}
-	return obj, nil
-}
-
-func setOptionalParam(index int, values []any, receiver *string) error {
-	if len(values) > index {
-		value, err := utils.ValToString(values[index], fmt.Sprintf("optional %d", index))
-		if err != nil {
-			return err
-		}
-		*receiver = value
-	}
-	return nil
-}
-
-// attribute must be "separators", "pillars" or "breakers"
-func deleteInnerAttrObj(path, attribute, name string) (map[string]any, error) {
-	obj, err := cmd.C.GetObject(path)
-	if err != nil {
-		return nil, err
-	}
-	attributes := obj["attributes"].(map[string]any)
-	attrMap, ok := attributes[attribute].(map[string]any)
-	if !ok || attrMap[name] == nil {
-		return nil, fmt.Errorf("%s %s does not exist", attribute, name)
-	}
-	delete(attrMap, name)
-	attributes[attribute] = attrMap
-	fmt.Println(attributes)
-	return cmd.C.UpdateObj(path, map[string]any{"attributes": attributes}, false)
-}
-
-func updateDescription(path string, attr string, values []any) (map[string]any, error) {
-	if len(values) != 1 {
-		return nil, fmt.Errorf("a single value is expected to update a description")
-	}
-	newDesc, err := utils.ValToString(values[0], "description")
-	if err != nil {
-		return nil, err
-	}
-	data := map[string]any{"description": newDesc}
-	return cmd.C.UpdateObj(path, data, false)
-}
-
-func updateVirtualLink(path string, attr string, value string) (map[string]any, error) {
-	if len(value) == 0 {
-		return nil, fmt.Errorf("an empty string is not valid")
-	}
-
-	obj, err := cmd.C.GetObject(path)
-	if err != nil {
-		return nil, err
-	} else if obj["category"] != models.EntityToString(models.VIRTUALOBJ) {
-		return nil, fmt.Errorf("only virtual objects can have vlinks")
-	}
-
-	vlinks, hasVlinks := obj["attributes"].(map[string]any)["vlinks"].([]any)
-	if attr == "vlinks+" {
-		if !hasVlinks {
-			vlinks = []any{value}
-		} else {
-			vlinks = append(vlinks, value)
-		}
-	} else if attr == "vlinks-" {
-		if !hasVlinks {
-			return nil, fmt.Errorf("no vlinks defined for this object")
-		}
-		vlinks, err = removeVirtualLink(vlinks, value)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		return nil, fmt.Errorf("invalid vlink update command")
-	}
-
-	data := map[string]any{"vlinks": vlinks}
-	return cmd.C.UpdateObj(path, map[string]any{"attributes": data}, false)
-}
-
-func removeVirtualLink(vlinks []any, vlinkToRemove string) ([]any, error) {
-	for i, vlink := range vlinks {
-		if vlink == vlinkToRemove {
-			vlinks = append(vlinks[:i], vlinks[i+1:]...)
-			return vlinks, nil
-		}
-	}
-	return nil, fmt.Errorf("vlink to remove not found")
-}
-
 type updateObjNode struct {
 	path      node
 	attr      string
@@ -911,45 +586,11 @@ func (n *updateObjNode) execute() (interface{}, error) {
 			err = cmd.C.UpdateLayer(path, n.attr, values[0])
 		} else {
 			switch n.attr {
-			case "displayContent", "alpha", "tilesName", "tilesColor", "U", "slots", "localCS":
-				var boolVal bool
-				boolVal, err = utils.ValToBool(values[0], n.attr)
-				if err != nil {
-					return nil, err
-				}
-				err = cmd.C.InteractObject(path, n.attr, boolVal, n.hasSharpe)
-			case "areas":
-				_, err = setRoomAreas(path, values)
-			case "label":
-				_, err = setLabel(path, values, n.hasSharpe)
-			case "labelFont":
-				_, err = setLabelFont(path, values)
-			case "labelBackground":
-				_, err = setLabelBackground(path, values)
-			case "separators+":
-				_, err = addRoomSeparator(path, values)
-			case "pillars+":
-				_, err = addRoomPillar(path, values)
-			case "breakers+":
-				_, err = addRackBreaker(path, values)
-			case "pillars-", "separators-", "breakers-":
-				_, err = deleteInnerAttrObj(path, strings.TrimSuffix(n.attr, "-"), values[0].(string))
-			case "vlinks+", "vlinks-":
-				_, err = updateVirtualLink(path, n.attr, values[0].(string))
-			case "domain", "tags+", "tags-":
-				isRecursive := len(values) > 1 && values[1] == "recursive"
-				_, err = cmd.C.UpdateObj(path, map[string]any{n.attr: values[0]}, isRecursive)
-			case "tags", "separators", "pillars", "vlinks":
-				err = fmt.Errorf(
-					"object's %[1]s can not be updated directly, please use %[1]s+= and %[1]s-=",
-					n.attr,
-				)
+			case "displayContent", "alpha", "tilesName", "tilesColor", "U",
+				"slots", "localCS", "label", "labelFont", "labelBackground":
+				err = cmd.C.UpdateInteract(path, n.attr, values, n.hasSharpe)
 			default:
-				if n.attr == "description" {
-					_, err = updateDescription(path, n.attr, values)
-				} else {
-					_, err = updateAttributes(path, n.attr, values)
-				}
+				err = cmd.C.UpdateObject(path, n.attr, values)
 			}
 		}
 
@@ -958,36 +599,6 @@ func (n *updateObjNode) execute() (interface{}, error) {
 		}
 	}
 	return nil, nil
-}
-
-func updateAttributes(path, attributeName string, values []any) (map[string]any, error) {
-	var attributes map[string]any
-	if attributeName == "slot" || attributeName == "content" {
-		vecStr := []string{}
-		for _, value := range values {
-			vecStr = append(vecStr, value.(string))
-		}
-		var err error
-		if vecStr, err = models.CheckExpandStrVector(vecStr); err != nil {
-			return nil, err
-		}
-		attributes = map[string]any{attributeName: vecStr}
-	} else {
-		if len(values) > 1 {
-			return nil, fmt.Errorf("attributes can only be assigned a single value")
-		}
-		if vconfigAttr, found := strings.CutPrefix(attributeName, controllers.VIRTUALCONFIG+"."); found {
-			if len(vconfigAttr) < 1 {
-				return nil, fmt.Errorf("invalid attribute name")
-			}
-			vAttr := map[string]any{vconfigAttr: values[0]}
-			attributes = map[string]any{controllers.VIRTUALCONFIG: vAttr}
-		} else {
-			attributes = map[string]any{attributeName: values[0]}
-		}
-	}
-
-	return cmd.C.UpdateObj(path, map[string]any{"attributes": attributes}, false)
 }
 
 type treeNode struct {
@@ -1448,7 +1059,7 @@ func (n *createVirtualNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	attributes := map[string]any{controllers.VIRTUALCONFIG: map[string]any{"type": vtype}}
+	attributes := map[string]any{cmd.VIRTUALCONFIG: map[string]any{"type": vtype}}
 
 	if n.vlinks != nil {
 		vlinks := []string{}
@@ -1468,7 +1079,7 @@ func (n *createVirtualNode) execute() (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-		attributes[controllers.VIRTUALCONFIG].(map[string]any)["role"] = role
+		attributes[cmd.VIRTUALCONFIG].(map[string]any)["role"] = role
 	}
 
 	return nil, cmd.C.CreateObject(path, models.VIRTUALOBJ,
@@ -1897,31 +1508,6 @@ func (a *assignNode) execute() (interface{}, error) {
 		return nil, nil
 	}
 	return nil, fmt.Errorf("Invalid type to assign variable %s", a.variable)
-}
-
-// Validate format for cmd [room]:areas=[r1,r2,r3,r4]@[t1,t2,t3,t4]
-func validateAreas(areas map[string]interface{}) error {
-	reserved, hasReserved := areas["reserved"].([]float64)
-	if !hasReserved {
-		return errorResponder("reserved", "4", false)
-	}
-	tech, hasTechnical := areas["technical"].([]float64)
-	if !hasTechnical {
-		return errorResponder("technical", "4", false)
-	}
-
-	if len(reserved) == 4 && len(tech) == 4 {
-		return nil
-	} else {
-		if len(reserved) != 4 && len(tech) == 4 {
-			return errorResponder("reserved", "4", false)
-		} else if len(tech) != 4 && len(reserved) == 4 {
-			return errorResponder("technical", "4", false)
-		} else { //Both invalid
-			return errorResponder("reserved and technical", "4", true)
-		}
-	}
-
 }
 
 type cpNode struct {
