@@ -8,7 +8,65 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// region sizeU
+// region tags
+
+func TestUpdateTagColor(t *testing.T) {
+	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
+
+	oldSlug := "slug"
+	path := models.TagsPath + oldSlug
+
+	test_utils.MockGetObjectByEntity(mockAPI, "tags", map[string]any{
+		"slug":        oldSlug,
+		"description": "description",
+		"color":       "aaaaaa",
+	})
+
+	dataUpdate := map[string]any{
+		"color": "aaaaab",
+	}
+	dataUpdated := map[string]any{
+		"slug":        oldSlug,
+		"description": "description",
+		"color":       "aaaaab",
+	}
+
+	test_utils.MockUpdateObject(mockAPI, dataUpdate, dataUpdated)
+	_, err := controller.UpdateObj(path, dataUpdate, false)
+	assert.Nil(t, err)
+}
+
+func TestUpdateTagSlug(t *testing.T) {
+	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
+
+	oldSlug := "slug"
+	newSlug := "new-slug"
+
+	path := models.TagsPath + oldSlug
+
+	test_utils.MockGetObjectByEntity(mockAPI, "tags", map[string]any{
+		"slug":        oldSlug,
+		"description": "description",
+		"color":       "aaaaaa",
+	})
+
+	dataUpdate := map[string]any{
+		"slug": newSlug,
+	}
+	dataUpdated := map[string]any{
+		"slug":        newSlug,
+		"description": "description",
+		"color":       "aaaaaa",
+	}
+
+	test_utils.MockUpdateObject(mockAPI, dataUpdate, dataUpdated)
+	_, err := controller.UpdateObj(path, dataUpdate, false)
+	assert.Nil(t, err)
+}
+
+//endregion tags
+
+// region device's sizeU
 
 // Test an update of a device's sizeU with heightUnit == mm
 func TestUpdateDeviceSizeUmm(t *testing.T) {
@@ -106,7 +164,7 @@ func TestUpdateDeviceSizeUcm(t *testing.T) {
 
 // endregion sizeU
 
-// region height
+// region device's height
 
 // Test an update of a device's height with heightUnit == mm
 func TestUpdateDeviceheightmm(t *testing.T) {
