@@ -88,28 +88,10 @@ func TestUpdateDeviceSizeUmm(t *testing.T) {
 			"height": 44.45,
 		},
 	}
-	dataUpdated := map[string]any{
-		"attributes": map[string]any{
-			"height":       44.45,
-			"heightUnit":   "mm",
-			"invertOffset": false,
-			"orientation":  "front",
-			"posU":         1,
-			"size":         []float64{60, 120},
-			"sizeU":        1,
-			"sizeUnit":     "mm",
-			"type":         "chassis",
-		},
-		"category":    "device",
-		"description": "poor chassis",
-		"domain":      "test",
-		"id":          "BASIC.A.R1.A01.chU1",
-		"name":        "chU1",
-		"parentId":    "BASIC.A.R1.A01",
-		"tags":        []any{},
-	}
+	device["attributes"].(map[string]any)["sizeU"] = 1
+	device["attributes"].(map[string]any)["height"] = 44.45
 
-	test_utils.MockUpdateObject(mockAPI, mockDataUpdate, dataUpdated)
+	test_utils.MockUpdateObject(mockAPI, mockDataUpdate, device)
 	_, err := controller.UpdateObj(path, dataUpdate, false)
 	assert.Nil(t, err)
 }
@@ -136,28 +118,10 @@ func TestUpdateDeviceSizeUcm(t *testing.T) {
 			"height": 4.445,
 		},
 	}
-	dataUpdated := map[string]any{
-		"attributes": map[string]any{
-			"height":       4.445,
-			"heightUnit":   "cm",
-			"invertOffset": false,
-			"orientation":  "front",
-			"posU":         1,
-			"size":         []float64{60, 120},
-			"sizeU":        1,
-			"sizeUnit":     "mm",
-			"type":         "chassis",
-		},
-		"category":    "device",
-		"description": "poor chassis",
-		"domain":      "test",
-		"id":          "BASIC.A.R1.A01.chU1",
-		"name":        "chU1",
-		"parentId":    "BASIC.A.R1.A01",
-		"tags":        []any{},
-	}
+	device["attributes"].(map[string]any)["sizeU"] = 1
+	device["attributes"].(map[string]any)["height"] = 4.445
 
-	test_utils.MockUpdateObject(mockAPI, mockDataUpdate, dataUpdated)
+	test_utils.MockUpdateObject(mockAPI, mockDataUpdate, device)
 	_, err := controller.UpdateObj(path, dataUpdate, false)
 	assert.Nil(t, err)
 }
@@ -186,28 +150,10 @@ func TestUpdateDeviceheightmm(t *testing.T) {
 			"height": 44.45,
 		},
 	}
-	dataUpdated := map[string]any{
-		"attributes": map[string]any{
-			"height":       44.45,
-			"heightUnit":   "mm",
-			"invertOffset": false,
-			"orientation":  "front",
-			"posU":         1,
-			"size":         []float64{60, 120},
-			"sizeU":        1,
-			"sizeUnit":     "mm",
-			"type":         "chassis",
-		},
-		"category":    "device",
-		"description": "poor chassis",
-		"domain":      "test",
-		"id":          "BASIC.A.R1.A01.chU1",
-		"name":        "chU1",
-		"parentId":    "BASIC.A.R1.A01",
-		"tags":        []any{},
-	}
+	device["attributes"].(map[string]any)["sizeU"] = 1
+	device["attributes"].(map[string]any)["height"] = 44.45
 
-	test_utils.MockUpdateObject(mockAPI, mockDataUpdate, dataUpdated)
+	test_utils.MockUpdateObject(mockAPI, mockDataUpdate, device)
 	_, err := controller.UpdateObj(path, dataUpdate, false)
 	assert.Nil(t, err)
 }
@@ -233,28 +179,10 @@ func TestUpdateDeviceheightcm(t *testing.T) {
 			"height": 4.445,
 		},
 	}
-	dataUpdated := map[string]any{
-		"attributes": map[string]any{
-			"height":       4.445,
-			"heightUnit":   "cm",
-			"invertOffset": false,
-			"orientation":  "front",
-			"posU":         1,
-			"size":         []float64{60, 120},
-			"sizeU":        1,
-			"sizeUnit":     "mm",
-			"type":         "chassis",
-		},
-		"category":    "device",
-		"description": "poor chassis",
-		"domain":      "test",
-		"id":          "BASIC.A.R1.A01.chU1",
-		"name":        "chU1",
-		"parentId":    "BASIC.A.R1.A01",
-		"tags":        []any{},
-	}
+	device["attributes"].(map[string]any)["sizeU"] = 1
+	device["attributes"].(map[string]any)["height"] = 4.445
 
-	test_utils.MockUpdateObject(mockAPI, mockDataUpdate, dataUpdated)
+	test_utils.MockUpdateObject(mockAPI, mockDataUpdate, device)
 	_, err := controller.UpdateObj(path, dataUpdate, false)
 	assert.Nil(t, err)
 }
