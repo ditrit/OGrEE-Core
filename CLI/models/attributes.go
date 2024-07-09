@@ -194,27 +194,29 @@ func expandStrToVector(slot string) ([]string, error) {
 	}
 }
 
-// Check the format of a sizeU attribute and return it as a float32 is possible
-func CheckSizeUFormat(value any) (float32, error) {
+// Check the format of a sizeU attribute and return it as a float64 is possible
+func CheckSizeUFormat(value any) (float64, error) {
 	switch v := value.(type) {
 	case int:
-		return float32(v), nil
+		return float64(v), nil
 	case float32:
-		return v, nil
+		return float64(v), nil
 	case float64:
-		return float32(v), nil
+		return v, nil
 	default:
 		return 0, fmt.Errorf("sizeU should be an int of a float")
 	}
 }
 
-// Check the format of a height attribute and return it as a float32 is possible
-func CheckHeightFormat(value any) (float32, error) {
+// Check the format of a height attribute and return it as a float64 is possible
+func CheckHeightFormat(value any) (float64, error) {
 	switch v := value.(type) {
+	case int:
+		return float64(v), nil
 	case float32:
-		return v, nil
+		return float64(v), nil
 	case float64:
-		return float32(v), nil
+		return v, nil
 	default:
 		return 0, fmt.Errorf("height should be a float")
 	}
