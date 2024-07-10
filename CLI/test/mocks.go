@@ -52,6 +52,10 @@ func MockGetObjects(mockAPI *mocks.APIPort, queryParams string, result []any) {
 	mockResponseWithParams(mockAPI, http.MethodGet, "/api/objects", queryParams, nil, http.StatusOK, RemoveChildrenFromList(result))
 }
 
+func MockGetVirtualObject(mockAPI *mocks.APIPort, object map[string]any) {
+	mockResponse(mockAPI, http.MethodGet, "/api/virtual_objs/"+object["id"].(string), nil, http.StatusOK, RemoveChildren(object))
+}
+
 func MockGetVirtualObjects(mockAPI *mocks.APIPort, queryParams string, result []any) {
 	mockResponseWithParams(mockAPI, http.MethodGet, "/api/virtual_objs", queryParams, nil, http.StatusOK, RemoveChildrenFromList(result))
 }

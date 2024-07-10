@@ -190,6 +190,70 @@ func TestUpdateDeviceAlpha(t *testing.T) {
 	mockOgree3D.AssertCalled(t, "InformOptional", "UpdateObj", entity, message)
 }
 
+func TestUpdateDeviceDescription(t *testing.T) {
+	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
+	device := test_utils.CopyMap(chassis)
+	device["description"] = "my old description"
+	updatedDevice := test_utils.CopyMap(device)
+	updatedDevice["description"] = "my new description"
+	dataUpdate := map[string]any{"description": "my new description"}
+
+	path := "/Physical/" + strings.Replace(device["id"].(string), ".", "/", -1)
+
+	test_utils.MockGetObject(mockAPI, device)
+	test_utils.MockUpdateObject(mockAPI, dataUpdate, updatedDevice)
+
+	result, err := controller.UpdateDescription(path, "description", []any{updatedDevice["description"]})
+	assert.Nil(t, err)
+	assert.Equal(t, result["data"].(map[string]any)["description"], updatedDevice["description"])
+}
+
+func TestUpdateDeviceAttribute(t *testing.T) {
+	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
+	device := test_utils.CopyMap(chassis)
+	updatedDevice := test_utils.CopyMap(device)
+	updatedDevice["attributes"].(map[string]any)["slot"] = []any{"slot1"}
+	dataUpdate := map[string]any{"attributes": map[string]any{"slot": []string{"slot1"}}}
+
+	path := "/Physical/" + strings.Replace(device["id"].(string), ".", "/", -1)
+
+	test_utils.MockGetObject(mockAPI, device)
+	test_utils.MockUpdateObject(mockAPI, dataUpdate, updatedDevice)
+
+	result, err := controller.UpdateAttributes(path, "slot", updatedDevice["attributes"].(map[string]any)["slot"].([]any))
+	assert.Nil(t, err)
+	assert.Equal(t, result["data"].(map[string]any)["attributes"], updatedDevice["attributes"])
+}
+
+func TestUpdateVirtualLink(t *testing.T) {
+	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
+	vobj := test_utils.CopyMap(vobjCluster)
+	updatedDevice := test_utils.CopyMap(vobj)
+	updatedDevice["attributes"].(map[string]any)["vlinks"] = []any{"device"}
+	dataUpdate := map[string]any{"attributes": map[string]any{"vlinks": []any{"device"}}}
+
+	path := "/Logical/VirtualObjects/" + strings.Replace(vobj["id"].(string), ".", "/", -1)
+
+	// Add vlink
+	test_utils.MockGetVirtualObject(mockAPI, vobj)
+	test_utils.MockGetVirtualObject(mockAPI, vobj)
+	test_utils.MockUpdateObject(mockAPI, dataUpdate, updatedDevice)
+
+	result, err := controller.UpdateVirtualLink(path, "vlinks+", "device")
+	assert.Nil(t, err)
+	assert.Equal(t, result["data"].(map[string]any)["attributes"], updatedDevice["attributes"])
+
+	// Remove vlink
+	test_utils.MockGetVirtualObject(mockAPI, updatedDevice)
+	test_utils.MockGetVirtualObject(mockAPI, updatedDevice)
+	dataUpdate = map[string]any{"attributes": map[string]any{"vlinks": []any{}}}
+	test_utils.MockUpdateObject(mockAPI, dataUpdate, vobj)
+
+	result, err = controller.UpdateVirtualLink(path, "vlinks-", "device")
+	assert.Nil(t, err)
+	assert.Equal(t, result["data"].(map[string]any)["attributes"], vobj["attributes"])
+}
+
 func TestUpdateGroupContent(t *testing.T) {
 	controller, mockAPI, mockOgree3D, _ := test_utils.NewControllerWithMocks(t)
 	group := test_utils.CopyMap(rackGroup)
