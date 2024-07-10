@@ -5,7 +5,17 @@ import (
 	"cli/utils"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
+)
+
+const invalidAttrNameMsg = "invalid attribute name"
+
+// InnerAttrObjs
+const (
+	PillarAttr    = "pillar"
+	SeparatorAttr = "separator"
+	BreakerAttr   = "breaker"
 )
 
 func (controller Controller) UpdateObject(path, attr string, values []any) error {
@@ -13,19 +23,15 @@ func (controller Controller) UpdateObject(path, attr string, values []any) error
 	switch attr {
 	case "areas":
 		_, err = controller.UpdateRoomAreas(path, values)
-	case "separators+":
-		_, err = controller.AddRoomSeparator(path, values)
-	case "pillars+":
-		_, err = controller.AddRoomPillar(path, values)
-	case "breakers+":
-		_, err = controller.AddRackBreaker(path, values)
+	case "separators+", "pillars+", "breakers+":
+		_, err = controller.AddInnerAtrObj(strings.TrimSuffix(attr, "s+"), path, values)
 	case "pillars-", "separators-", "breakers-":
 		_, err = controller.DeleteInnerAttrObj(path, strings.TrimSuffix(attr, "-"), values[0].(string))
 	case "vlinks+", "vlinks-":
 		_, err = controller.UpdateVirtualLink(path, attr, values[0].(string))
 	case "domain", "tags+", "tags-":
 		isRecursive := len(values) > 1 && values[1] == "recursive"
-		_, err = controller.UpdateObj(path, map[string]any{attr: values[0]}, isRecursive)
+		_, err = controller.PatchObj(path, map[string]any{attr: values[0]}, isRecursive)
 	case "tags", "separators", "pillars", "vlinks", "breakers":
 		err = fmt.Errorf(
 			"object's %[1]s can not be updated directly, please use %[1]s+= and %[1]s-=",
@@ -33,9 +39,14 @@ func (controller Controller) UpdateObject(path, attr string, values []any) error
 		)
 	case "description":
 		_, err = controller.UpdateDescription(path, attr, values)
+	case VIRTUALCONFIG:
+		err = controller.AddVirtualConfig(path, values)
 	default:
-		_, err = controller.UpdateAttributes(path, attr, values)
-
+		if strings.Contains(attr, ".") {
+			err = controller.UpdateInnerAtrObj(path, attr, values)
+		} else {
+			_, err = controller.UpdateAttributes(path, attr, values)
+		}
 	}
 	return err
 }
@@ -56,21 +67,13 @@ func (controller Controller) UpdateAttributes(path, attributeName string, values
 		if len(values) > 1 {
 			return nil, fmt.Errorf("attributes can only be assigned a single value")
 		}
-		if vconfigAttr, found := strings.CutPrefix(attributeName, VIRTUALCONFIG+"."); found {
-			if len(vconfigAttr) < 1 {
-				return nil, fmt.Errorf("invalid attribute name")
-			}
-			vAttr := map[string]any{vconfigAttr: values[0]}
-			attributes = map[string]any{VIRTUALCONFIG: vAttr}
-		} else {
-			attributes = map[string]any{attributeName: values[0]}
-		}
+		attributes = map[string]any{attributeName: values[0]}
 	}
 
-	return controller.UpdateObj(path, map[string]any{"attributes": attributes}, false)
+	return controller.PatchObj(path, map[string]any{"attributes": attributes}, false)
 }
 
-func (controller Controller) UpdateObj(pathStr string, data map[string]any, withRecursive bool) (map[string]any, error) {
+func (controller Controller) PatchObj(pathStr string, data map[string]any, withRecursive bool) (map[string]any, error) {
 	obj, err := controller.GetObject(pathStr)
 	if err != nil {
 		return nil, err
@@ -174,7 +177,7 @@ func (controller Controller) UpdateDescription(path string, attr string, values 
 		return nil, err
 	}
 	data := map[string]any{"description": newDesc}
-	return controller.UpdateObj(path, data, false)
+	return controller.PatchObj(path, data, false)
 }
 
 func (controller Controller) UpdateVirtualLink(path string, attr string, value string) (map[string]any, error) {
@@ -209,7 +212,7 @@ func (controller Controller) UpdateVirtualLink(path string, attr string, value s
 	}
 
 	data := map[string]any{"vlinks": vlinks}
-	return controller.UpdateObj(path, map[string]any{"attributes": data}, false)
+	return controller.PatchObj(path, map[string]any{"attributes": data}, false)
 }
 
 func removeVirtualLink(vlinks []any, vlinkToRemove string) ([]any, error) {
@@ -236,87 +239,131 @@ func (controller Controller) DeleteInnerAttrObj(path, attribute, name string) (m
 	delete(attrMap, name)
 	attributes[attribute] = attrMap
 	fmt.Println(attributes)
-	return controller.UpdateObj(path, map[string]any{"attributes": attributes}, false)
+	return controller.PatchObj(path, map[string]any{"attributes": attributes}, false)
 }
 
-func (controller Controller) AddRoomPillar(path string, values []any) (map[string]any, error) {
-	// check and create a pillar
-	name, newPillar, err := models.ValuesToPillar(values)
-	if err != nil {
-		return nil, err
-	}
-
-	// get room and update pillars
+// only for pillars, separators and breakers
+func (controller Controller) AddInnerAtrObj(attrName, path string, values []any) (map[string]any, error) {
+	// get object
 	obj, err := controller.GetObject(path)
 	if err != nil {
 		return nil, err
 	}
 	attr := obj["attributes"].(map[string]any)
+	if (attrName == PillarAttr || attrName == SeparatorAttr) && obj["category"] != models.EntityToString(models.ROOM) {
+		return nil, fmt.Errorf("this attribute can only be added to rooms")
+	} else if attrName == BreakerAttr && obj["category"] != models.EntityToString(models.RACK) {
+		return nil, fmt.Errorf("this attribute can only be added to racks")
+	}
+
+	// check and create attr
+	var name string
+	var newAttrObject any
+	if attrName == PillarAttr {
+		name, newAttrObject, err = models.ValuesToPillar(values)
+	} else if attrName == SeparatorAttr {
+		name, newAttrObject, err = models.ValuesToSeparator(values)
+	} else if attrName == BreakerAttr {
+		name, newAttrObject, err = models.ValuesToBreaker(values)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	// add attr to object
 	var keyExist bool
-	attr["pillars"], keyExist = AddToMap[models.Pillar](attr["pillars"], name, newPillar)
-	obj, err = controller.UpdateObj(path, map[string]any{"attributes": attr}, false)
+	attr[attrName+"s"], keyExist = AddToMap(attr[attrName+"s"], name, newAttrObject)
+	obj, err = controller.PatchObj(path, map[string]any{"attributes": attr}, false)
 	if err != nil {
 		return nil, err
 	}
 	if keyExist {
-		fmt.Printf("Pillar %s replaced\n", name)
+		fmt.Printf(attrName+" %s replaced\n", name)
 	}
 	return obj, nil
 }
 
-func (controller Controller) AddRackBreaker(path string, values []any) (map[string]any, error) {
-	// create a breaker
-	name, newBreaker, err := models.ValuesToBreaker(values)
-	if err != nil {
-		return nil, err
+func (controller Controller) UpdateInnerAtrObj(path, attr string, values []any) error {
+	if regexp.MustCompile(`^breakers.([\w-]+).([\w-]+)$`).MatchString(attr) {
+		return controller.UpdateRackBreakerData(path, attr, values)
+	} else if regexp.MustCompile(`^virtual_config.([\w-]+)$`).MatchString(attr) {
+		return controller.UpdateVirtualConfig(path, attr, values)
+	} else {
+		return fmt.Errorf(invalidAttrNameMsg)
 	}
-
-	// get rack and modify breakers
-	obj, err := controller.GetObject(path)
-	if err != nil {
-		return nil, err
-	}
-	attr := obj["attributes"].(map[string]any)
-	var keyExist bool
-	attr["breakers"], keyExist = AddToMap[models.Breaker](attr["breakers"], name, newBreaker)
-	obj, err = controller.UpdateObj(path, map[string]any{"attributes": attr}, false)
-	if err != nil {
-		return nil, err
-	}
-	if keyExist {
-		fmt.Printf("Breaker %s replaced\n", name)
-	}
-	return obj, nil
-}
-
-func (controller Controller) AddRoomSeparator(path string, values []any) (map[string]any, error) {
-	name, newSeparator, err := models.ValuesToSeparator(values)
-	if err != nil {
-		return nil, err
-	}
-	obj, err := controller.GetObject(path)
-	if err != nil {
-		return nil, err
-	}
-	attr := obj["attributes"].(map[string]any)
-	var keyExist bool
-	attr["separators"], keyExist = AddToMap[models.Separator](attr["separators"], name, newSeparator)
-	obj, err = controller.UpdateObj(path, map[string]any{"attributes": attr}, false)
-	if err != nil {
-		return nil, err
-	}
-	if keyExist {
-		fmt.Printf("Separator %s replaced\n", name)
-	}
-	return obj, nil
 }
 
 func (controller Controller) UpdateRoomAreas(path string, values []any) (map[string]any, error) {
 	if attributes, e := models.SetRoomAreas(values); e != nil {
 		return nil, e
 	} else {
-		return controller.UpdateObj(path, map[string]any{"attributes": attributes}, false)
+		return controller.PatchObj(path, map[string]any{"attributes": attributes}, false)
 	}
+}
+
+func (controller Controller) UpdateRackBreakerData(path, attr string, values []any) error {
+	// format attribute
+	attrs := strings.Split(attr, ".") // breakers.name.attribute
+	if len(attrs) != 3 {
+		return fmt.Errorf(invalidAttrNameMsg)
+	}
+	// get rack and modify breakers
+	obj, err := controller.GetObject(path)
+	if err != nil {
+		return err
+	}
+	attributes := obj["attributes"].(map[string]any)
+	breakers, hasBreakers := attributes["breakers"].(map[string]any)
+	notFoundErr := fmt.Errorf("rack does not have specified breaker")
+	if !hasBreakers {
+		return notFoundErr
+	}
+	breaker, hasBreaker := breakers[attrs[1]].(map[string]any)
+	if !hasBreaker {
+		return notFoundErr
+	}
+	breaker[attrs[2]] = values[0]
+	_, err = controller.PatchObj(path, map[string]any{"attributes": attributes}, false)
+	return err
+}
+
+func (controller Controller) UpdateVirtualConfig(path, attr string, values []any) error {
+	vconfigAttr, _ := strings.CutPrefix(attr, VIRTUALCONFIG+".")
+	if len(vconfigAttr) < 1 {
+		return fmt.Errorf(invalidAttrNameMsg)
+	}
+
+	// get object and modify virtual config
+	obj, err := controller.GetObject(path)
+	if err != nil {
+		return err
+	}
+	attributes := obj["attributes"].(map[string]any)
+	vconfig, hasVconfig := attributes[VIRTUALCONFIG].(map[string]any)
+	if !hasVconfig {
+		return fmt.Errorf("object does not have virtual config")
+	}
+	vconfig[vconfigAttr] = values[0]
+	_, err = controller.PatchObj(path, map[string]any{"attributes": attributes}, false)
+	return err
+}
+
+// [device]:virtual_config=type@clusterId@role
+func (controller Controller) AddVirtualConfig(path string, values []any) error {
+	if len(values) < 1 {
+		return fmt.Errorf("invalid virtual_cofig values")
+	}
+	vconfig := map[string]any{"type": values[0]}
+	if len(values) > 1 {
+		vconfig["clusterId"] = values[1]
+	}
+	if len(values) > 2 {
+		vconfig["role"] = values[2]
+	}
+
+	attributes := map[string]any{VIRTUALCONFIG: vconfig}
+	_, err := controller.PatchObj(path, map[string]any{"attributes": attributes}, false)
+	return err
 }
 
 // Helpers

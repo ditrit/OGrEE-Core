@@ -217,12 +217,13 @@ func (p *parser) parseSimpleWord(name string) string {
 	}
 }
 
-func (p *parser) parseComplexWord(name string) string {
+func (p *parser) parseComplexWord(name string, extraAcceptedChar ...byte) string {
+	extraAcceptedChar = append([]byte{'-', '+', '_'}, extraAcceptedChar...)
 	p.skipWhiteSpaces()
 	defer un(trace(p, name))
 	for {
 		c := p.next()
-		if isAlphaNumeric(c) || c == '-' || c == '+' || c == '_' {
+		if isAlphaNumeric(c) || pie.Contains(extraAcceptedChar, c) {
 			continue
 		}
 		p.backward(1)
@@ -1324,12 +1325,7 @@ func (p *parser) parseUpdate() node {
 	p.skipWhiteSpaces()
 	p.expect(":")
 	p.skipWhiteSpaces()
-	attr := p.parseComplexWord("attribute")
-	if attr == c.VIRTUALCONFIG {
-		p.expect(".")
-		extraAttr := p.parseComplexWord("attribute")
-		attr = attr + "." + extraAttr
-	}
+	attr := p.parseComplexWord("attribute", '.')
 	p.skipWhiteSpaces()
 	p.expect("=")
 	p.skipWhiteSpaces()

@@ -580,7 +580,7 @@ func (n *updateObjNode) execute() (interface{}, error) {
 		var err error
 		if models.IsTag(path) {
 			if n.attr == "slug" || n.attr == "color" || n.attr == "description" {
-				_, err = cmd.C.UpdateObj(path, map[string]any{n.attr: values[0]}, false)
+				_, err = cmd.C.PatchObj(path, map[string]any{n.attr: values[0]}, false)
 			}
 		} else if models.IsLayer(path) {
 			err = cmd.C.UpdateLayer(path, n.attr, values[0])

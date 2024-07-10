@@ -36,7 +36,7 @@ func TestUpdateTagColor(t *testing.T) {
 
 	controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
 
-	_, err := controller.UpdateObj(path, dataUpdate, false)
+	_, err := controller.PatchObj(path, dataUpdate, false)
 	assert.Nil(t, err)
 }
 
@@ -67,7 +67,7 @@ func TestUpdateTagSlug(t *testing.T) {
 
 	controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
 
-	_, err := controller.UpdateObj(path, dataUpdate, false)
+	_, err := controller.PatchObj(path, dataUpdate, false)
 	assert.Nil(t, err)
 }
 
@@ -116,7 +116,7 @@ func TestUpdateRoomTiles(t *testing.T) {
 
 			controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
 
-			result, err := controller.UpdateObj(path, dataUpdate, false)
+			result, err := controller.PatchObj(path, dataUpdate, false)
 			assert.Nil(t, err)
 			assert.Equal(t, result["data"].(map[string]any)["attributes"].(map[string]any)[tt.attributeKey], tt.newValue)
 			mockOgree3D.AssertCalled(t, "InformOptional", "UpdateObj", entity, message)
@@ -152,7 +152,7 @@ func TestUpdateRackU(t *testing.T) {
 
 	controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
 
-	result, err := controller.UpdateObj(path, dataUpdate, false)
+	result, err := controller.PatchObj(path, dataUpdate, false)
 	assert.Nil(t, err)
 	assert.False(t, result["data"].(map[string]any)["attributes"].(map[string]any)["U"].(bool))
 	mockOgree3D.AssertCalled(t, "InformOptional", "UpdateObj", entity, message)
@@ -184,7 +184,7 @@ func TestUpdateDeviceAlpha(t *testing.T) {
 
 	controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
 
-	result, err := controller.UpdateObj(path, dataUpdate, false)
+	result, err := controller.PatchObj(path, dataUpdate, false)
 	assert.Nil(t, err)
 	assert.False(t, result["data"].(map[string]any)["attributes"].(map[string]any)["alpha"].(bool))
 	mockOgree3D.AssertCalled(t, "InformOptional", "UpdateObj", entity, message)
@@ -219,7 +219,7 @@ func TestUpdateGroupContent(t *testing.T) {
 
 	controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
 
-	result, err := controller.UpdateObj(path, dataUpdate, false)
+	result, err := controller.PatchObj(path, dataUpdate, false)
 	assert.Nil(t, err)
 	assert.Equal(t, result["data"].(map[string]any)["attributes"].(map[string]any)["content"].(string), newValue)
 	mockOgree3D.AssertCalled(t, "InformOptional", "UpdateObj", entity, message)
@@ -247,50 +247,109 @@ func TestSetRoomAreas(t *testing.T) {
 	assert.NotNil(t, value)
 }
 
-func TestAddRoomSeparatorOrPillarWorks(t *testing.T) {
+func TestAddAddInnerAtrObjWorks(t *testing.T) {
 	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
 	tests := []struct {
 		name          string
-		addFunction   func(string, []any) (map[string]any, error)
+		addFunction   func(string, string, []any) (map[string]any, error)
+		attr          string
 		values        []any
 		newAttributes map[string]any
 	}{
-		{"AddRoomSeparator", controller.AddRoomSeparator, []any{"mySeparator", []float64{1., 2.}, []float64{1., 2.}, "wireframe"}, map[string]interface{}{"separators": map[string]interface{}{"mySeparator": models.Separator{StartPos: []float64{1, 2}, EndPos: []float64{1, 2}, Type: "wireframe"}}}},
-		{"AddRoomPillar", controller.AddRoomPillar, []any{"myPillar", []float64{1., 2.}, []float64{1., 2.}, 2.5}, map[string]interface{}{"pillars": map[string]interface{}{"myPillar": models.Pillar{CenterXY: []float64{1, 2}, SizeXY: []float64{1, 2}, Rotation: 2.5}}}},
+		{"AddRoomSeparator", controller.AddInnerAtrObj, controllers.SeparatorAttr, []any{"mySeparator", []float64{1., 2.}, []float64{1., 2.}, "wireframe"}, map[string]interface{}{"separators": map[string]interface{}{"mySeparator": models.Separator{StartPos: []float64{1, 2}, EndPos: []float64{1, 2}, Type: "wireframe"}}}},
+		{"AddRoomPillar", controller.AddInnerAtrObj, controllers.PillarAttr, []any{"myPillar", []float64{1., 2.}, []float64{1., 2.}, 2.5}, map[string]interface{}{"pillars": map[string]interface{}{"myPillar": models.Pillar{CenterXY: []float64{1, 2}, SizeXY: []float64{1, 2}, Rotation: 2.5}}}},
+		{"AddRackBraker", controller.AddInnerAtrObj, controllers.BreakerAttr, []any{"myBreaker", "powerpanel"}, map[string]interface{}{"breakers": map[string]interface{}{"myBreaker": models.Breaker{Powerpanel: "powerpanel"}}}},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			room := test_utils.GetEntity("room", "room", "site.building", "domain")
+			var targetObj map[string]any
+			var target string
+			if tt.attr == controllers.BreakerAttr {
+				targetObj = test_utils.GetEntity("rack", "rack", "site.building.room", "domain")
+				target = "/Physical/site/building/room/rack"
+			} else {
+				targetObj = test_utils.GetEntity("room", "room", "site.building", "domain")
+				target = "/Physical/site/building/room"
+			}
 
-			test_utils.MockGetObject(mockAPI, room)
-			test_utils.MockGetObject(mockAPI, room)
+			test_utils.MockGetObject(mockAPI, targetObj)
+			test_utils.MockGetObject(mockAPI, targetObj)
 
-			room["attributes"] = tt.newAttributes
-			test_utils.MockUpdateObject(mockAPI, map[string]interface{}{"attributes": tt.newAttributes}, room)
+			targetObj["attributes"] = tt.newAttributes
+			test_utils.MockUpdateObject(mockAPI, map[string]interface{}{"attributes": tt.newAttributes}, targetObj)
 
-			obj, err := tt.addFunction("/Physical/site/building/room", tt.values)
+			obj, err := tt.addFunction(tt.attr, target, tt.values)
 			assert.NotNil(t, obj)
 			assert.Nil(t, err)
 		})
 	}
 }
 
-func TestAddRoomSeparatorOrPillarError(t *testing.T) {
-	controller, _, _, _ := test_utils.NewControllerWithMocks(t)
+func TestAddInnerAtrObjTargetError(t *testing.T) {
+	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
 	tests := []struct {
 		name         string
-		addFunction  func(string, []any) (map[string]any, error)
+		addFunction  func(string, string, []any) (map[string]any, error)
+		attr         string
 		values       []any
 		errorMessage string
 	}{
-		{"AddRoomSeparator", controller.AddRoomSeparator, []any{"mySeparator"}, "4 values (name, startPos, endPos, type) expected to add a separator"},
-		{"AddRoomPillar", controller.AddRoomPillar, []any{"myPillar"}, "4 values (name, centerXY, sizeXY, rotation) expected to add a pillar"},
+		{"AddRoomSeparator", controller.AddInnerAtrObj, "separator", []any{"mySeparator"}, "this attribute can only be added to rooms"},
+		{"AddRoomPillar", controller.AddInnerAtrObj, "pillar", []any{"myPillar"}, "this attribute can only be added to rooms"},
+		{"AddRackBraker", controller.AddInnerAtrObj, "breaker", []any{"myBreaker"}, "this attribute can only be added to racks"},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			obj, err := tt.addFunction("/Physical/site/building/room", tt.values)
+			var targetObj map[string]any
+			var target string
+			if tt.attr != controllers.BreakerAttr { // inverted compared to the right one
+				targetObj = test_utils.GetEntity("rack", "rack", "site.building.room", "domain")
+				target = "/Physical/site/building/room/rack"
+			} else {
+				targetObj = test_utils.GetEntity("room", "room", "site.building", "domain")
+				target = "/Physical/site/building/room"
+			}
+
+			test_utils.MockGetObject(mockAPI, targetObj)
+			obj, err := tt.addFunction(tt.attr, target, tt.values)
+
+			assert.Nil(t, obj)
+			assert.NotNil(t, err)
+			assert.ErrorContains(t, err, tt.errorMessage)
+		})
+	}
+}
+
+func TestAddInnerAtrObjFormatError(t *testing.T) {
+	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
+	tests := []struct {
+		name         string
+		addFunction  func(string, string, []any) (map[string]any, error)
+		attr         string
+		values       []any
+		errorMessage string
+	}{
+		{"AddRoomSeparator", controller.AddInnerAtrObj, "separator", []any{"mySeparator"}, "4 values (name, startPos, endPos, type) expected to add a separator"},
+		{"AddRoomPillar", controller.AddInnerAtrObj, "pillar", []any{"myPillar"}, "4 values (name, centerXY, sizeXY, rotation) expected to add a pillar"},
+		{"AddRackBraker", controller.AddInnerAtrObj, "breaker", []any{"myBreaker"}, "at least 2 values (name and powerpanel) expected to add a breaker"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var targetObj map[string]any
+			var target string
+			if tt.attr == controllers.BreakerAttr {
+				targetObj = test_utils.GetEntity("rack", "rack", "site.building.room", "domain")
+				target = "/Physical/site/building/room/rack"
+			} else {
+				targetObj = test_utils.GetEntity("room", "room", "site.building", "domain")
+				target = "/Physical/site/building/room"
+			}
+			test_utils.MockGetObject(mockAPI, targetObj)
+
+			obj, err := tt.addFunction(tt.attr, target, tt.values)
 
 			assert.Nil(t, obj)
 			assert.NotNil(t, err)

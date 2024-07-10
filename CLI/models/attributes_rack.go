@@ -19,7 +19,7 @@ func ValuesToBreaker(values []any) (string, Breaker, error) {
 	nMandatory := 2
 	// mandatory name
 	mandatoryErr := fmt.Errorf("at least %d values (name and powerpanel) expected to add a breaker", nMandatory)
-	if len(values) < 2 {
+	if len(values) < nMandatory {
 		return "", Breaker{}, mandatoryErr
 	}
 	name, err := utils.ValToString(values[0], "name")

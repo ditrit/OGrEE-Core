@@ -52,8 +52,6 @@ var BaseAttrs = map[int]EntityAttributes{
 	CORRIDOR: CorridorBaseAttrs,
 }
 
-type MapOfMapsAttr map[string]map[string]any
-
 const referToWikiMsg = " Please refer to the wiki or manual reference" +
 	" for more details on how to create objects " +
 	"using this syntax"

@@ -18,7 +18,7 @@ func Object(path string, obj map[string]any) {
 }
 
 func DisplayJson(indent string, jsonMap map[string]any) {
-	keysWithObjectsValue := []string{"attributes", "breakers", "pillars", "separators"}
+	keysWithObjectsValue := []string{"attributes", "breakers", "pillars", "separators", "virtual_config"}
 	defaultIndent := "    "
 	// sort keys in alphabetical order
 	keys := make([]string, 0, len(jsonMap))
