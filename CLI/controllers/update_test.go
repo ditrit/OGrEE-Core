@@ -251,14 +251,14 @@ func TestAddInnerAtrObjWorks(t *testing.T) {
 	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
 	tests := []struct {
 		name          string
-		addFunction   func(string, string, []any) (map[string]any, error)
+		addFunction   func(string, string, []any) error
 		attr          string
 		values        []any
 		newAttributes map[string]any
 	}{
-		{"AddRoomSeparator", controller.AddInnerAtrObj, controllers.SeparatorAttr, []any{"mySeparator", []float64{1., 2.}, []float64{1., 2.}, "wireframe"}, map[string]interface{}{"separators": map[string]interface{}{"mySeparator": models.Separator{StartPos: []float64{1, 2}, EndPos: []float64{1, 2}, Type: "wireframe"}}}},
-		{"AddRoomPillar", controller.AddInnerAtrObj, controllers.PillarAttr, []any{"myPillar", []float64{1., 2.}, []float64{1., 2.}, 2.5}, map[string]interface{}{"pillars": map[string]interface{}{"myPillar": models.Pillar{CenterXY: []float64{1, 2}, SizeXY: []float64{1, 2}, Rotation: 2.5}}}},
-		{"AddRackBraker", controller.AddInnerAtrObj, controllers.BreakerAttr, []any{"myBreaker", "powerpanel"}, map[string]interface{}{"breakers": map[string]interface{}{"myBreaker": models.Breaker{Powerpanel: "powerpanel"}}}},
+		{"AddRoomSeparator", controller.UpdateObject, controllers.SeparatorAttr, []any{"mySeparator", []float64{1., 2.}, []float64{1., 2.}, "wireframe"}, map[string]interface{}{"separators": map[string]interface{}{"mySeparator": models.Separator{StartPos: []float64{1, 2}, EndPos: []float64{1, 2}, Type: "wireframe"}}}},
+		{"AddRoomPillar", controller.UpdateObject, controllers.PillarAttr, []any{"myPillar", []float64{1., 2.}, []float64{1., 2.}, 2.5}, map[string]interface{}{"pillars": map[string]interface{}{"myPillar": models.Pillar{CenterXY: []float64{1, 2}, SizeXY: []float64{1, 2}, Rotation: 2.5}}}},
+		{"AddRackBraker", controller.UpdateObject, controllers.BreakerAttr, []any{"myBreaker", "powerpanel"}, map[string]interface{}{"breakers": map[string]interface{}{"myBreaker": models.Breaker{Powerpanel: "powerpanel"}}}},
 	}
 
 	for _, tt := range tests {
@@ -279,8 +279,7 @@ func TestAddInnerAtrObjWorks(t *testing.T) {
 			targetObj["attributes"] = tt.newAttributes
 			test_utils.MockUpdateObject(mockAPI, map[string]interface{}{"attributes": tt.newAttributes}, targetObj)
 
-			obj, err := tt.addFunction(tt.attr, target, tt.values)
-			assert.NotNil(t, obj)
+			err := tt.addFunction(target, tt.attr+"s+", tt.values)
 			assert.Nil(t, err)
 		})
 	}
@@ -419,10 +418,9 @@ func TestDeleteInnerAtrObjWorks(t *testing.T) {
 			test_utils.MockGetObject(mockAPI, targetObj)
 			test_utils.MockGetObject(mockAPI, targetObj)
 			test_utils.MockUpdateObject(mockAPI, map[string]interface{}{"attributes": map[string]interface{}{tt.attr + "s": map[string]interface{}{}}}, updatedTarget)
-			obj, err := controller.DeleteInnerAttrObj(target, tt.attr+"s", "my"+tt.attr)
+			err := controller.UpdateObject(target, tt.attr+"s-", []any{"my" + tt.attr})
 
 			assert.Nil(t, err)
-			assert.NotNil(t, obj)
 		})
 	}
 }
