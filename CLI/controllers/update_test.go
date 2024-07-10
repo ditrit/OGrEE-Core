@@ -247,7 +247,7 @@ func TestSetRoomAreas(t *testing.T) {
 	assert.NotNil(t, value)
 }
 
-func TestAddAddInnerAtrObjWorks(t *testing.T) {
+func TestAddInnerAtrObjWorks(t *testing.T) {
 	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
 	tests := []struct {
 		name          string
@@ -358,7 +358,7 @@ func TestAddInnerAtrObjFormatError(t *testing.T) {
 	}
 }
 
-func TestDeleteRoomPillarOrSeparatorWithError(t *testing.T) {
+func TestDeleteInnerAtrObjWithError(t *testing.T) {
 	tests := []struct {
 		name          string
 		attributeName string
@@ -384,43 +384,47 @@ func TestDeleteRoomPillarOrSeparatorWithError(t *testing.T) {
 	}
 }
 
-func TestDeleteRoomPillarOrSeparatorSeparator(t *testing.T) {
-	// _, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
+func TestDeleteInnerAtrObjWorks(t *testing.T) {
 	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
+	tests := []struct {
+		name        string
+		addFunction func(string, string, []any) (map[string]any, error)
+		attr        string
+		// values        []any
+		currentAttributes map[string]any
+	}{
+		{"DeleteRoomSeparator", controller.AddInnerAtrObj, controllers.SeparatorAttr, map[string]interface{}{"separators": map[string]interface{}{"myseparator": models.Separator{StartPos: []float64{1, 2}, EndPos: []float64{1, 2}, Type: "wireframe"}}}},
+		{"DeleteRoomPillar", controller.AddInnerAtrObj, controllers.PillarAttr, map[string]interface{}{"pillars": map[string]interface{}{"mypillar": models.Pillar{CenterXY: []float64{1, 2}, SizeXY: []float64{1, 2}, Rotation: 2.5}}}},
+		{"DeleteRackBraker", controller.AddInnerAtrObj, controllers.BreakerAttr, map[string]interface{}{"breakers": map[string]interface{}{"mybreaker": models.Breaker{Powerpanel: "powerpanel"}}}},
+	}
 
-	room := test_utils.GetEntity("room", "room", "site.building", "domain")
-	room["attributes"].(map[string]any)["separators"] = map[string]interface{}{"mySeparator": models.Separator{StartPos: []float64{1, 2}, EndPos: []float64{1, 2}, Type: "wireframe"}}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var targetObj map[string]any
+			var target string
+			if tt.attr == controllers.BreakerAttr {
+				targetObj = test_utils.GetEntity("rack", "rack", "site.building.room", "domain")
+				target = "/Physical/site/building/room/rack"
+			} else {
+				targetObj = test_utils.GetEntity("room", "room", "site.building", "domain")
+				target = "/Physical/site/building/room"
+			}
 
-	updatedRoom := test_utils.GetEntity("room", "room", "site.building", "domain")
-	updatedRoom["attributes"] = map[string]any{"separators": map[string]interface{}{}}
+			maps.Copy(targetObj["attributes"].(map[string]any), tt.currentAttributes)
+			// room["attributes"].(map[string]any)["pillars"] = map[string]interface{}{"myPillar": models.Pillar{CenterXY: []float64{1, 2}, SizeXY: []float64{1, 2}, Rotation: 2.5}}
 
-	test_utils.MockGetObject(mockAPI, room)
-	test_utils.MockGetObject(mockAPI, room)
+			updatedTarget := maps.Clone(targetObj)
+			updatedTarget["attributes"] = map[string]any{tt.attr + "s": map[string]interface{}{}}
 
-	test_utils.MockUpdateObject(mockAPI, map[string]interface{}{"attributes": map[string]interface{}{"separators": map[string]interface{}{}}}, updatedRoom)
-	obj, err := controller.DeleteInnerAttrObj("/Physical/site/building/room", "separators", "mySeparator")
+			test_utils.MockGetObject(mockAPI, targetObj)
+			test_utils.MockGetObject(mockAPI, targetObj)
+			test_utils.MockUpdateObject(mockAPI, map[string]interface{}{"attributes": map[string]interface{}{tt.attr + "s": map[string]interface{}{}}}, updatedTarget)
+			obj, err := controller.DeleteInnerAttrObj(target, tt.attr+"s", "my"+tt.attr)
 
-	assert.Nil(t, err)
-	assert.NotNil(t, obj)
-}
-
-func TestDeleteRoomPillarOrSeparatorPillar(t *testing.T) {
-	// _, mockAPI, _, _ := test_utils.SetMainEnvironmentMock(t)
-	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
-
-	room := test_utils.GetEntity("room", "room", "site.building", "domain")
-	room["attributes"].(map[string]any)["pillars"] = map[string]interface{}{"myPillar": models.Pillar{CenterXY: []float64{1, 2}, SizeXY: []float64{1, 2}, Rotation: 2.5}}
-
-	updatedRoom := maps.Clone(room)
-	updatedRoom["attributes"] = map[string]any{"pillars": map[string]interface{}{}}
-
-	test_utils.MockGetObject(mockAPI, room)
-	test_utils.MockGetObject(mockAPI, room)
-	test_utils.MockUpdateObject(mockAPI, map[string]interface{}{"attributes": map[string]interface{}{"pillars": map[string]interface{}{}}}, updatedRoom)
-	obj, err := controller.DeleteInnerAttrObj("/Physical/site/building/room", "pillars", "myPillar")
-
-	assert.Nil(t, err)
-	assert.NotNil(t, obj)
+			assert.Nil(t, err)
+			assert.NotNil(t, obj)
+		})
+	}
 }
 
 func TestAddToMap(t *testing.T) {

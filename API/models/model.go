@@ -22,7 +22,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-var AttrsWithInnerIbj = []string{"pillars", "separators", "breakers"}
+var AttrsWithInnerObj = []string{"pillars", "separators", "breakers"}
 
 // Helper functions
 
@@ -93,7 +93,7 @@ func updateOldObjWithPatch(old map[string]interface{}, patch map[string]interfac
 	for k, v := range patch {
 		switch patchValueCasted := v.(type) {
 		case map[string]interface{}:
-			if pie.Contains(AttrsWithInnerIbj, k) {
+			if pie.Contains(AttrsWithInnerObj, k) {
 				old[k] = v
 			} else {
 				switch oldValueCasted := old[k].(type) {

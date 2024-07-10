@@ -218,7 +218,6 @@ func SetRoomAreas(values []any) (map[string]any, error) {
 			return nil, ErrorResponder("reserved and technical", "4", true)
 		}
 	}
-
 }
 
 // errResponder helper func for specialUpdateNode
