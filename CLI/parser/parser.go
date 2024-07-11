@@ -868,7 +868,7 @@ func (p *parser) parseDelete() node {
 	path := p.parsePath("")
 	if p.parseExact(":") {
 		attr := p.parseComplexWord("attribute")
-		if attr == c.VIRTUALCONFIG {
+		if attr == c.VirtualConfigAttr {
 			p.expect(".")
 			extraAttr := p.parseComplexWord("attribute")
 			attr = attr + "." + extraAttr

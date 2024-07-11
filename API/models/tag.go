@@ -89,7 +89,7 @@ func addAndRemoveFromTags(entity int, objectID string, object map[string]interfa
 		}
 
 		// check tags for rack breakers
-		if err := verifyTagForRackBreaker(object); err != nil {
+		if err := VerifyTagForRackBreaker(object); err != nil {
 			return err
 		}
 	}
@@ -97,7 +97,7 @@ func addAndRemoveFromTags(entity int, objectID string, object map[string]interfa
 	return nil
 }
 
-func verifyTagForRackBreaker(object map[string]interface{}) *u.Error {
+func VerifyTagForRackBreaker(object map[string]interface{}) *u.Error {
 	if breakers, ok := object["attributes"].(map[string]any)["breakers"].(map[string]any); ok {
 		tagsToCheck := []any{}
 		for _, breaker := range breakers {

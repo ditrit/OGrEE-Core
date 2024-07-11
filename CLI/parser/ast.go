@@ -1059,7 +1059,7 @@ func (n *createVirtualNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	attributes := map[string]any{cmd.VIRTUALCONFIG: map[string]any{"type": vtype}}
+	attributes := map[string]any{cmd.VirtualConfigAttr: map[string]any{"type": vtype}}
 
 	if n.vlinks != nil {
 		vlinks := []string{}
@@ -1079,7 +1079,7 @@ func (n *createVirtualNode) execute() (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-		attributes[cmd.VIRTUALCONFIG].(map[string]any)["role"] = role
+		attributes[cmd.VirtualConfigAttr].(map[string]any)["role"] = role
 	}
 
 	return nil, cmd.C.CreateObject(path, models.VIRTUALOBJ,

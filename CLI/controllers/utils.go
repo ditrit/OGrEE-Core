@@ -17,7 +17,6 @@ const (
 )
 
 const RACKUNIT = .04445 //meter
-const VIRTUALCONFIG = "virtual_config"
 
 // displays contents of maps
 func Disp(x map[string]interface{}) {

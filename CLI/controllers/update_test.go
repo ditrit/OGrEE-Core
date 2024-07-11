@@ -225,6 +225,68 @@ func TestUpdateDeviceAttribute(t *testing.T) {
 	assert.Equal(t, result["data"].(map[string]any)["attributes"], updatedDevice["attributes"])
 }
 
+func TestAddVirtualConfig(t *testing.T) {
+	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
+	device := test_utils.CopyMap(chassis)
+	updatedDevice := test_utils.CopyMap(device)
+	vconfig := map[string]any{"type": "node", "clusterId": "mycluster", "role": "proxmox"}
+	updatedDevice["attributes"].(map[string]any)[controllers.VirtualConfigAttr] = vconfig
+	dataUpdate := map[string]any{"attributes": map[string]any{controllers.VirtualConfigAttr: vconfig}}
+
+	path := "/Physical/" + strings.Replace(device["id"].(string), ".", "/", -1)
+
+	test_utils.MockGetObject(mockAPI, device)
+	test_utils.MockUpdateObject(mockAPI, dataUpdate, updatedDevice)
+
+	err := controller.UpdateObject(path, controllers.VirtualConfigAttr, []any{"node", "mycluster", "proxmox"})
+	assert.Nil(t, err)
+}
+
+func TestUpdateVirtualConfigData(t *testing.T) {
+	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
+	// original device
+	device := test_utils.CopyMap(chassis)
+	vconfig := map[string]any{"type": "node", "clusterId": "mycluster", "role": "proxmox"}
+	device["attributes"].(map[string]any)[controllers.VirtualConfigAttr] = test_utils.CopyMap(vconfig)
+	// updated device
+	updatedDevice := test_utils.CopyMap(device)
+	vconfig["type"] = "host"
+	updatedDevice["attributes"].(map[string]any)[controllers.VirtualConfigAttr] = vconfig
+	// update data
+	dataUpdate := map[string]any{"attributes": updatedDevice["attributes"]}
+
+	path := "/Physical/" + strings.Replace(device["id"].(string), ".", "/", -1)
+
+	test_utils.MockGetObject(mockAPI, device)
+	test_utils.MockGetObject(mockAPI, device)
+	test_utils.MockUpdateObject(mockAPI, dataUpdate, updatedDevice)
+
+	err := controller.UpdateObject(path, controllers.VirtualConfigAttr+".type", []any{"host"})
+	assert.Nil(t, err)
+}
+
+func TestUpdateRackBreakerData(t *testing.T) {
+	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
+	// original device
+	rack := test_utils.GetEntity("rack", "rack", "site.building.room", "domain")
+	path := "/Physical/site/building/room/rack"
+	breakers := map[string]any{"break1": map[string]any{"powerpanel": "panel1"}}
+	rack["attributes"].(map[string]any)[controllers.BreakerAttr+"s"] = test_utils.CopyMap(breakers)
+	// updated device
+	updatedRack := test_utils.CopyMap(rack)
+	breakers["break1"].(map[string]any)["powerpanel"] = "panel2"
+	updatedRack["attributes"].(map[string]any)[controllers.BreakerAttr+"s"] = breakers
+	// update data
+	dataUpdate := map[string]any{"attributes": updatedRack["attributes"]}
+
+	test_utils.MockGetObject(mockAPI, rack)
+	test_utils.MockGetObject(mockAPI, rack)
+	test_utils.MockUpdateObject(mockAPI, dataUpdate, updatedRack)
+
+	err := controller.UpdateObject(path, controllers.BreakerAttr+"s.break1.powerpanel", []any{"panel2"})
+	assert.Nil(t, err)
+}
+
 func TestUpdateVirtualLink(t *testing.T) {
 	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
 	vobj := test_utils.CopyMap(vobjCluster)

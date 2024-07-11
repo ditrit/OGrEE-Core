@@ -17,6 +17,7 @@ const (
 	SeparatorAttr = "separator"
 	BreakerAttr   = "breaker"
 )
+const VirtualConfigAttr = "virtual_config"
 
 func (controller Controller) UpdateObject(path, attr string, values []any) error {
 	var err error
@@ -39,7 +40,7 @@ func (controller Controller) UpdateObject(path, attr string, values []any) error
 		)
 	case "description":
 		_, err = controller.UpdateDescription(path, attr, values)
-	case VIRTUALCONFIG:
+	case VirtualConfigAttr:
 		err = controller.AddVirtualConfig(path, values)
 	default:
 		if strings.Contains(attr, ".") {
@@ -299,7 +300,7 @@ func (controller Controller) AddVirtualConfig(path string, values []any) error {
 		vconfig["role"] = values[2]
 	}
 
-	attributes := map[string]any{VIRTUALCONFIG: vconfig}
+	attributes := map[string]any{VirtualConfigAttr: vconfig}
 	_, err := controller.PatchObj(path, map[string]any{"attributes": attributes}, false)
 	return err
 }
@@ -352,7 +353,7 @@ func (controller Controller) UpdateRackBreakerData(path, attr string, values []a
 
 // [obj]:virtual_config.attr=value
 func (controller Controller) UpdateVirtualConfig(path, attr string, values []any) error {
-	vconfigAttr, _ := strings.CutPrefix(attr, VIRTUALCONFIG+".")
+	vconfigAttr, _ := strings.CutPrefix(attr, VirtualConfigAttr+".")
 	if len(vconfigAttr) < 1 {
 		return fmt.Errorf(invalidAttrNameMsg)
 	}
@@ -363,7 +364,7 @@ func (controller Controller) UpdateVirtualConfig(path, attr string, values []any
 		return err
 	}
 	attributes := obj["attributes"].(map[string]any)
-	vconfig, hasVconfig := attributes[VIRTUALCONFIG].(map[string]any)
+	vconfig, hasVconfig := attributes[VirtualConfigAttr].(map[string]any)
 	if !hasVconfig {
 		return fmt.Errorf("object does not have virtual config")
 	}

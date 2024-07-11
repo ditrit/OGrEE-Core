@@ -57,11 +57,11 @@ func (controller Controller) UnsetAttribute(path string, attr string) error {
 	if !hasAttributes {
 		return fmt.Errorf("object has no attributes")
 	}
-	if vconfigAttr, found := strings.CutPrefix(attr, VIRTUALCONFIG+"."); found {
+	if vconfigAttr, found := strings.CutPrefix(attr, VirtualConfigAttr+"."); found {
 		if len(vconfigAttr) < 1 {
 			return fmt.Errorf("invalid attribute name")
-		} else if vAttrs, ok := attributes[VIRTUALCONFIG].(map[string]any); !ok {
-			return fmt.Errorf("object has no " + VIRTUALCONFIG)
+		} else if vAttrs, ok := attributes[VirtualConfigAttr].(map[string]any); !ok {
+			return fmt.Errorf("object has no " + VirtualConfigAttr)
 		} else {
 			delete(vAttrs, vconfigAttr)
 		}
