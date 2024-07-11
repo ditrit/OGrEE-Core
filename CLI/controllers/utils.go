@@ -16,8 +16,6 @@ const (
 	DEBUG
 )
 
-const RACKUNIT = .04445 //meter
-
 // displays contents of maps
 func Disp(x map[string]interface{}) {
 

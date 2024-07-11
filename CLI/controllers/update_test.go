@@ -11,6 +11,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// region tags
+
 func TestUpdateTagColor(t *testing.T) {
 	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
 
@@ -33,9 +35,6 @@ func TestUpdateTagColor(t *testing.T) {
 	}
 
 	test_utils.MockUpdateObject(mockAPI, dataUpdate, dataUpdated)
-
-	controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
-
 	_, err := controller.PatchObj(path, dataUpdate, false)
 	assert.Nil(t, err)
 }
@@ -64,131 +63,133 @@ func TestUpdateTagSlug(t *testing.T) {
 	}
 
 	test_utils.MockUpdateObject(mockAPI, dataUpdate, dataUpdated)
-
-	controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
-
 	_, err := controller.PatchObj(path, dataUpdate, false)
 	assert.Nil(t, err)
 }
 
-func TestUpdateRoomTiles(t *testing.T) {
-	tests := []struct {
-		name         string
-		attributeKey string
-		oldValue     string
-		newValue     string
-	}{
-		{"Color", "tilesColor", "aaaaaa", "aaaaab"},
-		{"Name", "tilesName", "t1", "t2"},
-	}
+//endregion tags
+// region device's sizeU
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			controller, mockAPI, mockOgree3D, _ := test_utils.NewControllerWithMocks(t)
+// Test an update of a device's sizeU with heightUnit == mm
+func TestUpdateDeviceSizeUmm(t *testing.T) {
+	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
 
-			room := test_utils.CopyMap(roomWithoutChildren)
-			room["attributes"] = map[string]any{
-				tt.attributeKey: tt.oldValue,
-			}
-			updatedRoom := test_utils.CopyMap(room)
-			updatedRoom["attributes"].(map[string]any)[tt.attributeKey] = tt.newValue
-			dataUpdate := updatedRoom["attributes"].(map[string]any)
-			entity := models.ROOM
+	path := models.PhysicalIDToPath("BASIC.A.R1.A01.chU1")
 
-			path := "/Physical/" + strings.Replace(room["id"].(string), ".", "/", -1)
-			message := map[string]any{
-				"type": "interact",
-				"data": map[string]any{
-					"id":    room["id"],
-					"param": tt.attributeKey,
-					"value": tt.newValue,
-				},
-			}
+	device := test_utils.GetEntity("device", "chU1", "BASIC.A.R1.A01", "test")
+	test_utils.MockGetObject(mockAPI, device)
 
-			mockOgree3D.On("InformOptional", "UpdateObj", entity, message).Return(nil)
-
-			test_utils.MockGetObject(mockAPI, room)
-
-			dataUpdated := test_utils.CopyMap(room)
-			dataUpdated["attributes"].(map[string]any)[tt.attributeKey] = tt.newValue
-
-			test_utils.MockUpdateObject(mockAPI, dataUpdate, dataUpdated)
-
-			controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
-
-			result, err := controller.PatchObj(path, dataUpdate, false)
-			assert.Nil(t, err)
-			assert.Equal(t, result["data"].(map[string]any)["attributes"].(map[string]any)[tt.attributeKey], tt.newValue)
-			mockOgree3D.AssertCalled(t, "InformOptional", "UpdateObj", entity, message)
-		})
-	}
-}
-
-func TestUpdateRackU(t *testing.T) {
-	controller, mockAPI, mockOgree3D, _ := test_utils.NewControllerWithMocks(t)
-	rack := test_utils.CopyMap(rack2)
-	rack["attributes"] = map[string]any{
-		"U": true,
-	}
-	updatedRack := test_utils.CopyMap(rack)
-	updatedRack["attributes"].(map[string]any)["U"] = false
-	dataUpdate := updatedRack["attributes"].(map[string]any)
-	entity := models.RACK
-
-	path := "/Physical/" + strings.Replace(rack["id"].(string), ".", "/", -1)
-	message := map[string]any{
-		"type": "interact",
-		"data": map[string]any{
-			"id":    rack["id"],
-			"param": "U",
-			"value": false,
+	dataUpdate := map[string]any{
+		"attributes": map[string]any{
+			"sizeU": 1,
 		},
 	}
+	mockDataUpdate := map[string]any{
+		"attributes": map[string]any{
+			"sizeU":  float64(1),
+			"height": 44.45,
+		},
+	}
+	device["attributes"].(map[string]any)["sizeU"] = 1
+	device["attributes"].(map[string]any)["height"] = 44.45
 
-	mockOgree3D.On("InformOptional", "UpdateObj", entity, message).Return(nil)
-
-	test_utils.MockGetObject(mockAPI, rack)
-	test_utils.MockUpdateObject(mockAPI, dataUpdate, updatedRack)
-
-	controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
-
-	result, err := controller.PatchObj(path, dataUpdate, false)
+	test_utils.MockUpdateObject(mockAPI, mockDataUpdate, device)
+	_, err := controller.PatchObj(path, dataUpdate, false)
 	assert.Nil(t, err)
-	assert.False(t, result["data"].(map[string]any)["attributes"].(map[string]any)["U"].(bool))
-	mockOgree3D.AssertCalled(t, "InformOptional", "UpdateObj", entity, message)
 }
 
-func TestUpdateDeviceAlpha(t *testing.T) {
-	controller, mockAPI, mockOgree3D, _ := test_utils.NewControllerWithMocks(t)
-	device := test_utils.CopyMap(chassis)
-	device["attributes"].(map[string]any)["alpha"] = true
-	updatedDevice := test_utils.CopyMap(device)
-	updatedDevice["attributes"].(map[string]any)["alpha"] = false
-	dataUpdate := updatedDevice["attributes"].(map[string]any)
-	entity := models.DEVICE
+// Test an update of a device's sizeU with heightUnit == cm
+func TestUpdateDeviceSizeUcm(t *testing.T) {
+	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
 
-	path := "/Physical/" + strings.Replace(device["id"].(string), ".", "/", -1)
-	message := map[string]any{
-		"type": "interact",
-		"data": map[string]any{
-			"id":    device["id"],
-			"param": "alpha",
-			"value": false,
-		},
-	}
+	path := models.PhysicalIDToPath("BASIC.A.R1.A01.chU1")
 
-	mockOgree3D.On("InformOptional", "UpdateObj", entity, message).Return(nil)
+	device := test_utils.GetEntity("device", "chU1", "BASIC.A.R1.A01", "test")
+	device["attributes"].(map[string]any)["heightUnit"] = "cm"
 
 	test_utils.MockGetObject(mockAPI, device)
-	test_utils.MockUpdateObject(mockAPI, dataUpdate, updatedDevice)
 
-	controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
+	dataUpdate := map[string]any{
+		"attributes": map[string]any{
+			"sizeU": 1,
+		},
+	}
+	mockDataUpdate := map[string]any{
+		"attributes": map[string]any{
+			"sizeU":  float64(1),
+			"height": 4.445,
+		},
+	}
+	device["attributes"].(map[string]any)["sizeU"] = 1
+	device["attributes"].(map[string]any)["height"] = 4.445
 
-	result, err := controller.PatchObj(path, dataUpdate, false)
+	test_utils.MockUpdateObject(mockAPI, mockDataUpdate, device)
+	_, err := controller.PatchObj(path, dataUpdate, false)
 	assert.Nil(t, err)
-	assert.False(t, result["data"].(map[string]any)["attributes"].(map[string]any)["alpha"].(bool))
-	mockOgree3D.AssertCalled(t, "InformOptional", "UpdateObj", entity, message)
 }
+
+// endregion sizeU
+// region device's height
+
+// Test an update of a device's height with heightUnit == mm
+func TestUpdateDeviceheightmm(t *testing.T) {
+	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
+
+	path := models.PhysicalIDToPath("BASIC.A.R1.A01.chU1")
+
+	device := test_utils.GetEntity("device", "chU1", "BASIC.A.R1.A01", "test")
+	test_utils.MockGetObject(mockAPI, device)
+
+	dataUpdate := map[string]any{
+		"attributes": map[string]any{
+			"height": 44.45,
+		},
+	}
+	mockDataUpdate := map[string]any{
+		"attributes": map[string]any{
+			"sizeU":  float64(1),
+			"height": 44.45,
+		},
+	}
+	device["attributes"].(map[string]any)["sizeU"] = 1
+	device["attributes"].(map[string]any)["height"] = 44.45
+
+	test_utils.MockUpdateObject(mockAPI, mockDataUpdate, device)
+	_, err := controller.PatchObj(path, dataUpdate, false)
+	assert.Nil(t, err)
+}
+
+// Test an update of a device's height with heightUnit == cm
+func TestUpdateDeviceheightcm(t *testing.T) {
+	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
+
+	path := models.PhysicalIDToPath("BASIC.A.R1.A01.chU1")
+
+	device := test_utils.GetEntity("device", "chU1", "BASIC.A.R1.A01", "test")
+	device["attributes"].(map[string]any)["heightUnit"] = "cm"
+	test_utils.MockGetObject(mockAPI, device)
+
+	dataUpdate := map[string]any{
+		"attributes": map[string]any{
+			"height": 4.445,
+		},
+	}
+	mockDataUpdate := map[string]any{
+		"attributes": map[string]any{
+			"sizeU":  float64(1),
+			"height": 4.445,
+		},
+	}
+	device["attributes"].(map[string]any)["sizeU"] = 1
+	device["attributes"].(map[string]any)["height"] = 4.445
+
+	test_utils.MockUpdateObject(mockAPI, mockDataUpdate, device)
+	_, err := controller.PatchObj(path, dataUpdate, false)
+	assert.Nil(t, err)
+}
+
+// endregion
+// region update attribute
 
 func TestUpdateDeviceDescription(t *testing.T) {
 	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
@@ -224,6 +225,32 @@ func TestUpdateDeviceAttribute(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, result["data"].(map[string]any)["attributes"], updatedDevice["attributes"])
 }
+
+func TestUpdateGroupContent(t *testing.T) {
+	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
+	group := test_utils.CopyMap(rackGroup)
+	group["attributes"] = map[string]any{
+		"content": "A,B",
+	}
+	newValue := "A,B,C"
+	updatedGroup := test_utils.CopyMap(group)
+	updatedGroup["attributes"].(map[string]any)["content"] = newValue
+	dataUpdate := updatedGroup["attributes"].(map[string]any)
+
+	path := "/Physical/" + strings.Replace(group["id"].(string), ".", "/", -1)
+
+	test_utils.MockGetObject(mockAPI, group)
+	test_utils.MockUpdateObject(mockAPI, dataUpdate, updatedGroup)
+
+	controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
+
+	result, err := controller.PatchObj(path, dataUpdate, false)
+	assert.Nil(t, err)
+	assert.Equal(t, result["data"].(map[string]any)["attributes"].(map[string]any)["content"].(string), newValue)
+}
+
+// endregion
+// region update virtual
 
 func TestAddVirtualConfig(t *testing.T) {
 	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
@@ -265,28 +292,6 @@ func TestUpdateVirtualConfigData(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestUpdateRackBreakerData(t *testing.T) {
-	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
-	// original device
-	rack := test_utils.GetEntity("rack", "rack", "site.building.room", "domain")
-	path := "/Physical/site/building/room/rack"
-	breakers := map[string]any{"break1": map[string]any{"powerpanel": "panel1"}}
-	rack["attributes"].(map[string]any)[controllers.BreakerAttr+"s"] = test_utils.CopyMap(breakers)
-	// updated device
-	updatedRack := test_utils.CopyMap(rack)
-	breakers["break1"].(map[string]any)["powerpanel"] = "panel2"
-	updatedRack["attributes"].(map[string]any)[controllers.BreakerAttr+"s"] = breakers
-	// update data
-	dataUpdate := map[string]any{"attributes": updatedRack["attributes"]}
-
-	test_utils.MockGetObject(mockAPI, rack)
-	test_utils.MockGetObject(mockAPI, rack)
-	test_utils.MockUpdateObject(mockAPI, dataUpdate, updatedRack)
-
-	err := controller.UpdateObject(path, controllers.BreakerAttr+"s.break1.powerpanel", []any{"panel2"})
-	assert.Nil(t, err)
-}
-
 func TestUpdateVirtualLink(t *testing.T) {
 	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
 	vobj := test_utils.CopyMap(vobjCluster)
@@ -316,61 +321,29 @@ func TestUpdateVirtualLink(t *testing.T) {
 	assert.Equal(t, result["data"].(map[string]any)["attributes"], vobj["attributes"])
 }
 
-func TestUpdateGroupContent(t *testing.T) {
-	controller, mockAPI, mockOgree3D, _ := test_utils.NewControllerWithMocks(t)
-	group := test_utils.CopyMap(rackGroup)
-	group["attributes"] = map[string]any{
-		"content": "A,B",
-	}
-	newValue := "A,B,C"
-	updatedGroup := test_utils.CopyMap(group)
-	updatedGroup["attributes"].(map[string]any)["content"] = newValue
-	dataUpdate := updatedGroup["attributes"].(map[string]any)
-	entity := models.GROUP
+// endregion
+// region update inner attr object
 
-	path := "/Physical/" + strings.Replace(group["id"].(string), ".", "/", -1)
-	message := map[string]any{
-		"type": "interact",
-		"data": map[string]any{
-			"id":    group["id"],
-			"param": "content",
-			"value": newValue,
-		},
-	}
-
-	mockOgree3D.On("InformOptional", "UpdateObj", entity, message).Return(nil)
-
-	test_utils.MockGetObject(mockAPI, group)
-	test_utils.MockUpdateObject(mockAPI, dataUpdate, updatedGroup)
-
-	controllers.State.ObjsForUnity = controllers.SetObjsForUnity([]string{"all"})
-
-	result, err := controller.PatchObj(path, dataUpdate, false)
-	assert.Nil(t, err)
-	assert.Equal(t, result["data"].(map[string]any)["attributes"].(map[string]any)["content"].(string), newValue)
-	mockOgree3D.AssertCalled(t, "InformOptional", "UpdateObj", entity, message)
-}
-
-func TestSetRoomAreas(t *testing.T) {
+func TestUpdateRackBreakerData(t *testing.T) {
 	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
+	// original device
+	rack := test_utils.GetEntity("rack", "rack", "site.building.room", "domain")
+	path := "/Physical/site/building/room/rack"
+	breakers := map[string]any{"break1": map[string]any{"powerpanel": "panel1"}}
+	rack["attributes"].(map[string]any)[controllers.BreakerAttr+"s"] = test_utils.CopyMap(breakers)
+	// updated device
+	updatedRack := test_utils.CopyMap(rack)
+	breakers["break1"].(map[string]any)["powerpanel"] = "panel2"
+	updatedRack["attributes"].(map[string]any)[controllers.BreakerAttr+"s"] = breakers
+	// update data
+	dataUpdate := map[string]any{"attributes": updatedRack["attributes"]}
 
-	room := test_utils.GetEntity("room", "room", "site.building", "domain")
+	test_utils.MockGetObject(mockAPI, rack)
+	test_utils.MockGetObject(mockAPI, rack)
+	test_utils.MockUpdateObject(mockAPI, dataUpdate, updatedRack)
 
-	roomResponse := test_utils.GetEntity("room", "room", "site.building", "domain")
-	test_utils.MockGetObject(mockAPI, room)
-
-	roomResponse["attributes"] = map[string]any{
-		"reserved":  []float64{1, 2, 3, 4},
-		"technical": []float64{1, 2, 3, 4},
-	}
-	test_utils.MockUpdateObject(mockAPI, map[string]interface{}{"attributes": map[string]interface{}{"reserved": []float64{1, 2, 3, 4}, "technical": []float64{1, 2, 3, 4}}}, roomResponse)
-
-	reservedArea := []float64{1, 2, 3, 4}
-	technicalArea := []float64{1, 2, 3, 4}
-	value, err := controller.UpdateRoomAreas("/Physical/site/building/room", []any{reservedArea, technicalArea})
-
+	err := controller.UpdateObject(path, controllers.BreakerAttr+"s.break1.powerpanel", []any{"panel2"})
 	assert.Nil(t, err)
-	assert.NotNil(t, value)
 }
 
 func TestAddInnerAtrObjWorks(t *testing.T) {
@@ -550,6 +523,33 @@ func TestDeleteInnerAtrObjWorks(t *testing.T) {
 		})
 	}
 }
+
+// endregion
+// region room areas
+
+func TestSetRoomAreas(t *testing.T) {
+	controller, mockAPI, _, _ := test_utils.NewControllerWithMocks(t)
+
+	room := test_utils.GetEntity("room", "room", "site.building", "domain")
+
+	roomResponse := test_utils.GetEntity("room", "room", "site.building", "domain")
+	test_utils.MockGetObject(mockAPI, room)
+
+	roomResponse["attributes"] = map[string]any{
+		"reserved":  []float64{1, 2, 3, 4},
+		"technical": []float64{1, 2, 3, 4},
+	}
+	test_utils.MockUpdateObject(mockAPI, map[string]interface{}{"attributes": map[string]interface{}{"reserved": []float64{1, 2, 3, 4}, "technical": []float64{1, 2, 3, 4}}}, roomResponse)
+
+	reservedArea := []float64{1, 2, 3, 4}
+	technicalArea := []float64{1, 2, 3, 4}
+	value, err := controller.UpdateRoomAreas("/Physical/site/building/room", []any{reservedArea, technicalArea})
+
+	assert.Nil(t, err)
+	assert.NotNil(t, value)
+}
+
+// endregion
 
 func TestAddToMap(t *testing.T) {
 	newMap, replaced := controllers.AddToMap[int](map[string]any{"a": 3}, "b", 10)

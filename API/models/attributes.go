@@ -10,6 +10,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+const RACKUNIT = 0.04445 //meter
+
 func validateAttributes(entity int, data, parent map[string]any) *u.Error {
 	attributes := data["attributes"].(map[string]any)
 	switch entity {
@@ -21,8 +23,11 @@ func validateAttributes(entity int, data, parent map[string]any) *u.Error {
 			return err
 		}
 	case u.DEVICE:
-		var deviceSlots []string
 		var err *u.Error
+		if err = checkSizeUAndHeight(attributes); err != nil {
+			return err
+		}
+		var deviceSlots []string
 		if deviceSlots, err = slotToValidSlice(attributes); err != nil {
 			return err
 		}
@@ -67,8 +72,6 @@ func validateDeviceSlots(deviceSlots []string, deviceName, deviceParentd string)
 						Message: "Invalid slot: one or more requested slots are already in use"}
 				}
 			}
-		} else {
-			// fmt.Println(err)
 		}
 	}
 	return nil
@@ -150,5 +153,36 @@ func setCorridorColor(attributes map[string]any) {
 		attributes["color"] = "990000"
 	} else if attributes["temperature"] == "cold" {
 		attributes["color"] = "000099"
+	}
+}
+
+// Check if sizeU and height are coherents
+func checkSizeUAndHeight(attributes map[string]any) *u.Error {
+	if attributes["sizeU"] == nil || attributes["height"] == nil {
+		return nil
+	}
+
+	sizeU, err := u.GetFloat(attributes["sizeU"])
+	if err != nil {
+		return &u.Error{
+			Type:    u.ErrBadFormat,
+			Message: err.Error(),
+		}
+	}
+	height := attributes["height"]
+	h := sizeU * RACKUNIT
+	switch heightUnit := attributes["heightUnit"]; heightUnit {
+	case "cm":
+		h *= 100
+	case "mm":
+		h *= 1000
+	}
+	if height == h {
+		return nil
+	} else {
+		return &u.Error{
+			Type:    u.ErrBadFormat,
+			Message: "sizeU and height are not consistent",
+		}
 	}
 }

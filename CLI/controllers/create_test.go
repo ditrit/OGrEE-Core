@@ -461,7 +461,7 @@ func TestCreateDeviceWithSizeU(t *testing.T) {
 
 	mockGetResponse := test_utils.GetEntity("rack", "A01", "BASIC.A.R1", "test-domain")
 	sizeU := float64(2)
-	height := sizeU * 44.5
+	height := sizeU * models.RACKUNIT * 1000
 	mockCreateResponse := map[string]any{
 		"category":    "device",
 		"id":          "BASIC.A.R1.A01.D1",
