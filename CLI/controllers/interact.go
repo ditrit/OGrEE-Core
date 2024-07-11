@@ -104,6 +104,9 @@ func (controller Controller) InteractObject(path string, keyword string, val int
 }
 
 func (controller Controller) UpdateInteract(path, attrName string, values []any, hasSharpe bool) error {
+	if attrName != "labelFont" && len(values) != 1 {
+		return fmt.Errorf("only 1 value expected")
+	}
 	switch attrName {
 	case "displayContent", "alpha", "tilesName", "tilesColor", "U", "slots", "localCS":
 		return controller.SetBooleanInteractAttribute(path, values, attrName, hasSharpe)
@@ -118,9 +121,6 @@ func (controller Controller) UpdateInteract(path, attrName string, values []any,
 }
 
 func (controller Controller) SetLabel(path string, values []any, hasSharpe bool) error {
-	if len(values) != 1 {
-		return fmt.Errorf("only 1 value expected")
-	}
 	value, err := utils.ValToString(values[0], "value")
 	if err != nil {
 		return err
@@ -155,9 +155,6 @@ func (controller Controller) SetLabelFont(path string, values []any) error {
 }
 
 func (controller Controller) SetLabelBackground(path string, values []any) error {
-	if len(values) != 1 {
-		return fmt.Errorf("only 1 value expected")
-	}
 	c, ok := utils.ValToColor(values[0])
 	if !ok {
 		return fmt.Errorf("please provide a valid 6 length hex value for the color")
