@@ -55,7 +55,7 @@ func TestLinkObjectWithInvalidSlots(t *testing.T) {
 	}
 	err := controller.LinkObject(models.StrayPath+"chT", models.PhysicalPath+"BASIC/A/R1/A01", attributes, values, slots)
 	assert.NotNil(t, err)
-	assert.Equal(t, "Invalid device syntax: .. can only be used in a single element vector", err.Error())
+	assert.Equal(t, "invalid device syntax: .. can only be used in a single element vector", err.Error())
 }
 
 func TestLinkObjectWithValidSlots(t *testing.T) {

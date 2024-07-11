@@ -2,7 +2,6 @@ package parser
 
 import (
 	"cli/config"
-	"cli/controllers"
 	cmd "cli/controllers"
 	"cli/models"
 	"cli/utils"
@@ -897,12 +896,12 @@ func updateAttributes(path, attributeName string, values []any) (map[string]any,
 		if len(values) > 1 {
 			return nil, fmt.Errorf("attributes can only be assigned a single value")
 		}
-		if vconfigAttr, found := strings.CutPrefix(attributeName, controllers.VIRTUALCONFIG+"."); found {
+		if vconfigAttr, found := strings.CutPrefix(attributeName, cmd.VIRTUALCONFIG+"."); found {
 			if len(vconfigAttr) < 1 {
 				return nil, fmt.Errorf("invalid attribute name")
 			}
 			vAttr := map[string]any{vconfigAttr: values[0]}
-			attributes = map[string]any{controllers.VIRTUALCONFIG: vAttr}
+			attributes = map[string]any{cmd.VIRTUALCONFIG: vAttr}
 		} else {
 			attributes = map[string]any{attributeName: values[0]}
 		}
@@ -1369,7 +1368,7 @@ func (n *createVirtualNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	attributes := map[string]any{controllers.VIRTUALCONFIG: map[string]any{"type": vtype}}
+	attributes := map[string]any{cmd.VIRTUALCONFIG: map[string]any{"type": vtype}}
 
 	if n.vlinks != nil {
 		vlinks := []string{}
@@ -1389,7 +1388,7 @@ func (n *createVirtualNode) execute() (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-		attributes[controllers.VIRTUALCONFIG].(map[string]any)["role"] = role
+		attributes[cmd.VIRTUALCONFIG].(map[string]any)["role"] = role
 	}
 
 	return nil, cmd.C.CreateObject(path, models.VIRTUALOBJ,

@@ -10,6 +10,8 @@ import (
 	"strings"
 )
 
+const RACKUNIT = .04445 //meter
+
 type EntityAttributes map[string]any
 
 var BldgBaseAttrs = EntityAttributes{
@@ -126,10 +128,10 @@ func SetDeviceSizeUIfExists(attr EntityAttributes) {
 		//And Set height
 		if sizeUInt, ok := sizeU.(int); ok {
 			attr["sizeU"] = sizeUInt
-			attr["height"] = float64(sizeUInt) * 44.5
+			attr["height"] = float64(sizeUInt) * RACKUNIT * 1000
 		} else if sizeUFloat, ok := sizeU.(float64); ok {
 			attr["sizeU"] = sizeUFloat
-			attr["height"] = sizeUFloat * 44.5
+			attr["height"] = sizeUFloat * RACKUNIT * 1000
 		}
 	}
 }
@@ -158,7 +160,7 @@ func CheckExpandStrVector(slotVector []string) ([]string, error) {
 	for _, slot := range slotVector {
 		if strings.Contains(slot, "..") {
 			if len(slotVector) != 1 {
-				return nil, fmt.Errorf("Invalid device syntax: .. can only be used in a single element vector")
+				return nil, fmt.Errorf("invalid device syntax: .. can only be used in a single element vector")
 			}
 			return expandStrToVector(slot)
 		} else {
@@ -170,7 +172,7 @@ func CheckExpandStrVector(slotVector []string) ([]string, error) {
 
 func expandStrToVector(slot string) ([]string, error) {
 	slots := []string{}
-	errMsg := "Invalid device syntax: incorrect use of .. for slot"
+	errMsg := "invalid device syntax: incorrect use of .. for slot"
 	parts := strings.Split(slot, "..")
 	if len(parts) != 2 ||
 		(parts[0][:len(parts[0])-1] != parts[1][:len(parts[1])-1]) {
@@ -189,5 +191,14 @@ func expandStrToVector(slot string) ([]string, error) {
 			}
 			return slots, nil
 		}
+	}
+}
+
+func MapStringAny(value any) (map[string]any, error) {
+	m, ok := value.(map[string]any)
+	if ok {
+		return m, nil
+	} else {
+		return nil, fmt.Errorf("unable to convert given value to a map")
 	}
 }
