@@ -24,10 +24,8 @@ func validateAttributes(entity int, data, parent map[string]any) *u.Error {
 		}
 	case u.DEVICE:
 		var err *u.Error
-		if attributes["sizeU"] != nil && attributes["height"] != nil {
-			if err = checkSizeUAndHeight(attributes); err != nil {
-				return err
-			}
+		if err = checkSizeUAndHeight(attributes); err != nil {
+			return err
 		}
 		var deviceSlots []string
 		if deviceSlots, err = slotToValidSlice(attributes); err != nil {
@@ -160,6 +158,10 @@ func setCorridorColor(attributes map[string]any) {
 
 // Check if sizeU and height are coherents
 func checkSizeUAndHeight(attributes map[string]any) *u.Error {
+	if attributes["sizeU"] == nil || attributes["height"] == nil {
+		return nil
+	}
+
 	sizeU, err := u.GetFloat(attributes["sizeU"])
 	if err != nil {
 		return &u.Error{
