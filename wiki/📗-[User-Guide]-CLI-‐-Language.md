@@ -49,6 +49,7 @@
       + [Interact with Rack](#interact-with-rack)
    * [Device](#device)
       + [Interact with Device](#interact-with-device)
+      + [Add Virtual Config](#add-virtual-config)
    * [Group](#group)
       + [Interact with Group](#interact-with-group)
    * [Corridor](#corridor)
@@ -923,6 +924,26 @@ All other devices (blades / components like processor, memory, adapters, disks..
 ```
 [name]:localCS=[true|false]
 ```
+
+### Add Virtual Config
+
+A `virtual_config` can be added to a device to add information related to its virtual setup. It can be used to link a device to a virtual object using the `clusterId`. A simple use case is to add a `virtual_config` to a server to state that this server device is a "node" (`type`) of my cluster represented by a virtual object with id "my-proxmox-cluster" (`clusterId`).
+
+```
+[name]:virtual_config=[type]
+[name]:virtual_config=[type]@[clusterId]
+[name]:virtual_config=[type]@[clusterId]@[role]
+```
+
+*`[type]` is a string to describe the type of this device in its virtual setup  
+`[clusterId]` is the ID of an existing virtual object to which this device will be linked  
+`[role]` is a string to describe the role of this device in its virtual setup*  
+
+```
+/P/siteA/BldgA/R1/A01/server:virtual_config=node
+/P/siteA/BldgA/R1/A01/server:virtual_config=node@my-proxmox-cluster
+/P/siteA/BldgA/R1/A01/server:virtual_config=node@my-proxmox-cluster@proxmox
+```  
 
 ## Group
 
