@@ -63,3 +63,24 @@ func ValuesToSeparator(values []any) (string, Separator, error) {
 	}
 	return name, Separator{startPos, endPos, sepType}, nil
 }
+
+func ApplyRoomTemplateAttributes(attr, tmpl map[string]any) {
+	//Copy Room specific attributes
+	utils.CopyMapVal(attr, tmpl, "technicalArea")
+	if _, ok := attr["technicalArea"]; ok {
+		attr["technical"] = attr["technicalArea"]
+		delete(attr, "technicalArea")
+	}
+
+	utils.CopyMapVal(attr, tmpl, "reservedArea")
+	if _, ok := attr["reservedArea"]; ok {
+		attr["reserved"] = attr["reservedArea"]
+		delete(attr, "reservedArea")
+	}
+
+	for _, attrName := range []string{"axisOrientation", "separators",
+		"pillars", "floorUnit", "tiles", "rows", "aisles",
+		"vertices", "colors", "tileAngle"} {
+		utils.CopyMapVal(attr, tmpl, attrName)
+	}
+}

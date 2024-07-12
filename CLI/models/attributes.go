@@ -5,6 +5,8 @@ package models
 
 import (
 	l "cli/logger"
+	"cli/utils"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -220,6 +222,58 @@ func SetRoomAreas(values []any) (map[string]any, error) {
 			return nil, ErrorResponder("reserved and technical", "4", true)
 		}
 	}
+}
+
+func ApplyTemplateToObj(attr, data, tmpl map[string]any, ent int) error {
+	// Copy size
+	key := determineStrKey(tmpl, []string{"sizeWDHmm", "sizeWDHm"})
+	sizeInf, hasSize := tmpl[key].([]any)
+	if !hasSize || len(sizeInf) != 3 {
+		return errors.New("invalid size vector on given template")
+	}
+	attr["size"] = sizeInf[:2]
+	attr["height"] = sizeInf[2]
+	if ent == DEVICE {
+		if err := SetDeviceSizeUFromTemplate(attr, tmpl, sizeInf[2]); err != nil {
+			return err
+		}
+	} else if ent == ROOM {
+		ApplyRoomTemplateAttributes(attr, tmpl)
+	} else {
+		attr["sizeUnit"] = "mm"
+		attr["heightUnit"] = "mm"
+	}
+
+	// Copy description
+	if _, ok := tmpl["description"]; ok {
+		data["description"] = tmpl["description"]
+	}
+
+	// fbxModel section
+	if ent != BLDG && ent != ROOM {
+		utils.CopyMapVal(attr, tmpl, "fbxModel")
+	}
+
+	// Copy orientation and shape if available
+	utils.CopyMapVal(attr, tmpl, "orientation")
+	utils.CopyMapVal(attr, tmpl, "shape")
+
+	// Merge attributes if available
+	if tmplAttrs, ok := tmpl["attributes"].(map[string]any); ok {
+		utils.MergeMaps(attr, tmplAttrs, false)
+	}
+
+	return nil
+}
+
+// Helpers
+func determineStrKey(x map[string]interface{}, possible []string) string {
+	for idx := range possible {
+		if _, ok := x[possible[idx]]; ok {
+			return possible[idx]
+		}
+	}
+	return "" //The code should not reach this point!
 }
 
 // errResponder helper func for specialUpdateNode

@@ -64,7 +64,7 @@ func TestApplyTemplateOfTypeDeviceError(t *testing.T) {
 	}
 	device["attributes"] = attributes
 	template := test_utils.GetEntity("deviceChasisTemplate", "device-template", "", "")
-	template["sizeWDHmm"] = []any{216, 659, "100"}
+	template["sizeWDHmm"] = []any{216, 659}
 
 	test_utils.MockGetObjTemplate(mockAPI, template)
 
@@ -72,6 +72,25 @@ func TestApplyTemplateOfTypeDeviceError(t *testing.T) {
 	assert.NotNil(t, err)
 
 	assert.Equal(t, "invalid size vector on given template", err.Error())
+}
+
+func TestApplyTemplateOfTypeDeviceConvertError(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+
+	device := test_utils.CopyMap(chassis)
+	attributes := map[string]any{
+		"template": "device-template",
+	}
+	device["attributes"] = attributes
+	template := test_utils.GetEntity("deviceChasisTemplate", "device-template", "", "")
+	template["sizeWDHmm"] = []any{216, 659, "100"}
+
+	test_utils.MockGetObjTemplate(mockAPI, template)
+
+	err := controller.ApplyTemplate(attributes, device, models.DEVICE)
+	assert.NotNil(t, err)
+
+	assert.Equal(t, "cannot convert string to float64", err.Error())
 }
 
 func TestApplyTemplateOfTypeRoomWorks(t *testing.T) {

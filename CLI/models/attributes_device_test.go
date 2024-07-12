@@ -110,3 +110,19 @@ func TestComputeFromHeightFail(t *testing.T) {
 }
 
 // endregion
+
+// region template
+
+func TestSetDeviceSizeUFromTemplateWorks(t *testing.T) {
+	deviceAttrs := map[string]any{}
+	input := map[string]any{
+		"attributes": map[string]any{
+			"type": "chassis",
+		},
+	}
+	err := models.SetDeviceSizeUFromTemplate(deviceAttrs, input, any(10000))
+	assert.Nil(t, err)
+	assert.Equal(t, 224, deviceAttrs["sizeU"])
+}
+
+// endregion

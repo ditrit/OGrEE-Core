@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"cli/models"
-	"cli/utils"
 	"errors"
 	"fmt"
 	"net/http"
@@ -79,83 +78,8 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 		return err
 	}
 
-	key := determineStrKey(tmpl, []string{"sizeWDHmm", "sizeWDHm"})
-
-	if sizeInf, hasSize := tmpl[key].([]any); hasSize && len(sizeInf) == 3 {
-		attr["size"] = sizeInf[:2]
-		attr["height"] = sizeInf[2]
-		utils.CopyMapVal(attr, tmpl, "shape")
-
-		if ent == models.DEVICE {
-			if tmpx, ok := tmpl["attributes"]; ok {
-				if x, ok := tmpx.(map[string]interface{}); ok {
-					if tmp, ok := x["type"]; ok {
-						if t, ok := tmp.(string); ok {
-							if t == "chassis" || t == "server" {
-								res := 0
-								if val, ok := sizeInf[2].(float64); ok {
-									res = int((val / 1000) / models.RACKUNIT)
-								} else if val, ok := sizeInf[2].(int); ok {
-									res = int((float64(val) / 1000) / models.RACKUNIT)
-								} else {
-									return errors.New("invalid size vector on given template")
-								}
-								attr["sizeU"] = res
-							}
-						}
-					}
-				}
-			}
-
-		} else if ent == models.ROOM {
-			//Copy additional Room specific attributes
-			utils.CopyMapVal(attr, tmpl, "technicalArea")
-			if _, ok := attr["technicalArea"]; ok {
-				attr["technical"] = attr["technicalArea"]
-				delete(attr, "technicalArea")
-			}
-
-			utils.CopyMapVal(attr, tmpl, "reservedArea")
-			if _, ok := attr["reservedArea"]; ok {
-				attr["reserved"] = attr["reservedArea"]
-				delete(attr, "reservedArea")
-			}
-
-			for _, attrName := range []string{"axisOrientation", "separators",
-				"pillars", "floorUnit", "tiles", "rows", "aisles",
-				"vertices", "colors", "tileAngle"} {
-				utils.CopyMapVal(attr, tmpl, attrName)
-			}
-
-		} else {
-			attr["sizeUnit"] = "mm"
-			attr["heightUnit"] = "mm"
-		}
-
-		//Copy Description
-		if _, ok := tmpl["description"]; ok {
-			data["description"] = tmpl["description"]
-		}
-
-		//fbxModel section
-		if check := utils.CopyMapVal(attr, tmpl, "fbxModel"); !check {
-			if ent != models.BLDG {
-				attr["fbxModel"] = ""
-			}
-		}
-
-		//Copy orientation if available
-		utils.CopyMapVal(attr, tmpl, "orientation")
-
-		//Merge attributes if available
-		if tmplAttrsInf, ok := tmpl["attributes"]; ok {
-			if tmplAttrs, ok := tmplAttrsInf.(map[string]interface{}); ok {
-				utils.MergeMaps(attr, tmplAttrs, false)
-			}
-		}
-	} else {
-		println("Warning, invalid size value in template.")
-		return errors.New("invalid size vector on given template")
+	if err := models.ApplyTemplateToObj(attr, data, tmpl, ent); err != nil {
+		return err
 	}
 
 	return nil

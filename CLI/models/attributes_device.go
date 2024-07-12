@@ -53,3 +53,17 @@ func ComputeSizeUAndHeight(obj, data map[string]any) error {
 	}
 	return nil
 }
+
+func SetDeviceSizeUFromTemplate(deviceAttrs, tmpl map[string]any, tmplHeight any) error {
+	if tmplAttrs, ok := tmpl["attributes"].(map[string]any); ok {
+		if tmplType, ok := tmplAttrs["type"].(string); ok &&
+			(tmplType == "chassis" || tmplType == "server") {
+			if height, err := utils.GetFloat(tmplHeight); err != nil {
+				return err
+			} else {
+				deviceAttrs["sizeU"] = int((height / 1000) / RACKUNIT)
+			}
+		}
+	}
+	return nil
+}
