@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"cli/utils"
 	"fmt"
 	"strings"
 )
@@ -100,4 +101,71 @@ func (controller Controller) InteractObject(path string, keyword string, val int
 
 	//-1 since its not neccessary to check for filtering
 	return Ogree3D.InformOptional("Interact", -1, ans)
+}
+
+func (controller Controller) UpdateInteract(path, attrName string, values []any, hasSharpe bool) error {
+	if attrName != "labelFont" && len(values) != 1 {
+		return fmt.Errorf("only 1 value expected")
+	}
+	switch attrName {
+	case "displayContent", "alpha", "tilesName", "tilesColor", "U", "slots", "localCS":
+		return controller.SetBooleanInteractAttribute(path, values, attrName, hasSharpe)
+	case "label":
+		return controller.SetLabel(path, values, hasSharpe)
+	case "labelFont":
+		return controller.SetLabelFont(path, values)
+	case "labelBackground":
+		return controller.SetLabelBackground(path, values)
+	}
+	return nil
+}
+
+func (controller Controller) SetLabel(path string, values []any, hasSharpe bool) error {
+	value, err := utils.ValToString(values[0], "value")
+	if err != nil {
+		return err
+	}
+	return controller.InteractObject(path, "label", value, hasSharpe)
+}
+
+func (controller Controller) SetLabelFont(path string, values []any) error {
+	msg := "The font can only be bold or italic" +
+		" or be in the form of color@[colorValue]." +
+		"\n\nFor more information please refer to: " +
+		"\nhttps://github.com/ditrit/OGrEE-3D/wiki/CLI-langage#interact-with-objects"
+
+	switch len(values) {
+	case 1:
+		if values[0] != "bold" && values[0] != "italic" {
+			return fmt.Errorf(msg)
+		}
+		return controller.InteractObject(path, "labelFont", values[0], false)
+	case 2:
+		if values[0] != "color" {
+			return fmt.Errorf(msg)
+		}
+		c, ok := utils.ValToColor(values[1])
+		if !ok {
+			return fmt.Errorf("please provide a valid 6 length hex value for the color")
+		}
+		return controller.InteractObject(path, "labelFont", "color@"+c, false)
+	default:
+		return fmt.Errorf(msg)
+	}
+}
+
+func (controller Controller) SetLabelBackground(path string, values []any) error {
+	c, ok := utils.ValToColor(values[0])
+	if !ok {
+		return fmt.Errorf("please provide a valid 6 length hex value for the color")
+	}
+	return controller.InteractObject(path, "labelBackground", c, false)
+}
+
+func (controller Controller) SetBooleanInteractAttribute(path string, values []any, attrName string, hasSharpe bool) error {
+	boolVal, err := utils.ValToBool(values[0], attrName)
+	if err != nil {
+		return err
+	}
+	return controller.InteractObject(path, attrName, boolVal, hasSharpe)
 }

@@ -4,6 +4,7 @@ import (
 	l "cli/logger"
 	"fmt"
 	pathutil "path"
+	"time"
 )
 
 const (
@@ -27,6 +28,18 @@ const (
 	LAYER
 	VIRTUALOBJ
 )
+
+type Entity struct {
+	Category    string           `json:"category"`
+	Description string           `json:"description"`
+	Domain      string           `json:"domain"`
+	CreatedDate *time.Time       `json:"createdDate,omitempty"`
+	LastUpdated *time.Time       `json:"lastUpdated,omitempty"`
+	Name        string           `json:"name"`
+	Id          string           `json:"id,omitempty"`
+	ParentId    string           `json:"parentId,omitempty"`
+	Attributes  EntityAttributes `json:"attributes"`
+}
 
 func EntityToString(entity int) string {
 	switch entity {

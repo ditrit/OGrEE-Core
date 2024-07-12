@@ -16,8 +16,6 @@ const (
 	DEBUG
 )
 
-const VIRTUALCONFIG = "virtual_config"
-
 // displays contents of maps
 func Disp(x map[string]interface{}) {
 

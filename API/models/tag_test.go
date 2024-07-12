@@ -467,6 +467,24 @@ func TestCreateObjectWithTagsAsStringReturnsError(t *testing.T) {
 	assert.ErrorContains(t, err, "JSON body doesn't validate with the expected JSON schema")
 }
 
+func TestVerifyTagForRackBreakerWorks(t *testing.T) {
+	err := createTag("exists")
+	require.Nil(t, err)
+	rack := test_utils.GetEntityMap("rack", "rack-breaker-tags", "", integration.TestDBName)
+	rack["attributes"].(map[string]any)["breakers"] = map[string]any{"mybreaker": map[string]any{"tag": "exists"}}
+	err = models.VerifyTagForRackBreaker(rack)
+	assert.Nil(t, err)
+}
+
+func TestVerifyTagForRackBreakerError(t *testing.T) {
+	rack := test_utils.GetEntityMap("rack", "rack-breaker-tags", "", integration.TestDBName)
+	rack["attributes"].(map[string]any)["breakers"] = map[string]any{"mybreaker": map[string]any{"tag": "not-exists"}}
+	err := models.VerifyTagForRackBreaker(rack)
+	assert.NotNil(t, err)
+	assert.Equal(t, u.ErrBadFormat, err.Type)
+	assert.Equal(t, "Tag \"not-exists\" not found", err.Message)
+}
+
 func createTag(slug string) *u.Error {
 	_, err := models.CreateEntity(
 		u.TAG,

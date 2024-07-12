@@ -194,6 +194,52 @@ func expandStrToVector(slot string) ([]string, error) {
 	}
 }
 
+// Validate for cmd [room]:areas=[r1,r2,r3,r4]@[t1,t2,t3,t4]
+func SetRoomAreas(values []any) (map[string]any, error) {
+	if len(values) != 2 {
+		return nil, fmt.Errorf("2 values (reserved, technical) expected to set room areas")
+	}
+	areas := map[string]any{"reserved": values[0], "technical": values[1]}
+	reserved, hasReserved := areas["reserved"].([]float64)
+	if !hasReserved {
+		return nil, ErrorResponder("reserved", "4", false)
+	}
+	tech, hasTechnical := areas["technical"].([]float64)
+	if !hasTechnical {
+		return nil, ErrorResponder("technical", "4", false)
+	}
+
+	if len(reserved) == 4 && len(tech) == 4 {
+		return areas, nil
+	} else {
+		if len(reserved) != 4 && len(tech) == 4 {
+			return nil, ErrorResponder("reserved", "4", false)
+		} else if len(tech) != 4 && len(reserved) == 4 {
+			return nil, ErrorResponder("technical", "4", false)
+		} else { //Both invalid
+			return nil, ErrorResponder("reserved and technical", "4", true)
+		}
+	}
+}
+
+// errResponder helper func for specialUpdateNode
+// used for separator, pillar err msgs and validateRoomAreas()
+func ErrorResponder(attr, numElts string, multi bool) error {
+	var errorMsg string
+	if multi {
+		errorMsg = "Invalid " + attr + " attributes provided." +
+			" They must be arrays/lists/vectors with " + numElts + " elements."
+	} else {
+		errorMsg = "Invalid " + attr + " attribute provided." +
+			" It must be an array/list/vector with " + numElts + " elements."
+	}
+
+	segment := " Please refer to the wiki or manual reference" +
+		" for more details on how to create objects " +
+		"using this syntax"
+
+	return fmt.Errorf(errorMsg + segment)
+}
 func MapStringAny(value any) (map[string]any, error) {
 	m, ok := value.(map[string]any)
 	if ok {

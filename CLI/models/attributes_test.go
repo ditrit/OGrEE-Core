@@ -43,3 +43,11 @@ func TestExpandSlotVector(t *testing.T) {
 	assert.NotNil(t, slots)
 	assert.EqualValues(t, []string{"slot1", "slot3"}, slots)
 }
+
+func TestErrorResponder(t *testing.T) {
+	err := models.ErrorResponder("reserved", "4", false)
+	assert.ErrorContains(t, err, "Invalid reserved attribute provided. It must be an array/list/vector with 4 elements. Please refer to the wiki or manual reference for more details on how to create objects using this syntax")
+
+	err = models.ErrorResponder("reserved", "4", true)
+	assert.ErrorContains(t, err, "Invalid reserved attributes provided. They must be arrays/lists/vectors with 4 elements. Please refer to the wiki or manual reference for more details on how to create objects using this syntax")
+}

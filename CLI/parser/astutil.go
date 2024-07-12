@@ -113,25 +113,6 @@ func evalNodeArr[elt comparable](arr *[]node, x []elt) ([]elt, error) {
 	return x, nil
 }
 
-// errResponder helper func for specialUpdateNode
-// used for separator, pillar err msgs and validateAreas()
-func errorResponder(attr, numElts string, multi bool) error {
-	var errorMsg string
-	if multi {
-		errorMsg = "Invalid " + attr + " attributes provided." +
-			" They must be arrays/lists/vectors with " + numElts + " elements."
-	} else {
-		errorMsg = "Invalid " + attr + " attribute provided." +
-			" It must be an array/list/vector with " + numElts + " elements."
-	}
-
-	segment := " Please refer to the wiki or manual reference" +
-		" for more details on how to create objects " +
-		"using this syntax"
-
-	return fmt.Errorf(errorMsg + segment)
-}
-
 func filtersToMapString(filters map[string]node) (map[string]string, error) {
 	filtersString := map[string]string{}
 
