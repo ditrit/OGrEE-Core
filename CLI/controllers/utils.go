@@ -49,13 +49,3 @@ type ErrorWithInternalError struct {
 func (err ErrorWithInternalError) Error() string {
 	return err.UserError.Error() + " caused by " + err.InternalError.Error()
 }
-
-// Utility functions
-func determineStrKey(x map[string]interface{}, possible []string) string {
-	for idx := range possible {
-		if _, ok := x[possible[idx]]; ok {
-			return possible[idx]
-		}
-	}
-	return "" //The code should not reach this point!
-}
