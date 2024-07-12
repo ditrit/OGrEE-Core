@@ -46,10 +46,11 @@
       + [Room pillars](#room-pillars)
       + [Interact with Room](#interact-with-room)
    * [Rack](#rack)
+      + [Rack breakers](#rack-breakers)
       + [Interact with Rack](#interact-with-rack)
    * [Device](#device)
       + [Interact with Device](#interact-with-device)
-      + [Add Virtual Config](#add-virtual-config)
+      + [Virtual Config](#virtual-config)
    * [Group](#group)
       + [Interact with Group](#interact-with-group)
    * [Corridor](#corridor)
@@ -837,6 +838,44 @@ Rack must be child of a room.
 +rk:A01@[9,1]@t@[60,120,45]@BldgTemplate // current path /P/siteA/BldgA
 ```
 
+### Rack breakers
+
+Breakers can be added to racks. To do it, use:
+
+```
+[rack]:breakers+=[name]@[powerpanel]
+[rack]:breakers+=[name]@[powerpanel]@[type]
+[rack]:breakers+=[name]@[powerpanel]@[type]@[circuit]
+[rack]:breakers+=[name]@[powerpanel]@[type]@[circuit]@[intensity]
+[rack]:breakers+=[name]@[powerpanel]@[type]@[circuit]@[intensity]@[tag]
+```
+
+Where:  
+*`[name]` is an identifier for the breaker  
+`[powerpanel]` is an identifier for a powerpanel   
+`[type]` is a string to describe its type  
+`[circuit]` is a string to describe to which circuit it belongs  
+`[intensity]` is a positive float number  
+`[tag]` is an identifier to an existing tag*  
+
+It will add the given breaker to `[rack].attributes["breakers"]`, which is a list of all its breakers.
+
+```
+/P/SI/BLDG/ROOM/RACK:breakers+=breaker1@mypowerpanel@mono@A@16
+```
+
+Breakers can be removed using:
+
+```
+[rack]:breakers-=[name]
+```
+
+Breakers can also be modified with:
+```
+[rack]:breakers.breaker1.powerpanel=newpanel
+```
+
+
 ### Interact with Rack
 
 - Display or hide rack's box. This will also affect its label
@@ -925,7 +964,7 @@ All other devices (blades / components like processor, memory, adapters, disks..
 [name]:localCS=[true|false]
 ```
 
-### Add Virtual Config
+### Virtual Config
 
 A `virtual_config` can be added to a device to add information related to its virtual setup. It can be used to link a device to a virtual object using the `clusterId`. A simple use case is to add a `virtual_config` to a server to state that this server device is a "node" (`type`) of my cluster represented by a virtual object with id "my-proxmox-cluster" (`clusterId`).
 
@@ -944,6 +983,11 @@ A `virtual_config` can be added to a device to add information related to its vi
 /P/siteA/BldgA/R1/A01/server:virtual_config=node@my-proxmox-cluster
 /P/siteA/BldgA/R1/A01/server:virtual_config=node@my-proxmox-cluster@proxmox
 ```  
+
+An existing `virtual_config` can be modified as the following example:
+```
+[name]:virtual_config.type=vm
+```
 
 ## Group
 
