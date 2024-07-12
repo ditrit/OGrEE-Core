@@ -250,10 +250,8 @@ func ApplyTemplateToObj(attr, data, tmpl map[string]any, ent int) error {
 	}
 
 	// fbxModel section
-	if check := utils.CopyMapVal(attr, tmpl, "fbxModel"); !check {
-		if ent != BLDG {
-			attr["fbxModel"] = ""
-		}
+	if ent != BLDG && ent != ROOM {
+		utils.CopyMapVal(attr, tmpl, "fbxModel")
 	}
 
 	// Copy orientation and shape if available
