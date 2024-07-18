@@ -237,52 +237,6 @@ func (n *lsNode) execute() (interface{}, error) {
 
 }
 
-type getUNode struct {
-	path node
-	u    node
-}
-
-func (n *getUNode) execute() (interface{}, error) {
-	path, err := nodeToString(n.path, "path")
-	if err != nil {
-		return nil, err
-	}
-	u, err := nodeToInt(n.u, "u")
-	if err != nil {
-		return nil, err
-	}
-	if u < 0 {
-		return nil, fmt.Errorf("the U value must be positive")
-	}
-
-	if cmd.State.DryRun {
-		return nil, nil
-	}
-
-	return nil, cmd.C.GetByAttr(path, u)
-}
-
-type getSlotNode struct {
-	path node
-	slot node
-}
-
-func (n *getSlotNode) execute() (interface{}, error) {
-	path, err := nodeToString(n.path, "path")
-	if err != nil {
-		return nil, err
-	}
-	slot, err := n.slot.execute()
-	if err != nil {
-		return nil, err
-	}
-
-	if cmd.State.DryRun {
-		return nil, nil
-	}
-	return nil, cmd.C.GetByAttr(path, slot)
-}
-
 type loadNode struct {
 	path node
 }

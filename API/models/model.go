@@ -345,29 +345,35 @@ func complexExpressionToMap(expressions []string) (map[string]any, error) {
 	}
 
 	// Base case: single filter expression
-	re := regexp.MustCompile(`^([\w-.]+)\s*(<=|>=|<|>|!=|=)\s*([\w-.*]+)$`)
+	return singleExpressionToMap(expressions)
+}
 
+func singleExpressionToMap(expressions []string) (map[string]any, error) {
+	re := regexp.MustCompile(`^([\w-.]+)\s*(<=|>=|<|>|!=|=)\s*((\[)*[\w-,.*]+(\])*)$`)
 	ops := map[string]string{"<=": "$lte", ">=": "$gte", "<": "$lt", ">": "$gt", "!=": "$not"}
 
 	if len(expressions) <= 3 {
 		expression := strings.Join(expressions[:], "")
-
 		if match := re.FindStringSubmatch(expression); match != nil {
-			switch match[1] {
+			// convert filter value to proper type
+			filterName := match[1]                   // e.g. category
+			filterOp := match[2]                     // e.g. !=
+			filterValue := u.ConvertString(match[3]) // e.g. device
+			switch filterName {
 			case "startDate":
-				return map[string]any{"lastUpdated": map[string]any{"$gte": match[3]}}, nil
+				return map[string]any{"lastUpdated": map[string]any{"$gte": filterValue}}, nil
 			case "endDate":
-				return map[string]any{"lastUpdated": map[string]any{"$lte": match[3]}}, nil
+				return map[string]any{"lastUpdated": map[string]any{"$lte": filterValue}}, nil
 			case "id", "name", "category", "description", "domain", "createdDate", "lastUpdated", "slug":
-				if match[2] == "=" {
-					return map[string]any{match[1]: match[3]}, nil
+				if filterOp == "=" {
+					return map[string]any{filterName: filterValue}, nil
 				}
-				return map[string]any{match[1]: map[string]any{ops[match[2]]: match[3]}}, nil
+				return map[string]any{filterName: map[string]any{ops[filterOp]: filterValue}}, nil
 			default:
-				if match[2] == "=" {
-					return map[string]any{"attributes." + match[1]: match[3]}, nil
+				if filterOp == "=" {
+					return map[string]any{"attributes." + filterName: filterValue}, nil
 				}
-				return map[string]any{"attributes." + match[1]: map[string]any{ops[match[2]]: match[3]}}, nil
+				return map[string]any{"attributes." + filterName: map[string]any{ops[filterOp]: filterValue}}, nil
 			}
 		}
 	}

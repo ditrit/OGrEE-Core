@@ -14,6 +14,7 @@ import (
 	"net/url"
 	"os"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 
@@ -194,16 +195,14 @@ func FilteredReqFromQueryParams(link *url.URL) bson.M {
 	for key := range queryValues {
 		if key != "fieldOnly" && key != "startDate" && key != "endDate" &&
 			key != "limit" && key != "namespace" {
-			keyValue := queryValues.Get(key)
+			keyValue := ConvertString(queryValues.Get(key))
 			AddFilterToReq(bsonMap, key, keyValue)
 		}
 	}
 	return bsonMap
 }
 
-func AddFilterToReq(bsonMap primitive.M, key string, value string) {
-	var keyValue interface{}
-	keyValue = value
+func AddFilterToReq(bsonMap primitive.M, key string, keyValue any) {
 	if key == "parentId" {
 		regex := applyWildcards(keyValue.(string)) + `\.(` + NAME_REGEX + ")"
 		bsonMap["id"] = regexToMongoFilter(regex)
@@ -212,7 +211,8 @@ func AddFilterToReq(bsonMap primitive.M, key string, value string) {
 		// tag is in tags list
 		bsonMap["tags"] = bson.M{"$eq": keyValue}
 		return
-	} else if strings.Contains(keyValue.(string), "*") {
+	} else if reflect.TypeOf(keyValue).Kind() == reflect.String &&
+		strings.Contains(keyValue.(string), "*") {
 		regex := applyWildcards(keyValue.(string))
 		keyValue = regexToMongoFilter(regex)
 	}
@@ -519,4 +519,49 @@ func GetFloat(unk interface{}) (float64, error) {
 	}
 	fv := v.Convert(floatType)
 	return fv.Float(), nil
+}
+
+func ConvertString(strValue string) any {
+	if num, err := strconv.ParseFloat(strValue, 64); err == nil {
+		// is number
+		return num
+	} else if nums, err := StringToFloatSlice(strValue); err == nil {
+		// is array of numbers
+		return nums
+	} else if strs, err := StringToStrSlice(strValue); err == nil {
+		// is array of strings
+		return strs
+	} else if boolean, err := strconv.ParseBool(strValue); err == nil {
+		// is boolean
+		return boolean
+	}
+	// is string
+	return strValue
+}
+
+func StringToFloatSlice(strValue string) ([]float64, error) {
+	numbers := []float64{}
+	if len(strValue) < 2 || strValue[0] != '[' || strValue[len(strValue)-1:] != "]" {
+		return numbers, fmt.Errorf("not a vector")
+	}
+	strSplit := strings.Split(strValue[1:len(strValue)-1], ",")
+	for _, val := range strSplit {
+		if n, err := strconv.ParseFloat(val, 64); err == nil {
+			numbers = append(numbers, n)
+		} else {
+			return numbers, fmt.Errorf("invalid vector format")
+		}
+	}
+	return numbers, nil
+}
+
+func StringToStrSlice(strValue string) ([]string, error) {
+	if len(strValue) < 2 || strValue[0] != '[' || strValue[len(strValue)-1:] != "]" {
+		return []string{}, fmt.Errorf("not a vector")
+	}
+	strs := strings.Split(strings.ReplaceAll(strValue[1:len(strValue)-1], "\"", ""), ",")
+	if len(strs[0]) <= 0 {
+		return strs, fmt.Errorf("invalid vector format")
+	}
+	return strs, nil
 }

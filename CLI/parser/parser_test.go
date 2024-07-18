@@ -342,7 +342,6 @@ var commandsMatching = map[string]node{
 	">${toto}/tata":                     &focusNode{testPath},
 	"+site:${toto}/tata":                &createSiteNode{testPath},
 	"+si:${toto}/tata":                  &createSiteNode{testPath},
-	"getu rackA 42":                     &getUNode{&pathNode{path: &valueNode{"rackA"}}, &valueNode{42}},
 	"get ${toto}/tata":                  &getObjectNode{path: testPath, filters: map[string]node{}},
 	"get -r ${toto}/tata":               &getObjectNode{path: testPath, filters: map[string]node{}, recursive: recursiveArgs{isRecursive: true}},
 	"get -r ${toto}/tata category=room": &getObjectNode{path: testPath, filters: map[string]node{"category": &valueNode{"room"}}, recursive: recursiveArgs{isRecursive: true}},

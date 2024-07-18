@@ -121,7 +121,7 @@ func filtersToMapString(filters map[string]node) (map[string]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		filtersString[key] = filterVal.(string)
+		filtersString[key] = utils.Stringify(filterVal)
 	}
 
 	return filtersString, nil
