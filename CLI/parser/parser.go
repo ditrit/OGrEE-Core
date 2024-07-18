@@ -703,16 +703,10 @@ func (p *parser) parseLs(category string) node {
 func (p *parser) parseFilters() map[string]node {
 	filters := map[string]node{}
 
-	first := true
 	for !p.commandEnd() {
 		p.skipWhiteSpaces()
-		if !first {
-			p.expect(",")
-		}
-		first = false
-		p.skipWhiteSpaces()
 		attrName := p.parseAssign("attribute name")
-		attrVal := p.parseText(p.parseQuotedStringToken, false, false)
+		attrVal := p.parseText(p.parseUnquotedCommaStringToken, true, false)
 		filters[attrName] = attrVal
 	}
 
@@ -725,7 +719,7 @@ func (p *parser) parseComplexFilters() map[string]node {
 
 	for !p.commandEnd() {
 		p.skipWhiteSpaces()
-		newComplexFilter := p.parseText(p.parseQuotedStringToken, false, false)
+		newComplexFilter := p.parseText(p.parseUnquotedCommaStringToken, true, false)
 
 		for p.parseExact(")") {
 			newFilterStr, _ := newComplexFilter.execute()

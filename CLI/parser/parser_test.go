@@ -248,18 +248,17 @@ func testCommand(buffer string, expected node, t *testing.T) bool {
 }
 
 func TestParseLs(t *testing.T) {
-	buffer := "lsbuilding -s height -a attr1:attr2 plouf.plaf attr1=a, attr2=b"
+	buffer := "lsbuilding -s height -a attr1:attr2 plouf.plaf attr1=a"
 	path := &pathNode{path: &valueNode{"plouf.plaf"}}
 	sort := "height"
 	attrList := []string{"attr1", "attr2"}
 	filters := map[string]node{
 		"category": &valueNode{"building"},
 		"attr1":    &valueNode{"a"},
-		"attr2":    &valueNode{"b"},
 	}
 	expected := &lsNode{path: path, filters: filters, sortAttr: sort, attrList: attrList}
 	testCommand(buffer, expected, t)
-	buffer = "lsbuilding -s height -a \"attr1:attr2\" plouf.plaf attr1=a, attr2=b"
+	buffer = "lsbuilding -s height -a \"attr1:attr2\" plouf.plaf attr1=a"
 	testCommand(buffer, expected, t)
 }
 
@@ -284,9 +283,9 @@ func TestParseLsRecursive(t *testing.T) {
 
 func TestParseLsComplexFilter(t *testing.T) {
 	path := &pathNode{path: &valueNode{"plouf.plaf"}}
-	buffer := "ls plouf.plaf -f category=building, attr1=a, attr2=b"
+	buffer := "ls plouf.plaf -f category=building & attr1=a & attr2=b"
 	filters := map[string]node{
-		"filter": &valueNode{"(category=building) & ((attr1=a) & (attr2=b))"},
+		"filter": &valueNode{"category=building & attr1=a & attr2=b"},
 	}
 	expected := &lsNode{path: path, filters: filters}
 	testCommand(buffer, expected, t)
@@ -345,7 +344,7 @@ var commandsMatching = map[string]node{
 	"get ${toto}/tata":                  &getObjectNode{path: testPath, filters: map[string]node{}},
 	"get -r ${toto}/tata":               &getObjectNode{path: testPath, filters: map[string]node{}, recursive: recursiveArgs{isRecursive: true}},
 	"get -r ${toto}/tata category=room": &getObjectNode{path: testPath, filters: map[string]node{"category": &valueNode{"room"}}, recursive: recursiveArgs{isRecursive: true}},
-	"get ${toto}/tata -f category=room, name=R1":                   &getObjectNode{path: testPath, filters: map[string]node{"filter": &valueNode{"(category=room) & (name=R1)"}}},
+	"get ${toto}/tata -f category=room & name=R1":                  &getObjectNode{path: testPath, filters: map[string]node{"filter": &valueNode{"category=room & name=R1"}}},
 	"get ${toto}/tata -f category=room & (name!=R1 | height>5)":    &getObjectNode{path: testPath, filters: map[string]node{"filter": &valueNode{"category=room & (name!=R1 | height>5)"}}},
 	"+building:${toto}/tata@[1., 2.]@3.@[.1, 2., 3.]":              &createBuildingNode{testPath, vec2(1., 2.), &valueNode{3.}, vec3(.1, 2., 3.)},
 	"+room:${toto}/tata@[1., 2.]@3.@[.1, 2., 3.]@+x-y":             &createRoomNode{testPath, vec2(1., 2.), &valueNode{3.}, vec3(.1, 2., 3.), &valueNode{"+x-y"}, nil, nil},
@@ -441,7 +440,7 @@ func TestFor(t *testing.T) {
 func TestIf(t *testing.T) {
 	defer recoverFunc(t)
 	for simpleCommand, tree := range commandsMatching {
-		buf := "true { " + simpleCommand + " }e"
+		buf := "true { " + simpleCommand + "}e"
 		p := newParser(buf)
 		expected := &ifNode{&valueNode{true}, tree, nil}
 		result := p.parseIf()
