@@ -546,7 +546,7 @@ func StringToFloatSlice(strValue string) ([]float64, error) {
 	}
 	strSplit := strings.Split(strValue[1:len(strValue)-1], ",")
 	for _, val := range strSplit {
-		if n, err := strconv.ParseFloat(val, 64); err == nil {
+		if n, err := strconv.ParseFloat(strings.TrimSpace(val), 64); err == nil {
 			numbers = append(numbers, n)
 		} else {
 			return numbers, fmt.Errorf("invalid vector format")
@@ -562,6 +562,9 @@ func StringToStrSlice(strValue string) ([]string, error) {
 	strs := strings.Split(strings.ReplaceAll(strValue[1:len(strValue)-1], "\"", ""), ",")
 	if len(strs[0]) <= 0 {
 		return strs, fmt.Errorf("invalid vector format")
+	}
+	for i := range strs {
+		strs[i] = strings.TrimSpace(strs[i])
 	}
 	return strs, nil
 }

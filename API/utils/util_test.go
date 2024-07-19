@@ -145,3 +145,23 @@ func TestFormatNotifyData(t *testing.T) {
 		t.Error("Test Case 4 failed")
 	}
 }
+
+func TestConvertString(t *testing.T) {
+	tests := []struct {
+		name      string
+		toconvert string
+		expected  any
+	}{
+		{"StringToFloat", "1.2", 1.2},
+		{"StringToFloatSlice", "[1.2, 1.3]", []float64{1.2, 1.3}},
+		{"StringToStringSlice", "[hi, there]", []string{"hi", "there"}},
+		{"StringToBoolean", "true", true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			converted := ConvertString(tt.toconvert)
+			assert.Equal(t, tt.expected, converted)
+		})
+	}
+}
