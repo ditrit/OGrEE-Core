@@ -1,11 +1,64 @@
 package models
 
 import (
+	"context"
+	"fmt"
 	"p3/repository"
 	u "p3/utils"
+	"strings"
 
 	"go.mongodb.org/mongo-driver/mongo"
 )
+
+func CommandRunner(cmd interface{}) *mongo.SingleResult {
+	ctx, cancel := u.Connect()
+	result := repository.GetDB().RunCommand(ctx, cmd, nil)
+	defer cancel()
+	return result
+}
+
+func GetDBName() string {
+	name := repository.GetDB().Name()
+
+	//Remove the preceding 'ogree' at beginning of name
+	if strings.Index(name, "ogree") == 0 {
+		name = name[5:] //5=len('ogree')
+	}
+	return name
+}
+
+func ExtractCursor(c *mongo.Cursor, ctx context.Context, entity int, userRoles map[string]Role) ([]map[string]interface{}, error) {
+	ans := []map[string]interface{}{}
+	for c.Next(ctx) {
+		x := map[string]interface{}{}
+		err := c.Decode(x)
+		if err != nil {
+			fmt.Println(err.Error())
+			return nil, err
+		}
+		//Remove _id
+		x = fixID(x)
+		if u.IsEntityHierarchical(entity) && userRoles != nil {
+			//Check permissions
+			var domain string
+			if entity == u.DOMAIN {
+				domain = x["id"].(string)
+			} else {
+				domain = x["domain"].(string)
+			}
+			if permission := CheckUserPermissions(userRoles, entity, domain); permission >= READONLYNAME {
+				if permission == READONLYNAME {
+					x = FixReadOnlyName(x)
+				}
+				ans = append(ans, x)
+			}
+		} else {
+			ans = append(ans, x)
+		}
+
+	}
+	return ans, nil
+}
 
 func WithTransaction[T any](callback func(mongo.SessionContext) (T, error)) (T, *u.Error) {
 	ctx, cancel := u.Connect()
