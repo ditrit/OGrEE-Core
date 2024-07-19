@@ -2,7 +2,6 @@ package models
 
 import (
 	"fmt"
-	"maps"
 	"p3/repository"
 	u "p3/utils"
 
@@ -46,34 +45,16 @@ func GetManyObjects(entityStr string, req bson.M, filters u.RequestFilters, comp
 	var err error
 	var c *mongo.Cursor
 
-	var opts *options.FindOptions
-	if len(filters.FieldsToShow) > 0 {
-		compoundIndex := bson.D{bson.E{Key: "domain", Value: 1}, bson.E{Key: "id", Value: 1}}
-		for _, field := range filters.FieldsToShow {
-			if field != "domain" && field != "id" {
-				compoundIndex = append(compoundIndex, bson.E{Key: field, Value: 1})
-			}
-		}
-		opts = options.Find().SetProjection(compoundIndex)
-	}
-	err = repository.GetDateFilters(req, filters.StartDate, filters.EndDate)
-	if err != nil {
+	// Filters
+	opts := repository.GetFieldsToShowFilter(filters.FieldsToShow)
+	if err := repository.GetDateFilters(req, filters.StartDate, filters.EndDate); err != nil {
 		return nil, &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
 	}
-
-	if complexFilterExp != "" {
-		if complexFilters, err := ComplexFilterToMap(complexFilterExp); err != nil {
-			return nil, &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
-		} else {
-			err = getDatesFromComplexFilters(complexFilters)
-			if err != nil {
-				return nil, &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
-			}
-			u.ApplyWildcardsOnComplexFilter(complexFilters)
-			maps.Copy(req, complexFilters)
-		}
+	if err := ApplyComplexFilter(complexFilterExp, req); err != nil {
+		return nil, err
 	}
 
+	// Find
 	if opts != nil {
 		c, err = repository.GetDB().Collection(entityStr).Find(ctx, req, opts)
 	} else {
@@ -85,6 +66,7 @@ func GetManyObjects(entityStr string, req bson.M, filters u.RequestFilters, comp
 	}
 	defer cancel()
 
+	// Format
 	entity := u.EntityStrToInt(entityStr)
 	data, e1 := ExtractCursor(c, ctx, entity, userRoles)
 	if e1 != nil {

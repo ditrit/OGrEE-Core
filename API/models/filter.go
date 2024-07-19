@@ -3,11 +3,28 @@ package models
 import (
 	"errors"
 	"fmt"
+	"maps"
 	u "p3/utils"
 	"regexp"
 	"strings"
 	"time"
 )
+
+func ApplyComplexFilter(complexFilterExp string, req map[string]any) *u.Error {
+	if complexFilterExp != "" {
+		if complexFilters, err := ComplexFilterToMap(complexFilterExp); err != nil {
+			return &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
+		} else {
+			err = getDatesFromComplexFilters(complexFilters)
+			if err != nil {
+				return &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
+			}
+			u.ApplyWildcardsOnComplexFilter(complexFilters)
+			maps.Copy(req, complexFilters)
+		}
+	}
+	return nil
+}
 
 func ComplexFilterToMap(complexFilter string) (map[string]any, error) {
 	// Split the input string into individual filter expressions

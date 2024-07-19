@@ -7,7 +7,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 
 	u "p3/utils"
 )
@@ -17,16 +16,7 @@ func GetObject(req bson.M, ent string, filters u.RequestFilters) (map[string]int
 	defer cancel()
 	t := map[string]interface{}{}
 
-	var opts *options.FindOneOptions
-	if len(filters.FieldsToShow) > 0 {
-		compoundIndex := bson.D{bson.E{Key: "domain", Value: 1}, bson.E{Key: "id", Value: 1}}
-		for _, field := range filters.FieldsToShow {
-			if field != "domain" && field != "id" {
-				compoundIndex = append(compoundIndex, bson.E{Key: field, Value: 1})
-			}
-		}
-		opts = options.FindOne().SetProjection(compoundIndex)
-	}
+	opts := GetFieldsToShowOneFilter(filters.FieldsToShow)
 
 	err := GetDateFilters(req, filters.StartDate, filters.EndDate)
 	if err != nil {
