@@ -29,20 +29,12 @@ func GetObject(req bson.M, entityStr string, filters u.RequestFilters, userRoles
 	}
 
 	// Check permissions
-	if u.IsEntityHierarchical(entity) {
-		var domain string
-		if entity == u.DOMAIN {
-			domain = object["id"].(string)
-		} else {
-			domain = object["domain"].(string)
-		}
-		if userRoles != nil {
-			if permission := CheckUserPermissions(userRoles, u.EntityStrToInt(entityStr), domain); permission == NONE {
-				return nil, &u.Error{Type: u.ErrUnauthorized,
-					Message: "User does not have permission to see this object"}
-			} else if permission == READONLYNAME {
-				object = FixReadOnlyName(object)
-			}
+	if u.IsEntityHierarchical(entity) && userRoles != nil {
+		if permission := CheckUserPermissionsWithObject(userRoles, u.EntityStrToInt(entityStr), object); permission == NONE {
+			return nil, &u.Error{Type: u.ErrUnauthorized,
+				Message: "User does not have permission to see this object"}
+		} else if permission == READONLYNAME {
+			object = FixReadOnlyName(object)
 		}
 	}
 

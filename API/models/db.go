@@ -36,26 +36,20 @@ func ExtractCursor(c *mongo.Cursor, ctx context.Context, entity int, userRoles m
 			fmt.Println(err.Error())
 			return nil, err
 		}
-		//Remove _id
+		// Remove _id
 		x = fixID(x)
+		// Check permissions
 		if u.IsEntityHierarchical(entity) && userRoles != nil {
-			//Check permissions
-			var domain string
-			if entity == u.DOMAIN {
-				domain = x["id"].(string)
-			} else {
-				domain = x["domain"].(string)
+			permission := CheckUserPermissionsWithObject(userRoles, entity, x)
+			if permission == READONLYNAME {
+				x = FixReadOnlyName(x)
 			}
-			if permission := CheckUserPermissions(userRoles, entity, domain); permission >= READONLYNAME {
-				if permission == READONLYNAME {
-					x = FixReadOnlyName(x)
-				}
+			if permission >= READONLYNAME {
 				ans = append(ans, x)
 			}
 		} else {
 			ans = append(ans, x)
 		}
-
 	}
 	return ans, nil
 }

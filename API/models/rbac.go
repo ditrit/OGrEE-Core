@@ -64,6 +64,10 @@ func GetRequestFilterByDomain(userRoles map[string]Role) (bson.M, bool) {
 	}
 }
 
+func CheckUserPermissionsWithObject(userRoles map[string]Role, objEntity int, object map[string]any) Permission {
+	return CheckUserPermissions(userRoles, objEntity, getDomainFromObject(objEntity, object))
+}
+
 func CheckUserPermissions(userRoles map[string]Role, objEntity int, objDomain string) Permission {
 	permission := NONE
 	if objEntity == u.DOMAIN {
@@ -125,4 +129,15 @@ func CheckCanManageUser(callerRoles map[string]Role, newUserRoles map[string]Rol
 		}
 	}
 	return true
+}
+
+// Helpers
+func getDomainFromObject(entity int, object map[string]any) string {
+	var domain string
+	if entity == u.DOMAIN {
+		domain = object["id"].(string)
+	} else {
+		domain = object["domain"].(string)
+	}
+	return domain
 }

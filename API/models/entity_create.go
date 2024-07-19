@@ -47,13 +47,7 @@ func prepareCreateEntity(entity int, t map[string]interface{}, userRoles map[str
 
 	// Check user permissions
 	if u.IsEntityHierarchical(entity) {
-		var domain string
-		if entity == u.DOMAIN {
-			domain = t["id"].(string)
-		} else {
-			domain = t["domain"].(string)
-		}
-		if permission := CheckUserPermissions(userRoles, entity, domain); permission < WRITE {
+		if permission := CheckUserPermissionsWithObject(userRoles, entity, t); permission < WRITE {
 			return &u.Error{Type: u.ErrUnauthorized,
 				Message: "User does not have permission to create this object"}
 		}
