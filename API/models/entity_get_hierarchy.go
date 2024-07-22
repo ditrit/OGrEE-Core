@@ -195,20 +195,23 @@ func GetCompleteHierarchyAttributes(userRoles map[string]Role) (map[string]inter
 		}
 
 		// Add to response
-		for _, obj := range data {
-			if obj["attributes"] == nil {
-				continue
-			}
-			if id, isStr := obj["id"].(string); isStr && id != "" {
-				response[id] = obj["attributes"]
-			} else if obj["name"] != nil {
-				response[obj["name"].(string)] = obj["attributes"]
-			}
-		}
-
+		formatCompleteHierarchyAttributes(data, response)
 	}
 	defer cancel()
 	return response, nil
+}
+
+func formatCompleteHierarchyAttributes(data []map[string]any, response map[string]any) {
+	for _, obj := range data {
+		if obj["attributes"] == nil {
+			continue
+		}
+		if id, isStr := obj["id"].(string); isStr && id != "" {
+			response[id] = obj["attributes"]
+		} else if obj["name"] != nil {
+			response[obj["name"].(string)] = obj["attributes"]
+		}
+	}
 }
 
 func GetEntitiesOfAncestor(id string, entStr, wantedEnt string, userRoles map[string]Role) ([]map[string]interface{}, *u.Error) {
