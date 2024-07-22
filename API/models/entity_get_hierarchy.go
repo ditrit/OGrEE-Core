@@ -72,7 +72,7 @@ func getHierarchyByNamespace(namespace u.Namespace, userRoles map[string]Role, f
 		}
 
 		// Fill hierarchy with formatted data
-		fillHierharchyData(data, namespace, entityName, hierarchy, categories)
+		fillHierarchyData(data, namespace, entityName, hierarchy, categories)
 	}
 
 	// For the root of VIRTUAL objects we also need to check for devices
@@ -317,7 +317,7 @@ func getChildrenCollections(limit int, parentEntStr string) []int {
 	return rangeEntities
 }
 
-func fillHierharchyData(data []map[string]any, namespace u.Namespace, entityName string, hierarchy, categories map[string][]string) {
+func fillHierarchyData(data []map[string]any, namespace u.Namespace, entityName string, hierarchy, categories map[string][]string) {
 	for _, obj := range data {
 		if strings.Contains(u.NamespaceToString(namespace), string(u.Logical)) {
 			// Logical
@@ -334,19 +334,24 @@ func fillHierharchyData(data []map[string]any, namespace u.Namespace, entityName
 					hierarchy[rootIdx+entityName] = append(hierarchy[rootIdx+entityName], objId)
 				}
 			}
-		} else if strings.Contains(obj["id"].(string), ".") {
-			// Physical or Org Children
-			categories[entityName] = append(categories[entityName], obj["id"].(string))
-			fillHierarchyMap(obj["id"].(string), hierarchy)
 		} else {
-			// Physical or Org Roots
-			objId := obj["id"].(string)
-			categories[entityName] = append(categories[entityName], objId)
-			if u.EntityStrToInt(entityName) == u.STRAYOBJ {
-				hierarchy[rootIdx+entityName] = append(hierarchy[rootIdx+entityName], objId)
-			} else if u.EntityStrToInt(entityName) != u.VIRTUALOBJ {
-				hierarchy[rootIdx] = append(hierarchy[rootIdx], objId)
-			}
+			fillHierarchyDataWithHierarchicalObj(entityName, obj, hierarchy, categories)
+		}
+	}
+}
+
+func fillHierarchyDataWithHierarchicalObj(entityName string, obj map[string]any, hierarchy, categories map[string][]string) {
+	objId := obj["id"].(string)
+	categories[entityName] = append(categories[entityName], objId)
+	if strings.Contains(objId, ".") {
+		// Physical or Org Children
+		fillHierarchyMap(objId, hierarchy)
+	} else {
+		// Physical or Org Roots
+		if u.EntityStrToInt(entityName) == u.STRAYOBJ {
+			hierarchy[rootIdx+entityName] = append(hierarchy[rootIdx+entityName], objId)
+		} else if u.EntityStrToInt(entityName) != u.VIRTUALOBJ {
+			hierarchy[rootIdx] = append(hierarchy[rootIdx], objId)
 		}
 	}
 }

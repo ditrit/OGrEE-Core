@@ -197,7 +197,8 @@ func propagateUpdateChanges(ctx mongo.SessionContext, entity int, oldObj, update
 			entity,
 		); err != nil {
 			return err
-		} else if entity == u.DOMAIN {
+		}
+		if entity == u.DOMAIN {
 			if err := repository.PropagateDomainChange(ctx,
 				oldObj["id"].(string),
 				updateData["id"].(string),
