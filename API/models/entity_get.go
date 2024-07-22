@@ -11,6 +11,15 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+func GetObjectById(id, entityStr string, filters u.RequestFilters, userRoles map[string]Role) (map[string]any, *u.Error) {
+	if entityStr == u.HIERARCHYOBJS_ENT {
+		return GetHierarchicalObjectById(id, filters, userRoles)
+	} else {
+		req := GetIdReqByEntity(entityStr, id)
+		return GetObject(req, entityStr, filters, userRoles)
+	}
+}
+
 func GetObject(req bson.M, entityStr string, filters u.RequestFilters, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
 	object, err := repository.GetObject(req, entityStr, filters)
 
@@ -38,6 +47,22 @@ func GetObject(req bson.M, entityStr string, filters u.RequestFilters, userRoles
 	}
 
 	return object, nil
+}
+
+func GetHierarchicalObjectById(hierarchyName string, filters u.RequestFilters, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
+	// Get possible collections for this name
+	rangeEntities := u.GetEntitiesById(u.PHierarchy, hierarchyName)
+	req := bson.M{"id": hierarchyName}
+
+	// Search each collection
+	for _, entityStr := range rangeEntities {
+		data, _ := GetObject(req, entityStr, filters, userRoles)
+		if data != nil {
+			return data, nil
+		}
+	}
+
+	return nil, &u.Error{Type: u.ErrNotFound, Message: "Unable to find object"}
 }
 
 func GetManyObjects(entityStr string, req bson.M, filters u.RequestFilters, complexFilterExp string, userRoles map[string]Role) ([]map[string]interface{}, *u.Error) {
@@ -81,22 +106,6 @@ func GetManyObjects(entityStr string, req bson.M, filters u.RequestFilters, comp
 	}
 
 	return data, nil
-}
-
-func GetHierarchicalObjectById(hierarchyName string, filters u.RequestFilters, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
-	// Get possible collections for this name
-	rangeEntities := u.GetEntitiesById(u.PHierarchy, hierarchyName)
-	req := bson.M{"id": hierarchyName}
-
-	// Search each collection
-	for _, entityStr := range rangeEntities {
-		data, _ := GetObject(req, entityStr, filters, userRoles)
-		if data != nil {
-			return data, nil
-		}
-	}
-
-	return nil, &u.Error{Type: u.ErrNotFound, Message: "Unable to find object"}
 }
 
 func GetEntityCount(entity int) int64 {

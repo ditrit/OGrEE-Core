@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"p3/repository"
 	u "p3/utils"
 	"strings"
@@ -18,30 +19,14 @@ import (
 var AttrsWithInnerObj = []string{"pillars", "separators", "breakers"}
 
 func UpdateObject(entityStr string, id string, updateData map[string]interface{}, isPatch bool, userRoles map[string]Role, isRecursive bool) (map[string]interface{}, *u.Error) {
-	var idFilter bson.M
-	if u.IsEntityNonHierarchical(u.EntityStrToInt(entityStr)) {
-		idFilter = bson.M{"slug": id}
-	} else {
-		idFilter = bson.M{"id": id}
-	}
-
-	//Update timestamp requires first obj retrieval
-	//there isn't any way for mongoDB to make a field
-	//immutable in a document
-	var oldObj map[string]any
-	var err *u.Error
-	if entityStr == u.HIERARCHYOBJS_ENT {
-		oldObj, err = GetHierarchicalObjectById(id, u.RequestFilters{}, userRoles)
-		if err == nil {
-			entityStr = oldObj["category"].(string)
-		}
-	} else {
-		oldObj, err = GetObject(idFilter, entityStr, u.RequestFilters{}, userRoles)
-	}
+	// Update timestamp requires, first, obj retrieval
+	oldObj, err := GetObjectById(id, entityStr, u.RequestFilters{}, userRoles)
 	if err != nil {
 		return nil, err
+	} else if entityStr == u.HIERARCHYOBJS_ENT {
+		// overwrite category
+		entityStr = oldObj["category"].(string)
 	}
-
 	entity := u.EntityStrToInt(entityStr)
 
 	// Check if permission is only readonly
@@ -55,41 +40,39 @@ func UpdateObject(entityStr string, id string, updateData map[string]interface{}
 
 	// Update old object data with patch data
 	if isPatch {
-		if tagsPresent {
-			return nil, &u.Error{
-				Type:    u.ErrBadFormat,
-				Message: "Tags cannot be modified in this way, use tags+ and tags-",
-			}
+		println("is PATCH")
+		if patchData, err := preparePatch(tagsPresent, updateData, oldObj); err != nil {
+			return nil, err
+		} else {
+			updateData = patchData
 		}
-
-		var formattedOldObj map[string]interface{}
-		// Convert primitive.A and similar types
-		bytes, _ := json.Marshal(oldObj)
-		json.Unmarshal(bytes, &formattedOldObj)
-		// Update old with new
-		err := updateOldObjWithPatch(formattedOldObj, updateData)
-		if err != nil {
-			return nil, &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
-		}
-
-		updateData = formattedOldObj
-		// Remove API set fields
-		delete(updateData, "id")
-		delete(updateData, "lastUpdated")
-		delete(updateData, "createdDate")
 	} else if tagsPresent {
-		err := verifyTagList(tags)
-		if err != nil {
+		if err := verifyTagList(tags); err != nil {
 			return nil, err
 		}
 	}
 
-	result, err := WithTransaction(func(ctx mongo.SessionContext) (interface{}, error) {
-		err = prepareUpdateObject(ctx, entity, id, updateData, oldObj, userRoles)
+	fmt.Println(updateData)
+	result, err := UpdateTransaction(entity, id, isRecursive, updateData, oldObj, userRoles)
+	if err != nil {
+		return nil, err
+	}
+
+	var updatedDoc map[string]interface{}
+	result.(*mongo.SingleResult).Decode(&updatedDoc)
+
+	return fixID(updatedDoc), nil
+}
+
+func UpdateTransaction(entity int, id string, isRecursive bool, updateData, oldObj map[string]any, userRoles map[string]Role) (any, *u.Error) {
+	entityStr := u.EntityToString(entity)
+	return WithTransaction(func(ctx mongo.SessionContext) (interface{}, error) {
+		err := prepareUpdateObject(ctx, entity, id, updateData, oldObj, userRoles)
 		if err != nil {
 			return nil, err
 		}
 
+		idFilter := GetIdReqByEntity(entityStr, id)
 		mongoRes := repository.GetDB().Collection(entityStr).FindOneAndReplace(
 			ctx,
 			idFilter, updateData,
@@ -99,54 +82,39 @@ func UpdateObject(entityStr string, id string, updateData map[string]interface{}
 			return nil, mongoRes.Err()
 		}
 
-		if oldObj["id"] != updateData["id"] {
-			// Changes to id should be propagated
-			if err := repository.PropagateParentIdChange(
-				ctx,
-				oldObj["id"].(string),
-				updateData["id"].(string),
-				entity,
-			); err != nil {
-				return nil, err
-			} else if entity == u.DOMAIN {
-				if err := repository.PropagateDomainChange(ctx,
-					oldObj["id"].(string),
-					updateData["id"].(string),
-				); err != nil {
-					return nil, err
-				}
-			}
-		}
-		if u.IsEntityHierarchical(entity) && (oldObj["domain"] != updateData["domain"]) {
-			if isRecursive {
-				// Change domain of all children too
-				if err := repository.PropagateDomainChangeToChildren(
-					ctx,
-					updateData["id"].(string),
-					updateData["domain"].(string),
-				); err != nil {
-					return nil, err
-				}
-			} else {
-				// Check if children domains are compatible
-				if err := repository.CheckParentDomainChange(entity, updateData["id"].(string),
-					updateData["domain"].(string)); err != nil {
-					return nil, err
-				}
-			}
+		if err := propagateUpdateChanges(ctx, entity, oldObj, updateData, isRecursive); err != nil {
+			return nil, err
 		}
 
 		return mongoRes, nil
 	})
+}
 
-	if err != nil {
-		return nil, err
+func preparePatch(tagsPresent bool, updateData, oldObj map[string]any) (map[string]any, *u.Error) {
+	if tagsPresent {
+		return nil, &u.Error{
+			Type:    u.ErrBadFormat,
+			Message: "Tags cannot be modified in this way, use tags+ and tags-",
+		}
 	}
 
-	var updatedDoc map[string]interface{}
-	result.(*mongo.SingleResult).Decode(&updatedDoc)
+	var formattedOldObj map[string]interface{}
+	// Convert primitive.A and similar types
+	bytes, _ := json.Marshal(oldObj)
+	json.Unmarshal(bytes, &formattedOldObj)
+	// Update old with new
+	err := updateOldObjWithPatch(formattedOldObj, updateData)
+	if err != nil {
+		return nil, &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
+	}
 
-	return fixID(updatedDoc), nil
+	updateData = formattedOldObj
+	// Remove API set fields
+	delete(updateData, "id")
+	delete(updateData, "lastUpdated")
+	delete(updateData, "createdDate")
+	fmt.Println(updateData)
+	return updateData, nil
 }
 
 func prepareUpdateObject(ctx mongo.SessionContext, entity int, id string, updateData, oldObject map[string]any, userRoles map[string]Role) *u.Error {
@@ -216,6 +184,46 @@ func updateOldObjWithPatch(old map[string]interface{}, patch map[string]interfac
 		}
 	}
 
+	return nil
+}
+
+func propagateUpdateChanges(ctx mongo.SessionContext, entity int, oldObj, updateData map[string]any, isRecursive bool) error {
+	if oldObj["id"] != updateData["id"] {
+		// Changes to id should be propagated
+		if err := repository.PropagateParentIdChange(
+			ctx,
+			oldObj["id"].(string),
+			updateData["id"].(string),
+			entity,
+		); err != nil {
+			return err
+		} else if entity == u.DOMAIN {
+			if err := repository.PropagateDomainChange(ctx,
+				oldObj["id"].(string),
+				updateData["id"].(string),
+			); err != nil {
+				return err
+			}
+		}
+	}
+	if u.IsEntityHierarchical(entity) && (oldObj["domain"] != updateData["domain"]) {
+		if isRecursive {
+			// Change domain of all children too
+			if err := repository.PropagateDomainChangeToChildren(
+				ctx,
+				updateData["id"].(string),
+				updateData["domain"].(string),
+			); err != nil {
+				return err
+			}
+		} else {
+			// Check if children domains are compatible
+			if err := repository.CheckParentDomainChange(entity, updateData["id"].(string),
+				updateData["domain"].(string)); err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }
 

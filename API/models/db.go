@@ -7,6 +7,8 @@ import (
 	u "p3/utils"
 	"strings"
 
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -104,4 +106,14 @@ func castResult[T any](result any) T {
 	}
 
 	return result.(T)
+}
+
+func GetIdReqByEntity(entityStr, id string) primitive.M {
+	var idFilter primitive.M
+	if u.IsEntityNonHierarchical(u.EntityStrToInt(entityStr)) {
+		idFilter = bson.M{"slug": id}
+	} else {
+		idFilter = bson.M{"id": id}
+	}
+	return idFilter
 }

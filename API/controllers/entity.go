@@ -788,20 +788,7 @@ func GetEntity(w http.ResponseWriter, r *http.Request) {
 
 	// Get entity
 	if id, canParse = mux.Vars(r)["id"]; canParse {
-		var req primitive.M
-		if entityStr == u.HIERARCHYOBJS_ENT {
-			data, modelErr = models.GetHierarchicalObjectById(id, filters, user.Roles)
-		} else {
-			if u.IsEntityNonHierarchical(u.EntityStrToInt(entityStr)) {
-				// Get by slug
-				req = bson.M{"slug": id}
-
-			} else {
-				req = bson.M{"id": id}
-			}
-
-			data, modelErr = models.GetObject(req, entityStr, filters, user.Roles)
-		}
+		data, modelErr = models.GetObjectById(id, entityStr, filters, user.Roles)
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message("Error while parsing path parameters"))

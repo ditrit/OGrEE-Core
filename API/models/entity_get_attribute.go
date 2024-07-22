@@ -24,21 +24,20 @@ func GetSiteParentAttribute(id string, attribute string) (map[string]any, *u.Err
 	}
 	// Find object
 	for _, collName := range collNames {
-		err := db.Collection(collName).FindOne(ctx, bson.M{"id": id}).Decode(&data)
-		if err == nil {
-			// Found object with given id
-			if data["category"].(string) == "site" {
-				// it's a site
-				break
-			} else {
-				// Find its parent site
-				nameSlice := strings.Split(data["id"].(string), u.HN_DELIMETER)
-				siteName := nameSlice[0] // CONSIDER SITE AS 0
-				err := db.Collection("site").FindOne(ctx, bson.M{"id": siteName}).Decode(&data)
-				if err != nil {
-					return nil, &u.Error{Type: u.ErrNotFound,
-						Message: "Could not find parent site for given object"}
-				}
+		if err := db.Collection(collName).FindOne(ctx, bson.M{"id": id}).Decode(&data); err != nil {
+			continue
+		}
+		// Found object with given id
+		if data["category"].(string) == "site" {
+			// it's a site
+			break
+		} else {
+			// Find its parent site
+			nameSlice := strings.Split(data["id"].(string), u.HN_DELIMETER)
+			siteName := nameSlice[0] // CONSIDER SITE AS 0
+			if err := db.Collection("site").FindOne(ctx, bson.M{"id": siteName}).Decode(&data); err != nil {
+				return nil, &u.Error{Type: u.ErrNotFound,
+					Message: "Could not find parent site for given object"}
 			}
 		}
 	}
