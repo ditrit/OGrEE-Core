@@ -129,17 +129,25 @@ func getDatesFromComplexFilters(req map[string]any) error {
 				}
 			}
 		} else if k == "lastUpdated" {
-			for op, date := range v.(map[string]any) {
-				parsedDate, err := time.Parse("2006-01-02", date.(string))
-				if err != nil {
-					return err
-				}
-				if op == "$lte" {
-					parsedDate = parsedDate.Add(time.Hour * 24)
-				}
-				req[k] = map[string]any{op: parsedDate}
+			var err error
+			if req[k], err = parseLastUpdatedFilter(v.(map[string]any)); err != nil {
+				return err
 			}
 		}
 	}
 	return nil
+}
+
+func parseLastUpdatedFilter(lastUpdatedMap map[string]any) (map[string]any, error) {
+	for op, date := range lastUpdatedMap {
+		parsedDate, err := time.Parse("2006-01-02", date.(string))
+		if err != nil {
+			return nil, err
+		}
+		if op == "$lte" {
+			parsedDate = parsedDate.Add(time.Hour * 24)
+		}
+		return map[string]any{op: parsedDate}, nil
+	}
+	return nil, nil
 }
