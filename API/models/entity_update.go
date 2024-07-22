@@ -208,21 +208,28 @@ func propagateUpdateChanges(ctx mongo.SessionContext, entity int, oldObj, update
 		}
 	}
 	if u.IsEntityHierarchical(entity) && (oldObj["domain"] != updateData["domain"]) {
-		if isRecursive {
-			// Change domain of all children too
-			if err := repository.PropagateDomainChangeToChildren(
-				ctx,
-				updateData["id"].(string),
-				updateData["domain"].(string),
-			); err != nil {
-				return err
-			}
-		} else {
-			// Check if children domains are compatible
-			if err := repository.CheckParentDomainChange(entity, updateData["id"].(string),
-				updateData["domain"].(string)); err != nil {
-				return err
-			}
+		if err := propagateObjDomainChange(ctx, entity, isRecursive, updateData); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func propagateObjDomainChange(ctx mongo.SessionContext, entity int, isRecursive bool, updateData map[string]any) error {
+	if isRecursive {
+		// Change domain of all children too
+		if err := repository.PropagateDomainChangeToChildren(
+			ctx,
+			updateData["id"].(string),
+			updateData["domain"].(string),
+		); err != nil {
+			return err
+		}
+	} else {
+		// Check if children domains are compatible
+		if err := repository.CheckParentDomainChange(entity, updateData["id"].(string),
+			updateData["domain"].(string)); err != nil {
+			return err
 		}
 	}
 	return nil
