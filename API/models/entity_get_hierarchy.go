@@ -12,63 +12,25 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func GetHierarchyObjectById(hierarchyName string, filters u.RequestFilters, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
-	// Get possible collections for this name
-	rangeEntities := u.GetEntitiesById(u.PHierarchy, hierarchyName)
-	req := bson.M{"id": hierarchyName}
+const rootIdx = "*"
 
-	// Search each collection
-	for _, entityStr := range rangeEntities {
-		data, _ := GetObject(req, entityStr, filters, userRoles)
-		if data != nil {
-			return data, nil
-		}
+// GetHierarchyByName: get children objects of given parent.
+// - Param limit: max relationship distance between parent and child, example:
+// limit=1 only direct children, limit=2 includes nested children of children
+func GetHierarchyByName(entity, hierarchyName string, limit int, filters u.RequestFilters) ([]map[string]interface{}, *u.Error) {
+	// Get all children and their relations
+	allChildren, hierarchy, err := getChildren(entity, hierarchyName, limit, filters)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, &u.Error{Type: u.ErrNotFound, Message: "Unable to find object"}
+	// Organize the family according to relations (nest children)
+	return recursivelyGetChildrenFromMaps(hierarchyName, hierarchy, allChildren), nil
 }
 
-// GetCompleteHierarchy: gets all objects in db using hierachyName and returns:
-//   - tree: map with parents as key and their children as an array value
-//     tree: {parent:[children]}
-//   - categories: map with category name as key and corresponding objects
-//     as an array value
-//     categories: {categoryName:[children]}
-func GetCompleteHierarchy(userRoles map[string]Role, filters u.HierarchyFilters) (map[string]interface{}, *u.Error) {
-	response := make(map[string]interface{})
-	categories := make(map[string][]string)
-	hierarchy := make(map[string]interface{})
-
-	switch filters.Namespace {
-	case u.Any:
-		for _, ns := range []u.Namespace{u.Physical, u.Logical, u.Organisational} {
-			data, err := getHierarchyWithNamespace(ns, userRoles, filters, categories)
-			if err != nil {
-				return nil, err
-			}
-			hierarchy[u.NamespaceToString(ns)] = data
-		}
-	default:
-		data, err := getHierarchyWithNamespace(filters.Namespace, userRoles, filters, categories)
-		if err != nil {
-			return nil, err
-		}
-		hierarchy[u.NamespaceToString(filters.Namespace)] = data
-
-	}
-
-	response["tree"] = hierarchy
-	if filters.WithCategories {
-		categories["KeysOrder"] = []string{"site", "building", "room", "rack"}
-		response["categories"] = categories
-	}
-	return response, nil
-}
-
-func getHierarchyWithNamespace(namespace u.Namespace, userRoles map[string]Role, filters u.HierarchyFilters,
+func getHierarchyByNamespace(namespace u.Namespace, userRoles map[string]Role, filters u.HierarchyFilters,
 	categories map[string][]string) (map[string][]string, *u.Error) {
 	hierarchy := make(map[string][]string)
-	rootIdx := "*"
 
 	ctx, cancel := u.Connect()
 	db := repository.GetDB()
@@ -91,15 +53,12 @@ func getHierarchyWithNamespace(namespace u.Namespace, userRoles map[string]Role,
 
 	// Search collections according to namespace
 	entities := u.GetEntitiesById(namespace, "")
-
 	for _, entityName := range entities {
 		// Get data
 		opts := options.Find().SetProjection(bson.D{{Key: "domain", Value: 1}, {Key: "id", Value: 1}, {Key: "category", Value: 1}})
-
 		if u.IsEntityNonHierarchical(u.EntityStrToInt(entityName)) {
 			opts = options.Find().SetProjection(bson.D{{Key: "slug", Value: 1}})
 		}
-
 		c, err := db.Collection(entityName).Find(ctx, dbFilter, opts)
 		if err != nil {
 			println(err.Error())
@@ -111,68 +70,94 @@ func getHierarchyWithNamespace(namespace u.Namespace, userRoles map[string]Role,
 			return nil, &u.Error{Type: u.ErrInternal, Message: e.Error()}
 		}
 
-		// Format data
-		for _, obj := range data {
-			if strings.Contains(u.NamespaceToString(namespace), string(u.Logical)) {
-				// Logical
-				var objId string
-				if u.IsEntityNonHierarchical(u.EntityStrToInt(entityName)) {
-					objId = obj["slug"].(string)
-					hierarchy[rootIdx+entityName] = append(hierarchy[rootIdx+entityName], objId)
-				} else {
-					objId = obj["id"].(string)
-					categories[entityName] = append(categories[entityName], objId)
-					if strings.Contains(objId, ".") && obj["category"] != "group" {
-						// Physical or Org Children
-						fillHierarchyMap(objId, hierarchy)
-					} else {
-						hierarchy[rootIdx+entityName] = append(hierarchy[rootIdx+entityName], objId)
-					}
-				}
-			} else if strings.Contains(obj["id"].(string), ".") {
-				// Physical or Org Children
-				categories[entityName] = append(categories[entityName], obj["id"].(string))
-				fillHierarchyMap(obj["id"].(string), hierarchy)
-			} else {
-				// Physical or Org Roots
-				objId := obj["id"].(string)
-				categories[entityName] = append(categories[entityName], objId)
-				if u.EntityStrToInt(entityName) == u.STRAYOBJ {
-					hierarchy[rootIdx+entityName] = append(hierarchy[rootIdx+entityName], objId)
-				} else if u.EntityStrToInt(entityName) != u.VIRTUALOBJ {
-					hierarchy[rootIdx] = append(hierarchy[rootIdx], objId)
-				}
-			}
-		}
+		// Fill hierarchy with formatted data
+		fillHierharchyData(data, namespace, entityName, hierarchy, categories)
 	}
 
 	// For the root of VIRTUAL objects we also need to check for devices
-	for _, vobj := range hierarchy[rootIdx+u.EntityToString(u.VIRTUALOBJ)] {
-		if !strings.ContainsAny(vobj, u.HN_DELIMETER) { // is stray virtual
-			// Get device linked to this vobj through its virtual config
-			entityName := u.EntityToString(u.DEVICE)
-			dbFilter := bson.M{"attributes.virtual_config.clusterId": vobj}
-			opts := options.Find().SetProjection(bson.D{{Key: "domain", Value: 1}, {Key: "id", Value: 1}, {Key: "category", Value: 1}})
-			c, err := db.Collection(entityName).Find(ctx, dbFilter, opts)
-			if err != nil {
-				println(err.Error())
-				return nil, &u.Error{Type: u.ErrDBError, Message: err.Error()}
-			}
-			data, e := ExtractCursor(c, ctx, u.EntityStrToInt(entityName), userRoles)
-			if e != nil {
-				return nil, &u.Error{Type: u.ErrInternal, Message: e.Error()}
-			}
-			// Add data
-			for _, obj := range data {
-				objId := obj["id"].(string)
-				categories[entityName] = append(categories[entityName], objId)
-				hierarchy[vobj] = append(hierarchy[vobj], objId)
-			}
-		}
+	if err := fillVirtualHierarchyByVconfig(userRoles, hierarchy, categories); err != nil {
+		return nil, err
 	}
 
 	defer cancel()
 	return hierarchy, nil
+}
+
+// GetHierarchyByCluster: get children devices and vobjs of given cluster
+func GetHierarchyByCluster(clusterName string, limit int, filters u.RequestFilters) ([]map[string]interface{}, *u.Error) {
+	allChildren := map[string]interface{}{}
+	hierarchy := make(map[string][]string)
+
+	// Get children from device and vobjs
+	for _, checkEnt := range []int{u.DEVICE, u.VIRTUALOBJ} {
+		checkEntName := u.EntityToString(checkEnt)
+		var dbFilter primitive.M
+		if checkEnt == u.VIRTUALOBJ {
+			// linked by Id
+			pattern := primitive.Regex{Pattern: "^" + clusterName +
+				"(." + u.NAME_REGEX + "){1," + strconv.Itoa(limit) + "}$", Options: ""}
+			dbFilter = bson.M{"id": pattern}
+		} else {
+			// DEVICE links to vobj via virtual config
+			dbFilter = bson.M{"attributes.virtual_config.clusterId": clusterName}
+		}
+		children, e1 := GetManyObjects(checkEntName, dbFilter, filters, "", nil)
+		if e1 != nil {
+			return nil, e1
+		}
+		for _, child := range children {
+			if checkEnt == u.VIRTUALOBJ {
+				allChildren[child["id"].(string)] = child
+				fillHierarchyMap(child["id"].(string), hierarchy)
+			} else {
+				// add namespace prefix to devices
+				child["id"] = "Physical." + child["id"].(string)
+				allChildren[child["id"].(string)] = child
+				// add as direct child to cluster
+				hierarchy[clusterName] = append(hierarchy[clusterName], child["id"].(string))
+			}
+		}
+	}
+
+	// Organize vobj family according to relations (nest children)
+	return recursivelyGetChildrenFromMaps(clusterName, hierarchy, allChildren), nil
+}
+
+// GetCompleteHierarchy: gets all objects in db using hierachyName and returns:
+//   - tree: map with parents as key and their children as an array value
+//     tree: {parent:[children]}
+//   - categories: map with category name as key and corresponding objects
+//     as an array value
+//     categories: {categoryName:[children]}
+func GetCompleteHierarchy(userRoles map[string]Role, filters u.HierarchyFilters) (map[string]interface{}, *u.Error) {
+	response := make(map[string]interface{})
+	categories := make(map[string][]string)
+	hierarchy := make(map[string]interface{})
+
+	switch filters.Namespace {
+	case u.Any:
+		for _, ns := range []u.Namespace{u.Physical, u.Logical, u.Organisational} {
+			data, err := getHierarchyByNamespace(ns, userRoles, filters, categories)
+			if err != nil {
+				return nil, err
+			}
+			hierarchy[u.NamespaceToString(ns)] = data
+		}
+	default:
+		data, err := getHierarchyByNamespace(filters.Namespace, userRoles, filters, categories)
+		if err != nil {
+			return nil, err
+		}
+		hierarchy[u.NamespaceToString(filters.Namespace)] = data
+
+	}
+
+	response["tree"] = hierarchy
+	if filters.WithCategories {
+		categories["KeysOrder"] = []string{"site", "building", "room", "rack"}
+		response["categories"] = categories
+	}
+	return response, nil
 }
 
 func GetCompleteHierarchyAttributes(userRoles map[string]Role) (map[string]interface{}, *u.Error) {
@@ -219,18 +204,23 @@ func GetCompleteHierarchyAttributes(userRoles map[string]Role) (map[string]inter
 	return response, nil
 }
 
-// GetHierarchyByName: get children objects of given parent.
-// - Param limit: max relationship distance between parent and child, example:
-// limit=1 only direct children, limit=2 includes nested children of children
-func GetHierarchyByName(entity, hierarchyName string, limit int, filters u.RequestFilters) ([]map[string]interface{}, *u.Error) {
-	// Get all children and their relations
-	allChildren, hierarchy, err := getChildren(entity, hierarchyName, limit, filters)
-	if err != nil {
-		return nil, err
+func GetEntitiesOfAncestor(id string, entStr, wantedEnt string, userRoles map[string]Role) ([]map[string]interface{}, *u.Error) {
+	// Get parent object
+	req := bson.M{"id": id}
+	_, e := GetObject(req, entStr, u.RequestFilters{}, userRoles)
+	if e != nil {
+		return nil, e
 	}
 
-	// Organize the family according to relations (nest children)
-	return recursivelyGetChildrenFromMaps(hierarchyName, hierarchy, allChildren), nil
+	// Get sub entity objects
+	pattern := primitive.Regex{Pattern: "^" + id + u.HN_DELIMETER, Options: ""}
+	req = bson.M{"id": pattern}
+	sub, e1 := GetManyObjects(wantedEnt, req, u.RequestFilters{}, "", userRoles)
+	if e1 != nil {
+		return nil, e1
+	}
+
+	return sub, nil
 }
 
 func getChildren(entity, hierarchyName string, limit int, filters u.RequestFilters) (map[string]interface{},
@@ -262,46 +252,6 @@ func getChildren(entity, hierarchyName string, limit int, filters u.RequestFilte
 	}
 
 	return allChildren, hierarchy, nil
-}
-
-// GetHierarchyByCluster: get children devices and vobjs of given cluster
-func GetHierarchyByCluster(clusterName string, limit int, filters u.RequestFilters) ([]map[string]interface{}, *u.Error) {
-	allChildren := map[string]interface{}{}
-	hierarchy := make(map[string][]string)
-
-	// Get children from device and vobjs
-	for _, checkEnt := range []int{u.DEVICE, u.VIRTUALOBJ} {
-		checkEntName := u.EntityToString(checkEnt)
-		var dbFilter primitive.M
-		if checkEnt == u.VIRTUALOBJ {
-			// linked by Id
-			pattern := primitive.Regex{Pattern: "^" + clusterName +
-				"(." + u.NAME_REGEX + "){1," + strconv.Itoa(limit) + "}$", Options: ""}
-			dbFilter = bson.M{"id": pattern}
-		} else {
-			// DEVICE links to vobj via virtual config
-			dbFilter = bson.M{"attributes.virtual_config.clusterId": clusterName}
-		}
-		children, e1 := GetManyObjects(checkEntName, dbFilter, filters, "", nil)
-		if e1 != nil {
-			return nil, e1
-		}
-		for _, child := range children {
-			if checkEnt == u.VIRTUALOBJ {
-				allChildren[child["id"].(string)] = child
-				fillHierarchyMap(child["id"].(string), hierarchy)
-			} else {
-				// add namespace prefix to devices
-				child["id"] = "Physical." + child["id"].(string)
-				allChildren[child["id"].(string)] = child
-				// add as direct child to cluster
-				hierarchy[clusterName] = append(hierarchy[clusterName], child["id"].(string))
-			}
-		}
-	}
-
-	// Organize vobj family according to relations (nest children)
-	return recursivelyGetChildrenFromMaps(clusterName, hierarchy, allChildren), nil
 }
 
 // recursivelyGetChildrenFromMaps: nest children data as the array value of
@@ -360,77 +310,68 @@ func getChildrenCollections(limit int, parentEntStr string) []int {
 	return rangeEntities
 }
 
-// GetSiteParentAttribute: search for the object of given ID,
-// then search for its site parent and return its requested attribute
-func GetSiteParentAttribute(id string, attribute string) (map[string]any, *u.Error) {
-	data := map[string]interface{}{}
-
-	// Get all collections names
-	ctx, cancel := u.Connect()
-	db := repository.GetDB()
-	collNames, err := db.ListCollectionNames(ctx, bson.D{})
-	if err != nil {
-		fmt.Println(err.Error())
-		return nil, &u.Error{Type: u.ErrDBError, Message: err.Error()}
-	}
-	// Find object
-	for _, collName := range collNames {
-		err := db.Collection(collName).FindOne(ctx, bson.M{"id": id}).Decode(&data)
-		if err == nil {
-			// Found object with given id
-			if data["category"].(string) == "site" {
-				// it's a site
-				break
+func fillHierharchyData(data []map[string]any, namespace u.Namespace, entityName string, hierarchy, categories map[string][]string) {
+	for _, obj := range data {
+		if strings.Contains(u.NamespaceToString(namespace), string(u.Logical)) {
+			// Logical
+			var objId string
+			if u.IsEntityNonHierarchical(u.EntityStrToInt(entityName)) {
+				objId = obj["slug"].(string)
+				hierarchy[rootIdx+entityName] = append(hierarchy[rootIdx+entityName], objId)
 			} else {
-				// Find its parent site
-				nameSlice := strings.Split(data["id"].(string), u.HN_DELIMETER)
-				siteName := nameSlice[0] // CONSIDER SITE AS 0
-				err := db.Collection("site").FindOne(ctx, bson.M{"id": siteName}).Decode(&data)
-				if err != nil {
-					return nil, &u.Error{Type: u.ErrNotFound,
-						Message: "Could not find parent site for given object"}
+				objId = obj["id"].(string)
+				categories[entityName] = append(categories[entityName], objId)
+				if strings.Contains(objId, ".") && obj["category"] != "group" {
+					// Physical or Org Children
+					fillHierarchyMap(objId, hierarchy)
+				} else {
+					hierarchy[rootIdx+entityName] = append(hierarchy[rootIdx+entityName], objId)
 				}
 			}
-		}
-	}
-
-	defer cancel()
-
-	if len(data) == 0 {
-		return nil, &u.Error{Type: u.ErrNotFound, Message: "No object found with given id"}
-	} else if attribute == "sitecolors" {
-		resp := map[string]any{}
-		for _, colorName := range []string{"reservedColor", "technicalColor", "usableColor"} {
-			if color := data["attributes"].(map[string]interface{})[colorName]; color != nil {
-				resp[colorName] = color
-			} else {
-				resp[colorName] = ""
+		} else if strings.Contains(obj["id"].(string), ".") {
+			// Physical or Org Children
+			categories[entityName] = append(categories[entityName], obj["id"].(string))
+			fillHierarchyMap(obj["id"].(string), hierarchy)
+		} else {
+			// Physical or Org Roots
+			objId := obj["id"].(string)
+			categories[entityName] = append(categories[entityName], objId)
+			if u.EntityStrToInt(entityName) == u.STRAYOBJ {
+				hierarchy[rootIdx+entityName] = append(hierarchy[rootIdx+entityName], objId)
+			} else if u.EntityStrToInt(entityName) != u.VIRTUALOBJ {
+				hierarchy[rootIdx] = append(hierarchy[rootIdx], objId)
 			}
 		}
-		return resp, nil
-	} else if attrValue := data["attributes"].(map[string]interface{})[attribute]; attrValue == nil {
-		return nil, &u.Error{Type: u.ErrNotFound,
-			Message: "Parent site has no temperatureUnit in attributes"}
-	} else {
-		return map[string]any{attribute: attrValue}, nil
 	}
 }
 
-func GetEntitiesOfAncestor(id string, entStr, wantedEnt string, userRoles map[string]Role) ([]map[string]interface{}, *u.Error) {
-	// Get parent object
-	req := bson.M{"id": id}
-	_, e := GetObject(req, entStr, u.RequestFilters{}, userRoles)
-	if e != nil {
-		return nil, e
+func fillVirtualHierarchyByVconfig(userRoles map[string]Role, hierarchy, categories map[string][]string) *u.Error {
+	ctx, cancel := u.Connect()
+	db := repository.GetDB()
+	// For the root of VIRTUAL objects we also need to check for devices
+	for _, vobj := range hierarchy[rootIdx+u.EntityToString(u.VIRTUALOBJ)] {
+		if !strings.ContainsAny(vobj, u.HN_DELIMETER) { // is stray virtual
+			// Get device linked to this vobj through its virtual config
+			entityName := u.EntityToString(u.DEVICE)
+			dbFilter := bson.M{"attributes.virtual_config.clusterId": vobj}
+			opts := options.Find().SetProjection(bson.D{{Key: "domain", Value: 1}, {Key: "id", Value: 1}, {Key: "category", Value: 1}})
+			c, err := db.Collection(entityName).Find(ctx, dbFilter, opts)
+			if err != nil {
+				println(err.Error())
+				return &u.Error{Type: u.ErrDBError, Message: err.Error()}
+			}
+			data, e := ExtractCursor(c, ctx, u.EntityStrToInt(entityName), userRoles)
+			if e != nil {
+				return &u.Error{Type: u.ErrInternal, Message: e.Error()}
+			}
+			// Add data
+			for _, obj := range data {
+				objId := obj["id"].(string)
+				categories[entityName] = append(categories[entityName], objId)
+				hierarchy[vobj] = append(hierarchy[vobj], objId)
+			}
+		}
 	}
-
-	// Get sub entity objects
-	pattern := primitive.Regex{Pattern: "^" + id + u.HN_DELIMETER, Options: ""}
-	req = bson.M{"id": pattern}
-	sub, e1 := GetManyObjects(wantedEnt, req, u.RequestFilters{}, "", userRoles)
-	if e1 != nil {
-		return nil, e1
-	}
-
-	return sub, nil
+	defer cancel()
+	return nil
 }

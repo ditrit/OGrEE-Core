@@ -31,7 +31,7 @@ func UpdateObject(entityStr string, id string, updateData map[string]interface{}
 	var oldObj map[string]any
 	var err *u.Error
 	if entityStr == u.HIERARCHYOBJS_ENT {
-		oldObj, err = GetHierarchyObjectById(id, u.RequestFilters{}, userRoles)
+		oldObj, err = GetHierarchicalObjectById(id, u.RequestFilters{}, userRoles)
 		if err == nil {
 			entityStr = oldObj["category"].(string)
 		}

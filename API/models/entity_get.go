@@ -83,6 +83,22 @@ func GetManyObjects(entityStr string, req bson.M, filters u.RequestFilters, comp
 	return data, nil
 }
 
+func GetHierarchicalObjectById(hierarchyName string, filters u.RequestFilters, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
+	// Get possible collections for this name
+	rangeEntities := u.GetEntitiesById(u.PHierarchy, hierarchyName)
+	req := bson.M{"id": hierarchyName}
+
+	// Search each collection
+	for _, entityStr := range rangeEntities {
+		data, _ := GetObject(req, entityStr, filters, userRoles)
+		if data != nil {
+			return data, nil
+		}
+	}
+
+	return nil, &u.Error{Type: u.ErrNotFound, Message: "Unable to find object"}
+}
+
 func GetEntityCount(entity int) int64 {
 	ent := u.EntityToString(entity)
 	ctx, cancel := u.Connect()
