@@ -28,6 +28,7 @@ func GetHierarchyByName(entity, hierarchyName string, limit int, filters u.Reque
 	return recursivelyGetChildrenFromMaps(hierarchyName, hierarchy, allChildren), nil
 }
 
+// getHierarchyByNamespace: get complete hierarchy of a given namespace
 func getHierarchyByNamespace(namespace u.Namespace, userRoles map[string]Role, filters u.HierarchyFilters,
 	categories map[string][]string) (map[string][]string, *u.Error) {
 	hierarchy := make(map[string][]string)
@@ -160,6 +161,7 @@ func GetCompleteHierarchy(userRoles map[string]Role, filters u.HierarchyFilters)
 	return response, nil
 }
 
+// GetCompleteHierarchyAttributes: get all objects with all its attributes
 func GetCompleteHierarchyAttributes(userRoles map[string]Role) (map[string]interface{}, *u.Error) {
 	response := make(map[string]interface{})
 	// Get all collections names
@@ -173,32 +175,37 @@ func GetCompleteHierarchyAttributes(userRoles map[string]Role) (map[string]inter
 	}
 
 	for _, collName := range collNames {
-		if entInt := u.EntityStrToInt(collName); entInt > -1 {
-			projection := bson.D{{Key: "attributes", Value: 1},
-				{Key: "domain", Value: 1}, {Key: "id", Value: 1}}
+		var entInt int
+		if entInt = u.EntityStrToInt(collName); entInt == -1 {
+			continue
+		}
 
-			opts := options.Find().SetProjection(projection)
+		// Get attributes
+		projection := bson.D{{Key: "attributes", Value: 1},
+			{Key: "domain", Value: 1}, {Key: "id", Value: 1}}
+		opts := options.Find().SetProjection(projection)
+		c, err := db.Collection(collName).Find(ctx, bson.M{}, opts)
+		if err != nil {
+			println(err.Error())
+			return nil, &u.Error{Type: u.ErrDBError, Message: err.Error()}
+		}
+		data, e := ExtractCursor(c, ctx, entInt, userRoles)
+		if e != nil {
+			return nil, &u.Error{Type: u.ErrInternal, Message: e.Error()}
+		}
 
-			c, err := db.Collection(collName).Find(ctx, bson.M{}, opts)
-			if err != nil {
-				println(err.Error())
-				return nil, &u.Error{Type: u.ErrDBError, Message: err.Error()}
+		// Add to response
+		for _, obj := range data {
+			if obj["attributes"] == nil {
+				continue
 			}
-			data, e := ExtractCursor(c, ctx, entInt, userRoles)
-			if e != nil {
-				return nil, &u.Error{Type: u.ErrInternal, Message: e.Error()}
-			}
-
-			for _, obj := range data {
-				if obj["attributes"] != nil {
-					if id, isStr := obj["id"].(string); isStr && id != "" {
-						response[obj["id"].(string)] = obj["attributes"]
-					} else if obj["name"] != nil {
-						response[obj["name"].(string)] = obj["attributes"]
-					}
-				}
+			if id, isStr := obj["id"].(string); isStr && id != "" {
+				response[id] = obj["attributes"]
+			} else if obj["name"] != nil {
+				response[obj["name"].(string)] = obj["attributes"]
 			}
 		}
+
 	}
 	defer cancel()
 	return response, nil
@@ -314,12 +321,11 @@ func fillHierharchyData(data []map[string]any, namespace u.Namespace, entityName
 	for _, obj := range data {
 		if strings.Contains(u.NamespaceToString(namespace), string(u.Logical)) {
 			// Logical
-			var objId string
 			if u.IsEntityNonHierarchical(u.EntityStrToInt(entityName)) {
-				objId = obj["slug"].(string)
+				objId := obj["slug"].(string)
 				hierarchy[rootIdx+entityName] = append(hierarchy[rootIdx+entityName], objId)
 			} else {
-				objId = obj["id"].(string)
+				objId := obj["id"].(string)
 				categories[entityName] = append(categories[entityName], objId)
 				if strings.Contains(objId, ".") && obj["category"] != "group" {
 					// Physical or Org Children
