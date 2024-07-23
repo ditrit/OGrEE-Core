@@ -74,8 +74,8 @@ func Help(entry string) {
 	switch entry {
 	case "ls", "pwd", "print", "printf", "cd", "tree", "get", "clear",
 		"lsog", "grep", "for", "while", "if", "env",
-		"cmds", "var", "unset", "selection", commands.Connect3D, commands.Disconnect3D, "camera", "ui", "hc", "drawable",
-		"link", "unlink", "draw", "getu", "getslot", "undraw",
+		"cmds", "var", "unset", "selection", commands.Connect3D, commands.Disconnect3D, "camera", "ui", "drawable",
+		"link", "unlink", "draw", "undraw",
 		"lsenterprise", commands.Cp:
 		path = "./other/man/" + entry + ".txt"
 

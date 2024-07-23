@@ -334,6 +334,15 @@ func (p *parser) parseUnquotedStringToken() token {
 	return p.lexUnquotedString()
 }
 
+func (p *parser) lexUnquotedCommaString() token {
+	return p.lexText("@;})")
+}
+
+func (p *parser) parseUnquotedCommaStringToken() token {
+	defer un(trace(p, ""))
+	return p.lexUnquotedCommaString()
+}
+
 func (p *parser) lexQuotedString() token {
 	return p.lexText("\"")
 }

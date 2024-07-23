@@ -788,20 +788,7 @@ func GetEntity(w http.ResponseWriter, r *http.Request) {
 
 	// Get entity
 	if id, canParse = mux.Vars(r)["id"]; canParse {
-		var req primitive.M
-		if entityStr == u.HIERARCHYOBJS_ENT {
-			data, modelErr = models.GetHierarchyObjectById(id, filters, user.Roles)
-		} else {
-			if u.IsEntityNonHierarchical(u.EntityStrToInt(entityStr)) {
-				// Get by slug
-				req = bson.M{"slug": id}
-
-			} else {
-				req = bson.M{"id": id}
-			}
-
-			data, modelErr = models.GetObject(req, entityStr, filters, user.Roles)
-		}
+		data, modelErr = models.GetObjectById(id, entityStr, filters, user.Roles)
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message("Error while parsing path parameters"))
@@ -1108,7 +1095,7 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 		u.ErrLog("Error while parsing path parameters", "DELETE ENTITY", "", r)
 	} else {
 		if entityStr == u.HIERARCHYOBJS_ENT {
-			obj, err := models.GetHierarchyObjectById(id, u.RequestFilters{}, user.Roles)
+			obj, err := models.GetHierarchicalObjectById(id, u.RequestFilters{}, user.Roles)
 			if err != nil {
 				u.ErrLog("Error finding hierarchy obj to delete", "DELETE ENTITY", err.Message, r)
 				u.RespondWithError(w, err)
@@ -1639,7 +1626,7 @@ func GetHierarchyByName(w http.ResponseWriter, r *http.Request) {
 	var data map[string]interface{}
 	if entity == u.HIERARCHYOBJS_ENT {
 		// Generic endpoint only for physical objs
-		data, modelErr = models.GetHierarchyObjectById(id, filters, user.Roles)
+		data, modelErr = models.GetHierarchicalObjectById(id, filters, user.Roles)
 		if modelErr == nil {
 			entity = data["category"].(string)
 		}
@@ -1879,7 +1866,7 @@ func LinkEntity(w http.ResponseWriter, r *http.Request) {
 	// Get entity
 	if id, canParse = mux.Vars(r)["id"]; canParse {
 		if entityStr == u.HIERARCHYOBJS_ENT {
-			data, modelErr = models.GetHierarchyObjectById(id, u.RequestFilters{}, user.Roles)
+			data, modelErr = models.GetHierarchicalObjectById(id, u.RequestFilters{}, user.Roles)
 		} else {
 			data, modelErr = models.GetObject(bson.M{"id": id}, entityStr, u.RequestFilters{}, user.Roles)
 		}

@@ -408,18 +408,15 @@ Filters can be added to the `get` command to get only the objects that meet a ce
 
 #### Simple filters
 
-Simple filters are the ones that use the egality operator (`=`). These filters can be used to get only objects that meet certain characteristics. Objects can be filtered by `name`, `slug`, `id`, `category`, `description`, `domain`, `tag` and by any other attributes, such as `size`, `height` and `rotation`.
+Simple filters are single condition set using the egality operator (`=`). Objects can be filtered by `name`, `slug`, `id`, `category`, `description`, `domain`, `tag` and by any other attributes, such as `size`, `height` and `rotation`.
 
-It is also possible to specify a `startDate` and an `endDate`, to filter objects last modified _since_ and _up to_, respectively, the `startDate` and the `endDate`. Dates should be defined with the format `yyyy-mm-dd`.
-
-Simple filters can be combined with commas (`,`), performing a logical `AND` operation.
+It is also possible to specify a `startDate` or an `endDate`, to filter objects last modified _since_ and _up to_ (respectively, the `startDate` and the `endDate`). Dates should be defined with the format `yyyy-mm-dd`.
 
 ```
 get [path] tag=[tag_slug]
 get [path] category=[category]
-get [path] domain=[domain], height=[height]
-get [path] startDate=[yyyy-mm-dd], endDate=[yyyy-mm-dd]
-get [path] name=[name], category=[category], startDate=[yyyy-mm-dd]
+get [path] height=[height]
+get [path] startDate=[yyyy-mm-dd]
 ```
 
 #### Complex filters
@@ -504,18 +501,15 @@ Filters can be added to the `ls` command to get only the children that meet a ce
 
 #### Simple filters
 
-Simple filters are the ones that use the egality operator (`=`). These filters can be used to get only children that meet certain characteristics. Objects can be filtered by `name`, `slug`, `id`, `category`, `description`, `domain`, `tag` and by any other attributes, such as `size`, `height` and `rotation`.
+Simple filters are single condition set using the egality operator (`=`). Objects can be filtered by `name`, `slug`, `id`, `category`, `description`, `domain`, `tag` and by any other attributes, such as `size`, `height` and `rotation`.
 
-It is also possible to specify a `startDate` and an `endDate`, to filter objects last modified _since_ and _up to_, respectively, the `startDate` and the `endDate`. Dates should be defined with the format `yyyy-mm-dd`.
-
-Simple filters can be combined with commas (`,`), performing a logical `AND` operation.
+It is also possible to specify a `startDate` or an `endDate`, to filter objects last modified _since_ and _up to_ (respectively, the `startDate` and the `endDate`). Dates should be defined with the format `yyyy-mm-dd`.
 
 ```
 ls [path] tag=[tag_slug]
 ls [path] category=[category]
-ls [path] domain=[domain], height=[height]
-ls [path] startDate=[yyyy-mm-dd], endDate=[yyyy-mm-dd]
-ls [path] name=[name], category=[category], startDate=[yyyy-mm-dd]
+ls [path] height=[height]
+ls [path] startDate=[yyyy-mm-dd]
 ```
 
 #### Complex filters

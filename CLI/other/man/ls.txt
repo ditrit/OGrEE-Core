@@ -9,12 +9,11 @@ DESCRIPTION
 
     If no PATH is given, then the current path will be used (equivalent to "ls .").
 
-    [FILTERS] is an optional list of filters that can be used to only list the children that meet certain conditions.
+    [FILTERS] is an optional set of filters that can be used to only list the children that meet certain conditions.
     In order to use FILTERS, PATH must be present.
-    The format to use is attribute1=expected_value,attribute2=expected_value,....
-
     COMPLEX FILTERS can be used, composing complex boolean expressions with the operators `=`, `!=`, `<`, `<=`, `>`, `>=`, `&` and `|`.
-    In order to use COMPLEX FILTERS, PATH must be present. The option `-f` before the complex filter is also required.
+    The option `-f` before the complex filter is required.
+    If `-f` is not set, a simple filter (single condition) can be applied with the format attribute=expected_value
 
 OPTIONS
     -s attribute_name
@@ -45,7 +44,6 @@ OPTIONS
 
 EXAMPLES
     ls
-    ls DEMO_RACK/DeviceA
     ls /Physical/SiteA
     ls $x
     ls -s height
@@ -54,4 +52,5 @@ EXAMPLES
     ls . height=12
     ls -r #racks
     ls -r -m 1 -M 2 #racks
+    ls . category=rack
     ls . -f category=rack & height>10

@@ -278,9 +278,6 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("lspanel", false),
 			readline.PcItem("lsenterprise", false),
 			readline.PcItem("get", false),
-			readline.PcItem("getu", false),
-			readline.PcItem("getslot", false),
-			readline.PcItem("hc", false),
 			readline.PcItem("drawable", false),
 			readline.PcItem("draw", false),
 			readline.PcItem("camera", false),
@@ -315,11 +312,7 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 
 		readline.PcItem("get", true,
 			readline.PcItemDynamic(ListEntities, false)),
-		readline.PcItem("getu", true,
-			readline.PcItemDynamic(ListEntities, false)),
 
-		readline.PcItem("getslot", true,
-			readline.PcItemDynamic(ListEntities, false)),
 		readline.PcItem("selection", false),
 		readline.PcItem(".cmds:", true,
 			readline.PcItemDynamic(ListLocal, false)),
@@ -407,17 +400,6 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 
 		readline.PcItem(">", true,
 			readline.PcItemDynamic(ListEntities, false)),
-		readline.PcItem("hc", true,
-			readline.PcItemDynamic(ListEntities, false)),
-		/*readline.PcItem("gt", false,
-			readline.PcItem("site", false),
-			readline.PcItem("building", false),
-			readline.PcItem("room", false),
-			readline.PcItem("rack", false),
-			readline.PcItem("device", false),
-			readline.PcItem("subdevice", false),
-			readline.PcItem("subdevice1", false),
-		),*/
 
 		readline.PcItem("link", true,
 			readline.PcItemDynamic(UnLinkObjCompleter, false)),

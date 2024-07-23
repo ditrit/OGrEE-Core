@@ -19,7 +19,7 @@ var lsCommands = []string{
 	"lspanel", "lscabinet", "lscorridor"}
 
 var manCommands = []string{
-	"get", "getu", "getslot",
+	"get",
 	"+", "-", "=", ">",
 	".cmds", ".template", ".var",
 	commands.Connect3D, commands.Disconnect3D, "ui", "camera",
@@ -27,7 +27,7 @@ var manCommands = []string{
 	"lssite", commands.LsBuilding, "lsroom", "lsrack", "lsdev", "lsac",
 	"lspanel", "lscabinet", "lscorridor", "lsenterprise",
 	"drawable", "draw", "undraw",
-	"tree", "lsog", "env", "cd", "pwd", "clear", "ls", "exit", "len", "man", "hc",
+	"tree", "lsog", "env", "cd", "pwd", "clear", "ls", "exit", "len", "man",
 	"print", "printf", "unset", "selection",
 	"for", "while", "if",
 	commands.Cp,
@@ -703,16 +703,10 @@ func (p *parser) parseLs(category string) node {
 func (p *parser) parseFilters() map[string]node {
 	filters := map[string]node{}
 
-	first := true
 	for !p.commandEnd() {
 		p.skipWhiteSpaces()
-		if !first {
-			p.expect(",")
-		}
-		first = false
-		p.skipWhiteSpaces()
 		attrName := p.parseAssign("attribute name")
-		attrVal := p.parseValue()
+		attrVal := p.parseText(p.parseUnquotedCommaStringToken, true, false)
 		filters[attrName] = attrVal
 	}
 
@@ -725,12 +719,7 @@ func (p *parser) parseComplexFilters() map[string]node {
 
 	for !p.commandEnd() {
 		p.skipWhiteSpaces()
-		newComplexFilter := p.parseValue()
-		if p.parseExact(",") {
-			newFilterStr, _ := newComplexFilter.execute()
-			newComplexFilter = &valueNode{"(" + newFilterStr.(string) + ") & ("}
-			numArgs++
-		}
+		newComplexFilter := p.parseText(p.parseUnquotedCommaStringToken, true, false)
 
 		for p.parseExact(")") {
 			newFilterStr, _ := newComplexFilter.execute()
@@ -790,16 +779,6 @@ func (p *parser) parseGet() node {
 		},
 		attrs: attrs,
 	}
-}
-
-func (p *parser) parseGetU() node {
-	defer un(trace(p, "getu"))
-	return &getUNode{p.parsePath(""), p.parseExpr("u")}
-}
-
-func (p *parser) parseGetSlot() node {
-	defer un(trace(p, "getslot"))
-	return &getSlotNode{p.parsePath(""), p.parseString("slot name")}
 }
 
 func (p *parser) parseUndraw() node {
@@ -1431,8 +1410,6 @@ func newParser(buffer string) *parser {
 	}
 	p.commandDispatch = map[string]parseCommandFunc{
 		"get":              p.parseGet,
-		"getu":             p.parseGetU,
-		"getslot":          p.parseGetSlot,
 		"undraw":           p.parseUndraw,
 		"draw":             p.parseDraw,
 		"drawable":         p.parseDrawable,
