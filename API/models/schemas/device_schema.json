@@ -44,7 +44,7 @@
             "$ref": "refs/types.json#/definitions/float"
           },
           "sizeU": {
-            "$ref": "refs/types.json#/definitions/float"
+            "type": "integer"
           },
           "color": {
             "type": "string",
