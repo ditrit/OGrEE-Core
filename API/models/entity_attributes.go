@@ -1,6 +1,7 @@
 package models
 
 import (
+	"math"
 	"p3/repository"
 	u "p3/utils"
 	"strings"
@@ -169,15 +170,22 @@ func checkSizeUAndHeight(attributes map[string]any) *u.Error {
 			Message: err.Error(),
 		}
 	}
-	height := attributes["height"]
-	h := sizeU * RACKUNIT
+	height, err := u.GetFloat(attributes["height"])
+	if err != nil {
+		return &u.Error{
+			Type:    u.ErrBadFormat,
+			Message: err.Error(),
+		}
+	}
+
+	s := height / RACKUNIT
 	switch heightUnit := attributes["heightUnit"]; heightUnit {
 	case "cm":
-		h *= 100
+		s /= 100
 	case "mm":
-		h *= 1000
+		s /= 1000
 	}
-	if height == h {
+	if sizeU == math.Ceil(s) {
 		return nil
 	} else {
 		return &u.Error{

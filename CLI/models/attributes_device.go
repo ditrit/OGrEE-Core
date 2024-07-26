@@ -3,6 +3,7 @@ package models
 import (
 	"cli/utils"
 	"fmt"
+	"math"
 )
 
 // Compute coherent sizeU or height according to given data
@@ -49,7 +50,7 @@ func ComputeSizeUAndHeight(obj, data map[string]any) error {
 		default:
 			return fmt.Errorf(errMsg)
 		}
-		newAttrs["sizeU"] = sizeU
+		newAttrs["sizeU"] = int(math.Ceil(sizeU))
 	}
 	return nil
 }
@@ -61,7 +62,7 @@ func SetDeviceSizeUFromTemplate(deviceAttrs, tmpl map[string]any, tmplHeight any
 			if height, err := utils.GetFloat(tmplHeight); err != nil {
 				return err
 			} else {
-				deviceAttrs["sizeU"] = int((height / 1000) / RACKUNIT)
+				deviceAttrs["sizeU"] = int(math.Ceil((height / 1000) / RACKUNIT))
 			}
 		}
 	}

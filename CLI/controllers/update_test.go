@@ -86,7 +86,7 @@ func TestUpdateDeviceSizeUmm(t *testing.T) {
 	}
 	mockDataUpdate := map[string]any{
 		"attributes": map[string]any{
-			"sizeU":  float64(1),
+			"sizeU":  1,
 			"height": 44.45,
 		},
 	}
@@ -116,7 +116,7 @@ func TestUpdateDeviceSizeUcm(t *testing.T) {
 	}
 	mockDataUpdate := map[string]any{
 		"attributes": map[string]any{
-			"sizeU":  float64(1),
+			"sizeU":  1,
 			"height": 4.445,
 		},
 	}
@@ -147,7 +147,7 @@ func TestUpdateDeviceheightmm(t *testing.T) {
 	}
 	mockDataUpdate := map[string]any{
 		"attributes": map[string]any{
-			"sizeU":  float64(1),
+			"sizeU":  1,
 			"height": 44.45,
 		},
 	}
@@ -176,7 +176,7 @@ func TestUpdateDeviceheightcm(t *testing.T) {
 	}
 	mockDataUpdate := map[string]any{
 		"attributes": map[string]any{
-			"sizeU":  float64(1),
+			"sizeU":  1,
 			"height": 4.445,
 		},
 	}

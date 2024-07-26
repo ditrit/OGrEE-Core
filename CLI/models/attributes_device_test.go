@@ -122,7 +122,7 @@ func TestSetDeviceSizeUFromTemplateWorks(t *testing.T) {
 	}
 	err := models.SetDeviceSizeUFromTemplate(deviceAttrs, input, any(10000))
 	assert.Nil(t, err)
-	assert.Equal(t, 224, deviceAttrs["sizeU"])
+	assert.Equal(t, 225, deviceAttrs["sizeU"])
 }
 
 // endregion
