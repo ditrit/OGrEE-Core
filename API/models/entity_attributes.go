@@ -157,7 +157,7 @@ func setCorridorColor(attributes map[string]any) {
 	}
 }
 
-// Check if sizeU and height are coherents
+// Check if sizeU and height are consistent
 func checkSizeUAndHeight(attributes map[string]any) *u.Error {
 	if attributes["sizeU"] == nil || attributes["height"] == nil {
 		return nil
