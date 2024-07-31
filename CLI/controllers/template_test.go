@@ -4,6 +4,7 @@ import (
 	"cli/models"
 	test_utils "cli/test"
 	"maps"
+	"math"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -43,7 +44,7 @@ func TestApplyTemplateOfTypeDeviceWorks(t *testing.T) {
 
 	test_utils.MockGetObjTemplate(mockAPI, template)
 
-	sizeU := int((float64(template["sizeWDHmm"].([]any)[2].(int)) / 1000) / models.RACKUNIT)
+	sizeU := int(math.Ceil((float64(template["sizeWDHmm"].([]any)[2].(int)) / 1000) / models.RACKUNIT))
 	err := controller.ApplyTemplate(attributes, device, models.DEVICE)
 	assert.Nil(t, err)
 

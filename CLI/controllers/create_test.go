@@ -5,6 +5,7 @@ import (
 	l "cli/logger"
 	"cli/models"
 	test_utils "cli/test"
+	"cli/utils"
 	"maps"
 	"testing"
 
@@ -460,8 +461,8 @@ func TestCreateDeviceWithSizeU(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
 	mockGetResponse := test_utils.GetEntity("rack", "A01", "BASIC.A.R1", "test-domain")
-	sizeU := float64(2)
-	height := sizeU * models.RACKUNIT * 1000
+	sizeU := 2
+	height := utils.RoundFloat(float64(sizeU)*models.RACKUNIT*1000, 3)
 	mockCreateResponse := map[string]any{
 		"category":    "device",
 		"id":          "BASIC.A.R1.A01.D1",
@@ -472,7 +473,7 @@ func TestCreateDeviceWithSizeU(t *testing.T) {
 		"attributes": map[string]any{
 			"height":      height,
 			"sizeU":       sizeU,
-			"heightUnit":  "U",
+			"heightUnit":  "mm",
 			"orientation": "front",
 			"size":        []float64{1, 1},
 			"sizeUnit":    "cm",
@@ -489,7 +490,7 @@ func TestCreateDeviceWithSizeU(t *testing.T) {
 		"domain":   "test-domain",
 		"attributes": map[string]any{
 			"sizeU":       sizeU,
-			"heightUnit":  "U",
+			"heightUnit":  "mm",
 			"orientation": "front",
 			"size":        []float64{1, 1},
 			"sizeUnit":    "cm",

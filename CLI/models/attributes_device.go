@@ -1,8 +1,9 @@
 package models
 
 import (
-	"cli/utils"
+	u "cli/utils"
 	"fmt"
+	"math"
 )
 
 // Compute coherent sizeU or height according to given data
@@ -20,7 +21,7 @@ func ComputeSizeUAndHeight(obj, data map[string]any) error {
 		return err
 	}
 	if newAttrs["sizeU"] != nil {
-		sizeU, err := utils.GetFloat(newAttrs["sizeU"])
+		sizeU, err := u.GetFloat(newAttrs["sizeU"])
 		if err != nil {
 			return err
 		}
@@ -33,10 +34,10 @@ func ComputeSizeUAndHeight(obj, data map[string]any) error {
 		default:
 			return fmt.Errorf(errMsg)
 		}
-		newAttrs["height"] = height
+		newAttrs["height"] = u.RoundFloat(height, 3)
 	}
 	if newAttrs["height"] != nil {
-		height, err := utils.GetFloat(newAttrs["height"])
+		height, err := u.GetFloat(newAttrs["height"])
 		if err != nil {
 			return err
 		}
@@ -49,7 +50,7 @@ func ComputeSizeUAndHeight(obj, data map[string]any) error {
 		default:
 			return fmt.Errorf(errMsg)
 		}
-		newAttrs["sizeU"] = sizeU
+		newAttrs["sizeU"] = int(math.Ceil(sizeU))
 	}
 	return nil
 }
@@ -58,10 +59,10 @@ func SetDeviceSizeUFromTemplate(deviceAttrs, tmpl map[string]any, tmplHeight any
 	if tmplAttrs, ok := tmpl["attributes"].(map[string]any); ok {
 		if tmplType, ok := tmplAttrs["type"].(string); ok &&
 			(tmplType == "chassis" || tmplType == "server") {
-			if height, err := utils.GetFloat(tmplHeight); err != nil {
+			if height, err := u.GetFloat(tmplHeight); err != nil {
 				return err
 			} else {
-				deviceAttrs["sizeU"] = int((height / 1000) / RACKUNIT)
+				deviceAttrs["sizeU"] = int(math.Ceil((height / 1000) / RACKUNIT))
 			}
 		}
 	}

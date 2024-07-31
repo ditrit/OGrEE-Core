@@ -5,7 +5,7 @@ package models
 
 import (
 	l "cli/logger"
-	"cli/utils"
+	u "cli/utils"
 	"errors"
 	"fmt"
 	"strconv"
@@ -125,16 +125,10 @@ func SerialiseVector(attr map[string]interface{}, want string) []float64 {
 }
 
 func SetDeviceSizeUIfExists(attr EntityAttributes) {
-	if sizeU, ok := attr["sizeU"]; ok {
-		//Convert block
-		//And Set height
-		if sizeUInt, ok := sizeU.(int); ok {
-			attr["sizeU"] = sizeUInt
-			attr["height"] = float64(sizeUInt) * RACKUNIT * 1000
-		} else if sizeUFloat, ok := sizeU.(float64); ok {
-			attr["sizeU"] = sizeUFloat
-			attr["height"] = sizeUFloat * RACKUNIT * 1000
-		}
+	if sizeU, ok := attr["sizeU"].(int); ok {
+		attr["sizeU"] = sizeU
+		//Assuming heightUnit="mm"
+		attr["height"] = u.RoundFloat(float64(sizeU)*RACKUNIT*1000, 3)
 	}
 }
 
@@ -251,16 +245,16 @@ func ApplyTemplateToObj(attr, data, tmpl map[string]any, ent int) error {
 
 	// fbxModel section
 	if ent != BLDG && ent != ROOM {
-		utils.CopyMapVal(attr, tmpl, "fbxModel")
+		u.CopyMapVal(attr, tmpl, "fbxModel")
 	}
 
 	// Copy orientation and shape if available
-	utils.CopyMapVal(attr, tmpl, "orientation")
-	utils.CopyMapVal(attr, tmpl, "shape")
+	u.CopyMapVal(attr, tmpl, "orientation")
+	u.CopyMapVal(attr, tmpl, "shape")
 
 	// Merge attributes if available
 	if tmplAttrs, ok := tmpl["attributes"].(map[string]any); ok {
-		utils.MergeMaps(attr, tmplAttrs, false)
+		u.MergeMaps(attr, tmplAttrs, false)
 	}
 
 	return nil
