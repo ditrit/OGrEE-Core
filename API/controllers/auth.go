@@ -437,7 +437,7 @@ func getUserRolesFromBody(r *http.Request) (map[string]models.Role, error) {
 	var data map[string]interface{}
 	err := json.NewDecoder(r.Body).Decode(&data)
 	if err != nil {
-		return nil, fmt.Errorf("invalid request")
+		return nil, fmt.Errorf(invalidRequestMsg)
 	}
 
 	roles, ok := data["roles"].(map[string]interface{})
@@ -568,7 +568,7 @@ func getModifyPassDataFromBody(r *http.Request, userEmail string) (string, strin
 	var data map[string]interface{}
 	err := json.NewDecoder(r.Body).Decode(&data)
 	if err != nil {
-		return currentPassword, "", isReset, fmt.Errorf("invalid request")
+		return currentPassword, "", isReset, fmt.Errorf(invalidRequestMsg)
 	}
 	if userEmail == u.RESET_TAG {
 		// it's not change, it's reset (no need for current password)
