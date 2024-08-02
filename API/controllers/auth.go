@@ -13,6 +13,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+const invalidRequestMsg = "invalid request"
+
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }
@@ -47,9 +49,9 @@ func init() {
 //         description: Internal server error
 
 func CreateAccount(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 CreateAccount ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	DispRequestMetaData(r)
 
 	if r.Method == "OPTIONS" {
@@ -105,16 +107,16 @@ func CreateAccount(w http.ResponseWriter, r *http.Request) {
 //			description: Internal server error
 
 func CreateBulkAccount(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 CreateBulkAccount ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	DispRequestMetaData(r)
 
 	var accounts []models.Account
 	err := json.NewDecoder(r.Body).Decode(&accounts)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		u.Respond(w, u.Message("Invalid request"))
+		u.Respond(w, u.Message(invalidRequestMsg))
 		return
 	}
 
@@ -178,9 +180,9 @@ func randStringBytes(n int) string {
 //         description: Internal server error
 
 func Authenticate(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 Authenticate ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	DispRequestMetaData(r)
 
 	if r.Method == "OPTIONS" {
@@ -190,7 +192,7 @@ func Authenticate(w http.ResponseWriter, r *http.Request) {
 		err := json.NewDecoder(r.Body).Decode(&account)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			u.Respond(w, u.Message("Invalid request"))
+			u.Respond(w, u.Message(invalidRequestMsg))
 			return
 		}
 
@@ -221,9 +223,9 @@ func Authenticate(w http.ResponseWriter, r *http.Request) {
 //         description: Internal server error
 
 func VerifyToken(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 Verify ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	DispRequestMetaData(r)
 
 	if r.Method == "OPTIONS" {
@@ -247,9 +249,9 @@ func VerifyToken(w http.ResponseWriter, r *http.Request) {
 //          description: Internal server error
 
 func GetAllAccounts(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 GetAllAccount ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	DispRequestMetaData(r)
 
 	if r.Method == "OPTIONS" {
@@ -300,9 +302,9 @@ func GetAllAccounts(w http.ResponseWriter, r *http.Request) {
 //			description: Internal server error
 
 func RemoveAccount(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 RemoveAccount ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	DispRequestMetaData(r)
 
 	if r.Method == "OPTIONS" {
@@ -378,9 +380,9 @@ func RemoveAccount(w http.ResponseWriter, r *http.Request) {
 //			description: Internal server error
 
 func ModifyUserRoles(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 ModifyUserRoles ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	DispRequestMetaData(r)
 
 	if r.Method == "OPTIONS" {
@@ -502,9 +504,9 @@ func getUserRolesFromBody(r *http.Request) (map[string]models.Role, error) {
 //			description: Internal server error
 
 func ModifyUserPassword(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 ModifyUserPassword ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	DispRequestMetaData(r)
 
 	if r.Method == "OPTIONS" {
@@ -606,9 +608,9 @@ func getModifyPassDataFromBody(r *http.Request, userEmail string) (string, strin
 //			description: Internal server error
 
 func UserForgotPassword(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 UserForgotPassword ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	DispRequestMetaData(r)
 
 	if r.Method == "OPTIONS" {
@@ -619,7 +621,7 @@ func UserForgotPassword(w http.ResponseWriter, r *http.Request) {
 		err := json.NewDecoder(r.Body).Decode(&data)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			u.Respond(w, u.Message("Invalid request"))
+			u.Respond(w, u.Message(invalidRequestMsg))
 			return
 		}
 		userEmail, hasEmail := data["email"].(string)

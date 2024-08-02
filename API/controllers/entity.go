@@ -116,9 +116,9 @@ func getUserFromToken(w http.ResponseWriter, r *http.Request) *models.Account {
 //         message will be returned.'
 
 func CreateEntity(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 CreateEntity ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	DispRequestMetaData(r)
 	// Get entity
 	entStr := mux.Vars(r)["entity"]
@@ -203,9 +203,9 @@ func CreateEntity(w http.ResponseWriter, r *http.Request) {
 //         description: 'Bad format: body is not a valid list of domains.'
 
 func CreateBulkDomain(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 CreateBulkDomain ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 
 	// Get user roles for permissions
 	user := getUserFromToken(w, r)
@@ -292,7 +292,7 @@ func setDomainAttributes(parent string, domain map[string]any) (map[string]any, 
 	// Name is the only required attribute
 	name, ok := domain["name"].(string)
 	if !ok {
-		return nil, errors.New("Invalid format: Name is required for all domains")
+		return nil, errors.New("invalid format: Name is required for all domains")
 	}
 	domainObj["name"] = name
 
@@ -447,9 +447,9 @@ func listAnyTolistMap(data []any) []map[string]interface{} {
 //			description: Not found. An error message will be returned
 
 func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 HandleGenericObjects ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	DispRequestMetaData(r)
 	matchingObjects := []map[string]interface{}{}
 
@@ -639,9 +639,9 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 //			description: Not found. An error message will be returned
 
 func HandleComplexFilters(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 HandleComplexFilters ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	DispRequestMetaData(r)
 	var complexFilters map[string]interface{}
 	var complexFilterExp string
@@ -767,9 +767,9 @@ func HandleComplexFilters(w http.ResponseWriter, r *http.Request) {
 // 	  description: Not Found. An error message will be returned.
 
 func GetEntity(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 GetEntity ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	DispRequestMetaData(r)
 	var data map[string]interface{}
 	var id string
@@ -845,9 +845,9 @@ func GetEntity(w http.ResponseWriter, r *http.Request) {
 // 	  description: Not Found. An error message will be returned.
 
 func GetLayerObjects(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 GetLayerObjects ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	DispRequestMetaData(r)
 	var data map[string]interface{}
 	var id string
@@ -957,9 +957,9 @@ func GetLayerObjects(w http.ResponseWriter, r *http.Request) {
 //			description: Nothing Found. An error message will be returned.
 
 func GetAllEntities(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 GetAllEntities ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	DispRequestMetaData(r)
 	var entStr string
 
@@ -1064,9 +1064,9 @@ func getVirtualRootObjects(data []map[string]any) []map[string]any {
 //			description: Not found. An error message will be returned
 
 func DeleteEntity(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 DeleteEntity ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	DispRequestMetaData(r)
 
 	// Get user roles for permissions
@@ -1200,9 +1200,9 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 //         description: Not Found. An error message will be returned.
 
 func UpdateEntity(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 UpdateEntity ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	DispRequestMetaData(r)
 	var data map[string]interface{}
 	var modelErr *u.Error
@@ -1314,9 +1314,9 @@ func UpdateEntity(w http.ResponseWriter, r *http.Request) {
 //         description: Not found. An error message will be returned.
 
 func GetEntityByQuery(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 GetEntityByQuery ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	DispRequestMetaData(r)
 	var data []map[string]interface{}
 	var entStr string
@@ -1413,9 +1413,9 @@ func GetEntityByQuery(w http.ResponseWriter, r *http.Request) {
 //     description: 'Nothing Found. An error message will be returned.'
 
 func GetSiteAttr(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 GetSiteAttr ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 
 	// Check id
 	id := mux.Vars(r)["id"]
@@ -1483,9 +1483,9 @@ func GetSiteAttr(w http.ResponseWriter, r *http.Request) {
 //         description: Nothing Found. An error message will be returned.
 
 func GetEntitiesOfAncestor(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 GetEntitiesOfAncestor ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	DispRequestMetaData(r)
 	var id string
 	var e bool
@@ -1588,9 +1588,9 @@ func GetEntitiesOfAncestor(w http.ResponseWriter, r *http.Request) {
 //         description: Nothing Found. An error message will be returned.
 
 func GetHierarchyByName(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 GetHierarchyByName ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	DispRequestMetaData(r)
 	var limit int
 
@@ -1692,9 +1692,9 @@ func GetHierarchyByName(w http.ResponseWriter, r *http.Request) {
 //			description: Server error.
 
 func GetCompleteHierarchy(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 GetCompleteHierarchy ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	DispRequestMetaData(r)
 
 	// Get user roles for permissions
@@ -1734,9 +1734,9 @@ func GetCompleteHierarchy(w http.ResponseWriter, r *http.Request) {
 //			description: Server error.
 
 func GetCompleteHierarchyAttributes(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 GetCompleteHierarchyAttributes ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	DispRequestMetaData(r)
 
 	// Get user roles for permissions
@@ -1824,9 +1824,9 @@ func GetCompleteHierarchyAttributes(w http.ResponseWriter, r *http.Request) {
 //         description: 'Internal error. Unable to remove object from stray and create it in an entity.'
 
 func LinkEntity(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 LinkEntity ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	DispRequestMetaData(r)
 	var data map[string]interface{}
 	var id string
@@ -1934,9 +1934,9 @@ func LinkEntity(w http.ResponseWriter, r *http.Request) {
 }
 
 func BaseOption(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 BaseOption ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	DispRequestMetaData(r)
 	entity, e1 := mux.Vars(r)["entity"]
 	if !e1 || u.EntityStrToInt(entity) == -1 {
@@ -1960,9 +1960,9 @@ func BaseOption(w http.ResponseWriter, r *http.Request) {
 //			description: Server error.
 
 func GetStats(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 GetStats ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	DispRequestMetaData(r)
 	if r.Method == "OPTIONS" {
 		w.Header().Add("Allow", "GET, HEAD, OPTIONS")
@@ -2004,9 +2004,9 @@ func GetStats(w http.ResponseWriter, r *http.Request) {
 //         description: Not Found. An error message will be returned.
 
 func ValidateEntity(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 ValidateEntity ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	DispRequestMetaData(r)
 	var obj map[string]interface{}
 	entity, e1 := mux.Vars(r)["entity"]
