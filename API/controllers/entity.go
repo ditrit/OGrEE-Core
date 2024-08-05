@@ -145,24 +145,8 @@ func CreateEntity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if entStr == u.HIERARCHYOBJS_ENT {
-		// Get entity from object's category
-		entStr = object["category"].(string)
-		entInt = u.EntityStrToInt(entStr)
-		if entInt < u.SITE || entInt > u.GROUP {
-			w.WriteHeader(http.StatusBadRequest)
-			u.Respond(w, u.Message("Invalid category for a hierarchy object"))
-			u.ErrLog("Cannot create invalid hierarchy object", "CREATE "+mux.Vars(r)["entity"], "", r)
-			return
-		}
-	} else if u.IsEntityHierarchical(entInt) && entInt != u.STRAYOBJ {
-		// Check if category and endpoint match, except for non hierarchal entities and strays
-		if object["category"] != entStr {
-			w.WriteHeader(http.StatusBadRequest)
-			u.Respond(w, u.Message("Category in request body does not correspond with desired object in endpoint"))
-			u.ErrLog("Cannot create invalid object", "CREATE "+mux.Vars(r)["entity"], "", r)
-			return
-		}
+	if ok := checkEntity(w, r, entStr, entInt, object); !ok {
+		return
 	}
 
 	// Clean the data of 'id' attribute if present
@@ -180,6 +164,27 @@ func CreateEntity(w http.ResponseWriter, r *http.Request) {
 			eventNotifier <- u.FormatNotifyData("create", entStr, resp)
 		}
 	}
+}
+
+func checkEntity(w http.ResponseWriter, r *http.Request, entStr string, entInt int, object map[string]interface{}) bool {
+	if entStr == u.HIERARCHYOBJS_ENT {
+		// Get entity from object's category
+		entStr = object["category"].(string)
+		entInt = u.EntityStrToInt(entStr)
+		if entInt < u.SITE || entInt > u.GROUP {
+			w.WriteHeader(http.StatusBadRequest)
+			u.Respond(w, u.Message("Invalid category for a hierarchy object"))
+			u.ErrLog("Cannot create invalid hierarchy object", "CREATE "+mux.Vars(r)["entity"], "", r)
+			return false
+		}
+		// Check if category and endpoint match, except for non hierarchal entities and strays
+	} else if u.IsEntityHierarchical(entInt) && entInt != u.STRAYOBJ && object["category"] != entStr {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message("Category in request body does not correspond with desired object in endpoint"))
+		u.ErrLog("Cannot create invalid object", "CREATE "+mux.Vars(r)["entity"], "", r)
+		return false
+	}
+	return true
 }
 
 // swagger:operation POST /api/domains/bulk Organization CreateBulkDomain
