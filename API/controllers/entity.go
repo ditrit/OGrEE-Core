@@ -267,29 +267,30 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 		domainsToCreate = append(domainsToCreate, domainObj)
 
 		// Add children domain, if any
-		if children, ok := domain["domains"].([]interface{}); ok {
-			if len(children) > 0 {
-				// Convert from interface to map
-				dChildren := listAnyTolistMap(children)
+		if children, ok := domain["domains"].([]interface{}); ok && len(children) > 0 {
+			// Convert from interface to map
+			dChildren := listAnyTolistMap(children)
 
-				// Set parentId for children
-				var parentId string
-				if parent == "" {
-					parentId = domain["name"].(string)
-				} else {
-					parentId = parent + "." + domain["name"].(string)
-				}
+			parentId := setParentId(parent, domain)
 
-				// Add children
-				childDomains, e := getBulkDomainsRecursively(parentId, dChildren)
-				if e != nil {
-					return nil, e
-				}
-				domainsToCreate = append(domainsToCreate, childDomains...)
+			// Add children
+			childDomains, e := getBulkDomainsRecursively(parentId, dChildren)
+			if e != nil {
+				return nil, e
 			}
+			domainsToCreate = append(domainsToCreate, childDomains...)
 		}
 	}
 	return domainsToCreate, nil
+}
+
+// Set parentId from parent & domain name
+func setParentId(parent string, domain map[string]interface{}) string {
+	if parent == "" {
+		return domain["name"].(string)
+	} else {
+		return parent + "." + domain["name"].(string)
+	}
 }
 
 func setDomainAttributes(parent string, domain map[string]any) (map[string]any, error) {
