@@ -67,6 +67,7 @@ class _CustomFormFieldState extends State<CustomFormField> {
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
     isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
+    final FocusNode focusNode = FocusNode();
     Widget? iconWidget;
     if (widget.checkListController != null) {
       iconWidget = PopupMenuButton<String>(
@@ -128,6 +129,7 @@ class _CustomFormFieldState extends State<CustomFormField> {
       child: Tooltip(
         message: widget.tipStr,
         child: TextFormField(
+          focusNode: focusNode,
           obscureText: widget.isObscure,
           readOnly: widget.isReadOnly,
           controller: widget.isColor
@@ -150,6 +152,7 @@ class _CustomFormFieldState extends State<CustomFormField> {
           validator: (text) {
             if (widget.shouldValidate) {
               if (text == null || text.isEmpty) {
+                focusNode.requestFocus();
                 return localeMsg.mandatoryField;
               }
               if (widget.isColor && text.length < 6) {
