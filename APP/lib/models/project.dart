@@ -62,7 +62,7 @@ class Project {
       List<String>.from((map['objects'])),
       List<String>.from((map['permissions'])),
       id: map['Id'].toString(),
-      isImpact: map['isImpact'] as bool,
+      isImpact: map['isImpact'] is bool ? map['isImpact'] as bool : false,
     );
   }
 
