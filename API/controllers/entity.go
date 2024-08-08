@@ -493,7 +493,7 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 		}
 		u.Respond(w, u.RespDataWrapper("successfully deleted objects", matchingObjects))
 	} else if r.Method == "OPTIONS" {
-		u.WriteOptionsHeader(w, "GET")
+		u.WriteOptionsHeader(w, "GET, DELETE")
 	} else {
 		matchingObjects = pie.Map(matchingObjects, func(object map[string]any) map[string]any {
 			entityStr := object["entity"].(string)
@@ -712,7 +712,7 @@ func HandleComplexFilters(w http.ResponseWriter, r *http.Request) {
 		}
 		u.Respond(w, u.RespDataWrapper("successfully deleted objects", matchingObjects))
 	} else if r.Method == "OPTIONS" {
-		u.WriteOptionsHeader(w, "POST")
+		u.WriteOptionsHeader(w, "POST, DELETE")
 	} else {
 		u.Respond(w, u.RespDataWrapper("successfully processed request", matchingObjects))
 	}
