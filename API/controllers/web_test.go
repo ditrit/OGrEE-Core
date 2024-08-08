@@ -17,6 +17,7 @@ func init() {
 }
 
 var projectsEndpoint = test_utils.GetEndpoint("projects")
+var alertsEndpoint = test_utils.GetEndpoint("alerts")
 
 func TestCreateProjectInvalidBody(t *testing.T) {
 	e2e.TestInvalidBody(t, "POST", projectsEndpoint, "Invalid request")
@@ -90,4 +91,53 @@ func TestDeleteProject(t *testing.T) {
 
 	// if we try to delete again we get an error
 	e2e.ValidateManagedRequest(t, "DELETE", projectsEndpoint+"/"+id, nil, http.StatusNotFound, "Project not found")
+}
+
+func TestCreateAlertInvalidBody(t *testing.T) {
+	e2e.TestInvalidBody(t, "POST", alertsEndpoint, "Invalid request")
+}
+
+func TestCreateAlert(t *testing.T) {
+	requestBody, _ := json.Marshal(map[string]any{
+		"id":       "OBJID.WITH.ALERT",
+		"type":     "minor",
+		"title":    "This is the title",
+		"subtitle": "More information",
+	})
+
+	e2e.ValidateManagedRequest(t, "POST", alertsEndpoint, requestBody, http.StatusOK, "successfully created alert")
+}
+
+func TestGetAlerts(t *testing.T) {
+	_, id := integration.CreateTestAlert(t, "temporaryAlert", false)
+	response := e2e.ValidateManagedRequest(t, "GET", alertsEndpoint, nil, http.StatusOK, "successfully got alerts")
+
+	data, exists := response["data"].(map[string]interface{})
+	assert.True(t, exists)
+	alerts, exists := data["alerts"].([]interface{})
+	assert.True(t, exists)
+	assert.Equal(t, 2, len(alerts)) // temporaryAlert and OBJID.WITH.ALERT
+
+	exists = slices.ContainsFunc(alerts, func(project interface{}) bool {
+		return project.((map[string]interface{}))["id"] == id
+	})
+	assert.True(t, exists)
+}
+
+func TestGetAlert(t *testing.T) {
+	_, id := integration.CreateTestAlert(t, "tempAlert", false)
+	response := e2e.ValidateManagedRequest(t, "GET", alertsEndpoint+"/"+id, nil, http.StatusOK, "successfully got alert")
+
+	alert, exists := response["data"].(map[string]interface{})
+	assert.True(t, exists)
+	assert.Equal(t, id, alert["id"])
+}
+
+func TestDeleteAlert(t *testing.T) {
+	_, id := integration.CreateTestAlert(t, "tempAlert2", true)
+	println("one")
+	e2e.ValidateManagedRequest(t, "DELETE", alertsEndpoint+"/"+id, nil, http.StatusOK, "successfully removed alert")
+	println("two")
+	// if we try to delete again we get an error
+	// e2e.ValidateManagedRequest(t, "DELETE", alertsEndpoint+"/"+id, nil, http.StatusNotFound, "Alert not found")
 }

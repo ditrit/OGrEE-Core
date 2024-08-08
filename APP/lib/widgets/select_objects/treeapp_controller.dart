@@ -3,6 +3,7 @@ import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/theme.dart';
+import 'package:ogree_app/widgets/select_objects/settings_view/tree_filter.dart';
 
 import 'tree_view/tree_node.dart';
 
@@ -78,6 +79,12 @@ class TreeAppController with ChangeNotifier {
     }
   }
 
+  deepCopy(Map<String, List<String>> source, destination) {
+    for (var item in source.keys) {
+      destination[item] = List<String>.from(source[item]!);
+    }
+  }
+
   void generateTree(TreeNode parent, Map<String, List<String>> data) {
     final childrenIds = data[parent.id];
     if (childrenIds == null) return;
@@ -108,19 +115,6 @@ class TreeAppController with ChangeNotifier {
     if (shouldNotify) notifyListeners();
   }
 
-  void selectNode(String id) {
-    select(id);
-    notifyListeners();
-  }
-
-  void deselectNode(String id) {
-    selectedNodes.remove(id);
-    notifyListeners();
-  }
-
-  void select(String id) => selectedNodes[id] = true;
-  void deselect(String id) => selectedNodes.remove(id);
-
   void selectAll([bool select = true]) {
     //treeController.expandAll();
     if (select) {
@@ -143,6 +137,19 @@ class TreeAppController with ChangeNotifier {
     notifyListeners();
   }
 
+  void selectNode(String id) {
+    select(id);
+    notifyListeners();
+  }
+
+  void deselectNode(String id) {
+    selectedNodes.remove(id);
+    notifyListeners();
+  }
+
+  void select(String id) => selectedNodes[id] = true;
+  void deselect(String id) => selectedNodes.remove(id);
+
   void toggleAllFrom(TreeNode node) {
     if (node.id[0] != starSymbol) {
       toggleSelection(node.id);
@@ -157,9 +164,7 @@ class TreeAppController with ChangeNotifier {
   void filterTree(String id, int level) {
     // Deep copy original data
     Map<String, List<String>> filteredData = {};
-    for (var item in fetchedData.keys) {
-      filteredData[item] = List<String>.from(fetchedData[item]!);
-    }
+    deepCopy(fetchedData, filteredData);
 
     // Add or remove filter
     if (level < 0) {
@@ -196,13 +201,36 @@ class TreeAppController with ChangeNotifier {
       for (var i = 0; i < filters.length; i++) {
         var parent =
             filters[i].substring(0, filters[i].lastIndexOf('.')); //parent
-        filteredData[parent]!.removeWhere((element) {
-          return !filters.contains(element);
-        });
-        newList.add(parent);
+        if (filteredData[parent] != null) {
+          filteredData[parent]!.removeWhere((element) {
+            return !filters.contains(element);
+          });
+          newList.add(parent);
+        }
       }
       filters = newList;
       testLevel--;
+    }
+
+    // Regenerate tree
+    final rootNode = TreeNode(id: kRootId);
+    generateTree(rootNode, filteredData);
+    treeController.roots = rootNode.children;
+    treeController.rebuild();
+  }
+
+  filterTreeById(List<String> ids) {
+    Map<String, List<String>> filteredData = {};
+    if (ids.isEmpty) {
+      for (var item in fetchedData.keys) {
+        filteredData[item] = List<String>.from(fetchedData[item]!);
+      }
+      print(filteredData);
+    } else {
+      filteredData[kRootId] = [];
+      for (var id in ids) {
+        filteredData[kRootId]!.add(id);
+      }
     }
 
     // Regenerate tree
@@ -216,7 +244,11 @@ class TreeAppController with ChangeNotifier {
   final nodeHeight = 50.0;
   late final scrollController = ScrollController();
   void scrollTo(TreeNode node) {
-    final offset = node.depth * nodeHeight;
+    var offset = node.depth * nodeHeight;
+    if (node.ancestors.isNotEmpty) {
+      var parent = node.ancestors.last;
+      offset = offset + parent.children.toList().indexOf(node) * nodeHeight;
+    }
     scrollController.animateTo(
       offset,
       duration: const Duration(milliseconds: 500),

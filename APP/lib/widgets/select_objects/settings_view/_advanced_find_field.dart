@@ -53,6 +53,59 @@ class _AdvancedFindFieldState extends State<_AdvancedFindField> {
     );
   }
 
+  Future<void> submittedAsFilter() async {
+    final searchExpression = controller.text.trim();
+    final appController = TreeAppController.of(context);
+    final localeMsg = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    List<String> ids;
+
+    if (searchExpression.isEmpty) {
+      appController.filterTreeById([]);
+      showSnackBar(
+        messenger,
+        'Filter cleared',
+        duration: const Duration(seconds: 3),
+        isSuccess: true,
+      );
+      return;
+    }
+
+    var result = await fetchWithComplexFilter(
+        searchExpression, widget.namespace, localeMsg);
+    switch (result) {
+      case Success(value: final foundObjs):
+        print(foundObjs);
+        ids = getIdsFromObjects(foundObjs);
+      case Failure(exception: final exception):
+        showSnackBar(messenger, exception.toString(), isError: true);
+        return;
+    }
+
+    if (ids.isEmpty) {
+      showSnackBar(
+        messenger,
+        '${localeMsg.noNodeFound} $searchExpression',
+        duration: const Duration(seconds: 3),
+      );
+    } else {
+      showSnackBar(
+        messenger,
+        '${localeMsg.xNodesFound(ids.length)} $searchExpression',
+        isSuccess: true,
+      );
+      appController.filterTreeById(ids);
+    }
+  }
+
+  List<String> getIdsFromObjects(List<Map<String, dynamic>> foundObjs) {
+    List<String> ids = [];
+    for (var obj in foundObjs) {
+      ids.add(obj["id"] as String);
+    }
+    return ids;
+  }
+
   Future<void> submitted() async {
     final searchExpression = controller.text.trim();
     final appController = TreeAppController.of(context);

@@ -40,7 +40,7 @@ class ProjectCard extends StatelessWidget {
 
     deleteProjectCallback(String projectId, Function? parentCallback) async {
       final messenger = ScaffoldMessenger.of(context);
-      var result = await deleteProject(projectId);
+      var result = await deleteObject(projectId, "project");
       switch (result) {
         case Success():
           parentCallback!();
@@ -66,8 +66,21 @@ class ProjectCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  project.isImpact
+                      ? Padding(
+                          padding: const EdgeInsets.only(right: 4),
+                          child: Tooltip(
+                            message: localeMsg.impactAnalysis,
+                            child: Icon(
+                              Icons.settings_suggest,
+                              size: 14,
+                              color: Colors.black,
+                            ),
+                          ),
+                        )
+                      : Container(),
                   SizedBox(
-                    width: 170,
+                    width: 160,
                     child: Text(project.name,
                         overflow: TextOverflow.clip,
                         style: const TextStyle(

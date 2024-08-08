@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:ogree_app/common/appbar.dart';
-import 'package:ogree_app/models/tenant.dart';
+import 'package:ogree_app/common/definitions.dart';
+import 'package:ogree_app/models/alert.dart';
+import 'package:ogree_app/models/project.dart';
 import 'package:ogree_app/pages/projects_page.dart';
+import 'package:ogree_app/pages/select_page.dart';
+import 'package:ogree_app/widgets/select_objects/settings_view/tree_filter.dart';
 import 'package:ogree_app/widgets/select_objects/treeapp_controller.dart';
-
-// THIS IS A DEMO
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class AlertPage extends StatefulWidget {
   final String userEmail;
-  final Tenant? tenant;
-  const AlertPage({super.key, required this.userEmail, this.tenant});
+  final List<Alert> alerts;
+  const AlertPage({super.key, required this.userEmail, required this.alerts});
 
   @override
   State<AlertPage> createState() => AlertPageState();
@@ -24,10 +27,10 @@ class AlertPageState extends State<AlertPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final localeMsg = AppLocalizations.of(context)!;
     return Scaffold(
         backgroundColor: const Color.fromARGB(255, 238, 238, 241),
-        appBar: myAppBar(context, widget.userEmail,
-            isTenantMode: widget.tenant != null),
+        appBar: myAppBar(context, widget.userEmail, isTenantMode: false),
         body: Padding(
           padding: const EdgeInsets.all(20.0),
           child: CustomScrollView(slivers: [
@@ -45,7 +48,7 @@ class AlertPageState extends State<AlertPage> with TickerProviderStateMixin {
                                 Navigator.of(context).push(MaterialPageRoute(
                                   builder: (context) => ProjectsPage(
                                       userEmail: widget.userEmail,
-                                      isTenantMode: widget.tenant != null),
+                                      isTenantMode: false),
                                 )),
                             icon: Icon(
                               Icons.arrow_back,
@@ -53,71 +56,128 @@ class AlertPageState extends State<AlertPage> with TickerProviderStateMixin {
                             )),
                         const SizedBox(width: 5),
                         Text(
-                          "Alerts",
+                          localeMsg.myAlerts,
                           style: Theme.of(context).textTheme.headlineLarge,
                         ),
                       ],
                     ),
                   ),
                   Card(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.only(
-                              left: 15, right: 15, top: 10, bottom: 10),
-                          height: MediaQuery.of(context).size.height -
-                              (isSmallDisplay ? 310 : 160),
-                          width: double.maxFinite,
-                          child: Row(
-                            children: <Widget>[
-                              Expanded(
-                                flex: 3,
-                                child: ListView(
-                                  children: [
-                                    getListTitle(
-                                        "MINOR",
-                                        Colors.amber,
-                                        "The temperature of device BASIC.A.R1.A02.chassis01 is higher than usual",
-                                        0),
-                                    getListTitle(
-                                        "HINT",
-                                        Colors.grey,
-                                        "All nodes of a kubernetes cluster are on the same rack",
-                                        1),
-                                  ],
-                                ),
-                              ),
-                              const VerticalDivider(
-                                width: 30,
-                                thickness: 0.5,
-                                color: Colors.grey,
-                              ),
-                              Expanded(
-                                flex: 7,
-                                child: Padding(
-                                  padding: const EdgeInsets.only(top: 4.0),
-                                  child: Align(
-                                    alignment: Alignment.topLeft,
-                                    child: SingleChildScrollView(
-                                      child: selectedIndex == 0
-                                          ? getAlertText()
-                                          : getHintText(),
-                                    ),
+                    child: widget.alerts.isEmpty
+                        ? SizedBox(
+                            height: MediaQuery.of(context).size.height > 205
+                                ? MediaQuery.of(context).size.height - 205
+                                : MediaQuery.of(context).size.height,
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.thumb_up,
+                                    size: 50,
+                                    color: Colors.grey.shade600,
                                   ),
-                                ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 16),
+                                    child: Text(
+                                        "${AppLocalizations.of(context)!.noAlerts} :)"),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                            ),
+                          )
+                        : alertView(localeMsg),
                   ),
                 ],
               ),
             )
           ]),
         ));
+  }
+
+  alertView(AppLocalizations localeMsg) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding:
+              const EdgeInsets.only(left: 15, right: 15, top: 10, bottom: 10),
+          height:
+              MediaQuery.of(context).size.height - (isSmallDisplay ? 310 : 160),
+          width: double.maxFinite,
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                flex: 3,
+                child: ListView(
+                  children: getListTitles(),
+                ),
+              ),
+              const VerticalDivider(
+                width: 30,
+                thickness: 0.5,
+                color: Colors.grey,
+              ),
+              Expanded(
+                flex: 7,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 4.0),
+                  child: Align(
+                    alignment: Alignment.topLeft,
+                    child: ListView(children: [
+                      getAlertText(selectedIndex),
+                      const SizedBox(height: 20),
+                      Directionality(
+                        textDirection: TextDirection.rtl,
+                        child: Align(
+                          alignment: Alignment.topLeft,
+                          child: ElevatedButton.icon(
+                              onPressed: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => SelectPage(
+                                      project: Project(
+                                          "auto",
+                                          "",
+                                          Namespace.Physical.name,
+                                          localeMsg.autoGenerated,
+                                          "auto",
+                                          false,
+                                          false,
+                                          false,
+                                          [],
+                                          [widget.alerts[selectedIndex].id],
+                                          [],
+                                          isImpact: true),
+                                      userEmail: widget.userEmail,
+                                    ),
+                                  ),
+                                );
+                              },
+                              icon: Icon(Icons.arrow_back),
+                              label: Text(localeMsg.goToImpact)),
+                        ),
+                      )
+                    ]),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  List<ListTile> getListTitles() {
+    List<ListTile> list = [];
+    int index = 0;
+    for (var alert in widget.alerts) {
+      list.add(getListTitle(
+          alert.type.toUpperCase(), Colors.amber, alert.title, index));
+      index++;
+    }
+    return list;
   }
 
   ListTile getListTitle(String type, Color typeColor, String title, int index) {
@@ -160,7 +220,7 @@ class AlertPageState extends State<AlertPage> with TickerProviderStateMixin {
     );
   }
 
-  getAlertText() {
+  getAlertText(int index) {
     return Text.rich(
       TextSpan(
         children: [
@@ -171,86 +231,12 @@ class AlertPageState extends State<AlertPage> with TickerProviderStateMixin {
             ),
             children: [
               TextSpan(
-                text: 'Minor Alert\n',
+                text: '${widget.alerts[index].type.capitalize()} Alert\n',
                 style: Theme.of(context).textTheme.headlineLarge,
               ),
-              const TextSpan(text: '\nThe temperature of device '),
-              const TextSpan(
-                  text: 'BASIC.A.R1.A02.chassis01',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              const TextSpan(
-                  text:
-                      ' is higher than usual. This could impact the performance of your applications running in a Kubernetes cluster with nodes in this device: "my-frontend-app" and "my-backend-app".\n'),
-              ...getSubtitle("Details:"),
-              const TextSpan(
-                  text:
-                      'The last measurement of temperature for the device in question reads '),
-              const TextSpan(
-                  text: '64°C', style: TextStyle(fontWeight: FontWeight.bold)),
-              const TextSpan(
-                  text:
-                      '. The temperature recommendation for a chassis of this type is to not surpass '),
-              const TextSpan(
-                  text: '55°C', style: TextStyle(fontWeight: FontWeight.bold)),
-              const TextSpan(text: '.\n'),
-              ...getSubtitle("Impacted by this alert:"),
-              getWidgetSpan(" BASIC.A.R1.A02.chassis01", "Physical - Device",
-                  Colors.teal),
-              const TextSpan(text: '\n'),
-              ...getSubtitle("May also be impacted:"),
-              getWidgetSpan(" BASIC.A.R1.A02.chassis01.blade01",
-                  "Physical - Device", Colors.teal),
-              getWidgetSpan(" BASIC.A.R1.A02.chassis01.blade02",
-                  "Physical - Device", Colors.teal),
-              getWidgetSpan(" BASIC.A.R1.A02.chassis01.blade03",
-                  "Physical - Device", Colors.teal),
-              getWidgetSpan(" kubernetes-cluster.my-frontend-app",
-                  "Logical - Application", Colors.deepPurple),
-              getWidgetSpan(" kubernetes-cluster.my-backend-app",
-                  "Logical - Application", Colors.deepPurple),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  getHintText() {
-    return Text.rich(
-      TextSpan(
-        children: [
-          TextSpan(
-            style: const TextStyle(
-              fontSize: 14.0,
-              color: Colors.black,
-            ),
-            children: [
               TextSpan(
-                text: 'Hint\n',
-                style: Theme.of(context).textTheme.headlineLarge,
-              ),
-              const TextSpan(
                   text:
-                      '\nAll nodes of a kubernetes cluster are servers from the same rack.\n'),
-              ...getSubtitle("Details:"),
-              const TextSpan(
-                  text:
-                      'The Kubernetes cluster "kubernetes-cluster" has the following devices as its nodes: "chassis01.blade01" , "chassis01.blade02" and "chassis01.blade03". All of these devices are in the same rack "BASIC.A.R1.A02".\n'),
-              ...getSubtitle("Suggestion:"),
-              const TextSpan(
-                  text:
-                      'To limit impacts to the cluster and its applications in case of issue with this rack, consider adding a server from a different rack as a node to this cluster.\n'),
-              ...getSubtitle("Impacted by this hint:"),
-              getWidgetSpan(
-                  " BASIC.A.R1.A02", "Physical - Device", Colors.teal),
-              getWidgetSpan(" kubernetes-cluster", "Logical - Application",
-                  Colors.deepPurple),
-              const TextSpan(text: '\n'),
-              ...getSubtitle("May also be impacted:"),
-              getWidgetSpan(" kubernetes-cluster.my-frontend-app",
-                  "Logical - Application", Colors.deepPurple),
-              getWidgetSpan(" kubernetes-cluster.my-backend-app",
-                  "Logical - Application", Colors.deepPurple),
+                      "\n${widget.alerts[index].title}. ${widget.alerts[index].subtitle}."),
             ],
           ),
         ],

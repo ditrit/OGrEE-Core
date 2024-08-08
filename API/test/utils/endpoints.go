@@ -31,6 +31,7 @@ var endpoints = map[string]string{
 	"hierarchyAttributes": hierarchyEdnpoint + "/attributes",
 	"tempunits":           "/api/tempunits/%s",
 	"projects":            "/api/projects",
+	"alerts":              "/api/alerts",
 }
 
 func GetEndpoint(endpointName string, pathParams ...any) string {

@@ -304,6 +304,7 @@ func getChildrenCollections(limit int, parentEntStr string) []int {
 		// include AC, CABINET, CORRIDOR, PWRPNL and GROUP
 		// beacause of ROOM and RACK possible children
 		// but no need to search further than group
+		rangeEntities = []int{u.VIRTUALOBJ}
 		endEnt = u.GROUP
 	}
 

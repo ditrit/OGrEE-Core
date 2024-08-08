@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/appbar.dart';
 import 'package:ogree_app/common/definitions.dart';
+import 'package:ogree_app/pages/impact_page.dart';
 import 'package:ogree_app/widgets/projects/project_popup.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/models/project.dart';
@@ -18,7 +19,12 @@ enum Steps { date, namespace, objects, result }
 class SelectPage extends StatefulWidget {
   final String userEmail;
   Project? project;
-  SelectPage({super.key, this.project, required this.userEmail});
+  bool isImpact;
+  SelectPage(
+      {super.key,
+      this.project,
+      required this.userEmail,
+      this.isImpact = false});
   @override
   State<SelectPage> createState() => SelectPageState();
 
@@ -53,13 +59,17 @@ class SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
   @override
   void initState() {
     if (widget.project != null) {
+      // select date and namespace from project
       _selectedDate = widget.project!.dateRange;
       _selectedNamespace = Namespace.values.firstWhere(
           (e) => e.toString() == 'Namespace.${widget.project!.namespace}');
       _selectedAttrs = widget.project!.attributes;
+      // select objects
       for (var obj in widget.project!.objects) {
         _selectedObjects[obj] = true;
       }
+      // adjust step
+      widget.isImpact = widget.project!.isImpact;
       if (widget.project!.lastUpdate == "AUTO") {
         // auto project
         _loadObjects = true;
@@ -68,6 +78,10 @@ class SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
       } else {
         _currentStep = Steps.result;
       }
+    } else if (widget.isImpact) {
+      _selectedNamespace = Namespace.Physical;
+      _loadObjects = true;
+      _currentStep = Steps.objects;
     }
     super.initState();
   }
@@ -87,7 +101,7 @@ class SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
         // onStepTapped: (step) => tapped(step),
         controlsBuilder: (context, _) {
           return Padding(
-            padding: const EdgeInsets.only(top: 10),
+            padding: const EdgeInsets.only(top: 12),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -141,7 +155,7 @@ class SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
                 : null,
             content: SizedBox(
                 height: MediaQuery.of(context).size.height > 205
-                    ? MediaQuery.of(context).size.height - 205
+                    ? MediaQuery.of(context).size.height - 220
                     : MediaQuery.of(context).size.height,
                 child: SelectObjects(
                     dateRange: _selectedDate,
@@ -155,12 +169,16 @@ class SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
           Step(
             title: Text(localeMsg.result, style: const TextStyle(fontSize: 14)),
             content: _currentStep == Steps.result
-                ? ResultsPage(
-                    dateRange: _selectedDate,
-                    selectedAttrs: _selectedAttrs,
-                    selectedObjects: _selectedObjects.keys.toList(),
-                    namespace: _selectedNamespace.name,
-                  )
+                ? (widget.isImpact
+                    ? ImpactPage(
+                        selectedObjects: _selectedObjects.keys.toList(),
+                      )
+                    : ResultsPage(
+                        dateRange: _selectedDate,
+                        selectedAttrs: _selectedAttrs,
+                        selectedObjects: _selectedObjects.keys.toList(),
+                        namespace: _selectedNamespace.name,
+                      ))
                 : const Center(child: CircularProgressIndicator()),
             isActive: _currentStep.index >= Steps.date.index,
             state: _currentStep.index >= Steps.result.index
@@ -172,7 +190,7 @@ class SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
     );
   }
 
-  continued() {
+  continued() async {
     final localeMsg = AppLocalizations.of(context)!;
     _loadObjects = false;
     switch (_currentStep) {
@@ -217,7 +235,8 @@ class SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
               false,
               _selectedAttrs,
               _selectedObjects.keys.toList(),
-              [widget.userEmail]);
+              [widget.userEmail],
+              isImpact: widget.isImpact);
         }
 
         showProjectDialog(
@@ -239,6 +258,13 @@ class SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
       case (Steps.namespace):
         setState(() => _currentStep = Steps.date);
       case (Steps.objects):
+        if (widget.isImpact) {
+          showSnackBar(
+            ScaffoldMessenger.of(context),
+            AppLocalizations.of(context)!.onlyPredefinedWarning,
+          );
+          return;
+        }
         setState(() => _currentStep = Steps.namespace);
       case (Steps.result):
         _loadObjects = true;
@@ -251,6 +277,7 @@ class SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
     Result result;
     project.name = userInput;
     final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
     if (isCreate) {
       result = await createProject(project);
     } else {
@@ -258,7 +285,7 @@ class SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
     }
     switch (result) {
       case Success():
-        Navigator.of(context).push(
+        navigator.push(
           MaterialPageRoute(
             builder: (context) =>
                 ProjectsPage(userEmail: widget.userEmail, isTenantMode: false),
