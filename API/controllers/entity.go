@@ -472,26 +472,7 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 
 	// Respond
 	if r.Method == "DELETE" {
-		for _, obj := range matchingObjects {
-			entStr := obj["entity"].(string)
-
-			var objStr string
-
-			if u.IsEntityNonHierarchical(u.EntityStrToInt(entStr)) {
-				objStr = obj["slug"].(string)
-			} else {
-				objStr = obj["id"].(string)
-			}
-
-			modelErr := models.DeleteObject(entStr, objStr, user.Roles)
-			if modelErr != nil {
-				u.ErrLog("Error while deleting object: "+objStr, "DELETE GetGenericObjectById", modelErr.Message, r)
-				u.RespondWithError(w, modelErr)
-				return
-			}
-			eventNotifier <- u.FormatNotifyData("delete", entStr, objStr)
-		}
-		u.Respond(w, u.RespDataWrapper("successfully deleted objects", matchingObjects))
+		deleteGenericObjects(w, r, user, matchingObjects)
 	} else if r.Method == "OPTIONS" {
 		u.WriteOptionsHeader(w, "GET, DELETE")
 	} else {
@@ -554,6 +535,28 @@ func checkChildrenLimit(entData []map[string]interface{}, entStr string, filters
 		}
 	}
 	return true, nil
+}
+
+func deleteGenericObjects(w http.ResponseWriter, r *http.Request, user *models.Account, matchingObjects []map[string]interface{}) {
+	for _, obj := range matchingObjects {
+		entStr := obj["entity"].(string)
+
+		var objStr string
+		if u.IsEntityNonHierarchical(u.EntityStrToInt(entStr)) {
+			objStr = obj["slug"].(string)
+		} else {
+			objStr = obj["id"].(string)
+		}
+
+		modelErr := models.DeleteObject(entStr, objStr, user.Roles)
+		if modelErr != nil {
+			u.ErrLog("Error while deleting object: "+objStr, "DELETE GetGenericObjectById", modelErr.Message, r)
+			u.RespondWithError(w, modelErr)
+			return
+		}
+		eventNotifier <- u.FormatNotifyData("delete", entStr, objStr)
+	}
+	u.Respond(w, u.RespDataWrapper("successfully deleted objects", matchingObjects))
 }
 
 // swagger:operation POST /api/objects/search Objects HandleComplexFilters
@@ -701,26 +704,9 @@ func HandleComplexFilters(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Respond
 	if r.Method == "DELETE" {
-		for _, obj := range matchingObjects {
-			entStr := obj["entity"].(string)
-
-			var objStr string
-
-			if u.IsEntityNonHierarchical(u.EntityStrToInt(entStr)) {
-				objStr = obj["slug"].(string)
-			} else {
-				objStr = obj["id"].(string)
-			}
-
-			modelErr := models.DeleteObject(entStr, objStr, user.Roles)
-			if modelErr != nil {
-				u.ErrLog("Error while deleting object: "+objStr, "DELETE GetGenericObjectById", modelErr.Message, r)
-				u.RespondWithError(w, modelErr)
-				return
-			}
-		}
-		u.Respond(w, u.RespDataWrapper("successfully deleted objects", matchingObjects))
+		deleteGenericObjects(w, r, user, matchingObjects)
 	} else if r.Method == "OPTIONS" {
 		u.WriteOptionsHeader(w, "POST, DELETE")
 	} else {
