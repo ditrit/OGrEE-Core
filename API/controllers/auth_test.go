@@ -258,8 +258,8 @@ func TestRequestsWithInvalidBody(t *testing.T) {
 		message       string
 	}{
 		{"CreateUser", "POST", test_utils.GetEndpoint("users"), "Invalid request: wrong format body"},
-		{"CreateBulkUsers", "POST", test_utils.GetEndpoint("usersBulk"), "Invalid request"},
-		{"Login", "POST", test_utils.GetEndpoint("login"), "Invalid request"},
+		{"CreateBulkUsers", "POST", test_utils.GetEndpoint("usersBulk"), "invalid request"},
+		{"Login", "POST", test_utils.GetEndpoint("login"), "invalid request"},
 		{"ModifyUser", "PATCH", test_utils.GetEndpoint("usersInstance", userId), "invalid request"},
 		{"ModifyPassword", "POST", test_utils.GetEndpoint("changePassword"), "invalid request"},
 	}
