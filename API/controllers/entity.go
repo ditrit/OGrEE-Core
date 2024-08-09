@@ -521,8 +521,6 @@ func getGenericObjects(w http.ResponseWriter, r *http.Request, user *models.Acco
 			return nil, false
 		}
 
-		nLimit, e := strconv.Atoi(filters.Limit)
-
 		// Save entity to help delete and respond
 		for _, obj := range entData {
 			obj["entity"] = entStr
@@ -530,30 +528,32 @@ func getGenericObjects(w http.ResponseWriter, r *http.Request, user *models.Acco
 				// add namespace prefix to device nodes
 				obj["id"] = "Physical." + obj["id"].(string)
 			}
-
-			if e == nil && nLimit > 0 && req["id"] != nil {
-				obj["children"], err = models.GetHierarchyByName(entStr, obj["id"].(string), nLimit, filters)
-				if err != nil {
-					u.ErrLog("Error while getting "+entStr, "GET "+entStr, err.Message, r)
-					u.RespondWithError(w, err)
-				}
-			}
 		}
 
-		// if nLimit, e := strconv.Atoi(filters.Limit); e == nil && nLimit > 0 && req["id"] != nil {
-		// 	// Get children until limit level (only for GET)
-		// 	for _, obj := range entData {
-		// 		obj["children"], err = models.GetHierarchyByName(entStr, obj["id"].(string), nLimit, filters)
-		// 		if err != nil {
-		// 			u.ErrLog("Error while getting "+entStr, "GET "+entStr, err.Message, r)
-		// 			u.RespondWithError(w, err)
-		// 		}
-		// 	}
-		// }
+		ok, err := checkChildrenLimit(entData, entStr, filters, req)
+		if !ok {
+			u.ErrLog("Error while getting "+entStr, "GET "+entStr, err.Message, r)
+			u.RespondWithError(w, err)
+		}
+
 		matchingObjects = append(matchingObjects, entData...)
 	}
 
 	return matchingObjects, true
+}
+
+func checkChildrenLimit(entData []map[string]interface{}, entStr string, filters u.RequestFilters, req primitive.M) (bool, *u.Error) {
+	if nLimit, e := strconv.Atoi(filters.Limit); e == nil && nLimit > 0 && req["id"] != nil {
+		// Get children until limit level (only for GET)
+		for _, obj := range entData {
+			var err *u.Error
+			obj["children"], err = models.GetHierarchyByName(entStr, obj["id"].(string), nLimit, filters)
+			if err != nil {
+				return false, err
+			}
+		}
+	}
+	return true, nil
 }
 
 // swagger:operation POST /api/objects/search Objects HandleComplexFilters
