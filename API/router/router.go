@@ -99,6 +99,18 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 	router.HandleFunc("/api/projects/{id:[a-zA-Z0-9]{24}}",
 		controllers.DeleteProject).Methods("DELETE", "OPTIONS")
 
+	router.HandleFunc("/api/alerts",
+		controllers.CreateAlert).Methods("POST")
+
+	router.HandleFunc("/api/alerts",
+		controllers.GetAlerts).Methods("HEAD", "GET", "OPTIONS")
+
+	router.HandleFunc("/api/alerts/{id}",
+		controllers.GetAlert).Methods("HEAD", "GET", "OPTIONS")
+
+	router.HandleFunc("/api/alerts/{id}",
+		controllers.DeleteAlert).Methods("DELETE", "OPTIONS")
+
 	// For get or ls wih complex filters
 	router.HandleFunc(GenericObjectsURL+"/search",
 		controllers.HandleComplexFilters).Methods("POST", "HEAD", "OPTIONS", "DELETE")
@@ -130,6 +142,10 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 	// GET ALL ENTITY
 	router.HandleFunc("/api/{entity}s",
 		controllers.GetAllEntities).Methods("HEAD", "GET")
+
+	// GET IMPACT
+	router.HandleFunc("/api/impact/{id}",
+		controllers.GetImpact).Methods("GET", "OPTIONS", "HEAD")
 
 	// CREATE ENTITY
 	router.HandleFunc("/api/{entity}s",
