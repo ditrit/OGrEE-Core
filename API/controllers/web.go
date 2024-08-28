@@ -171,7 +171,7 @@ func CreateOrUpdateProject(w http.ResponseWriter, r *http.Request) {
 //   default: "1234"
 // responses:
 //  '200':
-//      description: Project successfully updated.
+//      description: Project successfully removed.
 //  '404':
 //      description: Not Found. Invalid project ID.
 //  '500':
@@ -191,6 +191,165 @@ func DeleteProject(w http.ResponseWriter, r *http.Request) {
 			u.WriteOptionsHeader(w, "GET, HEAD")
 		} else {
 			u.Respond(w, u.Message("successfully removed project"))
+		}
+	}
+}
+
+// swagger:operation POST /api/alerts FlutterApp CreateAlert
+// Create a new alert
+// ---
+// security:
+// - bearer: []
+// produces:
+// - application/json
+// parameters:
+//   - name: body
+//     in: body
+//     description: 'Mandatory: id, type.
+//     Optional: title, subtitle.'
+//     required: true
+//     format: object
+//     example: '{"id":"OBJID.WITH.ALERT","type":"minor",
+//     "title":"This is the title","subtitle":"More information"}'
+// responses:
+//		'200':
+//			description: 'Alert successfully created.'
+//		'400':
+//			description: 'Bad Request. Invalid alert format.'
+//		'500':
+//			description: 'Internal server error.'
+
+func CreateAlert(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION CALL: 	 CreateAlert ")
+	fmt.Println("******************************************************")
+
+	alert := &models.Alert{}
+	err := json.NewDecoder(r.Body).Decode(alert)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message("Invalid request"))
+		return
+	}
+
+	mErr := models.AddAlert(*alert)
+
+	if mErr != nil {
+		u.RespondWithError(w, mErr)
+	} else {
+		if r.Method == "OPTIONS" {
+			u.WriteOptionsHeader(w, "GET, HEAD")
+		} else {
+			u.Respond(w, u.Message("successfully created alert"))
+		}
+	}
+}
+
+// swagger:operation GET /api/alerts FlutterApp GetAlerts
+// Get a list of all alerts
+// ---
+// security:
+// - bearer: []
+// produces:
+// - application/json
+// responses:
+//		'200':
+//			description: 'Return all possible alerts.'
+//		'500':
+//			description: 'Internal server error.'
+
+func GetAlerts(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION CALL: 	 GetAlerts ")
+	fmt.Println("******************************************************")
+
+	projects, err := models.GetAlerts()
+	if err != nil {
+		u.RespondWithError(w, err)
+	} else {
+		if r.Method == "OPTIONS" {
+			u.WriteOptionsHeader(w, "GET, HEAD")
+		} else {
+			resp := map[string]interface{}{}
+			resp["alerts"] = projects
+			u.Respond(w, u.RespDataWrapper("successfully got alerts", resp))
+		}
+	}
+}
+
+// swagger:operation GET /api/alerts/{AlertID} FlutterApp GetAlert
+// Get a list of all alerts
+// ---
+// security:
+// - bearer: []
+// produces:
+// - application/json
+// parameters:
+// - name: AlertID
+//   in: path
+//   description: 'ID of the alert to recover.'
+//   required: true
+//   type: string
+// responses:
+//		'200':
+//			description: 'Return requested alert'
+//		'404':
+//			description: 'Alert not found'
+//		'500':
+//			description: 'Internal server error'
+
+func GetAlert(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION CALL: 	 GetAlert ")
+	fmt.Println("******************************************************")
+
+	alert, err := models.GetAlert(mux.Vars(r)["id"])
+	if err != nil {
+		u.RespondWithError(w, err)
+	} else {
+		if r.Method == "OPTIONS" {
+			u.WriteOptionsHeader(w, "GET, HEAD")
+		} else {
+			u.Respond(w, u.RespDataWrapper("successfully got alert", alert))
+		}
+	}
+}
+
+// swagger:operation DELETE /api/alerts/{AlertID} FlutterApp DeleteAlert
+// Delete an existing alert.
+// ---
+// security:
+// - bearer: []
+// produces:
+// - application/json
+// parameters:
+// - name: AlertID
+//   in: path
+//   description: 'ID of the alert to delete.'
+//   required: true
+//   type: string
+// responses:
+//  '200':
+//      description: Alert successfully removed.
+//  '404':
+//      description: Not Found. Invalid alert ID.
+//  '500':
+//      description: Internal server error
+
+func DeleteAlert(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION CALL: 	 DeleteAlert ")
+	fmt.Println("******************************************************")
+
+	err := models.DeleteAlert(mux.Vars(r)["id"])
+
+	if err != nil {
+		u.RespondWithError(w, err)
+	} else {
+		if r.Method == "OPTIONS" {
+			u.WriteOptionsHeader(w, "GET, HEAD, DELETE")
+		} else {
+			u.Respond(w, u.Message("successfully removed alert"))
 		}
 	}
 }

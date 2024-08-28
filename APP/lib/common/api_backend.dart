@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:ogree_app/models/alert.dart';
 import 'package:ogree_app/models/container.dart';
 import 'package:ogree_app/models/domain.dart';
 import 'package:ogree_app/models/netbox.dart';
@@ -355,22 +356,6 @@ Future<Result<List<Project>, Exception>> fetchProjects(String userEmail,
   }
 }
 
-Future<Result<void, Exception>> deleteProject(String id) async {
-  print("API delete Projects");
-  try {
-    Uri url = Uri.parse('$apiUrl/api/projects/$id');
-    final response = await http.delete(url, headers: getHeader(token));
-    if (response.statusCode == 200) {
-      return const Success(null);
-    } else {
-      final Map<String, dynamic> data = json.decode(response.body);
-      return Failure(Exception(data["message"].toString()));
-    }
-  } on Exception catch (e) {
-    return Failure(e);
-  }
-}
-
 Future<Result<void, Exception>> modifyProject(Project project) async {
   print("API modify Projects");
   try {
@@ -401,6 +386,74 @@ Future<Result<void, Exception>> createProject(Project project) async {
     } else {
       final Map<String, dynamic> data = json.decode(response.body);
       return Failure(Exception(data["message"].toString()));
+    }
+  } on Exception catch (e) {
+    return Failure(e);
+  }
+}
+
+Future<Result<void, Exception>> createAlert(Alert alert) async {
+  print("API create Projects");
+  try {
+    Uri url = Uri.parse('$apiUrl/api/alerts');
+    final response =
+        await http.post(url, body: alert.toJson(), headers: getHeader(token));
+    print(response);
+    if (response.statusCode == 200) {
+      return const Success(null);
+    } else {
+      final Map<String, dynamic> data = json.decode(response.body);
+      return Failure(Exception(data["message"].toString()));
+    }
+  } on Exception catch (e) {
+    return Failure(e);
+  }
+}
+
+Future<Result<List<Alert>, Exception>> fetchAlerts(
+    {http.Client? client}) async {
+  print("API get Alerts");
+  client ??= http.Client();
+  try {
+    Uri url = Uri.parse('$apiUrl/api/alerts');
+    final response = await client.get(url, headers: getHeader(token));
+    print(response.statusCode);
+    if (response.statusCode == 200) {
+      print(response);
+      print(response.body);
+      // Convert dynamic Map to expected type
+      Map<String, dynamic> data = json.decode(response.body);
+      data = (Map<String, dynamic>.from(data["data"]));
+      List<Alert> alerts = [];
+      for (var alert in data["alerts"]) {
+        alerts.add(Alert.fromMap(alert));
+      }
+      return Success(alerts);
+    } else {
+      return Failure(Exception(
+          wrapResponseMsg(response, message: 'Failed to load objects')));
+    }
+  } on Exception catch (e) {
+    return Failure(e);
+  }
+}
+
+Future<Result<Alert, Exception>> fetchAlert(String id,
+    {http.Client? client}) async {
+  print("API get Alert by id");
+  client ??= http.Client();
+  try {
+    Uri url = Uri.parse('$apiUrl/api/alerts/$id');
+    final response = await client.get(url, headers: getHeader(token));
+    print(response.statusCode);
+    if (response.statusCode == 200) {
+      // Convert dynamic Map to expected type
+      Map<String, dynamic> data = json.decode(response.body);
+      data = (Map<String, dynamic>.from(data["data"]));
+      return Success(Alert.fromMap(data));
+    } else {
+      return Failure(
+          Exception(wrapResponseMsg(response, message: 'Failed to get alert')));
     }
   } on Exception catch (e) {
     return Failure(e);
@@ -462,7 +515,7 @@ Future<Result<Map<String, dynamic>, Exception>> fetchObjectChildren(
     String id) async {
   print("API fetch Object /all");
   try {
-    Uri url = Uri.parse('$apiUrl/api/hierarchy_objects/$id/all');
+    Uri url = Uri.parse('$apiUrl/api/hierarchy_objects/$id/all?limit=2');
     final response = await http.get(url, headers: getHeader(token));
     if (response.statusCode == 200 || response.statusCode == 201) {
       Map<String, dynamic> data = json.decode(response.body);
@@ -474,6 +527,42 @@ Future<Result<Map<String, dynamic>, Exception>> fetchObjectChildren(
   } on Exception catch (e) {
     return Failure(e);
   }
+}
+
+Future<Result<Map<String, dynamic>, Exception>> fetchObjectImpact(String id,
+    List<String> categories, List<String> ptypes, List<String> vtypes) async {
+  print("API fetch Object Impact");
+  String queryParam = listToQueryParam("", categories, "categories");
+  queryParam = listToQueryParam(queryParam, ptypes, "ptypes");
+  queryParam = listToQueryParam(queryParam, vtypes, "vtypes");
+  try {
+    String urlStr = '$apiUrl/api/impact/$id';
+    if (queryParam.isNotEmpty) {
+      urlStr = "$urlStr?$queryParam";
+    }
+    Uri url = Uri.parse(urlStr);
+    final response = await http.get(url, headers: getHeader(token));
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      Map<String, dynamic> data = json.decode(response.body);
+      return Success(Map<String, dynamic>.from(data["data"]));
+    } else {
+      final Map<String, dynamic> data = json.decode(response.body);
+      return Failure(Exception(data["message"].toString()));
+    }
+  } on Exception catch (e) {
+    return Failure(e);
+  }
+}
+
+String listToQueryParam(String currentParam, List<String> list, String key) {
+  String param = currentParam;
+  for (String item in list) {
+    if (param.isNotEmpty) {
+      param = "$param&";
+    }
+    param = "$param$key=$item";
+  }
+  return param;
 }
 
 Future<Result<List<Map<String, dynamic>>, Exception>> fetchWithComplexFilter(

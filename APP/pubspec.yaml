@@ -54,6 +54,7 @@ dependencies:
   flag: ^7.0.0
   flutter_inappwebview: ^6.0.0
   graphview: ^1.2.0
+  screenshot: ^2.5.0
   
 dev_dependencies:
   mockito: ^5.4.4

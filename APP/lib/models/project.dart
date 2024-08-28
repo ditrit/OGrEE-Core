@@ -14,6 +14,7 @@ class Project {
   List<String> attributes;
   List<String> objects;
   final List<String> permissions;
+  bool isImpact;
 
   Project(
       this.name,
@@ -27,11 +28,11 @@ class Project {
       this.attributes,
       this.objects,
       this.permissions,
-      {this.id});
+      {this.id,
+      this.isImpact = false});
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
-      // 'id': id,
       'name': name,
       'dateRange': dateRange,
       'namespace': namespace,
@@ -43,6 +44,7 @@ class Project {
       'attributes': attributes,
       'objects': objects,
       'permissions': permissions,
+      'isImpact': isImpact,
     };
   }
 
@@ -60,6 +62,7 @@ class Project {
       List<String>.from((map['objects'])),
       List<String>.from((map['permissions'])),
       id: map['Id'].toString(),
+      isImpact: map['isImpact'] is bool ? map['isImpact'] as bool : false,
     );
   }
 

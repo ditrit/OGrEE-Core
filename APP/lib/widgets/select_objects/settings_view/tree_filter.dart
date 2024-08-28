@@ -79,14 +79,14 @@ class _TreeFilterState extends State<TreeFilter> {
         param: key,
         paramLevel: enumParams[key]!,
         options: options,
-        notifyParent: notifyChildSelection,
+        notifyParent: NotifyChildSelection,
         showClearFilter: enumParams[key] == 0 ? !isFilterEmpty() : false,
       );
     }).toList());
   }
 
   // Callback for child to update parent state
-  void notifyChildSelection({bool isClearAll = false}) {
+  void NotifyChildSelection({bool isClearAll = false}) {
     if (isClearAll) {
       for (var level in _filterLevels.keys) {
         _filterLevels[level] = [];
