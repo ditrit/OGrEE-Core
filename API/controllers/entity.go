@@ -21,6 +21,10 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+const SuccessProcessedMsg = "successfully processed request"
+const ErrGettingMsg = "Error while getting "
+const ErrParsingPathParamsMsg = "Error while parsing path parameters"
+
 // This function is useful for debugging
 // purposes. It displays any JSON
 func viewJson(r *http.Request) {
@@ -482,7 +486,7 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 
 			return imageIDToUrl(u.EntityStrToInt(entityStr), object)
 		})
-		u.Respond(w, u.RespDataWrapper("successfully processed request", matchingObjects))
+		u.Respond(w, u.RespDataWrapper(SuccessProcessedMsg, matchingObjects))
 	}
 }
 
@@ -513,7 +517,7 @@ func getGenericObjects(w http.ResponseWriter, r *http.Request, user *models.Acco
 
 		ok, err := checkChildrenLimit(entData, entStr, filters, req)
 		if !ok {
-			u.ErrLog("Error while getting "+entStr, "GET "+entStr, err.Message, r)
+			u.ErrLog(ErrGettingMsg+entStr, "GET "+entStr, err.Message, r)
 			u.RespondWithError(w, err)
 		}
 
@@ -710,7 +714,7 @@ func HandleComplexFilters(w http.ResponseWriter, r *http.Request) {
 	} else if r.Method == "OPTIONS" {
 		u.WriteOptionsHeader(w, "POST, DELETE")
 	} else {
-		u.Respond(w, u.RespDataWrapper("successfully processed request", matchingObjects))
+		u.Respond(w, u.RespDataWrapper(SuccessProcessedMsg, matchingObjects))
 	}
 }
 
@@ -786,8 +790,8 @@ func GetEntity(w http.ResponseWriter, r *http.Request) {
 		data, modelErr = models.GetObjectById(id, entityStr, filters, user.Roles)
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
-		u.Respond(w, u.Message("Error while parsing path parameters"))
-		u.ErrLog("Error while parsing path parameters", "GET ENTITY", "", r)
+		u.Respond(w, u.Message(ErrParsingPathParamsMsg))
+		u.ErrLog(ErrParsingPathParamsMsg, "GET ENTITY", "", r)
 		return
 	}
 
@@ -796,7 +800,7 @@ func GetEntity(w http.ResponseWriter, r *http.Request) {
 		u.WriteOptionsHeader(w, "GET, DELETE, OPTIONS, PATCH, PUT")
 	} else {
 		if modelErr != nil {
-			u.ErrLog("Error while getting "+entityStr, "GET "+strings.ToUpper(entityStr),
+			u.ErrLog(ErrGettingMsg+entityStr, "GET "+strings.ToUpper(entityStr),
 				modelErr.Message, r)
 			u.RespondWithError(w, modelErr)
 		} else {
@@ -904,11 +908,11 @@ func GetLayerObjects(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "OPTIONS" {
 			u.WriteOptionsHeader(w, "GET, DELETE, PATCH, PUT")
 		} else {
-			u.Respond(w, u.RespDataWrapper("successfully processed request", matchingObjects))
+			u.Respond(w, u.RespDataWrapper(SuccessProcessedMsg, matchingObjects))
 		}
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
-		u.Respond(w, u.Message("Error while parsing path parameters"))
+		u.Respond(w, u.Message(ErrParsingPathParamsMsg))
 		return
 	}
 }
@@ -990,7 +994,7 @@ func GetAllEntities(w http.ResponseWriter, r *http.Request) {
 
 	// Respond
 	if e != nil {
-		u.ErrLog("Error while getting "+entStr+"s", "GET ALL "+strings.ToUpper(entStr),
+		u.ErrLog(ErrGettingMsg+entStr+"s", "GET ALL "+strings.ToUpper(entStr),
 			e.Message, r)
 		u.RespondWithError(w, e)
 	} else {
@@ -1086,8 +1090,8 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 	if id == "" {
 		w.WriteHeader(http.StatusBadRequest)
-		u.Respond(w, u.Message("Error while parsing path parameters"))
-		u.ErrLog("Error while parsing path parameters", "DELETE ENTITY", "", r)
+		u.Respond(w, u.Message(ErrParsingPathParamsMsg))
+		u.ErrLog(ErrParsingPathParamsMsg, "DELETE ENTITY", "", r)
 	} else {
 		if entityStr == u.HIERARCHYOBJS_ENT {
 			obj, err := models.GetHierarchicalObjectById(id, u.RequestFilters{}, user.Roles)
@@ -1357,7 +1361,7 @@ func GetEntityByQuery(w http.ResponseWriter, r *http.Request) {
 	data, modelErr = models.GetManyObjects(entStr, bsonMap, filters, "", user.Roles)
 
 	if modelErr != nil {
-		u.ErrLog("Error while getting "+entStr, "GET ENTITYQUERY", modelErr.Message, r)
+		u.ErrLog(ErrGettingMsg+entStr, "GET ENTITYQUERY", modelErr.Message, r)
 		u.RespondWithError(w, modelErr)
 	} else {
 		u.Respond(w, u.RespDataWrapper("successfully got query for "+entStr, data))
@@ -1514,8 +1518,8 @@ func GetEntitiesOfAncestor(w http.ResponseWriter, r *http.Request) {
 	id, e = mux.Vars(r)["id"]
 	if !e {
 		w.WriteHeader(http.StatusBadRequest)
-		u.Respond(w, u.Message("Error while parsing path parameters"))
-		u.ErrLog("Error while parsing path parameters", "GET CHILDRENOFPARENT", "", r)
+		u.Respond(w, u.Message(ErrParsingPathParamsMsg))
+		u.ErrLog(ErrParsingPathParamsMsg, "GET CHILDRENOFPARENT", "", r)
 		return
 	}
 
@@ -1601,7 +1605,7 @@ func GetHierarchyByName(w http.ResponseWriter, r *http.Request) {
 	if !e || !e2 {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message("Error while parsing URL"))
-		u.ErrLog("Error while parsing path parameters", "GetHierarchyByName", "", r)
+		u.ErrLog(ErrParsingPathParamsMsg, "GetHierarchyByName", "", r)
 		return
 	}
 
@@ -1644,7 +1648,7 @@ func GetHierarchyByName(w http.ResponseWriter, r *http.Request) {
 
 	// Respond
 	if modelErr != nil {
-		u.ErrLog("Error while getting "+entity, "GET "+entity, modelErr.Message, r)
+		u.ErrLog(ErrGettingMsg+entity, "GET "+entity, modelErr.Message, r)
 		u.RespondWithError(w, modelErr)
 	} else if r.Method == "OPTIONS" {
 		u.WriteOptionsHeader(w, "GET")
@@ -1867,12 +1871,12 @@ func LinkEntity(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
-		u.Respond(w, u.Message("Error while parsing path parameters"))
-		u.ErrLog("Error while parsing path parameters", "GET ENTITY", "", r)
+		u.Respond(w, u.Message(ErrParsingPathParamsMsg))
+		u.ErrLog(ErrParsingPathParamsMsg, "GET ENTITY", "", r)
 		return
 	}
 	if modelErr != nil {
-		u.ErrLog("Error while getting "+entityStr, "GET "+strings.ToUpper(entityStr),
+		u.ErrLog(ErrGettingMsg+entityStr, "GET "+strings.ToUpper(entityStr),
 			modelErr.Message, r)
 		u.RespondWithError(w, modelErr)
 		return
