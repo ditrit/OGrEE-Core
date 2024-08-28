@@ -527,6 +527,34 @@ func getGenericObjects(w http.ResponseWriter, r *http.Request, user *models.Acco
 	return matchingObjects, true
 }
 
+func applyLayerAndGetObjs(w http.ResponseWriter, r *http.Request, user *models.Account, filters u.LayerObjsFilters, data map[string]interface{}) ([]map[string]interface{}, bool) {
+	// Apply layer to get objects request
+	req := bson.M{}
+	var searchId string
+	if filters.IsRecursive {
+		searchId = filters.Root + ".**.*"
+	} else {
+		searchId = filters.Root + ".*"
+	}
+	u.AddFilterToReq(req, "id", searchId)
+
+	// Get objects
+	matchingObjects := []map[string]interface{}{}
+	entities := u.GetEntitiesById(u.Any, searchId)
+	fmt.Println(req)
+	fmt.Println(entities)
+	for _, entStr := range entities {
+		entData, err := models.GetManyObjects(entStr, req, u.RequestFilters{}, data["filter"].(string), user.Roles)
+		if err != nil {
+			u.ErrLog("Error while looking for objects at  "+entStr, "GetLayerObjects", err.Message, r)
+			u.RespondWithError(w, err)
+			return nil, false
+		}
+		matchingObjects = append(matchingObjects, entData...)
+	}
+	return matchingObjects, true
+}
+
 func checkChildrenLimit(entData []map[string]interface{}, entStr string, filters u.RequestFilters, req primitive.M) (bool, *u.Error) {
 	if nLimit, e := strconv.Atoi(filters.Limit); e == nil && nLimit > 0 && req["id"] != nil {
 		// Get children until limit level (only for GET)
@@ -879,29 +907,9 @@ func GetLayerObjects(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
-
-		// Apply layer to get objects request
-		req := bson.M{}
-		var searchId string
-		if filters.IsRecursive {
-			searchId = filters.Root + ".**.*"
-		} else {
-			searchId = filters.Root + ".*"
-		}
-		u.AddFilterToReq(req, "id", searchId)
-
-		// Get objects
-		matchingObjects := []map[string]interface{}{}
-		entities := u.GetEntitiesById(u.Any, searchId)
-		fmt.Println(req)
-		fmt.Println(entities)
-		for _, entStr := range entities {
-			entData, err := models.GetManyObjects(entStr, req, u.RequestFilters{}, data["filter"].(string), user.Roles)
-			if err != nil {
-				u.RespondWithError(w, err)
-				return
-			}
-			matchingObjects = append(matchingObjects, entData...)
+		matchingObjects, ok := applyLayerAndGetObjs(w, r, user, filters, data)
+		if !ok {
+			return
 		}
 
 		// Respond
