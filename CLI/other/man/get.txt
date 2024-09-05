@@ -49,3 +49,4 @@ EXAMPLES
     get -r #racks
     get -r -m 1 -M 2 #racks
     get * -f category=rack & height>10
+    get /P/RackID:separators

@@ -51,6 +51,9 @@ class MyAppState extends State<MyApp> {
           useMaterial3: true,
           colorSchemeSeed: Colors.blue,
           fontFamily: GoogleFonts.inter().fontFamily,
+          scrollbarTheme: ScrollbarThemeData(
+            thumbVisibility: MaterialStateProperty.all<bool>(true),
+          ),
           elevatedButtonTheme: ElevatedButtonThemeData(
               style: ElevatedButton.styleFrom(
             backgroundColor: Colors.blue.shade600,

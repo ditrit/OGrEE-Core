@@ -2,7 +2,7 @@ NAME
     lsOBJ - list children of a type
 
 SYNOPSIS
-    lsOBJ [OPTION]... [PATH] [FILTERS]
+    lsOBJ [OPTION]... [PATH] [COMPLEX FILTER OPTION] [FILTERS]
 
 DESCRIPTION
     Lists the children of type OBJ of the specified path (equivalent to ls with filter: category=[type]).
@@ -19,16 +19,18 @@ DESCRIPTION
 
     If no PATH is given, then the current path will be used (equivalent to "ls .").
 
-    [FILTERS] is an optional list of filters that can be used to only list the children that meet certain conditions.
+    [FILTERS] is an optional set of filters that can be used to only list the children that meet certain conditions.
     In order to use FILTERS, PATH must be present.
-    The format to use is attribute1=expected_value,attribute2=expected_value,....
+    COMPLEX FILTERS can be used, composing complex boolean expressions with the operators `=`, `!=`, `<`, `<=`, `>`, `>=`, `&` and `|`.
+    The option `-f` before the complex filter is required.
+    If `-f` is not set, a simple filter (single condition) can be applied with the format attribute=expected_value
 
 OPTIONS
     -s attribute_name
         Specifies the attribute of the objects to be used to sort the results.
         By default, the results are listed in alphabetical order according to their name.
 
-    -f attributes
+    -a attributes
         The results are listed with the attributes present in format.
         The format of attributes is a list separated by : (attribute1:attribute2:...)
 
@@ -46,14 +48,18 @@ OPTIONS
         Specifies the maximum number of children between the PATH and the listed results.
         Default is no limit.
 
+    -f
+        Specifies that you want to define a complex filter expression with the operators `=`, `!=`, `<`, `<=`, `>`, `>=`, `&` and `|`.
+        Regular filters can be used normally.
+
 EXAMPLES
     lssite
     lsbuilding DEMO_RACK/DeviceA
     lsroom /Physical/SiteA
     lsrack $x
     lsdev -s height
-    lsac -f height:size
-    lscabinet -s height -f size
+    lsac -a height:size
+    lscabinet -s height -a size
     lscorridor . height=12
     lspanel -r .
     lssite -r -m 1 -M 2 .

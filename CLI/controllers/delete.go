@@ -2,7 +2,9 @@ package controllers
 
 import (
 	"cli/models"
+	"fmt"
 	"net/http"
+	"strings"
 )
 
 func (controller Controller) DeleteObj(path string) ([]string, error) {
@@ -13,8 +15,9 @@ func (controller Controller) DeleteObj(path string) ([]string, error) {
 
 	var resp *Response
 	if models.PathHasLayer(path) {
+		var pathSplit models.Path
 		filters := map[string]string{}
-		pathSplit, err := controller.SplitPath(path)
+		pathSplit, err = controller.SplitPath(path)
 		if err != nil {
 			return nil, err
 		}
@@ -40,4 +43,35 @@ func (controller Controller) DeleteObj(path string) ([]string, error) {
 		controller.CD(TranslatePath("..", false))
 	}
 	return paths, nil
+}
+
+func (controller Controller) UnsetAttribute(path string, attr string) error {
+	obj, err := controller.GetObject(path)
+	if err != nil {
+		return err
+	}
+	delete(obj, "id")
+	delete(obj, "lastUpdated")
+	delete(obj, "createdDate")
+	attributes, hasAttributes := obj["attributes"].(map[string]any)
+	if !hasAttributes {
+		return fmt.Errorf("object has no attributes")
+	}
+	if vconfigAttr, found := strings.CutPrefix(attr, VirtualConfigAttr+"."); found {
+		if len(vconfigAttr) < 1 {
+			return fmt.Errorf("invalid attribute name")
+		} else if vAttrs, ok := attributes[VirtualConfigAttr].(map[string]any); !ok {
+			return fmt.Errorf("object has no " + VirtualConfigAttr)
+		} else {
+			delete(vAttrs, vconfigAttr)
+		}
+	} else {
+		delete(attributes, attr)
+	}
+	url, err := controller.ObjectUrl(path, 0)
+	if err != nil {
+		return err
+	}
+	_, err = controller.API.Request("PUT", url, obj, http.StatusOK)
+	return err
 }

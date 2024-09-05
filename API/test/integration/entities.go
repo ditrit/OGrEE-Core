@@ -315,3 +315,22 @@ func CreateTestProject(t *testing.T, name string) (models.Project, string) {
 	})
 	return project, projectId
 }
+
+func CreateTestAlert(t *testing.T, name string, isDelete bool) (models.Alert, string) {
+	// Creates a temporary project that will be deleted at the end of the test
+	alert := models.Alert{
+		Id:    name,
+		Type:  "minor",
+		Title: "marked for maintenance",
+	}
+	err := models.AddAlert(alert)
+	assert.Nil(t, err)
+
+	t.Cleanup(func() {
+		if !isDelete {
+			err := models.DeleteAlert(name)
+			assert.Nil(t, err)
+		}
+	})
+	return alert, name
+}

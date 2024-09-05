@@ -1,5 +1,12 @@
 package models
 
+import (
+	l "cli/logger"
+	"fmt"
+	pathutil "path"
+	"time"
+)
+
 const (
 	SITE = iota
 	BLDG
@@ -21,6 +28,18 @@ const (
 	LAYER
 	VIRTUALOBJ
 )
+
+type Entity struct {
+	Category    string           `json:"category"`
+	Description string           `json:"description"`
+	Domain      string           `json:"domain"`
+	CreatedDate *time.Time       `json:"createdDate,omitempty"`
+	LastUpdated *time.Time       `json:"lastUpdated,omitempty"`
+	Name        string           `json:"name"`
+	Id          string           `json:"id,omitempty"`
+	ParentId    string           `json:"parentId,omitempty"`
+	Attributes  EntityAttributes `json:"attributes"`
+}
 
 func EntityToString(entity int) string {
 	switch entity {
@@ -127,4 +146,19 @@ func GetParentOfEntity(ent int) int {
 
 func EntityCreationMustBeInformed(entity int) bool {
 	return entity != TAG
+}
+
+func SetObjectBaseData(entity int, path string, data map[string]any) error {
+	name := pathutil.Base(path)
+	if name == "." || name == "" {
+		l.GetWarningLogger().Println("Invalid path name provided for OCLI object creation")
+		return fmt.Errorf("invalid path name provided for OCLI object creation")
+	}
+	data["name"] = name
+	data["category"] = EntityToString(entity)
+	data["description"] = ""
+	if _, hasAttributes := data["attributes"].(map[string]any); !hasAttributes {
+		data["attributes"] = map[string]any{}
+	}
+	return nil
 }

@@ -165,11 +165,11 @@ func (controller Controller) UpdateLayer(path string, attributeName string, valu
 			return err
 		}
 
-		_, err = controller.UpdateObj(path, map[string]any{attributeName: applicability}, false)
+		_, err = controller.PatchObj(path, map[string]any{attributeName: applicability}, false)
 	case models.LayerFiltersAdd:
-		_, err = controller.UpdateObj(path, map[string]any{models.LayerFilters: "& (" + value.(string) + ")"}, false)
+		_, err = controller.PatchObj(path, map[string]any{models.LayerFilters: "& (" + value.(string) + ")"}, false)
 	default:
-		_, err = controller.UpdateObj(path, map[string]any{attributeName: value}, false)
+		_, err = controller.PatchObj(path, map[string]any{attributeName: value}, false)
 		if attributeName == "slug" {
 			State.Hierarchy.Children["Logical"].Children["Layers"].IsCached = false
 		}

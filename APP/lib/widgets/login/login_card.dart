@@ -33,7 +33,7 @@ class _LoginCardState extends State<LoginCard> {
       child: Form(
         key: _formKey,
         child: Container(
-          constraints: const BoxConstraints(maxWidth: 550, maxHeight: 515),
+          constraints: const BoxConstraints(maxWidth: 550, maxHeight: 520),
           padding: EdgeInsets.only(
               right: isSmallDisplay ? 45 : 100,
               left: isSmallDisplay ? 45 : 100,

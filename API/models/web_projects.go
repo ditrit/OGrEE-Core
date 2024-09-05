@@ -27,6 +27,7 @@ type Project struct {
 	ShowAvg     bool     `json:"showAvg"`
 	ShowSum     bool     `json:"showSum"`
 	IsPublic    bool     `json:"isPublic"`
+	IsImpact    bool     `json:"isImpact"`
 }
 
 // PROJECTS

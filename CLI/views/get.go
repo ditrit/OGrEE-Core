@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+
+	"github.com/elliotchance/pie/v2"
 )
 
 func Object(path string, obj map[string]any) {
@@ -16,6 +18,7 @@ func Object(path string, obj map[string]any) {
 }
 
 func DisplayJson(indent string, jsonMap map[string]any) {
+	keysWithObjectsValue := []string{"attributes", "breakers", "pillars", "separators", "virtual_config"}
 	defaultIndent := "    "
 	// sort keys in alphabetical order
 	keys := make([]string, 0, len(jsonMap))
@@ -27,11 +30,12 @@ func DisplayJson(indent string, jsonMap map[string]any) {
 	// print map
 	println("{")
 	for _, key := range keys {
-		if key == "attributes" {
-			print(defaultIndent + "\"" + key + "\": ")
-			DisplayJson(defaultIndent, jsonMap[key].(map[string]any))
+		thisLevelIndent := indent + defaultIndent
+		if pie.Contains(keysWithObjectsValue, key) {
+			print(thisLevelIndent + "\"" + key + "\": ")
+			DisplayJson(thisLevelIndent, jsonMap[key].(map[string]any))
 		} else {
-			print(indent + defaultIndent + "\"" + key + "\": ")
+			print(thisLevelIndent + "\"" + key + "\": ")
 			if value, err := json.Marshal(jsonMap[key]); err != nil {
 				fmt.Println(err)
 			} else {

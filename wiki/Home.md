@@ -10,6 +10,7 @@ Welcome to the OGrEE-Core wiki! Let us present our documentation!
 👉 Get started on how to interact with our main components:
 
 📗 [[User Guide] CLI ‐ Get Started](https://github.com/ditrit/OGrEE-Core/wiki/%F0%9F%93%97-%5BUser-Guide%5D-CLI-%E2%80%90-Get-Started)  
+📗 [[User Guide] CLI ‐ Language](https://github.com/ditrit/OGrEE-Core/wiki/%F0%9F%93%97-%5BUser-Guide%5D-CLI-%E2%80%90-Language)  
 📗 [[User Guide] API ‐ Get Started](https://github.com/ditrit/OGrEE-Core/wiki/%F0%9F%93%97-%5BUser-Guide%5D-API-%E2%80%90-Get-Started)  
 📗 [[User Guide] APP ‐ Tenant Mode](https://github.com/ditrit/OGrEE-Core/wiki/%F0%9F%93%97-%5BUser-Guide%5D-APP-%E2%80%90-Tenant-Mode)
 

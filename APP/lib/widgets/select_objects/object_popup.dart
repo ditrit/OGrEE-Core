@@ -909,7 +909,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
       children: [
         Padding(
           padding: const EdgeInsets.only(top: 8.0, left: 6, bottom: 6),
-          child: Text("Virtual Config :"),
+          child: Text(AppLocalizations.of(context)!.virtualConfigTitle),
         ),
         SizedBox(
           height:

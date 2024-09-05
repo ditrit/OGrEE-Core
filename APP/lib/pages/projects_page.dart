@@ -4,6 +4,7 @@ import 'package:ogree_app/common/appbar.dart';
 import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/snackbar.dart';
+import 'package:ogree_app/models/alert.dart';
 import 'package:ogree_app/models/container.dart';
 import 'package:ogree_app/models/netbox.dart';
 import 'package:ogree_app/models/project.dart';
@@ -40,10 +41,12 @@ class _ProjectsPageState extends State<ProjectsPage> {
   bool _hasNautobot = false;
   bool _hasOpenDcim = false;
   bool _gotData = false;
+  bool _gotAlerts = false;
+  List<Alert> _alerts = [];
 
   @override
   Widget build(BuildContext context) {
-    _isSmallDisplay = MediaQuery.of(context).size.width < 600;
+    _isSmallDisplay = MediaQuery.of(context).size.width < 720;
     final localeMsg = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: myAppBar(context, widget.userEmail,
@@ -75,6 +78,10 @@ class _ProjectsPageState extends State<ProjectsPage> {
                         style: Theme.of(context).textTheme.headlineLarge),
                 Row(
                   children: [
+                    Padding(
+                      padding: const EdgeInsets.only(right: 10.0, bottom: 10),
+                      child: impactViewButton(),
+                    ),
                     Padding(
                       padding: const EdgeInsets.only(right: 10.0, bottom: 10),
                       child: createProjectButton(),
@@ -188,6 +195,21 @@ class _ProjectsPageState extends State<ProjectsPage> {
           showSnackBar(messenger, exception.toString(), isError: true);
           _projects = [];
       }
+    }
+  }
+
+  getAlerts() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final result = await fetchAlerts();
+    switch (result) {
+      case Success(value: final value):
+        _alerts = value;
+        setState(() {
+          _gotAlerts = true;
+        });
+      case Failure(exception: final exception):
+        showSnackBar(messenger, exception.toString(), isError: true);
+        _projects = [];
     }
   }
 
@@ -377,72 +399,110 @@ class _ProjectsPageState extends State<ProjectsPage> {
     return cards;
   }
 
-// DEMO ONLY
+  impactViewButton() {
+    final localeMsg = AppLocalizations.of(context)!;
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+          // backgroundColor: Colors.blue.shade600,
+          // foregroundColor: Colors.white,
+          ),
+      onPressed: () => Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => SelectPage(
+            isImpact: true,
+            userEmail: widget.userEmail,
+          ),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: EdgeInsets.only(
+                top: 8, bottom: 8, right: _isSmallDisplay ? 0 : 10),
+            child: const Icon(Icons.settings_suggest),
+          ),
+          _isSmallDisplay ? Container() : Text(localeMsg.impactAnalysis),
+        ],
+      ),
+    );
+  }
+
   List<Widget> getAlertDemoWidgets(AppLocalizations localeMsg) {
-    if (!isDemo) {
-      return [];
-    }
     return [
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(localeMsg.myAlerts,
               style: Theme.of(context).textTheme.headlineLarge),
-          Row(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(right: 10.0, bottom: 10),
-                child: analysisViewButton(),
-              ),
-            ],
+          Padding(
+            padding: const EdgeInsets.only(right: 10.0, bottom: 10),
+            child: alertViewButton(),
           ),
         ],
       ),
       const SizedBox(height: 20),
       Padding(
         padding: const EdgeInsets.only(right: 20.0),
-        child: InkWell(
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => AlertPage(userEmail: widget.userEmail),
-            ),
-          ),
-          child: MaterialBanner(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-            content: _isSmallDisplay
-                ? Text(localeMsg.oneAlert)
-                : RichText(
-                    text: TextSpan(
-                      style: const TextStyle(
-                        fontSize: 14.0,
-                        color: Colors.black,
-                      ),
-                      children: <TextSpan>[
-                        TextSpan(text: localeMsg.temperatureAlert1),
-                        const TextSpan(
-                            text: 'BASIC.A.R1.A02.chassis01',
-                            style: TextStyle(fontWeight: FontWeight.bold)),
-                        TextSpan(text: localeMsg.temperatureAlert2),
-                      ],
+        child: FutureBuilder(
+            future: _gotAlerts ? null : getAlerts(),
+            builder: (context, _) {
+              if (!_gotAlerts) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              return InkWell(
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => AlertPage(
+                      userEmail: widget.userEmail,
+                      alerts: _alerts,
                     ),
                   ),
-            leading: const Icon(Icons.info),
-            backgroundColor: Colors.amber.shade100,
-            dividerColor: Colors.transparent,
-            actions: const <Widget>[
-              TextButton(
-                onPressed: null,
-                child: Text(''),
-              ),
-            ],
-          ),
-        ),
+                ),
+                child: MaterialBanner(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                  content: _isSmallDisplay
+                      ? Text(localeMsg.oneAlert)
+                      : (_alerts.isEmpty
+                          ? Text("${localeMsg.noAlerts} :)")
+                          : Text(alertsToString(localeMsg))),
+                  leading: const Icon(Icons.info),
+                  backgroundColor: _alerts.isEmpty
+                      ? Colors.grey.shade200
+                      : Colors.amber.shade100,
+                  dividerColor: Colors.transparent,
+                  actions: const <Widget>[
+                    TextButton(
+                      onPressed: null,
+                      child: Text(''),
+                    ),
+                  ],
+                ),
+              );
+            }),
       ),
       const SizedBox(height: 30),
     ];
   }
 
-  analysisViewButton() {
+  String alertsToString(AppLocalizations localeMsg) {
+    var alertStr = "";
+    if (_alerts.length > 1) {
+      for (var alert in _alerts) {
+        alertStr = "$alertStr${alert.title.split(" ").first}, ";
+      }
+      alertStr = alertStr.substring(0, alertStr.length - 2);
+      alertStr = "${localeMsg.areMarkedMaintenance} $alertStr.";
+    } else {
+      for (var alert in _alerts) {
+        alertStr = "${alert.title.split(" ").first} ${localeMsg.isMarked}.";
+      }
+    }
+    return alertStr;
+  }
+
+  alertViewButton() {
     final localeMsg = AppLocalizations.of(context)!;
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
@@ -456,7 +516,10 @@ class _ProjectsPageState extends State<ProjectsPage> {
         } else {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => AlertPage(userEmail: widget.userEmail),
+              builder: (context) => AlertPage(
+                userEmail: widget.userEmail,
+                alerts: _alerts,
+              ),
             ),
           );
         }

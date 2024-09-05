@@ -21,10 +21,9 @@ func ApplyWildcardsOnComplexFilter(filter map[string]interface{}) {
 	for key, val := range filter {
 		switch v := val.(type) {
 		case string:
-			if key == "$not" || !strings.HasPrefix(key, "$") { // only for '=' and '!=' operators
-				if strings.Contains(v, "*") {
-					filter[key] = regexToMongoFilter(applyWildcards(v))
-				}
+			if key == "$not" || (!strings.HasPrefix(key, "$") && strings.Contains(v, "*")) {
+				// only for '=' with * and always for '!='
+				filter[key] = regexToMongoFilter(applyWildcards(v))
 			}
 		case []interface{}:
 			for _, item := range v {

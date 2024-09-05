@@ -22,6 +22,139 @@
   "host": "localhost:3001",
   "basePath": "/",
   "paths": {
+    "/api/alerts": {
+      "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "Get a list of all alerts",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "FlutterApp"
+        ],
+        "operationId": "GetAlerts",
+        "responses": {
+          "200": {
+            "description": "Return all possible alerts."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "Create a new alert",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "FlutterApp"
+        ],
+        "operationId": "CreateAlert",
+        "parameters": [
+          {
+            "format": "object",
+            "example": "{\"id\":\"OBJID.WITH.ALERT\",\"type\":\"minor\", \"title\":\"This is the title\",\"subtitle\":\"More information\"}",
+            "description": "Mandatory: id, type. Optional: title, subtitle.",
+            "name": "body",
+            "in": "body",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Alert successfully created."
+          },
+          "400": {
+            "description": "Bad Request. Invalid alert format."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/api/alerts/{AlertID}": {
+      "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "Get a list of all alerts",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "FlutterApp"
+        ],
+        "operationId": "GetAlert",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "ID of the alert to recover.",
+            "name": "AlertID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return requested alert"
+          },
+          "404": {
+            "description": "Alert not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "FlutterApp"
+        ],
+        "summary": "Delete an existing alert.",
+        "operationId": "DeleteAlert",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "ID of the alert to delete.",
+            "name": "AlertID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Alert successfully removed."
+          },
+          "404": {
+            "description": "Not Found. Invalid alert ID."
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
     "/api/domains/bulk": {
       "post": {
         "security": [
@@ -186,6 +319,56 @@
           },
           "404": {
             "description": "Not Found. An error message will be returned."
+          }
+        }
+      }
+    },
+    "/api/impact/{id}": {
+      "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "Returns all objects that could directly or indirectly impacted\nby the object sent in the request.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Objects"
+        ],
+        "operationId": "GetImpact",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "siteA",
+            "description": "ID of target object.",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Categories to include on indirect impact search. Can be repeated to create a list.",
+            "name": "categories",
+            "in": "query"
+          },
+          {
+            "description": "Physical types to include on indirect impact search. Can be repeated to create a list.",
+            "name": "ptypes",
+            "in": "query"
+          },
+          {
+            "description": "Virtual types to include on indirect impact search. Can be repeated to create a list.",
+            "name": "vtypes",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Request is valid."
+          },
+          "500": {
+            "description": "Server error."
           }
         }
       }
@@ -626,7 +809,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Project successfully updated."
+            "description": "Project successfully removed."
           },
           "404": {
             "description": "Not Found. Invalid project ID."
