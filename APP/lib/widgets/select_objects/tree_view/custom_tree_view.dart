@@ -7,8 +7,7 @@ import 'tree_node_tile.dart';
 
 class CustomTreeView extends StatefulWidget {
   final bool isTenantMode;
-  const CustomTreeView({Key? key, required this.isTenantMode})
-      : super(key: key);
+  const CustomTreeView({super.key, required this.isTenantMode});
 
   @override
   _CustomTreeViewState createState() => _CustomTreeViewState();

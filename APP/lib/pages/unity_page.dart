@@ -164,8 +164,9 @@ class UnityPageState extends State<UnityPage> with TickerProviderStateMixin {
               ],
             ),
           ),
-          ButtonBar(
+          OverflowBar(
             alignment: MainAxisAlignment.center,
+            spacing: 10,
             children: <Widget>[
               ElevatedButton(
                 child: const Icon(Icons.arrow_back),

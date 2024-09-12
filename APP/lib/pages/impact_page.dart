@@ -47,7 +47,7 @@ class _ImpactPageState extends State<ImpactPage> {
             index = index - 1;
             if (index == -1) {
               if (widget.selectedObjects.length == 1) {
-                return SizedBox(height: 6);
+                return const SizedBox(height: 6);
               }
               return Padding(
                 padding: const EdgeInsets.only(top: 12.0),
@@ -61,26 +61,26 @@ class _ImpactPageState extends State<ImpactPage> {
                           child: TextButton.icon(
                               onPressed: () => markAll(true, localeMsg),
                               label: Text(localeMsg.markAllMaintenance),
-                              icon: Icon(Icons.check_circle)),
+                              icon: const Icon(Icons.check_circle)),
                         ),
                         Padding(
-                          padding: EdgeInsets.only(left: 2),
+                          padding: const EdgeInsets.only(left: 2),
                           child: Tooltip(
                             message: localeMsg.unmarkAllTip,
                             child: TextButton.icon(
                                 onPressed: () => markAll(false, localeMsg),
                                 label: Text(localeMsg.unmarkAll),
-                                icon: Icon(Icons.check_circle_outline)),
+                                icon: const Icon(Icons.check_circle_outline)),
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsets.only(left: 2),
+                          padding: const EdgeInsets.only(left: 2),
                           child: Tooltip(
                             message: localeMsg.downloadAllTip,
                             child: TextButton.icon(
                                 onPressed: () => downloadAll(),
                                 label: Text(localeMsg.downloadAll),
-                                icon: Icon(Icons.download)),
+                                icon: const Icon(Icons.download)),
                           ),
                         ),
                       ],

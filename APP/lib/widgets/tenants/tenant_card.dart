@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:ogree_app/common/api_backend.dart';
-import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
-import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/models/tenant.dart';
 import 'package:ogree_app/pages/tenant_page.dart';
 import 'package:ogree_app/widgets/common/delete_dialog_popup.dart';
@@ -165,7 +162,7 @@ class TenantCard extends StatelessWidget {
                     child: Row(
                       children: [
                         IconButton(
-                          constraints: BoxConstraints(),
+                          constraints: const BoxConstraints(),
                           padding: EdgeInsets.zero,
                           onPressed: () => showCustomPopup(
                               context,
@@ -183,7 +180,7 @@ class TenantCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 4),
                         IconButton(
-                          constraints: BoxConstraints(),
+                          constraints: const BoxConstraints(),
                           padding: EdgeInsets.zero,
                           onPressed: () => showCustomPopup(
                               context,

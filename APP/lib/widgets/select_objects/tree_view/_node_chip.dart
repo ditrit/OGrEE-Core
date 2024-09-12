@@ -5,11 +5,10 @@ class _NodeActionsChip extends StatefulWidget {
   final bool isVirtual;
   final bool isTemplate;
   const _NodeActionsChip(
-      {Key? key,
+      {super.key,
       required this.node,
       this.isTemplate = false,
-      this.isVirtual = false})
-      : super(key: key);
+      this.isVirtual = false});
 
   @override
   State<_NodeActionsChip> createState() => _NodeActionsChipState();
@@ -118,7 +117,7 @@ class _NodeActionsChipState extends State<_NodeActionsChip> {
       child: RawChip(
         onPressed: () => _menu?.showButtonMenu(),
         backgroundColor:
-            widget.isVirtual ? Colors.deepPurple.shade100 : Color(0x331565c0),
+            widget.isVirtual ? Colors.deepPurple.shade100 : const Color(0x331565c0),
         side: const BorderSide(style: BorderStyle.none),
         label: Text(
           adaptLabel(widget.node.label),

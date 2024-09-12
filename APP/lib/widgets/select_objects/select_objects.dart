@@ -90,7 +90,7 @@ class _SelectObjectsState extends State<SelectObjects> {
 }
 
 class _Unfocus extends StatelessWidget {
-  const _Unfocus({Key? key, required this.child}) : super(key: key);
+  const _Unfocus({required this.child});
 
   final Widget child;
 
@@ -109,11 +109,9 @@ class _ResponsiveBody extends StatelessWidget {
   final TreeAppController controller;
   final Function() callback;
   const _ResponsiveBody(
-      {Key? key,
-      required this.namespace,
+      {required this.namespace,
       required this.controller,
-      required this.callback})
-      : super(key: key);
+      required this.callback});
 
   @override
   Widget build(BuildContext context) {
@@ -151,7 +149,7 @@ class _ResponsiveBody extends StatelessWidget {
               flex: 2,
               child: Stack(
                 children: [
-                  CustomTreeView(isTenantMode: false),
+                  const CustomTreeView(isTenantMode: false),
                   addObjectButton(context, namespace, callback),
                 ],
               )),
@@ -178,7 +176,7 @@ addObjectButton(
         height: 34,
         width: 34,
         child: IconButton(
-          padding: EdgeInsets.all(0.0),
+          padding: const EdgeInsets.all(0.0),
           iconSize: 24,
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.blue.shade600,

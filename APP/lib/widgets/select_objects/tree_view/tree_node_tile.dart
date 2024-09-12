@@ -29,11 +29,10 @@ class TreeNodeTile extends StatefulWidget {
   final TreeEntry<TreeNode> entry;
   final Function() onTap;
   const TreeNodeTile(
-      {Key? key,
+      {super.key,
       required this.isTenantMode,
       required this.entry,
-      required this.onTap})
-      : super(key: key);
+      required this.onTap});
 
   @override
   _TreeNodeTileState createState() => _TreeNodeTileState();
@@ -68,16 +67,16 @@ class _TreeNodeTileState extends State<TreeNodeTile> {
             children: [
               FolderButton(
                 closedIcon: isVirtual
-                    ? Icon(Icons.cloud)
-                    : Icon(Icons.auto_awesome_mosaic),
+                    ? const Icon(Icons.cloud)
+                    : const Icon(Icons.auto_awesome_mosaic),
                 openedIcon: isVirtual
-                    ? Icon(Icons.cloud_outlined)
-                    : Icon(Icons.auto_awesome_mosaic_outlined),
+                    ? const Icon(Icons.cloud_outlined)
+                    : const Icon(Icons.auto_awesome_mosaic_outlined),
                 icon: widget.isTenantMode
                     ? const Icon(Icons.dns)
                     : isVirtual
-                        ? Icon(Icons.cloud)
-                        : Icon(Icons.auto_awesome_mosaic),
+                        ? const Icon(Icons.cloud)
+                        : const Icon(Icons.auto_awesome_mosaic),
                 isOpen:
                     widget.entry.hasChildren ? widget.entry.isExpanded : null,
                 onPressed: widget.entry.hasChildren ? widget.onTap : null,

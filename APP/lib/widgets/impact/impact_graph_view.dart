@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:graphview/GraphView.dart';
-import 'package:ogree_app/common/api_backend.dart';
-import 'package:ogree_app/common/definitions.dart';
-import 'package:ogree_app/common/snackbar.dart';
-import 'package:ogree_app/common/theme.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ImpactGraphView extends StatefulWidget {
   String rootId;
   Map<String, dynamic> data;
-  ImpactGraphView(this.rootId, this.data);
+  ImpactGraphView(this.rootId, this.data, {super.key});
   @override
   _ImpactGraphViewState createState() => _ImpactGraphViewState();
 }
@@ -46,7 +41,7 @@ class _ImpactGraphViewState extends State<ImpactGraphView> {
           constraints: const BoxConstraints(maxHeight: 400, maxWidth: 1000),
           decoration: BoxDecoration(
             border: Border.all(color: Colors.lightBlue.shade100),
-            borderRadius: BorderRadius.all(Radius.circular(15.0)),
+            borderRadius: const BorderRadius.all(Radius.circular(15.0)),
           ),
           child: InteractiveViewer(
               alignment: Alignment.center,
@@ -93,7 +88,7 @@ class _ImpactGraphViewState extends State<ImpactGraphView> {
                   spreadRadius: 1),
             ],
           ),
-          child: Text('${a.split(".").last}')),
+          child: Text(a.split(".").last)),
     );
   }
 

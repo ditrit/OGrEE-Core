@@ -4,8 +4,7 @@ import 'package:ogree_app/pages/unity_page.dart';
 
 class AutoUnityProjectCard extends StatelessWidget {
   final String userEmail;
-  const AutoUnityProjectCard({Key? key, required this.userEmail})
-      : super(key: key);
+  const AutoUnityProjectCard({super.key, required this.userEmail});
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;

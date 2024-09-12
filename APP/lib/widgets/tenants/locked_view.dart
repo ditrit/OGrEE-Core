@@ -11,10 +11,10 @@ class LockedView extends StatefulWidget {
   Tenant tenant;
   Function parentCallback;
   LockedView({
-    Key? key,
+    super.key,
     required this.tenant,
     required this.parentCallback,
-  }) : super(key: key);
+  });
   @override
   State<LockedView> createState() => _LockedViewState();
 }

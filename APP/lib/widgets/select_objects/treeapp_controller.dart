@@ -3,7 +3,6 @@ import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/theme.dart';
-import 'package:ogree_app/widgets/select_objects/settings_view/tree_filter.dart';
 
 import 'tree_view/tree_node.dart';
 
@@ -266,10 +265,10 @@ class TreeAppController with ChangeNotifier {
 
 class TreeAppControllerScope extends InheritedWidget {
   const TreeAppControllerScope({
-    Key? key,
+    super.key,
     required this.controller,
-    required Widget child,
-  }) : super(key: key, child: child);
+    required super.child,
+  });
 
   final TreeAppController controller;
 

@@ -8,8 +8,8 @@ import 'package:ogree_app/pages/results_page.dart';
 // Define a stateful widget that displays API usage statistics for a given tenant
 class ApiStatsView extends StatefulWidget {
   const ApiStatsView({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   State<ApiStatsView> createState() => _ApiStatsViewState();

@@ -52,7 +52,7 @@ class MyAppState extends State<MyApp> {
           colorSchemeSeed: Colors.blue,
           fontFamily: GoogleFonts.inter().fontFamily,
           scrollbarTheme: ScrollbarThemeData(
-            thumbVisibility: MaterialStateProperty.all<bool>(true),
+            thumbVisibility: WidgetStateProperty.all<bool>(true),
           ),
           elevatedButtonTheme: ElevatedButtonThemeData(
               style: ElevatedButton.styleFrom(

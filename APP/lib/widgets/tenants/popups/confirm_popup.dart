@@ -85,7 +85,7 @@ class _ConfirmPopupState extends State<ConfirmPopup> {
                                   backgroundColor: Colors.red.shade900),
                               onPressed: () => submitStopStartTenant(
                                   localeMsg, context, widget.objName),
-                              label: Text("Stop"),
+                              label: const Text("Stop"),
                               icon: _isLoading
                                   ? Container(
                                       width: 22,
@@ -131,7 +131,7 @@ class _ConfirmPopupState extends State<ConfirmPopup> {
                           children: [
                             ElevatedButton.icon(
                                 onPressed: () => Navigator.pop(context),
-                                label: Text("OK"),
+                                label: const Text("OK"),
                                 icon: const Icon(Icons.check_circle, size: 16))
                           ],
                         ),

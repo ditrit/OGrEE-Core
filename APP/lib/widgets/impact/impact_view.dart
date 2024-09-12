@@ -20,7 +20,7 @@ import 'package:universal_html/html.dart' as html;
 class ImpactView extends StatefulWidget {
   String rootId;
   bool? receivedMarkAll;
-  ImpactView({required this.rootId, required this.receivedMarkAll});
+  ImpactView({super.key, required this.rootId, required this.receivedMarkAll});
 
   @override
   State<ImpactView> createState() => _ImpactViewState();
@@ -106,7 +106,7 @@ class _ImpactViewState extends State<ImpactView>
         Row(
           children: [
             Padding(
-              padding: EdgeInsets.only(left: 4),
+              padding: const EdgeInsets.only(left: 4),
               child: SizedBox(
                 width: 230,
                 child: TextButton.icon(
@@ -115,19 +115,19 @@ class _ImpactViewState extends State<ImpactView>
                         ? localeMsg.markedMaintenance
                         : localeMsg.markMaintenance),
                     icon: isMarkedForMaintenance
-                        ? Icon(Icons.check_circle)
-                        : Icon(Icons.check_circle_outline)),
+                        ? const Icon(Icons.check_circle)
+                        : const Icon(Icons.check_circle_outline)),
               ),
             ),
             Expanded(
               child: Padding(
-                padding: EdgeInsets.only(right: 150),
+                padding: const EdgeInsets.only(right: 150),
                 child: getWidgetSpan(rootId, "target", size: 18),
               ),
             ),
-            IconButton(onPressed: () => getCSV(), icon: Icon(Icons.download)),
+            IconButton(onPressed: () => getCSV(), icon: const Icon(Icons.download)),
             Padding(
-              padding: EdgeInsets.only(right: 10),
+              padding: const EdgeInsets.only(right: 10),
               child: IconButton(
                   onPressed: () => showCustomPopup(
                       context,
@@ -138,7 +138,7 @@ class _ImpactViewState extends State<ImpactView>
                         parentCallback: changeImpactFilters,
                       ),
                       isDismissible: true),
-                  icon: Icon(Icons.edit)),
+                  icon: const Icon(Icons.edit)),
             ),
           ],
         ),
@@ -164,30 +164,30 @@ class _ImpactViewState extends State<ImpactView>
                     children: [
                       Text(
                         localeMsg.directly.toUpperCase(),
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontWeight: FontWeight.w900, fontSize: 17),
                       ),
                       Padding(
-                        padding: EdgeInsets.only(left: 6),
+                        padding: const EdgeInsets.only(left: 6),
                         child: Tooltip(
                           message: localeMsg.directTip,
                           verticalOffset: 13,
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: Colors.blueAccent,
                             borderRadius: BorderRadius.all(Radius.circular(12)),
                           ),
-                          textStyle: TextStyle(
+                          textStyle: const TextStyle(
                             fontSize: 13,
                             color: Colors.white,
                           ),
-                          padding: EdgeInsets.all(13),
-                          child: Icon(Icons.info_outline_rounded,
+                          padding: const EdgeInsets.all(13),
+                          child: const Icon(Icons.info_outline_rounded,
                               color: Colors.blueAccent),
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(height: 15),
+                  const SizedBox(height: 15),
                   ...listImpacted(_data["direct"]),
                 ],
               ),
@@ -199,47 +199,47 @@ class _ImpactViewState extends State<ImpactView>
                     children: [
                       Text(
                         localeMsg.indirectly.toUpperCase(),
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontWeight: FontWeight.w900, fontSize: 17),
                       ),
                       Padding(
-                        padding: EdgeInsets.only(left: 6),
+                        padding: const EdgeInsets.only(left: 6),
                         child: Tooltip(
                           message: localeMsg.indirectTip,
                           verticalOffset: 13,
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: Colors.blueAccent,
                             borderRadius: BorderRadius.all(Radius.circular(12)),
                           ),
-                          textStyle: TextStyle(
+                          textStyle: const TextStyle(
                             fontSize: 13,
                             color: Colors.white,
                           ),
-                          padding: EdgeInsets.all(13),
-                          child: Icon(Icons.info_outline_rounded,
+                          padding: const EdgeInsets.all(13),
+                          child: const Icon(Icons.info_outline_rounded,
                               color: Colors.blueAccent),
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(height: 15),
+                  const SizedBox(height: 15),
                   ...listImpacted(_data["indirect"]),
                 ],
               )
             ],
           ),
         ),
-        SizedBox(height: 15),
+        const SizedBox(height: 15),
         Center(
           child: Text(
             localeMsg.graphView,
             style: Theme.of(context).textTheme.headlineMedium,
           ),
         ),
-        SizedBox(height: 15),
+        const SizedBox(height: 15),
         // ImpactGraphView("BASIC.A.R1.A01.chT"),
         ImpactGraphView(rootId, _data),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
       ],
     );
   }

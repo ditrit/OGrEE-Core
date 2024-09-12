@@ -1,8 +1,6 @@
 import 'dart:convert';
 
-import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/snackbar.dart';
@@ -135,7 +133,7 @@ class _TagsPopupState extends State<TagsPopup> with TickerProviderStateMixin {
 
     Result result;
     if (_isEdit) {
-      var newTagMap = newTag!.toMap();
+      var newTagMap = newTag.toMap();
       if (newTag.image == "" && tag!.image != "") {
         newTagMap.remove("image"); // patch and keep old one
       }
@@ -175,7 +173,7 @@ class TagFormState extends State<TagForm> {
 
   PlatformFile? _loadedImage;
 
-  bool _isSmallDisplay = false;
+  final bool _isSmallDisplay = false;
 
   @override
   void initState() {

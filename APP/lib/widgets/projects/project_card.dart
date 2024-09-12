@@ -12,11 +12,10 @@ class ProjectCard extends StatelessWidget {
   final String userEmail;
   final Function parentCallback;
   const ProjectCard(
-      {Key? key,
+      {super.key,
       required this.project,
       required this.userEmail,
-      required this.parentCallback})
-      : super(key: key);
+      required this.parentCallback});
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
@@ -71,7 +70,7 @@ class ProjectCard extends StatelessWidget {
                           padding: const EdgeInsets.only(right: 4),
                           child: Tooltip(
                             message: localeMsg.impactAnalysis,
-                            child: Icon(
+                            child: const Icon(
                               Icons.settings_suggest,
                               size: 14,
                               color: Colors.black,
@@ -113,7 +112,7 @@ class ProjectCard extends StatelessWidget {
                     child: Text(localeMsg.author),
                   ),
                   Text(
-                    "${project.authorLastUpdate}",
+                    project.authorLastUpdate,
                     style: TextStyle(backgroundColor: Colors.grey.shade200),
                   ),
                 ],
@@ -126,7 +125,7 @@ class ProjectCard extends StatelessWidget {
                     child: Text(localeMsg.lastUpdate),
                   ),
                   Text(
-                    "${project.lastUpdate}",
+                    project.lastUpdate,
                     style: TextStyle(backgroundColor: Colors.grey.shade200),
                   ),
                 ],

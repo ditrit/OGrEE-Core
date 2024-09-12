@@ -8,7 +8,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ObjectGraphView extends StatefulWidget {
   String rootId;
-  ObjectGraphView(this.rootId);
+  ObjectGraphView(this.rootId, {super.key});
   @override
   _ObjectGraphViewState createState() => _ObjectGraphViewState();
 }
@@ -121,7 +121,7 @@ class _ObjectGraphViewState extends State<ObjectGraphView> {
                   spreadRadius: 1),
             ],
           ),
-          child: Text('${a.split(".").last}')),
+          child: Text(a.split(".").last)),
     );
   }
 

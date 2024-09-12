@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/common/theme.dart';
-import 'package:ogree_app/pages/select_page.dart';
 import 'package:universal_html/html.dart' as html;
 import 'dart:math';
 
@@ -413,7 +412,7 @@ class _DataSource extends DataTableSource {
   final BuildContext context;
   late List<CustomRow> _rows;
 
-  int _selectedCount = 0;
+  final int _selectedCount = 0;
 
   @override
   DataRow? getRow(int index) {

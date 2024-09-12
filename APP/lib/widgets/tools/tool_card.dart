@@ -129,7 +129,7 @@ class ToolCard extends StatelessWidget {
                           launchUrl(Uri.parse(container.ports));
                         },
                         iconSize: 16,
-                        icon: Icon(
+                        icon: const Icon(
                           Icons.open_in_new_rounded,
                           // color: Colors.blue.shade800,
                         ),

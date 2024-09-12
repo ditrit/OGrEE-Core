@@ -182,8 +182,8 @@ class _SelectDateState extends State<SelectDate> with TickerProviderStateMixin {
 
 class DatePicker extends StatefulWidget {
   const DatePicker({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   State<DatePicker> createState() => _DatePickerState();

@@ -43,7 +43,7 @@ class _ViewObjectPopupState extends State<ViewObjectPopup> {
           return Center(
             child: Container(
               width: 500,
-              constraints: BoxConstraints(maxHeight: 430),
+              constraints: const BoxConstraints(maxHeight: 430),
               margin: const EdgeInsets.symmetric(horizontal: 20),
               decoration: PopupDecoration,
               child: Padding(

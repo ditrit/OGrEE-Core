@@ -10,12 +10,11 @@ class AutoProjectCard extends StatelessWidget {
   final String userEmail;
   final Function parentCallback;
   const AutoProjectCard(
-      {Key? key,
+      {super.key,
       // required this.project,
       required this.namespace,
       required this.userEmail,
-      required this.parentCallback})
-      : super(key: key);
+      required this.parentCallback});
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;

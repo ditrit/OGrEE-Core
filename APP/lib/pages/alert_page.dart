@@ -154,7 +154,7 @@ class AlertPageState extends State<AlertPage> with TickerProviderStateMixin {
                                   ),
                                 );
                               },
-                              icon: Icon(Icons.arrow_back),
+                              icon: const Icon(Icons.arrow_back),
                               label: Text(localeMsg.goToImpact)),
                         ),
                       )
