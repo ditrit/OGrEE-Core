@@ -57,7 +57,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            ...getAlertDemoWidgets(localeMsg),
+            ...getAlertWidgets(localeMsg),
             // SizedBox(height: 30),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -78,10 +78,13 @@ class _ProjectsPageState extends State<ProjectsPage> {
                         style: Theme.of(context).textTheme.headlineLarge),
                 Row(
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.only(right: 10.0, bottom: 10),
-                      child: impactViewButton(),
-                    ),
+                    !widget.isTenantMode
+                        ? Padding(
+                            padding:
+                                const EdgeInsets.only(right: 10.0, bottom: 10),
+                            child: impactViewButton(),
+                          )
+                        : Container(),
                     Padding(
                       padding: const EdgeInsets.only(right: 10.0, bottom: 10),
                       child: createProjectButton(),
@@ -428,7 +431,10 @@ class _ProjectsPageState extends State<ProjectsPage> {
     );
   }
 
-  List<Widget> getAlertDemoWidgets(AppLocalizations localeMsg) {
+  List<Widget> getAlertWidgets(AppLocalizations localeMsg) {
+    if (widget.isTenantMode) {
+      return [];
+    }
     return [
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

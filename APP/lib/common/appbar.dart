@@ -22,14 +22,6 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
 
   List<PopupMenuEntry<String>> entries = <PopupMenuEntry<String>>[
     PopupMenuItem(
-      value: Tools.cli.name,
-      child: Text(localeMsg.downloadCli),
-    ),
-    PopupMenuItem(
-      value: "unity",
-      child: Text(localeMsg.downloadUnity),
-    ),
-    PopupMenuItem(
       value: "change",
       child: Text(AppLocalizations.of(context)!.changePassword),
     ),
