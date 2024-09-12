@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	u "p3/utils"
 	"reflect"
 	"strings"
@@ -17,6 +16,10 @@ type ImpactFilters struct {
 }
 
 func GetImpact(id string, userRoles map[string]Role, filters ImpactFilters) (map[string]any, *u.Error) {
+	directChildren := map[string]any{}
+	indirectChildren := map[string]any{}
+	clusterRelations := map[string][]string{} // map of clusterId and list of objIds linked to that cluster
+
 	// Get target object for impact analysis
 	target, err := GetObjectById(id, u.HIERARCHYOBJS_ENT, u.RequestFilters{}, userRoles)
 	if err != nil {
@@ -28,12 +31,13 @@ func GetImpact(id string, userRoles map[string]Role, filters ImpactFilters) (map
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(filters)
 
 	// Find relations
-	directChildren := map[string]any{}
-	indirectChildren := map[string]any{}
-	clusterRelations := map[string][]string{}
+	// Cluster associated to this target
+	if targetAttrs, ok := target["attributes"].(map[string]any); ok {
+		setClusterRelation(id, targetAttrs, clusterRelations)
+	}
+	// Direct/indirect children and associated clusters
 	targetLevel := strings.Count(id, ".")
 	for childId, childData := range allChildren {
 		childAttrs := childData.(map[string]any)["attributes"].(map[string]any)
@@ -44,6 +48,7 @@ func GetImpact(id string, userRoles map[string]Role, filters ImpactFilters) (map
 			setClusterRelation(childId, childAttrs, clusterRelations)
 			continue
 		}
+		// indirect child
 		setIndirectChildren(filters, childData.(map[string]any), childAttrs, indirectChildren, clusterRelations)
 	}
 
