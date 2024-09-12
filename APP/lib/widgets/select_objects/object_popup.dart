@@ -807,17 +807,6 @@ class _ObjectPopupState extends State<ObjectPopup> {
                   tipStr: examplesAttrs[_objCategory]
                           ?[attributes[index].replaceFirst(starSymbol, "")] ??
                       "",
-                  extraValidationFn:
-                      attributes[index].replaceFirst(starSymbol, "") ==
-                              "virtual_config"
-                          ? (newValue) {
-                              try {
-                                json.decode(newValue);
-                              } on Exception {
-                                return 'object format: {"type":"storage"}';
-                              }
-                            }
-                          : null,
                   save: (newValue) {
                     var attrKey =
                         attributes[index].replaceFirst(starSymbol, "");

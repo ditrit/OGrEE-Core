@@ -2,7 +2,7 @@ enum Namespace { Physical, Organisational, Logical, Test }
 
 const starSymbol = "*";
 
-const isDemo = true;
+const isDemo = false;
 
 /// Base Result class
 /// [S] represents the type of the success value
