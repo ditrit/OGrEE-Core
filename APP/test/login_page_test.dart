@@ -26,12 +26,12 @@ void main() {
       final loginButton = find.textContaining('Se connecter');
       final emailInput = find.ancestor(
           of: find.textContaining('mail'),
-          matching: find.byType(TextFormField));
+          matching: find.byType(TextFormField),);
       final passwordInput = find.ancestor(
-          of: find.text('Mot de passe'), matching: find.byType(TextFormField));
+          of: find.text('Mot de passe'), matching: find.byType(TextFormField),);
       final serverInput = find.ancestor(
           of: find.text('Choisir serveur'),
-          matching: find.byType(TextFormField));
+          matching: find.byType(TextFormField),);
       await tester.ensureVisible(loginButton);
       await tester.pumpAndSettle();
 

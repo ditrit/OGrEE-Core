@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
+
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:http/http.dart' as http;
+import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/models/alert.dart';
 import 'package:ogree_app/models/container.dart';
 import 'package:ogree_app/models/domain.dart';
@@ -14,25 +17,22 @@ import 'package:ogree_app/models/tag.dart';
 import 'package:ogree_app/models/tenant.dart';
 import 'package:ogree_app/models/user.dart';
 import 'package:universal_html/html.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-
-import 'definitions.dart';
 
 part 'api_tenant.dart';
 
 // Globals
 String apiUrl = "";
-var token = "";
+String token = "";
 String tenantName = "";
 bool isTenantAdmin = false; // a tenant admin can access its config page
 String tenantUrl = ""; // used by SuperAdmin to connect between tenant APIs
-var tenantToken = ""; // used by SuperAdmin to connect between tenant APIs
+String tenantToken = ""; // used by SuperAdmin to connect between tenant APIs
 BackendType backendType = BackendType.tenant;
 
 enum BackendType { docker, kubernetes, tenant, unavailable }
 
 // Helper Functions
-getHeader(token) => {
+Map<String, String> getHeader(token) => {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
       'Authorization': 'Bearer $token',
@@ -40,12 +40,12 @@ getHeader(token) => {
 
 String reformatDate(String date) {
   // dd/MM/yyyy -> yyyy-MM-dd
-  List<String> dateParts = date.split("/");
+  final List<String> dateParts = date.split("/");
   return "${dateParts[2]}-${dateParts[1]}-${dateParts[0]}";
 }
 
 String urlDateAppend(String dateRange) {
-  var ranges = dateRange.split(" - ");
+  final ranges = dateRange.split(" - ");
   String urlAppend = "&startDate=${reformatDate(ranges[0])}";
   if (ranges.length > 1) {
     urlAppend = "$urlAppend&endDate=${reformatDate(ranges[1])}";
@@ -61,8 +61,12 @@ String wrapResponseMsg(http.Response response, {String? message}) {
 }
 
 // API calls
-Future<Result<List<String>, Exception>> loginAPI(String email, String password,
-    {String userUrl = "", bool stayLoggedIn = false}) async {
+Future<Result<List<String>, Exception>> loginAPI(
+  String email,
+  String password, {
+  String userUrl = "",
+  bool stayLoggedIn = false,
+}) async {
   // Make sure it is clean
   tenantUrl = "";
   isTenantAdmin = false;
@@ -75,20 +79,21 @@ Future<Result<List<String>, Exception>> loginAPI(String email, String password,
   } else {
     apiUrl = dotenv.get('API_URL', fallback: 'http://localhost:3001');
   }
-  print("API login ogree $apiUrl");
   try {
-    Uri url = Uri.parse('$apiUrl/api/login');
-    final response = await http.post(url,
-        body: json.encode(<String, dynamic>{
-          'email': email,
-          'password': password,
-          'stayLoggedIn': stayLoggedIn
-        }));
+    final Uri url = Uri.parse('$apiUrl/api/login');
+    final response = await http.post(
+      url,
+      body: json.encode(<String, dynamic>{
+        'email': email,
+        'password': password,
+        'stayLoggedIn': stayLoggedIn,
+      }),
+    );
 
     // Handle response
     Map<String, dynamic> data = json.decode(response.body);
     if (response.statusCode == 200) {
-      data = (Map<String, dynamic>.from(data["account"]));
+      data = Map<String, dynamic>.from(data["account"]);
       token = data["token"]!;
       if (data["isTenant"] == null &&
           data["roles"][allDomainsTag] == "manager") {
@@ -110,14 +115,14 @@ Future<Result<List<String>, Exception>> loginAPI(String email, String password,
   }
 }
 
-Future<Result<BackendType, Exception>> fetchApiVersion(String urlApi,
-    {http.Client? client}) async {
-  print("API get TenantName");
+Future<Result<BackendType, Exception>> fetchApiVersion(
+  String urlApi, {
+  http.Client? client,
+}) async {
   client ??= http.Client();
   try {
-    Uri url = Uri.parse('$urlApi/api/version');
+    final Uri url = Uri.parse('$urlApi/api/version');
     final response = await client.get(url, headers: getHeader(token));
-    print(response.statusCode);
     if (response.statusCode == 200) {
       Map<String, dynamic> data = json.decode(response.body);
       if (data["isKubernetes"] != null) {
@@ -129,11 +134,10 @@ Future<Result<BackendType, Exception>> fetchApiVersion(String urlApi,
           return const Success(BackendType.docker);
         }
       } else {
-        data = (Map<String, dynamic>.from(data["data"]));
+        data = Map<String, dynamic>.from(data["data"]);
         if (data.isNotEmpty || data["Customer"] != null) {
           tenantName = data["Customer"];
           backendType = BackendType.tenant;
-          print(tenantName);
           return const Success(BackendType.tenant);
         } else {
           backendType = BackendType.unavailable;
@@ -152,48 +156,50 @@ Future<Result<BackendType, Exception>> fetchApiVersion(String urlApi,
 }
 
 Future<Result<void, Exception>> changeUserPassword(
-    String currentPassword, newPassword) async {
-  print("API change password");
+  String currentPassword,
+  newPassword,
+) async {
   try {
-    Uri url = Uri.parse('$apiUrl/api/users/password/change');
-    final response = await http.post(url,
-        body: json.encode(<String, dynamic>{
-          'currentPassword': currentPassword,
-          'newPassword': newPassword
-        }),
-        headers: getHeader(token));
-    print(response.statusCode);
-    Map<String, dynamic> data = json.decode(response.body);
+    final Uri url = Uri.parse('$apiUrl/api/users/password/change');
+    final response = await http.post(
+      url,
+      body: json.encode(<String, dynamic>{
+        'currentPassword': currentPassword,
+        'newPassword': newPassword,
+      }),
+      headers: getHeader(token),
+    );
+    final Map<String, dynamic> data = json.decode(response.body);
     if (response.statusCode == 200) {
       token = data["token"]!;
       return const Success(null);
     } else {
-      return Failure(Exception(("Error: ${data["message"]}")));
+      return Failure(Exception("Error: ${data["message"]}"));
     }
   } on Exception catch (e) {
     return Failure(e);
   }
 }
 
-Future<Result<void, Exception>> userForgotPassword(String email,
-    {String userUrl = ""}) async {
-  print("API forgot password");
+Future<Result<void, Exception>> userForgotPassword(
+  String email, {
+  String userUrl = "",
+}) async {
   if (userUrl != "") {
     apiUrl = userUrl;
   } else {
     apiUrl = dotenv.get('API_URL', fallback: 'http://localhost:3001');
   }
   try {
-    Uri url = Uri.parse('$apiUrl/api/users/password/forgot');
+    final Uri url = Uri.parse('$apiUrl/api/users/password/forgot');
     final response = await http.post(
       url,
       body: json.encode(<String, dynamic>{'email': email}),
     );
-    print(response.statusCode);
     if (response.statusCode == 200) {
       return const Success(null);
     } else {
-      Map<String, dynamic> data = json.decode(response.body);
+      final Map<String, dynamic> data = json.decode(response.body);
       return Failure(Exception("Error: ${data["message"]}"));
     }
   } on Exception catch (e) {
@@ -202,16 +208,17 @@ Future<Result<void, Exception>> userForgotPassword(String email,
 }
 
 Future<Result<void, Exception>> userResetPassword(
-    String password, String resetToken,
-    {String userUrl = ""}) async {
-  print("API reset password");
+  String password,
+  String resetToken, {
+  String userUrl = "",
+}) async {
   if (userUrl != "") {
     apiUrl = userUrl;
   } else {
     apiUrl = dotenv.get('API_URL', fallback: 'http://localhost:3001');
   }
   try {
-    Uri url = Uri.parse('$apiUrl/api/users/password/reset');
+    final Uri url = Uri.parse('$apiUrl/api/users/password/reset');
     final response = await http.post(
       url,
       body: json.encode(<String, dynamic>{'newPassword': password}),
@@ -220,7 +227,7 @@ Future<Result<void, Exception>> userResetPassword(
     if (response.statusCode == 200) {
       return const Success(null);
     } else {
-      Map<String, dynamic> data = json.decode(response.body);
+      final Map<String, dynamic> data = json.decode(response.body);
       return Failure(Exception("Error: ${data["message"]}"));
     }
   } on Exception catch (e) {
@@ -228,12 +235,11 @@ Future<Result<void, Exception>> userResetPassword(
   }
 }
 
-Future<Result<List<Map<String, List<String>>>, Exception>> fetchObjectsTree(
-    {Namespace namespace = Namespace.Physical,
-    String dateRange = "",
-    bool isTenantMode = false}) async {
-  print("API get tree: NS=$namespace");
-
+Future<Result<List<Map<String, List<String>>>, Exception>> fetchObjectsTree({
+  Namespace namespace = Namespace.Physical,
+  String dateRange = "",
+  bool isTenantMode = false,
+}) async {
   // Define URL and token to use
   String localUrl = '/api/hierarchy';
   String localToken = token;
@@ -244,7 +250,7 @@ Future<Result<List<Map<String, List<String>>>, Exception>> fetchObjectsTree(
     localUrl = apiUrl + localUrl;
   }
   // Add filters, if any
-  String namespaceStr = namespace.name.toLowerCase();
+  final String namespaceStr = namespace.name.toLowerCase();
   if (namespace == Namespace.Physical || namespace == Namespace.Logical) {
     localUrl = '$localUrl?namespace=$namespaceStr&withcategories=true';
   } else {
@@ -256,33 +262,29 @@ Future<Result<List<Map<String, List<String>>>, Exception>> fetchObjectsTree(
 
   // Request
   try {
-    Uri url = Uri.parse(localUrl);
+    final Uri url = Uri.parse(localUrl);
     final response = await http.get(url, headers: getHeader(localToken));
-    print(response.statusCode);
     if (response.statusCode == 200) {
       // Convert dynamic Map to expected type
       Map<String, dynamic> data = json.decode(response.body);
-      data = (Map<String, dynamic>.from(data["data"]));
-      Map<String, Map<String, dynamic>> converted = {};
-      Map<String, Map<String, dynamic>> converted2 = {};
-      Map<String, List<String>> tree = {};
-      Map<String, List<String>> categories = {};
-      for (var item in data.keys) {
-        converted[item.toString()] = Map<String, dynamic>.from(data[item]);
+      data = Map<String, dynamic>.from(data["data"]);
+      final Map<String, Map<String, dynamic>> converted = {};
+      final Map<String, Map<String, dynamic>> converted2 = {};
+      final Map<String, List<String>> tree = {};
+      final Map<String, List<String>> categories = {};
+      for (final item in data.keys) {
+        converted[item] = Map<String, dynamic>.from(data[item]);
       }
-      for (var item in converted["tree"]!.keys) {
-        converted2[item.toString()] =
-            Map<String, dynamic>.from(converted["tree"]![item]!);
+      for (final item in converted["tree"]!.keys) {
+        converted2[item] = Map<String, dynamic>.from(converted["tree"]![item]!);
       }
-      for (var item in converted2[namespaceStr]!.keys) {
-        tree[item.toString()] =
-            List<String>.from(converted2[namespaceStr]![item]);
+      for (final item in converted2[namespaceStr]!.keys) {
+        tree[item] = List<String>.from(converted2[namespaceStr]![item]);
       }
       // Namespace adaptations
       if (namespace == Namespace.Physical || namespace == Namespace.Logical) {
-        for (var item in converted["categories"]!.keys) {
-          categories[item.toString()] =
-              List<String>.from(converted["categories"]![item]);
+        for (final item in converted["categories"]!.keys) {
+          categories[item] = List<String>.from(converted["categories"]![item]);
         }
         if (namespace == Namespace.Physical) {
           if (tree["*stray_object"] != null) {
@@ -295,61 +297,61 @@ Future<Result<List<Map<String, List<String>>>, Exception>> fetchObjectsTree(
       return Success([tree, categories]);
     } else {
       return Failure(
-          Exception('${response.statusCode}: Failed to load objects'));
+        Exception('${response.statusCode}: Failed to load objects'),
+      );
     }
   } on Exception catch (e) {
-    print(e.toString());
     return Failure(e);
   }
 }
 
 Future<Result<Map<String, Map<String, dynamic>>, Exception>>
     fetchAttributes() async {
-  print("API get Attrs");
   try {
-    Uri url = Uri.parse('$apiUrl/api/hierarchy/attributes');
+    final Uri url = Uri.parse('$apiUrl/api/hierarchy/attributes');
     final response = await http.get(url, headers: getHeader(token));
-    print(response.statusCode);
     if (response.statusCode == 200) {
       // Convert dynamic Map to expected type
       Map<String, dynamic> data = json.decode(response.body);
-      data = (Map<String, dynamic>.from(data["data"]));
-      Map<String, Map<String, dynamic>> converted = {};
-      for (var item in data.keys) {
-        converted[item.toString()] = Map<String, dynamic>.from(data[item]);
+      data = Map<String, dynamic>.from(data["data"]);
+      final Map<String, Map<String, dynamic>> converted = {};
+      for (final item in data.keys) {
+        converted[item] = Map<String, dynamic>.from(data[item]);
       }
       return Success(converted);
     } else {
       return Failure(
-          Exception('${response.statusCode}: Failed to load objects'));
+        Exception('${response.statusCode}: Failed to load objects'),
+      );
     }
   } on Exception catch (e) {
     return Failure(e);
   }
 }
 
-Future<Result<List<Project>, Exception>> fetchProjects(String userEmail,
-    {http.Client? client}) async {
-  print("API get Projects");
+Future<Result<List<Project>, Exception>> fetchProjects(
+  String userEmail, {
+  http.Client? client,
+}) async {
   client ??= http.Client();
   try {
-    Uri url = Uri.parse('$apiUrl/api/projects?user=$userEmail');
+    final Uri url = Uri.parse('$apiUrl/api/projects?user=$userEmail');
     final response = await client.get(url, headers: getHeader(token));
-    print(response.statusCode);
     if (response.statusCode == 200) {
-      print(response);
-      print(response.body);
       // Convert dynamic Map to expected type
       Map<String, dynamic> data = json.decode(response.body);
-      data = (Map<String, dynamic>.from(data["data"]));
-      List<Project> projects = [];
-      for (var project in data["projects"]) {
+      data = Map<String, dynamic>.from(data["data"]);
+      final List<Project> projects = [];
+      for (final project in data["projects"]) {
         projects.add(Project.fromMap(project));
       }
       return Success(projects);
     } else {
-      return Failure(Exception(
-          wrapResponseMsg(response, message: 'Failed to load objects')));
+      return Failure(
+        Exception(
+          wrapResponseMsg(response, message: 'Failed to load objects'),
+        ),
+      );
     }
   } on Exception catch (e) {
     return Failure(e);
@@ -357,12 +359,10 @@ Future<Result<List<Project>, Exception>> fetchProjects(String userEmail,
 }
 
 Future<Result<void, Exception>> modifyProject(Project project) async {
-  print("API modify Projects");
   try {
-    Uri url = Uri.parse('$apiUrl/api/projects/${project.id}');
+    final Uri url = Uri.parse('$apiUrl/api/projects/${project.id}');
     final response =
         await http.put(url, body: project.toJson(), headers: getHeader(token));
-    print(response);
     if (response.statusCode == 200) {
       return const Success(null);
     } else {
@@ -375,12 +375,10 @@ Future<Result<void, Exception>> modifyProject(Project project) async {
 }
 
 Future<Result<void, Exception>> createProject(Project project) async {
-  print("API create Projects");
   try {
-    Uri url = Uri.parse('$apiUrl/api/projects');
+    final Uri url = Uri.parse('$apiUrl/api/projects');
     final response =
         await http.post(url, body: project.toJson(), headers: getHeader(token));
-    print(response);
     if (response.statusCode == 200) {
       return const Success(null);
     } else {
@@ -393,12 +391,10 @@ Future<Result<void, Exception>> createProject(Project project) async {
 }
 
 Future<Result<void, Exception>> createAlert(Alert alert) async {
-  print("API create Projects");
   try {
-    Uri url = Uri.parse('$apiUrl/api/alerts');
+    final Uri url = Uri.parse('$apiUrl/api/alerts');
     final response =
         await http.post(url, body: alert.toJson(), headers: getHeader(token));
-    print(response);
     if (response.statusCode == 200) {
       return const Success(null);
     } else {
@@ -410,50 +406,51 @@ Future<Result<void, Exception>> createAlert(Alert alert) async {
   }
 }
 
-Future<Result<List<Alert>, Exception>> fetchAlerts(
-    {http.Client? client}) async {
-  print("API get Alerts");
+Future<Result<List<Alert>, Exception>> fetchAlerts({
+  http.Client? client,
+}) async {
   client ??= http.Client();
   try {
-    Uri url = Uri.parse('$apiUrl/api/alerts');
+    final Uri url = Uri.parse('$apiUrl/api/alerts');
     final response = await client.get(url, headers: getHeader(token));
-    print(response.statusCode);
     if (response.statusCode == 200) {
-      print(response);
-      print(response.body);
       // Convert dynamic Map to expected type
       Map<String, dynamic> data = json.decode(response.body);
-      data = (Map<String, dynamic>.from(data["data"]));
-      List<Alert> alerts = [];
-      for (var alert in data["alerts"]) {
+      data = Map<String, dynamic>.from(data["data"]);
+      final List<Alert> alerts = [];
+      for (final alert in data["alerts"]) {
         alerts.add(Alert.fromMap(alert));
       }
       return Success(alerts);
     } else {
-      return Failure(Exception(
-          wrapResponseMsg(response, message: 'Failed to load objects')));
+      return Failure(
+        Exception(
+          wrapResponseMsg(response, message: 'Failed to load objects'),
+        ),
+      );
     }
   } on Exception catch (e) {
     return Failure(e);
   }
 }
 
-Future<Result<Alert, Exception>> fetchAlert(String id,
-    {http.Client? client}) async {
-  print("API get Alert by id");
+Future<Result<Alert, Exception>> fetchAlert(
+  String id, {
+  http.Client? client,
+}) async {
   client ??= http.Client();
   try {
-    Uri url = Uri.parse('$apiUrl/api/alerts/$id');
+    final Uri url = Uri.parse('$apiUrl/api/alerts/$id');
     final response = await client.get(url, headers: getHeader(token));
-    print(response.statusCode);
     if (response.statusCode == 200) {
       // Convert dynamic Map to expected type
       Map<String, dynamic> data = json.decode(response.body);
-      data = (Map<String, dynamic>.from(data["data"]));
+      data = Map<String, dynamic>.from(data["data"]);
       return Success(Alert.fromMap(data));
     } else {
       return Failure(
-          Exception(wrapResponseMsg(response, message: 'Failed to get alert')));
+        Exception(wrapResponseMsg(response, message: 'Failed to get alert')),
+      );
     }
   } on Exception catch (e) {
     return Failure(e);
@@ -461,22 +458,24 @@ Future<Result<Alert, Exception>> fetchAlert(String id,
 }
 
 Future<Result<void, Exception>> createObject(
-    Map<String, dynamic> object, String category) async {
-  print("API create Object");
+  Map<String, dynamic> object,
+  String category,
+) async {
   try {
-    Uri url = Uri.parse('$apiUrl/api/${category}s');
-    final response = await http.post(url,
-        body: json.encode(object), headers: getHeader(token));
-    print(response);
+    final Uri url = Uri.parse('$apiUrl/api/${category}s');
+    final response = await http.post(
+      url,
+      body: json.encode(object),
+      headers: getHeader(token),
+    );
     if (response.statusCode == 200 || response.statusCode == 201) {
       return const Success(null);
     } else {
       final Map<String, dynamic> data = json.decode(response.body);
       if (data["errors"] != null) {
-        var errors = List<String>.from(data["errors"]);
-        print(errors.toString());
+        final errors = List<String>.from(data["errors"]);
         String errStr = "";
-        for (var err in errors) {
+        for (final err in errors) {
           errStr = "$errStr\n$err";
         }
         return Failure(Exception(errStr));
@@ -489,15 +488,16 @@ Future<Result<void, Exception>> createObject(
 }
 
 Future<Result<Map<String, dynamic>, Exception>> fetchObject(
-    String id, AppLocalizations localeMsg,
-    {String idKey = "id"}) async {
-  print("API fetch Object");
+  String id,
+  AppLocalizations localeMsg, {
+  String idKey = "id",
+}) async {
   try {
-    Uri url = Uri.parse('$apiUrl/api/objects?$idKey=$id');
+    final Uri url = Uri.parse('$apiUrl/api/objects?$idKey=$id');
     final response = await http.get(url, headers: getHeader(token));
     if (response.statusCode == 200 || response.statusCode == 201) {
-      Map<String, dynamic> data = json.decode(response.body);
-      var list = List<Map<String, dynamic>>.from(data["data"]);
+      final Map<String, dynamic> data = json.decode(response.body);
+      final list = List<Map<String, dynamic>>.from(data["data"]);
       if (list.isEmpty) {
         return Failure(Exception(localeMsg.noObjectsFound));
       }
@@ -512,13 +512,13 @@ Future<Result<Map<String, dynamic>, Exception>> fetchObject(
 }
 
 Future<Result<Map<String, dynamic>, Exception>> fetchObjectChildren(
-    String id) async {
-  print("API fetch Object /all");
+  String id,
+) async {
   try {
-    Uri url = Uri.parse('$apiUrl/api/hierarchy_objects/$id/all?limit=2');
+    final Uri url = Uri.parse('$apiUrl/api/hierarchy_objects/$id/all?limit=2');
     final response = await http.get(url, headers: getHeader(token));
     if (response.statusCode == 200 || response.statusCode == 201) {
-      Map<String, dynamic> data = json.decode(response.body);
+      final Map<String, dynamic> data = json.decode(response.body);
       return Success(Map<String, dynamic>.from(data["data"]));
     } else {
       final Map<String, dynamic> data = json.decode(response.body);
@@ -529,9 +529,12 @@ Future<Result<Map<String, dynamic>, Exception>> fetchObjectChildren(
   }
 }
 
-Future<Result<Map<String, dynamic>, Exception>> fetchObjectImpact(String id,
-    List<String> categories, List<String> ptypes, List<String> vtypes) async {
-  print("API fetch Object Impact");
+Future<Result<Map<String, dynamic>, Exception>> fetchObjectImpact(
+  String id,
+  List<String> categories,
+  List<String> ptypes,
+  List<String> vtypes,
+) async {
   String queryParam = listToQueryParam("", categories, "categories");
   queryParam = listToQueryParam(queryParam, ptypes, "ptypes");
   queryParam = listToQueryParam(queryParam, vtypes, "vtypes");
@@ -540,10 +543,10 @@ Future<Result<Map<String, dynamic>, Exception>> fetchObjectImpact(String id,
     if (queryParam.isNotEmpty) {
       urlStr = "$urlStr?$queryParam";
     }
-    Uri url = Uri.parse(urlStr);
+    final Uri url = Uri.parse(urlStr);
     final response = await http.get(url, headers: getHeader(token));
     if (response.statusCode == 200 || response.statusCode == 201) {
-      Map<String, dynamic> data = json.decode(response.body);
+      final Map<String, dynamic> data = json.decode(response.body);
       return Success(Map<String, dynamic>.from(data["data"]));
     } else {
       final Map<String, dynamic> data = json.decode(response.body);
@@ -556,7 +559,7 @@ Future<Result<Map<String, dynamic>, Exception>> fetchObjectImpact(String id,
 
 String listToQueryParam(String currentParam, List<String> list, String key) {
   String param = currentParam;
-  for (String item in list) {
+  for (final String item in list) {
     if (param.isNotEmpty) {
       param = "$param&";
     }
@@ -566,17 +569,22 @@ String listToQueryParam(String currentParam, List<String> list, String key) {
 }
 
 Future<Result<List<Map<String, dynamic>>, Exception>> fetchWithComplexFilter(
-    String filter, Namespace namespace, AppLocalizations localeMsg) async {
-  print("API fetch Complex Filter");
+  String filter,
+  Namespace namespace,
+  AppLocalizations localeMsg,
+) async {
   try {
-    Uri url = Uri.parse(
-        '$apiUrl/api/objects/search?namespace=${namespace.name.toLowerCase()}');
-    final response = await http.post(url,
-        body: json.encode(<String, dynamic>{'filter': filter}),
-        headers: getHeader(token));
+    final Uri url = Uri.parse(
+      '$apiUrl/api/objects/search?namespace=${namespace.name.toLowerCase()}',
+    );
+    final response = await http.post(
+      url,
+      body: json.encode(<String, dynamic>{'filter': filter}),
+      headers: getHeader(token),
+    );
     if (response.statusCode == 200 || response.statusCode == 201) {
-      Map<String, dynamic> data = json.decode(response.body);
-      var list = List<Map<String, dynamic>>.from(data["data"]);
+      final Map<String, dynamic> data = json.decode(response.body);
+      final list = List<Map<String, dynamic>>.from(data["data"]);
       if (list.isEmpty) {
         return Failure(Exception(localeMsg.noObjectsFound));
       }
@@ -591,22 +599,25 @@ Future<Result<List<Map<String, dynamic>>, Exception>> fetchWithComplexFilter(
 }
 
 Future<Result<void, Exception>> updateObject(
-    String objId, String category, Map<String, dynamic> object) async {
-  print("API update object");
+  String objId,
+  String category,
+  Map<String, dynamic> object,
+) async {
   try {
-    Uri url = Uri.parse('$apiUrl/api/${category}s/$objId');
-    final response = await http.put(url,
-        body: json.encode(object), headers: getHeader(token));
-    print(response.statusCode);
+    final Uri url = Uri.parse('$apiUrl/api/${category}s/$objId');
+    final response = await http.put(
+      url,
+      body: json.encode(object),
+      headers: getHeader(token),
+    );
     if (response.statusCode == 200) {
       return const Success(null);
     } else {
-      var data = json.decode(response.body);
+      final data = json.decode(response.body);
       if (data["errors"] != null) {
-        var errors = List<String>.from(data["errors"]);
-        print(errors.toString());
+        final errors = List<String>.from(data["errors"]);
         String errStr = "";
-        for (var err in errors) {
+        for (final err in errors) {
           errStr = "$errStr\n$err";
         }
         return Failure(Exception(errStr));
@@ -618,18 +629,19 @@ Future<Result<void, Exception>> updateObject(
   }
 }
 
-Future<Result<void, Exception>> deleteObject(String objId, String category,
-    {http.Client? client}) async {
-  print("API delete object $category");
+Future<Result<void, Exception>> deleteObject(
+  String objId,
+  String category, {
+  http.Client? client,
+}) async {
   client ??= http.Client();
   try {
-    Uri url = Uri.parse('$apiUrl/api/${category}s/$objId');
+    final Uri url = Uri.parse('$apiUrl/api/${category}s/$objId');
     final response = await client.delete(url, headers: getHeader(token));
-    print(response.statusCode);
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return const Success(null);
     } else {
-      var data = json.decode(response.body);
+      final data = json.decode(response.body);
       return Failure(Exception("Error: ${data["message"]}"));
     }
   } on Exception catch (e) {
@@ -638,13 +650,13 @@ Future<Result<void, Exception>> deleteObject(String objId, String category,
 }
 
 Future<Result<void, Exception>> createTemplate(
-    Uint8List file, String category) async {
-  print("API create template $category");
+  Uint8List file,
+  String category,
+) async {
   try {
-    Uri url = Uri.parse('$apiUrl/api/${category}s');
+    final Uri url = Uri.parse('$apiUrl/api/${category}s');
     final response =
         await http.post(url, body: file, headers: getHeader(token));
-    print(response.statusCode);
     if (response.statusCode == 200 || response.statusCode == 201) {
       return const Success(null);
     } else {
@@ -657,20 +669,22 @@ Future<Result<void, Exception>> createTemplate(
 }
 
 Future<Result<List<String>, Exception>> fetchGroupContent(
-    String id, category, AppLocalizations localeMsg) async {
-  print("API fetch GR content");
+  String id,
+  category,
+  AppLocalizations localeMsg,
+) async {
   try {
-    Uri url = Uri.parse('$apiUrl/api/objects?id=$id.*&category=$category');
+    final Uri url =
+        Uri.parse('$apiUrl/api/objects?id=$id.*&category=$category');
     final response = await http.get(url, headers: getHeader(token));
     if (response.statusCode == 200 || response.statusCode == 201) {
-      Map<String, dynamic> data = json.decode(response.body);
-      var list = List<Map<String, dynamic>>.from(data["data"]);
-      print(list);
+      final Map<String, dynamic> data = json.decode(response.body);
+      final list = List<Map<String, dynamic>>.from(data["data"]);
       if (list.isEmpty) {
         return Failure(Exception(localeMsg.noObjectsFound));
       } else {
-        List<String> content = [];
-        for (var item in list) {
+        final List<String> content = [];
+        for (final item in list) {
           content.add(item["name"].toString());
         }
         return Success(content);
@@ -686,21 +700,19 @@ Future<Result<List<String>, Exception>> fetchGroupContent(
 
 Future<Result<(List<Tenant>, List<DockerContainer>), Exception>>
     fetchApplications({http.Client? client}) async {
-  print("API get Apps");
   client ??= http.Client();
   try {
-    Uri url = Uri.parse('$apiUrl/api/apps');
+    final Uri url = Uri.parse('$apiUrl/api/apps');
     final response = await client.get(url, headers: getHeader(token));
-    print(response.statusCode);
     if (response.statusCode == 200) {
-      Map<String, dynamic> data = json.decode(response.body);
-      List<Tenant> tenants = [];
-      for (var project in data["tenants"]) {
+      final Map<String, dynamic> data = json.decode(response.body);
+      final List<Tenant> tenants = [];
+      for (final project in data["tenants"]) {
         tenants.add(Tenant.fromMap(project));
       }
-      List<DockerContainer> containers = [];
-      for (var tool in data["tools"]) {
-        var container = DockerContainer.fromMap(tool);
+      final List<DockerContainer> containers = [];
+      for (final tool in data["tools"]) {
+        final container = DockerContainer.fromMap(tool);
         if (container.ports.isNotEmpty) {
           container.ports =
               "http://${container.ports.split(",").last.split("-").first.trim()}";
@@ -711,8 +723,11 @@ Future<Result<(List<Tenant>, List<DockerContainer>), Exception>>
       }
       return Success((tenants, containers));
     } else {
-      return Failure(Exception(
-          wrapResponseMsg(response, message: 'Failed to load objects')));
+      return Failure(
+        Exception(
+          wrapResponseMsg(response, message: 'Failed to load objects'),
+        ),
+      );
     }
   } on Exception catch (e) {
     return Failure(e);
@@ -720,7 +735,6 @@ Future<Result<(List<Tenant>, List<DockerContainer>), Exception>>
 }
 
 Future<Result<Stream<String>, Exception>> createTenant(Tenant tenant) async {
-  print("API create Tenants");
   try {
     return connectStream('POST', '$apiUrl/api/tenants', tenant.toJson());
   } on Exception catch (e) {
@@ -729,17 +743,18 @@ Future<Result<Stream<String>, Exception>> createTenant(Tenant tenant) async {
 }
 
 Future<Result<Stream<String>, Exception>> updateTenant(Tenant tenant) async {
-  print("API update Tenants");
   try {
     return connectStream(
-        'PUT', '$apiUrl/api/tenants/${tenant.name}', tenant.toJson());
+      'PUT',
+      '$apiUrl/api/tenants/${tenant.name}',
+      tenant.toJson(),
+    );
   } on Exception catch (e) {
     return Failure(e);
   }
 }
 
 Future<Result<Stream<String>, Exception>> stopTenant(String tenantName) async {
-  print("API stop Tenants");
   try {
     return connectStream('POST', '$apiUrl/api/tenants/$tenantName/stop', "");
   } on Exception catch (e) {
@@ -748,7 +763,6 @@ Future<Result<Stream<String>, Exception>> stopTenant(String tenantName) async {
 }
 
 Future<Result<Stream<String>, Exception>> startTenant(String tenantName) async {
-  print("API start Tenants");
   try {
     return connectStream('POST', '$apiUrl/api/tenants/$tenantName/start', "");
   } on Exception catch (e) {
@@ -757,7 +771,10 @@ Future<Result<Stream<String>, Exception>> startTenant(String tenantName) async {
 }
 
 Future<Result<Stream<String>, Exception>> connectStream(
-    String method, String urlStr, String body) async {
+  String method,
+  String urlStr,
+  String body,
+) async {
   if (kIsWeb) {
     // Special SSE handling for web
     int progress = 0;
@@ -785,37 +802,47 @@ Future<Result<Stream<String>, Exception>> connectStream(
     return Success(streamController.stream);
   } else {
     // SSE handle for other builds
-    Uri url = Uri.parse(urlStr);
+    final Uri url = Uri.parse(urlStr);
     final client = http.Client();
-    var request = http.Request(method, url)..headers.addAll(getHeader(token));
+    final request = http.Request(method, url)..headers.addAll(getHeader(token));
     request.body = body;
     final response = await client.send(request);
     if (response.statusCode == 200) {
       return Success(response.stream.toStringStream());
     } else {
-      return Failure(Exception(wrapResponseMsg(
-          http.Response("", response.statusCode),
-          message: 'Error processing tenant')));
+      return Failure(
+        Exception(
+          wrapResponseMsg(
+            http.Response("", response.statusCode),
+            message: 'Error processing tenant',
+          ),
+        ),
+      );
     }
   }
 }
 
 Future<Result<void, Exception>> uploadImage(
-    PlatformFile image, String tenant) async {
-  print("API upload Tenant logo");
+  PlatformFile image,
+  String tenant,
+) async {
   try {
-    Uri url = Uri.parse('$apiUrl/api/tenants/$tenant/logo');
-    var request = http.MultipartRequest("POST", url);
+    final Uri url = Uri.parse('$apiUrl/api/tenants/$tenant/logo');
+    final request = http.MultipartRequest("POST", url);
     request.headers.addAll(getHeader(token));
-    request.files.add(http.MultipartFile.fromBytes("file", image.bytes!,
-        filename: image.name));
+    request.files.add(
+      http.MultipartFile.fromBytes(
+        "file",
+        image.bytes!,
+        filename: image.name,
+      ),
+    );
 
-    var response = await request.send();
-    print(response.statusCode);
+    final response = await request.send();
     if (response.statusCode == 200) {
       return const Success(null);
     } else {
-      String errorMsg = await response.stream.bytesToString();
+      final String errorMsg = await response.stream.bytesToString();
       return Failure(Exception(errorMsg));
     }
   } on Exception catch (e) {
@@ -824,51 +851,64 @@ Future<Result<void, Exception>> uploadImage(
 }
 
 Future<Result<dynamic, Exception>> backupTenantDB(
-    String tenantName, String password, bool shouldDownload) async {
-  print("API backup Tenants");
+  String tenantName,
+  String password,
+  bool shouldDownload,
+) async {
   try {
-    Uri url = Uri.parse('$apiUrl/api/tenants/$tenantName/backup');
-    final response = await http.post(url,
-        body: json.encode(<String, dynamic>{
-          'password': password,
-          'shouldDownload': shouldDownload,
-        }),
-        headers: getHeader(token));
-    print(response);
+    final Uri url = Uri.parse('$apiUrl/api/tenants/$tenantName/backup');
+    final response = await http.post(
+      url,
+      body: json.encode(<String, dynamic>{
+        'password': password,
+        'shouldDownload': shouldDownload,
+      }),
+      headers: getHeader(token),
+    );
     if (response.statusCode == 200) {
       if (shouldDownload) {
         return Success(response.bodyBytes);
       } else {
-        return Success(response.body.toString());
+        return Success(response.body);
       }
     } else {
-      String data = json.decode(response.body);
-      return Failure(Exception(
-          wrapResponseMsg(response, message: "Error backing up tenant $data")));
+      final String data = json.decode(response.body);
+      return Failure(
+        Exception(
+          wrapResponseMsg(response, message: "Error backing up tenant $data"),
+        ),
+      );
     }
   } on Exception catch (e) {
     return Failure(e);
   }
 }
 
-Future<Result<String, Exception>> restoreTenantDB(PlatformFile backup,
-    String tenantName, String password, bool shouldDrop) async {
-  print("API upload Tenant restore");
+Future<Result<String, Exception>> restoreTenantDB(
+  PlatformFile backup,
+  String tenantName,
+  String password,
+  bool shouldDrop,
+) async {
   try {
-    Uri url = Uri.parse('$apiUrl/api/tenants/$tenantName/restore');
-    var request = http.MultipartRequest("POST", url);
+    final Uri url = Uri.parse('$apiUrl/api/tenants/$tenantName/restore');
+    final request = http.MultipartRequest("POST", url);
     request.fields['password'] = password;
     request.fields['shouldDrop'] = shouldDrop.toString();
     request.headers.addAll(getHeader(token));
-    request.files.add(http.MultipartFile.fromBytes("file", backup.bytes!,
-        filename: backup.name));
-    var response = await request.send();
-    print(response.statusCode);
+    request.files.add(
+      http.MultipartFile.fromBytes(
+        "file",
+        backup.bytes!,
+        filename: backup.name,
+      ),
+    );
+    final response = await request.send();
     if (response.statusCode == 200) {
-      String msg = await response.stream.bytesToString();
+      final String msg = await response.stream.bytesToString();
       return Success(msg);
     } else {
-      String errorMsg = await response.stream.bytesToString();
+      final String errorMsg = await response.stream.bytesToString();
       return Failure(Exception(errorMsg));
     }
   } on Exception catch (e) {
@@ -877,37 +917,51 @@ Future<Result<String, Exception>> restoreTenantDB(PlatformFile backup,
 }
 
 Future<Result<void, Exception>> createBackendServer(
-    Map<String, dynamic> newBackend) async {
-  print("API create Back Server");
+  Map<String, dynamic> newBackend,
+) async {
   try {
-    Uri url = Uri.parse('$apiUrl/api/servers');
-    final response = await http.post(url,
-        body: json.encode(newBackend), headers: getHeader(token));
-    print(response);
+    final Uri url = Uri.parse('$apiUrl/api/servers');
+    final response = await http.post(
+      url,
+      body: json.encode(newBackend),
+      headers: getHeader(token),
+    );
     if (response.statusCode == 200) {
       return const Success(null);
     } else {
-      return Failure(Exception(wrapResponseMsg(response,
-          message: "Error creating backend: ${response.body}")));
+      return Failure(
+        Exception(
+          wrapResponseMsg(
+            response,
+            message: "Error creating backend: ${response.body}",
+          ),
+        ),
+      );
     }
   } on Exception catch (e) {
     return Failure(e);
   }
 }
 
-Future<Result<void, Exception>> deleteTenant(String objName,
-    {http.Client? client}) async {
-  print("API delete Tenant");
+Future<Result<void, Exception>> deleteTenant(
+  String objName, {
+  http.Client? client,
+}) async {
   client ??= http.Client();
   try {
-    Uri url = Uri.parse('$apiUrl/api/tenants/$objName');
+    final Uri url = Uri.parse('$apiUrl/api/tenants/$objName');
     final response = await client.delete(url, headers: getHeader(token));
-    print(response.statusCode);
     if (response.statusCode == 200) {
       return const Success(null);
     } else {
-      return Failure(Exception(wrapResponseMsg(response,
-          message: "Error deleting tenant: ${response.body}")));
+      return Failure(
+        Exception(
+          wrapResponseMsg(
+            response,
+            message: "Error deleting tenant: ${response.body}",
+          ),
+        ),
+      );
     }
   } on Exception catch (e) {
     return Failure(e);
@@ -915,45 +969,50 @@ Future<Result<void, Exception>> deleteTenant(String objName,
 }
 
 Future<Result<List<DockerContainer>, Exception>> fetchTenantDockerInfo(
-    String tenantName,
-    {http.Client? client}) async {
-  print("API get Tenant Docker Info");
+  String tenantName, {
+  http.Client? client,
+}) async {
   client ??= http.Client();
   try {
-    Uri url = Uri.parse('$apiUrl/api/tenants/$tenantName');
+    final Uri url = Uri.parse('$apiUrl/api/tenants/$tenantName');
     final response = await client.get(url, headers: getHeader(token));
-    print(response.statusCode);
     if (response.statusCode == 200) {
-      List<dynamic> data = json.decode(response.body);
-      List<DockerContainer> converted = [];
-      for (var item in data) {
+      final List<dynamic> data = json.decode(response.body);
+      final List<DockerContainer> converted = [];
+      for (final item in data) {
         converted.add(DockerContainer.fromMap(item));
       }
       return Success(converted);
     } else {
-      print('${response.statusCode}: ${response.body}');
-      return Failure(Exception(wrapResponseMsg(response,
-          message: "Error backing up tenant ${response.body}")));
+      return Failure(
+        Exception(
+          wrapResponseMsg(
+            response,
+            message: "Error backing up tenant ${response.body}",
+          ),
+        ),
+      );
     }
   } on Exception catch (e) {
     return Failure(e);
   }
 }
 
-Future<Result<String, Exception>> fetchContainerLogs(String name,
-    {http.Client? client}) async {
-  print("API get Container Logs $name");
+Future<Result<String, Exception>> fetchContainerLogs(
+  String name, {
+  http.Client? client,
+}) async {
   client ??= http.Client();
   try {
-    Uri url = Uri.parse('$apiUrl/api/containers/$name');
+    final Uri url = Uri.parse('$apiUrl/api/containers/$name');
     final response = await client.get(url, headers: getHeader(token));
-    print(response.statusCode);
     if (response.statusCode == 200) {
-      Map<String, dynamic> data = json.decode(response.body);
+      final Map<String, dynamic> data = json.decode(response.body);
       return Success(data["logs"].toString());
     } else {
       return Failure(
-          Exception(wrapResponseMsg(response, message: "Failed to load logs")));
+        Exception(wrapResponseMsg(response, message: "Failed to load logs")),
+      );
     }
   } on Exception catch (e) {
     return Failure(e);
@@ -961,18 +1020,19 @@ Future<Result<String, Exception>> fetchContainerLogs(String name,
 }
 
 Future<Result<void, Exception>> createNetbox(Nbox netbox) async {
-  print("API create Netbox");
   try {
-    Uri url = Uri.parse('$apiUrl/api/tools/netbox');
+    final Uri url = Uri.parse('$apiUrl/api/tools/netbox');
     final response =
         await http.post(url, body: netbox.toJson(), headers: getHeader(token));
-    print(response);
     if (response.statusCode == 200) {
       return const Success(null);
     } else {
-      String data = json.decode(response.body);
-      return Failure(Exception(
-          wrapResponseMsg(response, message: "Error creating netbox $data")));
+      final String data = json.decode(response.body);
+      return Failure(
+        Exception(
+          wrapResponseMsg(response, message: "Error creating netbox $data"),
+        ),
+      );
     }
   } on Exception catch (e) {
     return Failure(e);
@@ -980,18 +1040,22 @@ Future<Result<void, Exception>> createNetbox(Nbox netbox) async {
 }
 
 Future<Result<void, Exception>> createNautobot(Nbox nautobot) async {
-  print("API create nautobot");
   try {
-    Uri url = Uri.parse('$apiUrl/api/tools/nautobot');
-    final response = await http.post(url,
-        body: nautobot.toJson(), headers: getHeader(token));
-    print(response);
+    final Uri url = Uri.parse('$apiUrl/api/tools/nautobot');
+    final response = await http.post(
+      url,
+      body: nautobot.toJson(),
+      headers: getHeader(token),
+    );
     if (response.statusCode == 200) {
       return const Success(null);
     } else {
-      String data = json.decode(response.body);
-      return Failure(Exception(
-          wrapResponseMsg(response, message: "Error creating nautobot $data")));
+      final String data = json.decode(response.body);
+      return Failure(
+        Exception(
+          wrapResponseMsg(response, message: "Error creating nautobot $data"),
+        ),
+      );
     }
   } on Exception catch (e) {
     return Failure(e);
@@ -999,23 +1063,28 @@ Future<Result<void, Exception>> createNautobot(Nbox nautobot) async {
 }
 
 Future<Result<void, Exception>> createOpenDcim(
-    String dcimPort, adminerPort) async {
-  print("API create OpenDCIM");
+  String dcimPort,
+  adminerPort,
+) async {
   try {
-    Uri url = Uri.parse('$apiUrl/api/tools/opendcim');
-    final response = await http.post(url,
-        body: json.encode(<String, dynamic>{
-          'dcimPort': dcimPort,
-          'adminerPort': adminerPort,
-        }),
-        headers: getHeader(token));
-    print(response);
+    final Uri url = Uri.parse('$apiUrl/api/tools/opendcim');
+    final response = await http.post(
+      url,
+      body: json.encode(<String, dynamic>{
+        'dcimPort': dcimPort,
+        'adminerPort': adminerPort,
+      }),
+      headers: getHeader(token),
+    );
     if (response.statusCode == 200) {
       return const Success(null);
     } else {
-      String data = json.decode(response.body);
-      return Failure(Exception(
-          wrapResponseMsg(response, message: "Error creating netbox $data")));
+      final String data = json.decode(response.body);
+      return Failure(
+        Exception(
+          wrapResponseMsg(response, message: "Error creating netbox $data"),
+        ),
+      );
     }
   } on Exception catch (e) {
     return Failure(e);
@@ -1023,17 +1092,21 @@ Future<Result<void, Exception>> createOpenDcim(
 }
 
 Future<Result<void, Exception>> deleteTool(String tool) async {
-  print("API delete Tool");
   try {
-    Uri url = Uri.parse('$apiUrl/api/tools/$tool');
+    final Uri url = Uri.parse('$apiUrl/api/tools/$tool');
     final response = await http.delete(url, headers: getHeader(token));
-    print(response);
     if (response.statusCode == 200) {
       return const Success(null);
     } else {
-      String data = json.decode(response.body);
-      return Failure(Exception(wrapResponseMsg(response,
-          message: "Error creating application $data")));
+      final String data = json.decode(response.body);
+      return Failure(
+        Exception(
+          wrapResponseMsg(
+            response,
+            message: "Error creating application $data",
+          ),
+        ),
+      );
     }
   } on Exception catch (e) {
     return Failure(e);
@@ -1041,22 +1114,26 @@ Future<Result<void, Exception>> deleteTool(String tool) async {
 }
 
 Future<Result<void, Exception>> uploadNetboxDump(PlatformFile file) async {
-  print("API upload netbox dump");
   try {
-    Uri url = Uri.parse('$apiUrl/api/tools/netbox/dump');
-    var request = http.MultipartRequest("POST", url);
+    final Uri url = Uri.parse('$apiUrl/api/tools/netbox/dump');
+    final request = http.MultipartRequest("POST", url);
     request.headers.addAll(getHeader(token));
     request.files.add(
-        http.MultipartFile.fromBytes("file", file.bytes!, filename: file.name));
-    var response = await request.send();
-    print(response.statusCode);
+      http.MultipartFile.fromBytes("file", file.bytes!, filename: file.name),
+    );
+    final response = await request.send();
     if (response.statusCode == 200) {
       return const Success(null);
     } else {
-      String errorMsg = await response.stream.bytesToString();
-      return Failure(Exception(wrapResponseMsg(
-          http.Response(errorMsg, response.statusCode),
-          message: errorMsg)));
+      final String errorMsg = await response.stream.bytesToString();
+      return Failure(
+        Exception(
+          wrapResponseMsg(
+            http.Response(errorMsg, response.statusCode),
+            message: errorMsg,
+          ),
+        ),
+      );
     }
   } on Exception catch (e) {
     return Failure(e);
@@ -1064,17 +1141,21 @@ Future<Result<void, Exception>> uploadNetboxDump(PlatformFile file) async {
 }
 
 Future<Result<void, Exception>> importNetboxDump() async {
-  print("API import dump Netbox");
   try {
-    Uri url = Uri.parse('$apiUrl/api/tools/netbox/import');
+    final Uri url = Uri.parse('$apiUrl/api/tools/netbox/import');
     final response = await http.post(url, headers: getHeader(token));
-    print(response);
     if (response.statusCode == 200) {
       return const Success(null);
     } else {
-      String data = json.decode(response.body);
-      return Failure(Exception(wrapResponseMsg(response,
-          message: "Error importing netbox dump: $data")));
+      final String data = json.decode(response.body);
+      return Failure(
+        Exception(
+          wrapResponseMsg(
+            response,
+            message: "Error importing netbox dump: $data",
+          ),
+        ),
+      );
     }
   } on Exception catch (e) {
     return Failure(e);
@@ -1082,12 +1163,11 @@ Future<Result<void, Exception>> importNetboxDump() async {
 }
 
 Future<Result<Map<String, dynamic>, Exception>> fetchSchema(String id) async {
-  print("API fetch Schema $id");
   try {
-    Uri url = Uri.parse('$apiUrl/api/schemas/$id');
+    final Uri url = Uri.parse('$apiUrl/api/schemas/$id');
     final response = await http.get(url, headers: getHeader(token));
     if (response.statusCode == 200) {
-      Map<String, dynamic> data = json.decode(response.body);
+      final Map<String, dynamic> data = json.decode(response.body);
       return Success(data);
     } else {
       final Map<String, dynamic> data = json.decode(response.body);

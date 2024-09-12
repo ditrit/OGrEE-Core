@@ -2,7 +2,7 @@ part of 'tree_node_tile.dart';
 
 class _NodeSelector extends StatelessWidget {
   final String id;
-  const _NodeSelector({super.key, required this.id});
+  const _NodeSelector({required this.id});
 
   @override
   Widget build(BuildContext context) {

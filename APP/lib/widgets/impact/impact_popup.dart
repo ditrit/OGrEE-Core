@@ -7,21 +7,24 @@ class ImpactOptionsPopup extends StatefulWidget {
   List<String> selectedCategories;
   List<String> selectedPtypes;
   List<String> selectedVtypes;
-  final Function(List<String> selectedCategories, List<String> selectedPtypes,
-      List<String> selectedVtypes) parentCallback;
-  ImpactOptionsPopup(
-      {super.key,
-      required this.selectedCategories,
-      required this.selectedPtypes,
-      required this.selectedVtypes,
-      required this.parentCallback});
+  final Function(
+    List<String> selectedCategories,
+    List<String> selectedPtypes,
+    List<String> selectedVtypes,
+  ) parentCallback;
+  ImpactOptionsPopup({
+    super.key,
+    required this.selectedCategories,
+    required this.selectedPtypes,
+    required this.selectedVtypes,
+    required this.parentCallback,
+  });
 
   @override
   State<ImpactOptionsPopup> createState() => _ImpactOptionsPopupState();
 }
 
 class _ImpactOptionsPopupState extends State<ImpactOptionsPopup> {
-  bool _isSmallDisplay = false;
   List<String> ptypes = ["blade", "chassis", "disk", "processor"];
   List<String> vtypes = ["application", "cluster", "storage", "vm"];
   late List<String> selectedCategories;
@@ -39,8 +42,6 @@ class _ImpactOptionsPopupState extends State<ImpactOptionsPopup> {
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
-    _isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
-
     return Center(
       child: Container(
         height: 330,
@@ -51,69 +52,73 @@ class _ImpactOptionsPopupState extends State<ImpactOptionsPopup> {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(40, 20, 40, 15),
           child: ScaffoldMessenger(
-              child: Builder(
-            builder: (context) => Scaffold(
-              backgroundColor: Colors.white,
-              body: Column(
-                children: [
-                  Center(
-                    child: Text(
-                      localeMsg.indirectOptions,
-                      style: Theme.of(context).textTheme.headlineMedium,
+            child: Builder(
+              builder: (context) => Scaffold(
+                backgroundColor: Colors.white,
+                body: Column(
+                  children: [
+                    Center(
+                      child: Text(
+                        localeMsg.indirectOptions,
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 15),
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    height: 200,
-                    child: Wrap(
-                      children: [
-                        Column(
-                          children: [
-                            const Text(
-                              "Category",
-                            ),
-                            SizedBox(
-                              height: 200,
-                              width: 200,
-                              child: ListView.builder(
+                    const SizedBox(height: 15),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      height: 200,
+                      child: Wrap(
+                        children: [
+                          Column(
+                            children: [
+                              const Text(
+                                "Category",
+                              ),
+                              SizedBox(
+                                height: 200,
+                                width: 200,
+                                child: ListView.builder(
                                   itemCount: PhyCategories.values.length,
                                   itemBuilder:
                                       (BuildContext context, int index) {
-                                    var name = PhyCategories.values[index].name;
+                                    final name =
+                                        PhyCategories.values[index].name;
                                     return CheckboxListTile(
                                       controlAffinity:
                                           ListTileControlAffinity.leading,
                                       dense: true,
                                       value: selectedCategories.contains(
-                                          PhyCategories.values[index].name),
+                                        PhyCategories.values[index].name,
+                                      ),
                                       onChanged: (bool? selected) {
                                         setState(() {
                                           if (selectedCategories.contains(
-                                              PhyCategories
-                                                  .values[index].name)) {
+                                            PhyCategories.values[index].name,
+                                          )) {
                                             selectedCategories.remove(
-                                                PhyCategories
-                                                    .values[index].name);
+                                              PhyCategories.values[index].name,
+                                            );
                                           } else {
-                                            selectedCategories.add(PhyCategories
-                                                .values[index].name);
+                                            selectedCategories.add(
+                                              PhyCategories.values[index].name,
+                                            );
                                           }
                                         });
                                       },
                                       title: Text(name),
                                     );
-                                  }),
-                            ),
-                          ],
-                        ),
-                        Column(
-                          children: [
-                            const Text("Physical Type"),
-                            SizedBox(
-                              height: 200,
-                              width: 200,
-                              child: ListView.builder(
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                          Column(
+                            children: [
+                              const Text("Physical Type"),
+                              SizedBox(
+                                height: 200,
+                                width: 200,
+                                child: ListView.builder(
                                   itemCount: ptypes.length,
                                   itemBuilder:
                                       (BuildContext context, int index) {
@@ -134,17 +139,18 @@ class _ImpactOptionsPopupState extends State<ImpactOptionsPopup> {
                                       },
                                       title: Text(ptypes[index]),
                                     );
-                                  }),
-                            ),
-                          ],
-                        ),
-                        Column(
-                          children: [
-                            const Text("Virtual Type"),
-                            SizedBox(
-                              height: 200,
-                              width: 200,
-                              child: ListView.builder(
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                          Column(
+                            children: [
+                              const Text("Virtual Type"),
+                              SizedBox(
+                                height: 200,
+                                width: 200,
+                                child: ListView.builder(
                                   itemCount: vtypes.length,
                                   itemBuilder:
                                       (BuildContext context, int index) {
@@ -165,31 +171,37 @@ class _ImpactOptionsPopupState extends State<ImpactOptionsPopup> {
                                       },
                                       title: Text(vtypes[index]),
                                     );
-                                  }),
-                            ),
-                          ],
-                        )
-                      ],
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      ElevatedButton.icon(
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        ElevatedButton.icon(
                           onPressed: () {
-                            widget.parentCallback(selectedCategories,
-                                selectedPtypes, selectedVtypes);
+                            widget.parentCallback(
+                              selectedCategories,
+                              selectedPtypes,
+                              selectedVtypes,
+                            );
                             Navigator.of(context).pop();
                           },
                           label: const Text("OK"),
-                          icon: const Icon(Icons.thumb_up, size: 16))
-                    ],
-                  )
-                ],
+                          icon: const Icon(Icons.thumb_up, size: 16),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-          )),
+          ),
         ),
       ),
     );

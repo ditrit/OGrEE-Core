@@ -23,7 +23,6 @@ class _AdvancedFindFieldState extends State<_AdvancedFindField> {
 
     return TextField(
       controller: controller,
-      autofocus: false,
       style: const TextStyle(fontSize: 14),
       decoration: GetFormInputDecoration(
         false,
@@ -44,8 +43,10 @@ class _AdvancedFindFieldState extends State<_AdvancedFindField> {
               color: Colors.white,
             ),
             padding: const EdgeInsets.all(13),
-            child: const Icon(Icons.info_outline_rounded,
-                color: Colors.blueAccent),
+            child: const Icon(
+              Icons.info_outline_rounded,
+              color: Colors.blueAccent,
+            ),
           ),
         ),
       ),
@@ -71,11 +72,13 @@ class _AdvancedFindFieldState extends State<_AdvancedFindField> {
       return;
     }
 
-    var result = await fetchWithComplexFilter(
-        searchExpression, widget.namespace, localeMsg);
+    final result = await fetchWithComplexFilter(
+      searchExpression,
+      widget.namespace,
+      localeMsg,
+    );
     switch (result) {
       case Success(value: final foundObjs):
-        print(foundObjs);
         ids = getIdsFromObjects(foundObjs);
       case Failure(exception: final exception):
         showSnackBar(messenger, exception.toString(), isError: true);
@@ -99,8 +102,8 @@ class _AdvancedFindFieldState extends State<_AdvancedFindField> {
   }
 
   List<String> getIdsFromObjects(List<Map<String, dynamic>> foundObjs) {
-    List<String> ids = [];
-    for (var obj in foundObjs) {
+    final List<String> ids = [];
+    for (final obj in foundObjs) {
       ids.add(obj["id"] as String);
     }
     return ids;
@@ -113,11 +116,13 @@ class _AdvancedFindFieldState extends State<_AdvancedFindField> {
     final messenger = ScaffoldMessenger.of(context);
     List<TreeNode> nodes;
 
-    var result = await fetchWithComplexFilter(
-        searchExpression, widget.namespace, localeMsg);
+    final result = await fetchWithComplexFilter(
+      searchExpression,
+      widget.namespace,
+      localeMsg,
+    );
     switch (result) {
       case Success(value: final foundObjs):
-        print(foundObjs);
         nodes = getTreeNodesFromObjects(foundObjs, appController);
       case Failure(exception: final exception):
         showSnackBar(messenger, exception.toString(), isError: true);
@@ -140,7 +145,7 @@ class _AdvancedFindFieldState extends State<_AdvancedFindField> {
       if (!appController.treeController.areAllRootsCollapsed) {
         appController.treeController.collapseAll();
       }
-      for (var node in nodes) {
+      for (final node in nodes) {
         appController.treeController.expandAncestors(node);
         appController.scrollTo(node);
         appController.selectNode(node.id);
@@ -150,12 +155,14 @@ class _AdvancedFindFieldState extends State<_AdvancedFindField> {
   }
 
   List<TreeNode> getTreeNodesFromObjects(
-      List<Map<String, dynamic>> foundObjs, TreeAppController appController) {
-    List<TreeNode> nodes = [];
-    for (var obj in foundObjs) {
-      var id = obj["id"] as String;
+    List<Map<String, dynamic>> foundObjs,
+    TreeAppController appController,
+  ) {
+    final List<TreeNode> nodes = [];
+    for (final obj in foundObjs) {
+      final id = obj["id"] as String;
       // search for this obj on root node or in its children
-      for (var root in appController.treeController.roots) {
+      for (final root in appController.treeController.roots) {
         TreeNode? node;
         if (root.id.toLowerCase().contains(id.toLowerCase())) {
           node = root;

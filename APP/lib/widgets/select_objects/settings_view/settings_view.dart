@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/snackbar.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/theme.dart';
-
-import '../treeapp_controller.dart';
-import '../tree_view/tree_node.dart';
-import 'tree_filter.dart';
+import 'package:ogree_app/widgets/select_objects/settings_view/tree_filter.dart';
+import 'package:ogree_app/widgets/select_objects/tree_view/tree_node.dart';
+import 'package:ogree_app/widgets/select_objects/treeapp_controller.dart';
 
 part '_actions.dart';
+part '_advanced_find_field.dart';
 part '_find_node_field.dart';
 part '_header.dart';
 part '_selected_chips.dart';
-part '_advanced_find_field.dart';
 
 const Duration kAnimationDuration = Duration(milliseconds: 300);
 
@@ -24,7 +23,7 @@ class SettingsView extends StatelessWidget {
   final bool isTenantMode;
   final Namespace namespace;
   const SettingsView(
-      {super.key, required this.isTenantMode, required this.namespace});
+      {super.key, required this.isTenantMode, required this.namespace,});
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +64,7 @@ class SettingsView extends StatelessWidget {
               namespace: namespace,
             ),
             const SizedBox(height: 8),
-            namespace != Namespace.Physical ? Container() : const TreeFilter(),
+            if (namespace != Namespace.Physical) Container() else const TreeFilter(),
           ],
         ),
       );

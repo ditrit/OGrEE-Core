@@ -9,11 +9,12 @@ class ConfirmPopup extends StatefulWidget {
   final String objName;
   final bool isStart;
   final Function parentCallback;
-  const ConfirmPopup(
-      {super.key,
-      required this.objName,
-      required this.parentCallback,
-      required this.isStart});
+  const ConfirmPopup({
+    super.key,
+    required this.objName,
+    required this.parentCallback,
+    required this.isStart,
+  });
 
   @override
   State<ConfirmPopup> createState() => _ConfirmPopupState();
@@ -54,89 +55,101 @@ class _ConfirmPopupState extends State<ConfirmPopup> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                    widget.isStart
-                        ? localeMsg.startingTenant
-                        : localeMsg.areYouSure,
-                    style: Theme.of(context).textTheme.headlineMedium),
-                widget.isStart
-                    ? Container()
-                    : Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 30),
-                        child: Text(localeMsg.stopTenantWarn),
-                      ),
-                widget.isStart
-                    ? Container()
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          TextButton.icon(
-                            style: OutlinedButton.styleFrom(
-                                foregroundColor: Colors.blue.shade900),
-                            onPressed: () => Navigator.pop(context),
-                            label: Text(localeMsg.close),
-                            icon: const Icon(
-                              Icons.cancel_outlined,
-                              size: 16,
-                            ),
-                          ),
-                          const SizedBox(width: 15),
-                          ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red.shade900),
-                              onPressed: () => submitStopStartTenant(
-                                  localeMsg, context, widget.objName),
-                              label: const Text("Stop"),
-                              icon: _isLoading
-                                  ? Container(
-                                      width: 22,
-                                      height: 22,
-                                      padding: const EdgeInsets.all(2.0),
-                                      child: const CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 3,
-                                      ),
-                                    )
-                                  : const Icon(Icons.stop_circle, size: 16))
-                        ],
-                      ),
-                _updateResult != ""
-                    ? Padding(
-                        padding: const EdgeInsets.only(top: 12),
-                        child: Container(
-                          height: 110,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            color: Colors.black,
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: ListView(
-                              controller: _outputController,
-                              children: [
-                                SelectableText(
-                                  "Output:$_updateResult",
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                              ],
-                            ),
-                          ),
+                  widget.isStart
+                      ? localeMsg.startingTenant
+                      : localeMsg.areYouSure,
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
+                if (widget.isStart)
+                  Container()
+                else
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 30),
+                    child: Text(localeMsg.stopTenantWarn),
+                  ),
+                if (widget.isStart)
+                  Container()
+                else
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.blue.shade900,
                         ),
-                      )
-                    : Container(),
-                widget.isStart
-                    ? Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
+                        onPressed: () => Navigator.pop(context),
+                        label: Text(localeMsg.close),
+                        icon: const Icon(
+                          Icons.cancel_outlined,
+                          size: 16,
+                        ),
+                      ),
+                      const SizedBox(width: 15),
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red.shade900,
+                        ),
+                        onPressed: () => submitStopStartTenant(
+                          localeMsg,
+                          context,
+                          widget.objName,
+                        ),
+                        label: const Text("Stop"),
+                        icon: _isLoading
+                            ? Container(
+                                width: 22,
+                                height: 22,
+                                padding: const EdgeInsets.all(2.0),
+                                child: const CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 3,
+                                ),
+                              )
+                            : const Icon(Icons.stop_circle, size: 16),
+                      ),
+                    ],
+                  ),
+                if (_updateResult != "")
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Container(
+                      height: 110,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color: Colors.black,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ListView(
+                          controller: _outputController,
                           children: [
-                            ElevatedButton.icon(
-                                onPressed: () => Navigator.pop(context),
-                                label: const Text("OK"),
-                                icon: const Icon(Icons.check_circle, size: 16))
+                            SelectableText(
+                              "Output:$_updateResult",
+                              style: const TextStyle(color: Colors.white),
+                            ),
                           ],
                         ),
-                      )
-                    : Container(),
+                      ),
+                    ),
+                  )
+                else
+                  Container(),
+                if (widget.isStart)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: () => Navigator.pop(context),
+                          label: const Text("OK"),
+                          icon: const Icon(Icons.check_circle, size: 16),
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  Container(),
               ],
             ),
           ),
@@ -145,8 +158,11 @@ class _ConfirmPopupState extends State<ConfirmPopup> {
     );
   }
 
-  submitStopStartTenant(AppLocalizations localeMsg, BuildContext popupContext,
-      String tenantName) async {
+  submitStopStartTenant(
+    AppLocalizations localeMsg,
+    BuildContext popupContext,
+    String tenantName,
+  ) async {
     final messenger = ScaffoldMessenger.of(popupContext);
     Result<Stream<String>, Exception> result;
     setState(() {
@@ -163,10 +179,9 @@ class _ConfirmPopupState extends State<ConfirmPopup> {
         if (_updateResult.isNotEmpty) {
           _updateResult = "$_updateResult\nOutput:";
         }
-        await for (var chunk in value) {
+        await for (final chunk in value) {
           // Process each chunk as it is received
-          print(chunk);
-          var newLine = chunk.split("data:").last.trim();
+          final newLine = chunk.split("data:").last.trim();
           if (newLine.isNotEmpty) {
             setState(() {
               _updateResult = "$_updateResult\n$newLine";
@@ -185,17 +200,21 @@ class _ConfirmPopupState extends State<ConfirmPopup> {
           setState(() {
             _isLoading = false;
           });
-          showSnackBar(messenger, "$finalMsg. Check output log below.",
-              isError: true);
+          showSnackBar(
+            messenger,
+            "$finalMsg. Check output log below.",
+            isError: true,
+          );
         } else {
           widget.parentCallback();
-          if (context.mounted) {
+          if (mounted) {
             showSnackBar(
-                ScaffoldMessenger.of(context),
-                widget.isStart
-                    ? "${localeMsg.startTenantOK} 🥳"
-                    : localeMsg.stopTenantOK,
-                isSuccess: true);
+              ScaffoldMessenger.of(context),
+              widget.isStart
+                  ? "${localeMsg.startTenantOK} 🥳"
+                  : localeMsg.stopTenantOK,
+              isSuccess: true,
+            );
           }
           if (popupContext.mounted) Navigator.of(popupContext).pop();
         }

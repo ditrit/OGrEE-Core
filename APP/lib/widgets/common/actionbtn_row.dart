@@ -15,7 +15,7 @@ class ActionBtnRow extends StatefulWidget {
       required this.submitCreate,
       required this.submitModify,
       required this.submitDelete,
-      this.onlyDelete = false});
+      this.onlyDelete = false,});
   @override
   State<ActionBtnRow> createState() => _ActionBtnRowState();
 }
@@ -43,10 +43,9 @@ class _ActionBtnRowState extends State<ActionBtnRow> {
           ),
         ),
         // const SizedBox(width: 15),
-        widget.isEdit
-            ? TextButton.icon(
+        if (widget.isEdit) TextButton.icon(
                 style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.red.shade900),
+                    foregroundColor: Colors.red.shade900,),
                 onPressed: () async {
                   setState(() {
                     _isLoadingDelete = true;
@@ -71,12 +70,9 @@ class _ActionBtnRowState extends State<ActionBtnRow> {
                         Icons.delete,
                         size: 16,
                       ),
-              )
-            : Container(),
-        _isSmallDisplay ? Container() : const SizedBox(width: 10),
-        widget.onlyDelete
-            ? Container()
-            : ElevatedButton.icon(
+              ) else Container(),
+        if (_isSmallDisplay) Container() else const SizedBox(width: 10),
+        if (widget.onlyDelete) Container() else ElevatedButton.icon(
                 onPressed: () async {
                   setState(() {
                     _isLoading = true;
@@ -100,7 +96,7 @@ class _ActionBtnRowState extends State<ActionBtnRow> {
                           strokeWidth: 3,
                         ),
                       )
-                    : const Icon(Icons.check_circle, size: 16))
+                    : const Icon(Icons.check_circle, size: 16),),
       ],
     );
   }

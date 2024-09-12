@@ -6,9 +6,9 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 Future<Map<String, String>> getFrenchMessages() async {
   final String response = await rootBundle.loadString('lib/l10n/app_fr.arb');
-  Map<String, dynamic> data = json.decode(response);
-  Map<String, String> resp = {};
-  for (String key in data.keys) {
+  final Map<String, dynamic> data = json.decode(response);
+  final Map<String, String> resp = {};
+  for (final String key in data.keys) {
     resp[key] = data[key].toString();
   }
   return resp;

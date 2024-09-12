@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/theme.dart';
+import 'package:ogree_app/widgets/select_objects/settings_view/settings_view.dart';
 import 'package:ogree_app/widgets/select_objects/treeapp_controller.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-
-import 'settings_view.dart';
 
 const lastLevel = 3;
 
@@ -18,13 +17,13 @@ class TreeFilter extends StatefulWidget {
   const TreeFilter({super.key});
 
   @override
-  State<TreeFilter> createState() => _TreeFilterState();
+  State<TreeFilter> createState() => TreeFilterState();
 
-  static _TreeFilterState? of(BuildContext context) =>
-      context.findAncestorStateOfType<_TreeFilterState>();
+  static TreeFilterState? of(BuildContext context) =>
+      context.findAncestorStateOfType<TreeFilterState>();
 }
 
-class _TreeFilterState extends State<TreeFilter> {
+class TreeFilterState extends State<TreeFilter> {
   Map<int, List<String>> _filterLevels = {0: [], 1: [], 2: [], 3: []};
   Map<int, List<String>> get filterLevels => _filterLevels;
 
@@ -37,7 +36,7 @@ class _TreeFilterState extends State<TreeFilter> {
     // Get which fields to filter and their list of suggestions
     int idx = 0;
     if (TreeAppController.of(context).fetchedCategories["KeysOrder"] != null) {
-      for (String key
+      for (final String key
           in TreeAppController.of(context).fetchedCategories["KeysOrder"]!) {
         objectsPerCategory[key.capitalize()] =
             TreeAppController.of(context).fetchedCategories[key] ??
@@ -48,47 +47,48 @@ class _TreeFilterState extends State<TreeFilter> {
     }
 
     return Column(
-        children: objectsPerCategory.keys.map((key) {
-      // Input enabled only if child of selected filter or if last level
-      var enabled = enumParams[key]! > getMaxFilterLevel() ||
-          enumParams[key]! == lastLevel;
-      List<String> options = objectsPerCategory[key]!;
+      children: objectsPerCategory.keys.map((key) {
+        // Input enabled only if child of selected filter or if last level
+        final enabled = enumParams[key]! > getMaxFilterLevel() ||
+            enumParams[key]! == lastLevel;
+        List<String> options = objectsPerCategory[key]!;
 
-      // Update suggestions according to last selected level
-      if (enabled && !isFilterEmpty(topLevel: lastLevel - 1)) {
-        var lastLevelFilters =
-            _filterLevels[getMaxFilterLevel(topLevel: lastLevel - 1)]!;
-        options = options.where((obj) {
-          for (var filter in lastLevelFilters) {
-            if (obj.contains(filter)) return true;
-          }
-          return false;
-        }).toList();
-      }
+        // Update suggestions according to last selected level
+        if (enabled && !isFilterEmpty(topLevel: lastLevel - 1)) {
+          final lastLevelFilters =
+              _filterLevels[getMaxFilterLevel(topLevel: lastLevel - 1)]!;
+          options = options.where((obj) {
+            for (final filter in lastLevelFilters) {
+              if (obj.contains(filter)) return true;
+            }
+            return false;
+          }).toList();
+        }
 
-      // Special filter for last level with multiple selection
-      if (enumParams[key]! == lastLevel &&
-          _filterLevels[lastLevel]!.isNotEmpty) {
-        options = options
-            .where((obj) => !_filterLevels[lastLevel]!.contains(obj))
-            .toList();
-      }
+        // Special filter for last level with multiple selection
+        if (enumParams[key]! == lastLevel &&
+            _filterLevels[lastLevel]!.isNotEmpty) {
+          options = options
+              .where((obj) => !_filterLevels[lastLevel]!.contains(obj))
+              .toList();
+        }
 
-      return AutocompleteFilter(
-        enabled: enabled,
-        param: key,
-        paramLevel: enumParams[key]!,
-        options: options,
-        notifyParent: NotifyChildSelection,
-        showClearFilter: enumParams[key] == 0 ? !isFilterEmpty() : false,
-      );
-    }).toList());
+        return AutocompleteFilter(
+          enabled: enabled,
+          param: key,
+          paramLevel: enumParams[key]!,
+          options: options,
+          notifyParent: notifyChildSelection,
+          showClearFilter: enumParams[key] == 0 ? !isFilterEmpty() : false,
+        );
+      }).toList(),
+    );
   }
 
   // Callback for child to update parent state
-  void NotifyChildSelection({bool isClearAll = false}) {
+  void notifyChildSelection({bool isClearAll = false}) {
     if (isClearAll) {
-      for (var level in _filterLevels.keys) {
+      for (final level in _filterLevels.keys) {
         _filterLevels[level] = [];
       }
       TreeAppController.of(context).filterTree("", -1);
@@ -127,14 +127,15 @@ class AutocompleteFilter extends StatefulWidget {
   final Function({bool isClearAll}) notifyParent;
   final bool showClearFilter;
 
-  const AutocompleteFilter(
-      {super.key,
-      required this.enabled,
-      required this.param,
-      required this.paramLevel,
-      required this.options,
-      required this.notifyParent,
-      required this.showClearFilter});
+  const AutocompleteFilter({
+    super.key,
+    required this.enabled,
+    required this.param,
+    required this.paramLevel,
+    required this.options,
+    required this.notifyParent,
+    required this.showClearFilter,
+  });
 
   @override
   State<AutocompleteFilter> createState() => _AutocompleteFilterState();
@@ -153,50 +154,55 @@ class _AutocompleteFilterState extends State<AutocompleteFilter> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        widget.paramLevel == 0
-            ? Wrap(
-                children: [
-                  SettingsHeader(text: localeMsg.categoryFilters),
-                  widget.showClearFilter
-                      ? OutlinedButton(
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.orange.shade700,
-                            backgroundColor: Colors.orange.shade100,
-                            padding: const EdgeInsets.all(8),
-                            side: const BorderSide(style: BorderStyle.none),
-                            shape: const RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(12)),
-                            ),
-                            textStyle: const TextStyle(
-                              color: kDarkBlue,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          onPressed: () =>
-                              widget.notifyParent(isClearAll: true),
-                          child: Text(localeMsg.clearAllFilters),
-                        )
-                      : Container(),
-                ],
-              )
-            : Container(),
+        if (widget.paramLevel == 0)
+          Wrap(
+            children: [
+              SettingsHeader(text: localeMsg.categoryFilters),
+              if (widget.showClearFilter)
+                OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.orange.shade700,
+                    backgroundColor: Colors.orange.shade100,
+                    padding: const EdgeInsets.all(8),
+                    side: const BorderSide(style: BorderStyle.none),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(12)),
+                    ),
+                    textStyle: const TextStyle(
+                      color: kDarkBlue,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  onPressed: () => widget.notifyParent(isClearAll: true),
+                  child: Text(localeMsg.clearAllFilters),
+                )
+              else
+                Container(),
+            ],
+          )
+        else
+          Container(),
         RawAutocomplete<String>(
           optionsBuilder: (TextEditingValue textEditingValue) {
             return widget.options.where((String option) {
               return option.contains(textEditingValue.text);
             });
           },
-          fieldViewBuilder: (BuildContext context,
-              TextEditingController textEditingController,
-              FocusNode focusNode,
-              VoidCallback onFieldSubmitted) {
+          fieldViewBuilder: (
+            BuildContext context,
+            TextEditingController textEditingController,
+            FocusNode focusNode,
+            VoidCallback onFieldSubmitted,
+          ) {
             return TextFormField(
               controller: textEditingController,
               focusNode: focusNode,
               style: const TextStyle(fontSize: 14),
-              decoration: GetFormInputDecoration(true, widget.param,
-                  isEnabled: widget.enabled),
+              decoration: GetFormInputDecoration(
+                true,
+                widget.param,
+                isEnabled: widget.enabled,
+              ),
               onFieldSubmitted: (String value) {
                 if (widget.options.contains(value)) {
                   setState(() {
@@ -216,9 +222,11 @@ class _AutocompleteFilterState extends State<AutocompleteFilter> {
               },
             );
           },
-          optionsViewBuilder: (BuildContext context,
-              AutocompleteOnSelected<String> onSelected,
-              Iterable<String> options) {
+          optionsViewBuilder: (
+            BuildContext context,
+            AutocompleteOnSelected<String> onSelected,
+            Iterable<String> options,
+          ) {
             return Align(
               alignment: Alignment.topLeft,
               child: Material(
@@ -235,8 +243,10 @@ class _AutocompleteFilterState extends State<AutocompleteFilter> {
                           onSelected(option);
                         },
                         child: ListTile(
-                          title: Text(option,
-                              style: const TextStyle(fontSize: 14)),
+                          title: Text(
+                            option,
+                            style: const TextStyle(fontSize: 14),
+                          ),
                         ),
                       );
                     },
@@ -258,33 +268,35 @@ class _AutocompleteFilterState extends State<AutocompleteFilter> {
 
   // One chip per selected filter
   List<Widget> getChips(List<String> nodes, BuildContext context) {
-    List<Widget> chips = [];
-    for (var value in nodes) {
-      chips.add(RawChip(
-        onPressed: () {
-          TreeAppController.of(context).filterTree(value, widget.paramLevel);
-          setState(() {
-            // _selectedOptions.removeWhere((opt) => opt == value);
-            widget.notifyParent();
-          });
-        },
-        backgroundColor: ColorChip[widget.param]!.shade100,
-        side: const BorderSide(style: BorderStyle.none),
-        label: Text(
-          value,
-          style: TextStyle(
-            fontSize: 13.5,
-            fontFamily: GoogleFonts.inter().fontFamily,
+    final List<Widget> chips = [];
+    for (final value in nodes) {
+      chips.add(
+        RawChip(
+          onPressed: () {
+            TreeAppController.of(context).filterTree(value, widget.paramLevel);
+            setState(() {
+              // _selectedOptions.removeWhere((opt) => opt == value);
+              widget.notifyParent();
+            });
+          },
+          backgroundColor: ColorChip[widget.param]!.shade100,
+          side: const BorderSide(style: BorderStyle.none),
+          label: Text(
+            value,
+            style: TextStyle(
+              fontSize: 13.5,
+              fontFamily: GoogleFonts.inter().fontFamily,
+              color: ColorChip[widget.param],
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          avatar: Icon(
+            Icons.cancel,
+            size: 20,
             color: ColorChip[widget.param],
-            fontWeight: FontWeight.w600,
           ),
         ),
-        avatar: Icon(
-          Icons.cancel,
-          size: 20,
-          color: ColorChip[widget.param],
-        ),
-      ));
+      );
     }
     return chips;
   }

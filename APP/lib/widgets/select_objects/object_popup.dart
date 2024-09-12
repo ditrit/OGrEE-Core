@@ -1,11 +1,13 @@
+// ignore_for_file: constant_identifier_names
+
 import 'dart:convert';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/snackbar.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/models/tag.dart';
 import 'package:ogree_app/widgets/common/actionbtn_row.dart';
@@ -13,16 +15,17 @@ import 'package:ogree_app/widgets/common/form_field.dart';
 import 'package:ogree_app/widgets/tenants/popups/tags_popup.dart';
 
 class ObjectPopup extends StatefulWidget {
-  Function() parentCallback;
-  String? objId;
-  Namespace namespace;
-  String? parentId;
-  ObjectPopup(
-      {super.key,
-      required this.parentCallback,
-      required this.namespace,
-      this.objId,
-      this.parentId});
+  final Function() parentCallback;
+  final String? objId;
+  final Namespace namespace;
+  final String? parentId;
+  const ObjectPopup({
+    super.key,
+    required this.parentCallback,
+    required this.namespace,
+    this.objId,
+    this.parentId,
+  });
 
   @override
   State<ObjectPopup> createState() => _ObjectPopupState();
@@ -59,7 +62,6 @@ Map<Namespace, List<String>> objsByNamespace = {
 
 class _ObjectPopupState extends State<ObjectPopup> {
   final _formKey = GlobalKey<FormState>();
-  bool _isSmallDisplay = false;
   String _objCategory = LogCategories.group.name;
   String _objId = "";
   List<StatefulBuilder> customAttributesRows = [];
@@ -116,10 +118,8 @@ class _ObjectPopupState extends State<ObjectPopup> {
       switch (widget.namespace) {
         case Namespace.Logical:
           _objCategory = LogCategories.group.name;
-          break;
         case Namespace.Organisational:
           _objCategory = OrgCategories.domain.name;
-          break;
         default:
           _objCategory = PhyCategories.site.name;
       }
@@ -134,130 +134,137 @@ class _ObjectPopupState extends State<ObjectPopup> {
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
-    _isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
 
     return FutureBuilder(
-        future: categoryAttrs.isEmpty ? getExternalAssets() : null,
-        builder: (context, _) {
-          if (categoryAttrs.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      future: categoryAttrs.isEmpty ? getExternalAssets() : null,
+      builder: (context, _) {
+        if (categoryAttrs.isEmpty) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-          return Center(
-            child: Container(
-              width: 500,
-              constraints:
-                  BoxConstraints(maxHeight: getPopupHeightByCategory()),
-              margin: const EdgeInsets.symmetric(horizontal: 20),
-              decoration: PopupDecoration,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(40, 20, 40, 15),
-                child: Form(
-                    key: _formKey,
-                    child: ScaffoldMessenger(
-                        child: Builder(
-                      builder: (context) => Scaffold(
-                        backgroundColor: Colors.white,
-                        body: SingleChildScrollView(
-                          child: Column(
-                            children: [
-                              Center(
-                                child: Text(
-                                  _isEdit
-                                      ? (_objCategory.contains("template")
-                                          ? localeMsg.viewTemplate
-                                          : localeMsg.modifyObj)
-                                      : localeMsg.createObj,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .headlineMedium,
-                                ),
+        return Center(
+          child: Container(
+            width: 500,
+            constraints: BoxConstraints(maxHeight: getPopupHeightByCategory()),
+            margin: const EdgeInsets.symmetric(horizontal: 20),
+            decoration: PopupDecoration,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(40, 20, 40, 15),
+              child: Form(
+                key: _formKey,
+                child: ScaffoldMessenger(
+                  child: Builder(
+                    builder: (context) => Scaffold(
+                      backgroundColor: Colors.white,
+                      body: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            Center(
+                              child: Text(
+                                _isEdit
+                                    ? (_objCategory.contains("template")
+                                        ? localeMsg.viewTemplate
+                                        : localeMsg.modifyObj)
+                                    : localeMsg.createObj,
+                                style:
+                                    Theme.of(context).textTheme.headlineMedium,
                               ),
-                              const SizedBox(height: 20),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(localeMsg.objType),
-                                  const SizedBox(width: 20),
-                                  SizedBox(
-                                    height: 35,
-                                    width: 147,
-                                    child: DropdownButtonFormField<String>(
-                                      isExpanded: true,
-                                      borderRadius: BorderRadius.circular(12.0),
-                                      decoration: GetFormInputDecoration(
-                                        false,
-                                        null,
-                                        icon: Icons.bookmark,
-                                      ),
-                                      value: _objCategory,
-                                      items: getCategoryMenuItems(),
-                                      onChanged: _isEdit
-                                          ? null
-                                          : (String? value) {
-                                              if (_objCategory != value) {
-                                                // clean the whole form
-                                                _formKey.currentState?.reset();
-                                                setState(() {
-                                                  _objCategory = value!;
-                                                  colorTextControllers.values
-                                                      .toList()
-                                                      .forEach((element) {
-                                                    element.clear();
-                                                  });
-                                                  colorTextControllers = {};
-                                                });
-                                              }
-                                            },
+                            ),
+                            const SizedBox(height: 20),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(localeMsg.objType),
+                                const SizedBox(width: 20),
+                                SizedBox(
+                                  height: 35,
+                                  width: 147,
+                                  child: DropdownButtonFormField<String>(
+                                    isExpanded: true,
+                                    borderRadius: BorderRadius.circular(12.0),
+                                    decoration: GetFormInputDecoration(
+                                      false,
+                                      null,
+                                      icon: Icons.bookmark,
                                     ),
+                                    value: _objCategory,
+                                    items: getCategoryMenuItems(),
+                                    onChanged: _isEdit
+                                        ? null
+                                        : (String? value) {
+                                            if (_objCategory != value) {
+                                              // clean the whole form
+                                              _formKey.currentState?.reset();
+                                              setState(() {
+                                                _objCategory = value!;
+                                                colorTextControllers.values
+                                                    .toList()
+                                                    .forEach((element) {
+                                                  element.clear();
+                                                });
+                                                colorTextControllers = {};
+                                              });
+                                            }
+                                          },
                                   ),
-                                ],
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            SizedBox(
+                              height: getFormHeightByCategory(),
+                              child: getFormByCategory(
+                                _objCategory,
+                                localeMsg,
                               ),
-                              const SizedBox(height: 10),
-                              SizedBox(
-                                  height: getFormHeightByCategory(),
-                                  child: getFormByCategory(
-                                      _objCategory, localeMsg)),
-                              const SizedBox(height: 12),
-                              ActionBtnRow(
-                                isEdit: _isEdit,
-                                onlyDelete: _isEdit &&
-                                    _objCategory.contains("template"),
-                                submitCreate: () {
-                                  if (_objCategory == LogCategories.tag.name) {
-                                    return submitActionTag(localeMsg);
-                                  } else if (_objCategory
-                                      .contains("template")) {
-                                    return submitCreateTemplate(
-                                        localeMsg, context);
-                                  } else {
-                                    return submitCreateObject(
-                                        localeMsg, context);
-                                  }
-                                },
-                                submitModify: () {
-                                  if (_objCategory == LogCategories.tag.name) {
-                                    return submitActionTag(localeMsg);
-                                  } else if (_objCategory
-                                      .contains("template")) {
-                                    return;
-                                  } else {
-                                    return submitModifyObject(
-                                        localeMsg, context);
-                                  }
-                                },
-                                submitDelete: () =>
-                                    submitDeleteAny(localeMsg, context),
-                              )
-                            ],
-                          ),
+                            ),
+                            const SizedBox(height: 12),
+                            ActionBtnRow(
+                              isEdit: _isEdit,
+                              onlyDelete:
+                                  _isEdit && _objCategory.contains("template"),
+                              submitCreate: () {
+                                if (_objCategory == LogCategories.tag.name) {
+                                  return submitActionTag(localeMsg);
+                                } else if (_objCategory.contains("template")) {
+                                  return submitCreateTemplate(
+                                    localeMsg,
+                                    context,
+                                  );
+                                } else {
+                                  return submitCreateObject(
+                                    localeMsg,
+                                    context,
+                                  );
+                                }
+                              },
+                              submitModify: () {
+                                if (_objCategory == LogCategories.tag.name) {
+                                  return submitActionTag(localeMsg);
+                                } else if (_objCategory.contains("template")) {
+                                  return;
+                                } else {
+                                  return submitModifyObject(
+                                    localeMsg,
+                                    context,
+                                  );
+                                }
+                              },
+                              submitDelete: () =>
+                                  submitDeleteAny(localeMsg, context),
+                            ),
+                          ],
                         ),
                       ),
-                    ))),
+                    ),
+                  ),
+                ),
               ),
             ),
-          );
-        });
+          ),
+        );
+      },
+    );
   }
 
   double getPopupHeightByCategory() {
@@ -298,14 +305,14 @@ class _ObjectPopupState extends State<ObjectPopup> {
           categories = [
             PhyCategories.rack.name,
             PhyCategories.corridor.name,
-            PhyCategories.group.name
+            PhyCategories.group.name,
           ];
         case 3:
           categories = [PhyCategories.device.name, PhyCategories.group.name];
         default:
           categories = [
             PhyCategories.device.name,
-            PhyCategories.virtual_obj.name
+            PhyCategories.virtual_obj.name,
           ];
       }
     }
@@ -335,8 +342,8 @@ class _ObjectPopupState extends State<ObjectPopup> {
         //its a rack
         searchCategories = ["device"];
       }
-      for (var category in searchCategories) {
-        var response = await getGroupContent(widget.parentId!, category);
+      for (final category in searchCategories) {
+        final response = await getGroupContent(widget.parentId!, category);
         if (response != null) {
           groupCheckListContent.addAll(response);
         }
@@ -344,24 +351,24 @@ class _ObjectPopupState extends State<ObjectPopup> {
     }
   }
 
-  readJsonAssets() async {
+  Future<void> readJsonAssets() async {
     final localeMsg = AppLocalizations.of(context)!;
-    var language = AppLocalizations.of(context)!.localeName;
+    final language = AppLocalizations.of(context)!.localeName;
     final messenger = ScaffoldMessenger.of(context);
     // Get JSON refs/types
     Map<String, dynamic> defs;
-    var result = await fetchSchema("types.json");
+    final result = await fetchSchema("types.json");
     switch (result) {
       case Success(value: final value):
         defs = value["definitions"];
       case Failure(exception: final exception):
         showSnackBar(messenger, exception.toString(), isError: true);
-        if (context.mounted) Navigator.pop(context);
+        if (mounted) Navigator.pop(context);
         return;
     }
 
-    Map<String, String> types = {};
-    for (var def in defs.keys.toList()) {
+    final Map<String, String> types = {};
+    for (final def in defs.keys.toList()) {
       if (defs[def]["descriptions"] != null) {
         types["refs/types.json#/definitions/$def"] =
             "${defs[def]["descriptions"][language]}";
@@ -374,7 +381,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
     // Define JSON schemas to read according to namespace
     List<String> objects = [
       LogCategories.group.name,
-      LogCategories.virtual_obj.name
+      LogCategories.virtual_obj.name,
     ];
     if (widget.namespace == Namespace.Physical) {
       objects = objsByNamespace[widget.namespace]!;
@@ -382,32 +389,34 @@ class _ObjectPopupState extends State<ObjectPopup> {
       objects = objsByNamespace[widget.namespace]!;
     }
 
-    for (var obj in objects) {
+    for (final obj in objects) {
       // Read JSON schema
       Map<String, dynamic> jsonResult;
-      var result = await fetchSchema("${obj}_schema.json");
+      final result = await fetchSchema("${obj}_schema.json");
       switch (result) {
         case Success(value: final value):
           jsonResult = value;
         case Failure(exception: final exception):
           showSnackBar(messenger, exception.toString(), isError: true);
-          if (context.mounted) Navigator.pop(context);
+          if (mounted) Navigator.pop(context);
           return;
       }
 
       if (jsonResult["properties"]["attributes"] != null &&
           jsonResult["properties"]["attributes"]["properties"] != null) {
         // Get all properties
-        var attrs = Map<String, dynamic>.from(
-            jsonResult["properties"]["attributes"]["properties"]);
+        final attrs = Map<String, dynamic>.from(
+          jsonResult["properties"]["attributes"]["properties"],
+        );
         categoryAttrs[obj] = attrs.keys.toList();
         categoryAttrs[obj]!.remove("virtual_config");
         if (jsonResult["properties"]["attributes"]["required"] != null) {
           // Get required ones
-          var requiredAttrs = List<String>.from(
-              jsonResult["properties"]["attributes"]["required"]);
+          final requiredAttrs = List<String>.from(
+            jsonResult["properties"]["attributes"]["required"],
+          );
           for (var i = 0; i < categoryAttrs[obj]!.length; i++) {
-            var attr = categoryAttrs[obj]![i];
+            final attr = categoryAttrs[obj]![i];
             if (requiredAttrs.contains(attr)) {
               categoryAttrs[obj]![i] = "$starSymbol$attr";
             }
@@ -416,14 +425,15 @@ class _ObjectPopupState extends State<ObjectPopup> {
         categoryAttrs[obj]!.sort((a, b) => a.compareTo(b));
 
         // Get examples
-        var examples = List<Map<String, dynamic>>.from(jsonResult["examples"]);
+        final examples =
+            List<Map<String, dynamic>>.from(jsonResult["examples"]);
         examplesAttrs[obj] =
             Map<String, dynamic>.from(examples[0]["attributes"]);
         for (var attr in categoryAttrs[obj]!) {
           attr = attr.replaceFirst(starSymbol, ""); // use original name
           if (attrs[attr]["\$ref"] != null) {
             if (types[attrs[attr]["\$ref"]] != null) {
-              examplesAttrs[obj]![attr] = types[attrs[attr]["\$ref"]]!;
+              examplesAttrs[obj]![attr] = types[attrs[attr]["\$ref"]];
             }
           } else if (attrs[attr]["enum"] != null) {
             examplesAttrs[obj]![attr] =
@@ -442,27 +452,30 @@ class _ObjectPopupState extends State<ObjectPopup> {
     }
   }
 
-  getDomains() async {
+  Future<void> getDomains() async {
     // Get domains option for dropdown menu of physical
     final messenger = ScaffoldMessenger.of(context);
-    var result = await fetchObjectsTree(
-        namespace: Namespace.Organisational, isTenantMode: false);
+    final result = await fetchObjectsTree(
+      namespace: Namespace.Organisational,
+    );
     switch (result) {
       case Success(value: final listValue):
         domainList = listValue[0]
             .values
             .reduce((value, element) => List.from(value + element));
-        print(domainList);
       case Failure(exception: final exception):
         showSnackBar(messenger, exception.toString(), isError: true);
-        if (context.mounted) Navigator.pop(context);
+        if (mounted) Navigator.pop(context);
         return;
     }
   }
 
   Future<List<String>?> getGroupContent(String parentId, targetCategory) async {
-    var result = await fetchGroupContent(
-        parentId, targetCategory, AppLocalizations.of(context)!);
+    final result = await fetchGroupContent(
+      parentId,
+      targetCategory,
+      AppLocalizations.of(context)!,
+    );
     switch (result) {
       case Success(value: final value):
         return value;
@@ -471,14 +484,17 @@ class _ObjectPopupState extends State<ObjectPopup> {
     }
   }
 
-  getObject() async {
+  Future<void> getObject() async {
     // Get object info for edit popup
     final messenger = ScaffoldMessenger.of(context);
     var errMsg = "";
     // Try both id and slug since we dont know the obj's category
-    for (var keyId in ["id", "slug", "name"]) {
-      var result = await fetchObject(_objId, AppLocalizations.of(context)!,
-          idKey: keyId);
+    for (final keyId in ["id", "slug", "name"]) {
+      final result = await fetchObject(
+        _objId,
+        AppLocalizations.of(context)!,
+        idKey: keyId,
+      );
       switch (result) {
         case Success(value: final value):
           if (widget.namespace == Namespace.Logical) {
@@ -488,14 +504,12 @@ class _ObjectPopupState extends State<ObjectPopup> {
               switch (value["category"]) {
                 case "room":
                   _objCategory = LogCategories.room_template.name;
-                  break;
                 case "building":
                   _objCategory = LogCategories.bldg_template.name;
-                  break;
                 default:
                   _objCategory = LogCategories.obj_template.name;
               }
-              var encoder = const JsonEncoder.withIndent("     ");
+              const encoder = JsonEncoder.withIndent("     ");
               _loadFileResult = encoder.convert(value);
             } else {
               if (value["applicability"] != null) {
@@ -527,16 +541,19 @@ class _ObjectPopupState extends State<ObjectPopup> {
                 }
                 _objCategory = value["category"];
                 if (_objCategory == LogCategories.virtual_obj.name) {
-                  for (var attr in objDataAttrs.entries) {
+                  for (final attr in objDataAttrs.entries) {
                     if (!categoryAttrs[_objCategory]!.contains(attr.key) &&
                         !categoryAttrs[_objCategory]!
                             .contains(starSymbol + attr.key) &&
                         attr.key != "virtual_config") {
                       // add custom attribute
-                      customAttributesRows.add(CustomAttrRow(
+                      customAttributesRows.add(
+                        CustomAttrRow(
                           customAttributesRows.length,
                           givenAttrName: attr.key,
-                          givenAttrValue: attr.value.toString()));
+                          givenAttrValue: attr.value.toString(),
+                        ),
+                      );
                     }
                   }
                 }
@@ -547,16 +564,19 @@ class _ObjectPopupState extends State<ObjectPopup> {
             objData = value;
             objDataAttrs = Map<String, dynamic>.from(objData["attributes"]);
             _objCategory = value["category"];
-            for (var attr in objDataAttrs.entries) {
+            for (final attr in objDataAttrs.entries) {
               if (!categoryAttrs[_objCategory]!.contains(attr.key) &&
                   !categoryAttrs[_objCategory]!
                       .contains(starSymbol + attr.key) &&
                   attr.key != "virtual_config") {
                 // add custom attribute
-                customAttributesRows.add(CustomAttrRow(
+                customAttributesRows.add(
+                  CustomAttrRow(
                     customAttributesRows.length,
                     givenAttrName: attr.key,
-                    givenAttrValue: attr.value));
+                    givenAttrValue: attr.value,
+                  ),
+                );
               }
             }
           }
@@ -567,10 +587,10 @@ class _ObjectPopupState extends State<ObjectPopup> {
       }
     }
     showSnackBar(messenger, errMsg, isError: true);
-    if (context.mounted) Navigator.pop(context);
+    if (mounted) Navigator.pop(context);
   }
 
-  domainAutoFillField() {
+  Padding domainAutoFillField() {
     return Padding(
       padding: const EdgeInsets.only(right: 10, left: 1, bottom: 6),
       child: RawAutocomplete<String>(
@@ -579,10 +599,12 @@ class _ObjectPopupState extends State<ObjectPopup> {
             return option.contains(textEditingValue.text);
           });
         },
-        fieldViewBuilder: (BuildContext context,
-            TextEditingController textEditingController,
-            FocusNode focusNode,
-            VoidCallback onFieldSubmitted) {
+        fieldViewBuilder: (
+          BuildContext context,
+          TextEditingController textEditingController,
+          FocusNode focusNode,
+          VoidCallback onFieldSubmitted,
+        ) {
           if (objData["domain"] != null) {
             textEditingController.text = objData["domain"];
           }
@@ -591,8 +613,10 @@ class _ObjectPopupState extends State<ObjectPopup> {
             focusNode: focusNode,
             style: const TextStyle(fontSize: 14),
             decoration: GetFormInputDecoration(
-                false, "$starSymbol${AppLocalizations.of(context)!.domain}",
-                icon: Icons.edit),
+              false,
+              "$starSymbol${AppLocalizations.of(context)!.domain}",
+              icon: Icons.edit,
+            ),
             onFieldSubmitted: (String value) {
               objData["domain"] = value;
               onFieldSubmitted();
@@ -606,9 +630,11 @@ class _ObjectPopupState extends State<ObjectPopup> {
             },
           );
         },
-        optionsViewBuilder: (BuildContext context,
-            AutocompleteOnSelected<String> onSelected,
-            Iterable<String> options) {
+        optionsViewBuilder: (
+          BuildContext context,
+          AutocompleteOnSelected<String> onSelected,
+          Iterable<String> options,
+        ) {
           return Align(
             alignment: Alignment.topLeft,
             child: Material(
@@ -641,73 +667,79 @@ class _ObjectPopupState extends State<ObjectPopup> {
     );
   }
 
-  CustomAttrRow(int rowIdx,
-      {bool useDefaultValue = true,
-      String? givenAttrName,
-      String? givenAttrValue}) {
-    UniqueKey key = UniqueKey();
+  StatefulBuilder CustomAttrRow(
+    int rowIdx, {
+    bool useDefaultValue = true,
+    String? givenAttrName,
+    String? givenAttrValue,
+  }) {
+    final UniqueKey key = UniqueKey();
     return StatefulBuilder(
-        key: key,
-        builder: (context, localSetState) {
-          String? attrName;
-          if (givenAttrName != null) {
-            attrName = givenAttrName;
-          }
-          return Padding(
-            padding: const EdgeInsets.only(top: 2.0),
-            child: SizedBox(
-              height: 60,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Flexible(
-                    flex: 5,
-                    child: CustomFormField(
-                        save: (newValue) => attrName = newValue,
-                        label: AppLocalizations.of(context)!.attribute,
-                        icon: Icons.tag_sharp,
-                        isCompact: true,
-                        initialValue: givenAttrName),
+      key: key,
+      builder: (context, localSetState) {
+        String? attrName;
+        if (givenAttrName != null) {
+          attrName = givenAttrName;
+        }
+        return Padding(
+          padding: const EdgeInsets.only(top: 2.0),
+          child: SizedBox(
+            height: 60,
+            child: Row(
+              children: [
+                Flexible(
+                  flex: 5,
+                  child: CustomFormField(
+                    save: (newValue) => attrName = newValue,
+                    label: AppLocalizations.of(context)!.attribute,
+                    icon: Icons.tag_sharp,
+                    isCompact: true,
+                    initialValue: givenAttrName,
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: Icon(
-                      Icons.arrow_forward,
-                      color: Colors.blue.shade600,
-                    ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: Icon(
+                    Icons.arrow_forward,
+                    color: Colors.blue.shade600,
                   ),
-                  Flexible(
-                    flex: 4,
-                    child: CustomFormField(
-                        save: (newValue) => objDataAttrs[attrName!] = newValue!,
-                        label: "Value",
-                        icon: Icons.tag_sharp,
-                        isCompact: true,
-                        initialValue: givenAttrValue),
+                ),
+                Flexible(
+                  flex: 4,
+                  child: CustomFormField(
+                    save: (newValue) => objDataAttrs[attrName!] = newValue,
+                    label: "Value",
+                    icon: Icons.tag_sharp,
+                    isCompact: true,
+                    initialValue: givenAttrValue,
                   ),
-                  IconButton(
-                      padding: const EdgeInsets.only(bottom: 6, right: 3),
-                      constraints: const BoxConstraints(),
-                      iconSize: 18,
-                      onPressed: () {
-                        setState(
-                            () => customAttributesRows.removeWhere((element) {
-                                  return element.key == key;
-                                }));
-                        objDataAttrs.remove(attrName);
-                      },
-                      icon: Icon(
-                        Icons.delete,
-                        color: Colors.red.shade400,
-                      )),
-                ],
-              ),
+                ),
+                IconButton(
+                  padding: const EdgeInsets.only(bottom: 6, right: 3),
+                  constraints: const BoxConstraints(),
+                  iconSize: 18,
+                  onPressed: () {
+                    setState(
+                      () => customAttributesRows.removeWhere((element) {
+                        return element.key == key;
+                      }),
+                    );
+                    objDataAttrs.remove(attrName);
+                  },
+                  icon: Icon(
+                    Icons.delete,
+                    color: Colors.red.shade400,
+                  ),
+                ),
+              ],
             ),
-          );
-        });
+          ),
+        );
+      },
+    );
   }
 
-  getFormByCategory(String category, AppLocalizations localeMsg) {
+  dynamic getFormByCategory(String category, AppLocalizations localeMsg) {
     if (widget.namespace == Namespace.Physical ||
         widget.namespace == Namespace.Organisational ||
         category == LogCategories.group.name ||
@@ -723,13 +755,13 @@ class _ObjectPopupState extends State<ObjectPopup> {
     }
   }
 
-  getObjectForm() {
-    List<String> attributes = categoryAttrs[_objCategory]!;
+  ListView getObjectForm() {
+    final List<String> attributes = categoryAttrs[_objCategory]!;
     final localeMsg = AppLocalizations.of(context)!;
 
-    for (var str in attributes) {
+    for (final str in attributes) {
       if (str.toLowerCase().contains("color")) {
-        var textEditingController = TextEditingController();
+        final textEditingController = TextEditingController();
         colorTextControllers.putIfAbsent(str, () => textEditingController);
       }
     }
@@ -737,58 +769,66 @@ class _ObjectPopupState extends State<ObjectPopup> {
     return ListView(
       padding: EdgeInsets.zero,
       children: [
-        _objCategory != PhyCategories.site.name
-            ? CustomFormField(
-                save: (newValue) {
-                  if (newValue != null && newValue.isNotEmpty) {
-                    objData["parentId"] = newValue;
-                  }
-                },
-                label:
-                    "${_objCategory == LogCategories.virtual_obj.name ? "" : starSymbol}Parent ID",
-                icon: Icons.family_restroom,
-                initialValue: objData["parentId"],
-                tipStr: localeMsg.parentIdTip,
-                shouldValidate: widget.namespace != Namespace.Organisational &&
-                    _objCategory != LogCategories.virtual_obj.name)
-            : Container(),
+        if (_objCategory != PhyCategories.site.name)
+          CustomFormField(
+            save: (newValue) {
+              if (newValue != null && newValue.isNotEmpty) {
+                objData["parentId"] = newValue;
+              }
+            },
+            label:
+                "${_objCategory == LogCategories.virtual_obj.name ? "" : starSymbol}Parent ID",
+            icon: Icons.family_restroom,
+            initialValue: objData["parentId"],
+            tipStr: localeMsg.parentIdTip,
+            shouldValidate: widget.namespace != Namespace.Organisational &&
+                _objCategory != LogCategories.virtual_obj.name,
+          )
+        else
+          Container(),
         CustomFormField(
-            save: (newValue) => objData["name"] = newValue,
-            label: "$starSymbol${localeMsg.name}",
-            icon: Icons.edit,
-            tipStr: localeMsg.nameTip,
-            initialValue: objData["name"]),
-        _objCategory != OrgCategories.domain.name
-            ? (domainList.isEmpty
-                ? CustomFormField(
-                    save: (newValue) => objData["domain"] = newValue,
-                    label: "$starSymbol${localeMsg.domain}",
-                    icon: Icons.edit,
-                    initialValue: objData["domain"])
-                : domainAutoFillField())
-            : Container(),
+          save: (newValue) => objData["name"] = newValue,
+          label: "$starSymbol${localeMsg.name}",
+          icon: Icons.edit,
+          tipStr: localeMsg.nameTip,
+          initialValue: objData["name"],
+        ),
+        if (_objCategory != OrgCategories.domain.name)
+          domainList.isEmpty
+              ? CustomFormField(
+                  save: (newValue) => objData["domain"] = newValue,
+                  label: "$starSymbol${localeMsg.domain}",
+                  icon: Icons.edit,
+                  initialValue: objData["domain"],
+                )
+              : domainAutoFillField()
+        else
+          Container(),
         CustomFormField(
-            save: (newValue) => objData["description"] = newValue,
-            label: localeMsg.description,
-            icon: Icons.edit,
+          save: (newValue) => objData["description"] = newValue,
+          label: localeMsg.description,
+          icon: Icons.edit,
+          shouldValidate: false,
+          initialValue: objData["description"],
+        ),
+        if (_objCategory != OrgCategories.domain.name)
+          CustomFormField(
+            save: (newValue) {
+              final tags = newValue!.replaceAll(" ", "").split(",");
+              if (!(tags.length == 1 && tags.first == "")) {
+                objData["tags"] = tags;
+              }
+            },
+            label: "Tags",
+            icon: Icons.tag_sharp,
             shouldValidate: false,
-            initialValue: objData["description"]),
-        _objCategory != OrgCategories.domain.name
-            ? CustomFormField(
-                save: (newValue) {
-                  var tags = newValue!.replaceAll(" ", "").split(",");
-                  if (!(tags.length == 1 && tags.first == "")) {
-                    objData["tags"] = tags;
-                  }
-                },
-                label: "Tags",
-                icon: Icons.tag_sharp,
-                shouldValidate: false,
-                tipStr: localeMsg.tagTip,
-                initialValue: objData["tags"]
-                    ?.toString()
-                    .substring(1, objData["tags"].toString().length - 1))
-            : Container(),
+            tipStr: localeMsg.tagTip,
+            initialValue: objData["tags"]
+                ?.toString()
+                .substring(1, objData["tags"].toString().length - 1),
+          )
+        else
+          Container(),
         Padding(
           padding: const EdgeInsets.only(top: 4.0, left: 6, bottom: 6),
           child: Text(localeMsg.attributes),
@@ -804,60 +844,59 @@ class _ObjectPopupState extends State<ObjectPopup> {
             crossAxisCount: 2,
             children: List.generate(attributes.length, (index) {
               return CustomFormField(
-                  tipStr: examplesAttrs[_objCategory]
-                          ?[attributes[index].replaceFirst(starSymbol, "")] ??
-                      "",
-                  save: (newValue) {
-                    var attrKey =
-                        attributes[index].replaceFirst(starSymbol, "");
-                    if (newValue != null && newValue.isNotEmpty) {
-                      // check type
-                      var numValue = num.tryParse(newValue);
-                      if (attrKey == "virtual_config") {
-                        objDataAttrs[attrKey] = json.decode(newValue);
-                      } else if (numValue != null) {
-                        // is number
-                        objDataAttrs[attrKey] = numValue.toDouble();
-                      } else if (newValue.length >= 2 &&
-                          newValue[0] == "[" &&
-                          newValue[newValue.length - 1] == "]") {
-                        // is array
-                        var arrStr = newValue
-                            .substring(1, newValue.length - 1)
-                            .split(",");
-                        try {
-                          List<double> arrNum =
-                              arrStr.map(double.parse).toList();
-                          objDataAttrs[attrKey] = arrNum;
-                        } on Exception catch (_) {
-                          objDataAttrs[attrKey] = arrStr;
-                        }
-                      } else if (newValue == "true") {
-                        objDataAttrs[attrKey] = true;
-                      } else if (newValue == "false") {
-                        objDataAttrs[attrKey] = false;
-                      } else {
-                        // is string
-                        objDataAttrs[attrKey] = newValue;
+                tipStr: examplesAttrs[_objCategory]
+                        ?[attributes[index].replaceFirst(starSymbol, "")] ??
+                    "",
+                save: (newValue) {
+                  final attrKey =
+                      attributes[index].replaceFirst(starSymbol, "");
+                  if (newValue != null && newValue.isNotEmpty) {
+                    // check type
+                    final numValue = num.tryParse(newValue);
+                    if (attrKey == "virtual_config") {
+                      objDataAttrs[attrKey] = json.decode(newValue);
+                    } else if (numValue != null) {
+                      // is number
+                      objDataAttrs[attrKey] = numValue.toDouble();
+                    } else if (newValue.length >= 2 &&
+                        newValue[0] == "[" &&
+                        newValue[newValue.length - 1] == "]") {
+                      // is array
+                      final arrStr =
+                          newValue.substring(1, newValue.length - 1).split(",");
+                      try {
+                        final List<double> arrNum =
+                            arrStr.map(double.parse).toList();
+                        objDataAttrs[attrKey] = arrNum;
+                      } on Exception catch (_) {
+                        objDataAttrs[attrKey] = arrStr;
                       }
+                    } else if (newValue == "true") {
+                      objDataAttrs[attrKey] = true;
+                    } else if (newValue == "false") {
+                      objDataAttrs[attrKey] = false;
+                    } else {
+                      // is string
+                      objDataAttrs[attrKey] = newValue;
                     }
-                  },
-                  label: attributes[index],
-                  icon: Icons.tag_sharp,
-                  isCompact: true,
-                  shouldValidate: attributes[index].contains(starSymbol),
-                  isColor: colorTextControllers[attributes[index]] != null,
-                  colorTextController: colorTextControllers[attributes[index]],
-                  checkListController:
-                      _objCategory == PhyCategories.group.name &&
-                              attributes[index] == "${starSymbol}content" &&
-                              groupCheckListContent.isNotEmpty
-                          ? checkListController
-                          : null,
-                  checkListValues: groupCheckListContent,
-                  initialValue: objDataAttrs[
-                          attributes[index].replaceFirst(starSymbol, "")]
-                      ?.toString());
+                  }
+                },
+                label: attributes[index],
+                icon: Icons.tag_sharp,
+                isCompact: true,
+                shouldValidate: attributes[index].contains(starSymbol),
+                isColor: colorTextControllers[attributes[index]] != null,
+                colorTextController: colorTextControllers[attributes[index]],
+                checkListController: _objCategory == PhyCategories.group.name &&
+                        attributes[index] == "${starSymbol}content" &&
+                        groupCheckListContent.isNotEmpty
+                    ? checkListController
+                    : null,
+                checkListValues: groupCheckListContent,
+                initialValue:
+                    objDataAttrs[attributes[index].replaceFirst(starSymbol, "")]
+                        ?.toString(),
+              );
             }),
           ),
         ),
@@ -870,12 +909,13 @@ class _ObjectPopupState extends State<ObjectPopup> {
           child: Align(
             alignment: Alignment.bottomLeft,
             child: TextButton.icon(
-                onPressed: () => setState(() {
-                      customAttributesRows
-                          .add(CustomAttrRow(customAttributesRows.length));
-                    }),
-                icon: const Icon(Icons.add),
-                label: Text(localeMsg.attribute)),
+              onPressed: () => setState(() {
+                customAttributesRows
+                    .add(CustomAttrRow(customAttributesRows.length));
+              }),
+              icon: const Icon(Icons.add),
+              label: Text(localeMsg.attribute),
+            ),
           ),
         ),
         virtualConfigInput(),
@@ -883,16 +923,16 @@ class _ObjectPopupState extends State<ObjectPopup> {
     );
   }
 
-  virtualConfigInput() {
+  Widget virtualConfigInput() {
     if (_objCategory != "virtual_obj" && _objCategory != "device") {
       return Container();
     }
-    Map<String, String> virtualAttrs = {
+    final Map<String, String> virtualAttrs = {
       "clusterId": "string (e.g. kube-cluster)",
       "type": "string (e.g. node)",
-      "role": "string (e.g. master)"
+      "role": "string (e.g. master)",
     };
-    List<String> virtualAttrsKeys = virtualAttrs.keys.toList();
+    final List<String> virtualAttrsKeys = virtualAttrs.keys.toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -911,21 +951,22 @@ class _ObjectPopupState extends State<ObjectPopup> {
             crossAxisCount: 2,
             children: List.generate(virtualAttrsKeys.length, (index) {
               return CustomFormField(
-                  tipStr: virtualAttrs[virtualAttrsKeys[index]] ?? "string",
-                  save: (newValue) {
-                    if (objDataAttrs["virtual_config"] == null) {
-                      objDataAttrs["virtual_config"] = {};
-                    }
-                    objDataAttrs["virtual_config"][virtualAttrsKeys[index]] =
-                        newValue;
-                  },
-                  label: virtualAttrsKeys[index],
-                  icon: Icons.tag_sharp,
-                  isCompact: true,
-                  shouldValidate: false,
-                  initialValue: objDataAttrs["virtual_config"]
-                          ?[virtualAttrsKeys[index]]
-                      ?.toString());
+                tipStr: virtualAttrs[virtualAttrsKeys[index]] ?? "string",
+                save: (newValue) {
+                  if (objDataAttrs["virtual_config"] == null) {
+                    objDataAttrs["virtual_config"] = {};
+                  }
+                  objDataAttrs["virtual_config"][virtualAttrsKeys[index]] =
+                      newValue;
+                },
+                label: virtualAttrsKeys[index],
+                icon: Icons.tag_sharp,
+                isCompact: true,
+                shouldValidate: false,
+                initialValue: objDataAttrs["virtual_config"]
+                        ?[virtualAttrsKeys[index]]
+                    ?.toString(),
+              );
             }),
           ),
         ),
@@ -933,9 +974,9 @@ class _ObjectPopupState extends State<ObjectPopup> {
     );
   }
 
-  getLayerForm() {
+  ListView getLayerForm() {
     final localeMsg = AppLocalizations.of(context)!;
-    checkBoxWrapper(Checkbox checkbox, String text) => Wrap(
+    Wrap checkBoxWrapper(Checkbox checkbox, String text) => Wrap(
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             SizedBox(height: 24, width: 24, child: checkbox),
@@ -949,112 +990,130 @@ class _ObjectPopupState extends State<ObjectPopup> {
             ),
           ],
         );
-    return ListView(padding: EdgeInsets.zero, children: [
-      CustomFormField(
+    return ListView(
+      padding: EdgeInsets.zero,
+      children: [
+        CustomFormField(
           save: (newValue) => objData["slug"] = newValue,
           label: localeMsg.name,
           icon: Icons.edit,
-          initialValue: objData["slug"]),
-      CustomFormField(
+          initialValue: objData["slug"],
+        ),
+        CustomFormField(
           save: (newValue) => objData["applicability"] = newValue,
           label: localeMsg.applicability,
           icon: Icons.edit,
           tipStr: localeMsg.applicabilityTooltip,
-          initialValue: objData["applicability"]),
-      const SizedBox(height: 3),
-      Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-        Text(
-          localeMsg.applyAlso,
-          style: const TextStyle(
-            fontSize: 14,
-            color: Colors.black,
-          ),
+          initialValue: objData["applicability"],
         ),
-        checkBoxWrapper(
-          Checkbox(
-            value: _applyDirectChild,
-            onChanged: _applyAllChild
-                ? null
-                : (bool? value) => setState(() => _applyDirectChild = value!),
-          ),
-          localeMsg.directChildren,
+        const SizedBox(height: 3),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Text(
+              localeMsg.applyAlso,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.black,
+              ),
+            ),
+            checkBoxWrapper(
+              Checkbox(
+                value: _applyDirectChild,
+                onChanged: _applyAllChild
+                    ? null
+                    : (bool? value) =>
+                        setState(() => _applyDirectChild = value!),
+              ),
+              localeMsg.directChildren,
+            ),
+            checkBoxWrapper(
+              Checkbox(
+                value: _applyAllChild,
+                onChanged: (bool? value) => setState(() {
+                  _applyAllChild = value!;
+                  _applyDirectChild = value;
+                }),
+              ),
+              localeMsg.allChildren,
+            ),
+          ],
         ),
-        checkBoxWrapper(
-          Checkbox(
-            value: _applyAllChild,
-            onChanged: (bool? value) => setState(() {
-              _applyAllChild = value!;
-              _applyDirectChild = value;
-            }),
-          ),
-          localeMsg.allChildren,
-        ),
-      ]),
-      const SizedBox(height: 10),
-      CustomFormField(
+        const SizedBox(height: 10),
+        CustomFormField(
           save: (newValue) => objData["filter"] = newValue,
           label: localeMsg.filter,
           icon: Icons.filter_alt,
           tipStr: localeMsg.filterLayerTooltip,
-          initialValue: objData["filter"]),
-    ]);
-  }
-
-  getTemplatesForm(AppLocalizations localeMsg) {
-    return Center(
-      child: ListView(shrinkWrap: true, children: [
-        _loadFileResult == null
-            ? Align(
-                child: ElevatedButton.icon(
-                    onPressed: () async {
-                      FilePickerResult? result = await FilePicker.platform
-                          .pickFiles(
-                              type: FileType.custom,
-                              allowedExtensions: ["json"],
-                              withData: true);
-                      if (result != null) {
-                        setState(() {
-                          _loadedFile = result.files.single;
-                        });
-                      }
-                    },
-                    icon: const Icon(Icons.download),
-                    label: Text(localeMsg.selectJSON)),
-              )
-            : Container(),
-        _loadedFile != null
-            ? Padding(
-                padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
-                child: Align(
-                  child: Text(localeMsg.fileLoaded(_loadedFile!.name)),
-                ),
-              )
-            : Container(),
-        _loadFileResult != null
-            ? Container(
-                color: Colors.black,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    _loadFileResult!,
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ),
-              )
-            : Container(),
-      ]),
+          initialValue: objData["filter"],
+        ),
+      ],
     );
   }
 
-  submitActionTag(AppLocalizations localeMsg) async {
+  Center getTemplatesForm(AppLocalizations localeMsg) {
+    return Center(
+      child: ListView(
+        shrinkWrap: true,
+        children: [
+          if (_loadFileResult == null)
+            Align(
+              child: ElevatedButton.icon(
+                onPressed: () async {
+                  final FilePickerResult? result =
+                      await FilePicker.platform.pickFiles(
+                    type: FileType.custom,
+                    allowedExtensions: ["json"],
+                    withData: true,
+                  );
+                  if (result != null) {
+                    setState(() {
+                      _loadedFile = result.files.single;
+                    });
+                  }
+                },
+                icon: const Icon(Icons.download),
+                label: Text(localeMsg.selectJSON),
+              ),
+            )
+          else
+            Container(),
+          if (_loadedFile != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+              child: Align(
+                child: Text(localeMsg.fileLoaded(_loadedFile!.name)),
+              ),
+            )
+          else
+            Container(),
+          if (_loadFileResult != null)
+            Container(
+              color: Colors.black,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  _loadFileResult!,
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ),
+            )
+          else
+            Container(),
+        ],
+      ),
+    );
+  }
+
+  Future<void> submitActionTag(AppLocalizations localeMsg) async {
     final messenger = ScaffoldMessenger.of(context);
-    Tag? newTag = _tagFormKey.currentState!.onActionBtnPressed();
+    final Tag? newTag = _tagFormKey.currentState!.onActionBtnPressed();
     if (newTag == null) {
       return;
     }
     Result result;
     if (_isEdit) {
-      var newTagMap = newTag.toMap();
+      final newTagMap = newTag.toMap();
       if (newTag.image == "" && tag!.image != "") {
         newTagMap.remove("image"); // patch and keep old one
       }
@@ -1065,28 +1124,32 @@ class _ObjectPopupState extends State<ObjectPopup> {
     switch (result) {
       case Success():
         widget.parentCallback();
-        showSnackBar(messenger,
-            "${_isEdit ? localeMsg.modifyOK : localeMsg.createOK} 🥳",
-            isSuccess: true);
-        if (context.mounted) Navigator.of(context).pop();
+        showSnackBar(
+          messenger,
+          "${_isEdit ? localeMsg.modifyOK : localeMsg.createOK} 🥳",
+          isSuccess: true,
+        );
+        if (mounted) Navigator.of(context).pop();
       case Failure(exception: final exception):
         showSnackBar(messenger, exception.toString(), isError: true);
     }
   }
 
   submitCreateTemplate(
-      AppLocalizations localeMsg, BuildContext popupContext) async {
+    AppLocalizations localeMsg,
+    BuildContext popupContext,
+  ) async {
     final messenger = ScaffoldMessenger.of(context);
     final errorMessenger = ScaffoldMessenger.of(popupContext);
     if (_loadedFile == null) {
       showSnackBar(messenger, localeMsg.mustSelectJSON);
     } else {
-      var result = await createTemplate(_loadedFile!.bytes!, _objCategory);
+      final result = await createTemplate(_loadedFile!.bytes!, _objCategory);
       switch (result) {
         case Success():
           widget.parentCallback();
           showSnackBar(messenger, localeMsg.createOK, isSuccess: true);
-          if (context.mounted) Navigator.of(context).pop();
+          if (mounted) Navigator.of(context).pop();
         case Failure(exception: final exception):
           showSnackBar(errorMessenger, exception.toString(), isError: true);
       }
@@ -1094,7 +1157,9 @@ class _ObjectPopupState extends State<ObjectPopup> {
   }
 
   submitCreateObject(
-      AppLocalizations localeMsg, BuildContext popupContext) async {
+    AppLocalizations localeMsg,
+    BuildContext popupContext,
+  ) async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
@@ -1116,18 +1181,23 @@ class _ObjectPopupState extends State<ObjectPopup> {
         case Success():
           widget.parentCallback();
           showSnackBar(messenger, localeMsg.createOK, isSuccess: true);
-          if (context.mounted) Navigator.of(context).pop();
+          if (mounted) Navigator.of(context).pop();
         case Failure(exception: final exception):
-          showSnackBar(errorMessenger, exception.toString(),
-              isError: true,
-              copyTextTap: exception.toString(),
-              duration: const Duration(seconds: 30));
+          showSnackBar(
+            errorMessenger,
+            exception.toString(),
+            isError: true,
+            copyTextTap: exception.toString(),
+            duration: const Duration(seconds: 30),
+          );
       }
     }
   }
 
   submitModifyObject(
-      AppLocalizations localeMsg, BuildContext popupContext) async {
+    AppLocalizations localeMsg,
+    BuildContext popupContext,
+  ) async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
@@ -1154,7 +1224,7 @@ class _ObjectPopupState extends State<ObjectPopup> {
         case Success():
           widget.parentCallback();
           showSnackBar(messenger, localeMsg.modifyOK, isSuccess: true);
-          if (context.mounted) Navigator.of(context).pop();
+          if (mounted) Navigator.of(context).pop();
         case Failure(exception: final exception):
           showSnackBar(errorMessenger, exception.toString(), isError: true);
       }
@@ -1164,14 +1234,12 @@ class _ObjectPopupState extends State<ObjectPopup> {
   submitDeleteAny(AppLocalizations localeMsg, BuildContext popupContext) async {
     final messenger = ScaffoldMessenger.of(context);
     final errorMessenger = ScaffoldMessenger.of(popupContext);
-    var result = await deleteObject(_objId, _objCategory);
+    final result = await deleteObject(_objId, _objCategory);
     switch (result) {
       case Success():
         widget.parentCallback();
         showSnackBar(messenger, localeMsg.deleteOK);
-        if (context.mounted) {
-          Navigator.of(context).pop();
-        }
+        if (mounted) Navigator.of(context).pop();
       case Failure(exception: final exception):
         showSnackBar(errorMessenger, exception.toString(), isError: true);
     }

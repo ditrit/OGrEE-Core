@@ -29,7 +29,7 @@ class Tenant {
       this.docUrl,
       this.docPort,
       this.imageTag,
-      {this.status});
+      {this.status,});
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
@@ -59,7 +59,7 @@ class Tenant {
         map['hasDoc'],
         map['docUrl'].toString(),
         map['docPort'].toString(),
-        map['imageTag'].toString());
+        map['imageTag'].toString(),);
   }
 
   String toJson() => json.encode(toMap());

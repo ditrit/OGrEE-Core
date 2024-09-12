@@ -14,7 +14,7 @@ class AutoProjectCard extends StatelessWidget {
       // required this.project,
       required this.namespace,
       required this.userEmail,
-      required this.parentCallback});
+      required this.parentCallback,});
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
@@ -47,7 +47,7 @@ class AutoProjectCard extends StatelessWidget {
                     style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: color.shade900),
+                        color: color.shade900,),
                   ),
                 ),
               ),
@@ -92,15 +92,15 @@ class AutoProjectCard extends StatelessWidget {
                                 "AUTO",
                                 false,
                                 false,
-                                false, [], [], []),
+                                false, [], [], [],),
                             userEmail: userEmail,
                           ),
                         ),
                       );
                     },
                     icon: const Icon(Icons.play_circle),
-                    label: Text(localeMsg.launch)),
-              )
+                    label: Text(localeMsg.launch),),
+              ),
             ],
           ),
         ),

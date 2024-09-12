@@ -29,7 +29,7 @@ class Project {
       this.objects,
       this.permissions,
       {this.id,
-      this.isImpact = false});
+      this.isImpact = false,});
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
@@ -58,9 +58,9 @@ class Project {
       map['showAvg'] as bool,
       map['showSum'] as bool,
       map['isPublic'] as bool,
-      List<String>.from((map['attributes'])),
-      List<String>.from((map['objects'])),
-      List<String>.from((map['permissions'])),
+      List<String>.from(map['attributes']),
+      List<String>.from(map['objects']),
+      List<String>.from(map['permissions']),
       id: map['Id'].toString(),
       isImpact: map['isImpact'] is bool ? map['isImpact'] as bool : false,
     );

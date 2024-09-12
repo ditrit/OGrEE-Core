@@ -23,7 +23,7 @@ void showSnackBar(
           child: Text(message),
           onTap: () async {
             await Clipboard.setData(
-                ClipboardData(text: copyTextTap == "" ? message : copyTextTap));
+                ClipboardData(text: copyTextTap == "" ? message : copyTextTap),);
           },
         ),
         duration: duration,
@@ -32,7 +32,7 @@ void showSnackBar(
             : SnackBarAction(
                 label: "COPY",
                 onPressed: () =>
-                    Clipboard.setData(ClipboardData(text: copyTextAction))),
+                    Clipboard.setData(ClipboardData(text: copyTextAction)),),
         showCloseIcon: duration.inSeconds > 5,
       ),
     );

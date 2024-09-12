@@ -8,7 +8,7 @@ class AutoUnityProjectCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
-    var color = Colors.blue;
+    const color = Colors.blue;
 
     return SizedBox(
       width: 265,
@@ -32,7 +32,7 @@ class AutoUnityProjectCard extends StatelessWidget {
                     style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: color.shade900),
+                        color: color.shade900,),
                   ),
                 ),
               ),
@@ -73,8 +73,8 @@ class AutoUnityProjectCard extends StatelessWidget {
                       );
                     },
                     icon: const Icon(Icons.play_circle),
-                    label: Text(localeMsg.launch)),
-              )
+                    label: Text(localeMsg.launch),),
+              ),
             ],
           ),
         ),

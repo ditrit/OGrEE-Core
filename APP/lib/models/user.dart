@@ -15,7 +15,7 @@ class User {
       required this.email,
       required this.password,
       required this.roles,
-      this.id});
+      this.id,});
 
   Map<String, dynamic> toMap() {
     if (roles[allDomainsConvert] != null) {
@@ -31,7 +31,7 @@ class User {
   }
 
   factory User.fromMap(Map<String, dynamic> map) {
-    var roles = Map<String, String>.from(map['roles']);
+    final roles = Map<String, String>.from(map['roles']);
     if (roles[allDomainsTag] != null) {
       roles[allDomainsConvert] = roles[allDomainsTag]!;
       roles.remove(allDomainsTag);
@@ -41,7 +41,7 @@ class User {
         id: map['_id'].toString(),
         email: map['email'].toString(),
         password: map['password'].toString(),
-        roles: roles);
+        roles: roles,);
   }
 
   String toJson() => json.encode(toMap());

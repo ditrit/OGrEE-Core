@@ -15,7 +15,7 @@ class Domain {
       'attributes': <String, String>{'color': color},
       'category': 'domain',
       'description': description,
-      'parentId': parent
+      'parentId': parent,
     };
   }
 

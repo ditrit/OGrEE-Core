@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/appbar.dart';
 import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/models/alert.dart';
@@ -7,7 +8,6 @@ import 'package:ogree_app/pages/projects_page.dart';
 import 'package:ogree_app/pages/select_page.dart';
 import 'package:ogree_app/widgets/select_objects/settings_view/tree_filter.dart';
 import 'package:ogree_app/widgets/select_objects/treeapp_controller.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class AlertPage extends StatefulWidget {
   final String userEmail;
@@ -30,7 +30,7 @@ class AlertPageState extends State<AlertPage> with TickerProviderStateMixin {
     final localeMsg = AppLocalizations.of(context)!;
     return Scaffold(
         backgroundColor: const Color.fromARGB(255, 238, 238, 241),
-        appBar: myAppBar(context, widget.userEmail, isTenantMode: false),
+        appBar: myAppBar(context, widget.userEmail),
         body: Padding(
           padding: const EdgeInsets.all(20.0),
           child: CustomScrollView(slivers: [
@@ -48,12 +48,12 @@ class AlertPageState extends State<AlertPage> with TickerProviderStateMixin {
                                 Navigator.of(context).push(MaterialPageRoute(
                                   builder: (context) => ProjectsPage(
                                       userEmail: widget.userEmail,
-                                      isTenantMode: false),
-                                )),
+                                      isTenantMode: false,),
+                                ),),
                             icon: Icon(
                               Icons.arrow_back,
                               color: Colors.blue.shade900,
-                            )),
+                            ),),
                         const SizedBox(width: 5),
                         Text(
                           localeMsg.myAlerts,
@@ -80,7 +80,7 @@ class AlertPageState extends State<AlertPage> with TickerProviderStateMixin {
                                   Padding(
                                     padding: const EdgeInsets.only(top: 16),
                                     child: Text(
-                                        "${AppLocalizations.of(context)!.noAlerts} :)"),
+                                        "${AppLocalizations.of(context)!.noAlerts} :)",),
                                   ),
                                 ],
                               ),
@@ -90,12 +90,12 @@ class AlertPageState extends State<AlertPage> with TickerProviderStateMixin {
                   ),
                 ],
               ),
-            )
-          ]),
-        ));
+            ),
+          ],),
+        ),);
   }
 
-  alertView(AppLocalizations localeMsg) {
+  Column alertView(AppLocalizations localeMsg) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -148,17 +148,17 @@ class AlertPageState extends State<AlertPage> with TickerProviderStateMixin {
                                           [],
                                           [widget.alerts[selectedIndex].id],
                                           [],
-                                          isImpact: true),
+                                          isImpact: true,),
                                       userEmail: widget.userEmail,
                                     ),
                                   ),
                                 );
                               },
                               icon: const Icon(Icons.arrow_back),
-                              label: Text(localeMsg.goToImpact)),
+                              label: Text(localeMsg.goToImpact),),
                         ),
-                      )
-                    ]),
+                      ),
+                    ],),
                   ),
                 ),
               ),
@@ -170,11 +170,11 @@ class AlertPageState extends State<AlertPage> with TickerProviderStateMixin {
   }
 
   List<ListTile> getListTitles() {
-    List<ListTile> list = [];
+    final List<ListTile> list = [];
     int index = 0;
-    for (var alert in widget.alerts) {
+    for (final alert in widget.alerts) {
       list.add(getListTitle(
-          alert.type.toUpperCase(), Colors.amber, alert.title, index));
+          alert.type.toUpperCase(), Colors.amber, alert.title, index,),);
       index++;
     }
     return list;
@@ -202,7 +202,7 @@ class AlertPageState extends State<AlertPage> with TickerProviderStateMixin {
                 style: const TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black),
+                    color: Colors.black,),
               ),
             ),
           ),
@@ -220,7 +220,7 @@ class AlertPageState extends State<AlertPage> with TickerProviderStateMixin {
     );
   }
 
-  getAlertText(int index) {
+  Text getAlertText(int index) {
     return Text.rich(
       TextSpan(
         children: [
@@ -236,7 +236,7 @@ class AlertPageState extends State<AlertPage> with TickerProviderStateMixin {
               ),
               TextSpan(
                   text:
-                      "\n${widget.alerts[index].title}. ${widget.alerts[index].subtitle}."),
+                      "\n${widget.alerts[index].title}. ${widget.alerts[index].subtitle}.",),
             ],
           ),
         ],
@@ -244,7 +244,7 @@ class AlertPageState extends State<AlertPage> with TickerProviderStateMixin {
     );
   }
 
-  getWidgetSpan(String text, String badge, MaterialColor badgeColor) {
+  WidgetSpan getWidgetSpan(String text, String badge, MaterialColor badgeColor) {
     return WidgetSpan(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 2.0),
@@ -260,7 +260,7 @@ class AlertPageState extends State<AlertPage> with TickerProviderStateMixin {
                   style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
-                      color: badgeColor.shade900),
+                      color: badgeColor.shade900,),
                 ),
               ),
             ),

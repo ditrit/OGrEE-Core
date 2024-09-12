@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/pages/select_page.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SelectNamespace extends StatefulWidget {
   const SelectNamespace({super.key});
@@ -14,7 +14,7 @@ class _SelectNamespaceState extends State<SelectNamespace> {
   Map<String, String> namespaces = {
     Namespace.Physical.name: "site.building.room",
     Namespace.Organisational.name: "domains",
-    Namespace.Logical.name: "templates&groups"
+    Namespace.Logical.name: "templates&groups",
   };
   Namespace _selection = Namespace.Physical;
 
@@ -44,15 +44,15 @@ class _SelectNamespaceState extends State<SelectNamespace> {
             crossAxisAlignment: WrapCrossAlignment.center,
             children:
                 namespaces.keys.map((label) => nameSpaceButton(label)).toList(),
-          )),
+          ),),
         ),
       ],
     );
   }
 
   Widget nameSpaceButton(String label) {
-    var isBigScreen = MediaQuery.of(context).size.width > 800;
-    Namespace thisNamespace =
+    final isBigScreen = MediaQuery.of(context).size.width > 800;
+    final Namespace thisNamespace =
         Namespace.values.firstWhere((e) => e.toString() == 'Namespace.$label');
     return Container(
       margin: const EdgeInsets.only(top: 30, bottom: 30),

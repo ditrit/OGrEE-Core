@@ -1,21 +1,13 @@
-import 'dart:convert';
-import 'dart:io';
-
-import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/api_backend.dart';
+import 'package:ogree_app/common/csv.dart';
 import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/snackbar.dart';
-import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/models/alert.dart';
 import 'package:ogree_app/widgets/impact/impact_graph_view.dart';
 import 'package:ogree_app/widgets/impact/impact_popup.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:path_provider/path_provider.dart';
-
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:universal_html/html.dart' as html;
 
 class ImpactView extends StatefulWidget {
   String rootId;
@@ -50,8 +42,8 @@ class _ImpactViewState extends State<ImpactView>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final localeMsg = AppLocalizations.of(context)!;
-    bool isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
 
     if (lastReceivedMarkAll != widget.receivedMarkAll) {
       isMarkedForMaintenance = widget.receivedMarkAll!;
@@ -59,27 +51,32 @@ class _ImpactViewState extends State<ImpactView>
     }
 
     return FutureBuilder(
-        future: _data.isEmpty ? getData() : null,
-        builder: (context, _) {
-          if (_data.isEmpty) {
-            return SizedBox(
-              height: MediaQuery.of(context).size.height > 205
-                  ? MediaQuery.of(context).size.height - 220
-                  : MediaQuery.of(context).size.height,
-              child: const Card(
-                margin: EdgeInsets.all(0.1),
-                child: Center(child: CircularProgressIndicator()),
-              ),
-            );
-          }
-          return objectImpactView(widget.rootId, localeMsg);
-        });
+      future: _data.isEmpty ? getData() : null,
+      builder: (context, _) {
+        if (_data.isEmpty) {
+          return SizedBox(
+            height: MediaQuery.of(context).size.height > 205
+                ? MediaQuery.of(context).size.height - 220
+                : MediaQuery.of(context).size.height,
+            child: const Card(
+              margin: EdgeInsets.all(0.1),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          );
+        }
+        return objectImpactView(widget.rootId, localeMsg);
+      },
+    );
   }
 
-  getData() async {
+  Future<void> getData() async {
     final messenger = ScaffoldMessenger.of(context);
     final result = await fetchObjectImpact(
-        widget.rootId, selectedCategories, selectedPtypes, selectedVtypes);
+      widget.rootId,
+      selectedCategories,
+      selectedPtypes,
+      selectedVtypes,
+    );
     switch (result) {
       case Success(value: final value):
         _data = value;
@@ -98,8 +95,7 @@ class _ImpactViewState extends State<ImpactView>
     }
   }
 
-  objectImpactView(String rootId, AppLocalizations localeMsg) {
-    print(widget.receivedMarkAll);
+  Column objectImpactView(String rootId, AppLocalizations localeMsg) {
     return Column(
       children: [
         const SizedBox(height: 10),
@@ -110,13 +106,16 @@ class _ImpactViewState extends State<ImpactView>
               child: SizedBox(
                 width: 230,
                 child: TextButton.icon(
-                    onPressed: () => markForMaintenance(localeMsg),
-                    label: Text(isMarkedForMaintenance
+                  onPressed: () => markForMaintenance(localeMsg),
+                  label: Text(
+                    isMarkedForMaintenance
                         ? localeMsg.markedMaintenance
-                        : localeMsg.markMaintenance),
-                    icon: isMarkedForMaintenance
-                        ? const Icon(Icons.check_circle)
-                        : const Icon(Icons.check_circle_outline)),
+                        : localeMsg.markMaintenance,
+                  ),
+                  icon: isMarkedForMaintenance
+                      ? const Icon(Icons.check_circle)
+                      : const Icon(Icons.check_circle_outline),
+                ),
               ),
             ),
             Expanded(
@@ -125,26 +124,28 @@ class _ImpactViewState extends State<ImpactView>
                 child: getWidgetSpan(rootId, "target", size: 18),
               ),
             ),
-            IconButton(onPressed: () => getCSV(), icon: const Icon(Icons.download)),
+            IconButton(
+                onPressed: () => getCSV(), icon: const Icon(Icons.download)),
             Padding(
               padding: const EdgeInsets.only(right: 10),
               child: IconButton(
-                  onPressed: () => showCustomPopup(
-                      context,
-                      ImpactOptionsPopup(
-                        selectedCategories: selectedCategories,
-                        selectedPtypes: selectedPtypes,
-                        selectedVtypes: selectedVtypes,
-                        parentCallback: changeImpactFilters,
-                      ),
-                      isDismissible: true),
-                  icon: const Icon(Icons.edit)),
+                onPressed: () => showCustomPopup(
+                  context,
+                  ImpactOptionsPopup(
+                    selectedCategories: selectedCategories,
+                    selectedPtypes: selectedPtypes,
+                    selectedVtypes: selectedVtypes,
+                    parentCallback: changeImpactFilters,
+                  ),
+                  isDismissible: true,
+                ),
+                icon: const Icon(Icons.edit),
+              ),
             ),
           ],
         ),
 
         Align(
-          alignment: Alignment.center,
           child: Padding(
             padding: const EdgeInsets.only(top: 16),
             child: Text(
@@ -165,7 +166,9 @@ class _ImpactViewState extends State<ImpactView>
                       Text(
                         localeMsg.directly.toUpperCase(),
                         style: const TextStyle(
-                            fontWeight: FontWeight.w900, fontSize: 17),
+                          fontWeight: FontWeight.w900,
+                          fontSize: 17,
+                        ),
                       ),
                       Padding(
                         padding: const EdgeInsets.only(left: 6),
@@ -181,8 +184,10 @@ class _ImpactViewState extends State<ImpactView>
                             color: Colors.white,
                           ),
                           padding: const EdgeInsets.all(13),
-                          child: const Icon(Icons.info_outline_rounded,
-                              color: Colors.blueAccent),
+                          child: const Icon(
+                            Icons.info_outline_rounded,
+                            color: Colors.blueAccent,
+                          ),
                         ),
                       ),
                     ],
@@ -192,15 +197,15 @@ class _ImpactViewState extends State<ImpactView>
                 ],
               ),
               Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                mainAxisSize: MainAxisSize.max,
                 children: [
                   Row(
                     children: [
                       Text(
                         localeMsg.indirectly.toUpperCase(),
                         style: const TextStyle(
-                            fontWeight: FontWeight.w900, fontSize: 17),
+                          fontWeight: FontWeight.w900,
+                          fontSize: 17,
+                        ),
                       ),
                       Padding(
                         padding: const EdgeInsets.only(left: 6),
@@ -216,8 +221,10 @@ class _ImpactViewState extends State<ImpactView>
                             color: Colors.white,
                           ),
                           padding: const EdgeInsets.all(13),
-                          child: const Icon(Icons.info_outline_rounded,
-                              color: Colors.blueAccent),
+                          child: const Icon(
+                            Icons.info_outline_rounded,
+                            color: Colors.blueAccent,
+                          ),
                         ),
                       ),
                     ],
@@ -225,7 +232,7 @@ class _ImpactViewState extends State<ImpactView>
                   const SizedBox(height: 15),
                   ...listImpacted(_data["indirect"]),
                 ],
-              )
+              ),
             ],
           ),
         ),
@@ -246,44 +253,24 @@ class _ImpactViewState extends State<ImpactView>
 
   getCSV() async {
     // Prepare data
-    List<List<String>> rows = [
-      ["target", widget.rootId]
+    final List<List<String>> rows = [
+      ["target", widget.rootId],
     ];
-    for (var type in ["direct", "indirect"]) {
-      var direct = (Map<String, dynamic>.from(_data[type])).keys.toList();
+    for (final type in ["direct", "indirect"]) {
+      final direct = Map<String, dynamic>.from(_data[type]).keys.toList();
       direct.insertAll(0, [type]);
       rows.add(direct);
     }
 
-    // Prepare the file
-    String csv = const ListToCsvConverter().convert(rows);
-    final bytes = utf8.encode(csv);
-    if (kIsWeb) {
-      // If web, use html to download csv
-      html.AnchorElement(
-          href: 'data:application/octet-stream;base64,${base64Encode(bytes)}')
-        ..setAttribute("download", "impact-report.csv")
-        ..click();
-    } else {
-      // Save to local filesystem
-      var path = (await getApplicationDocumentsDirectory()).path;
-      var fileName = '$path/impact-report.csv';
-      var file = File(fileName);
-      for (var i = 1; await file.exists(); i++) {
-        fileName = '$path/impact-report ($i).csv';
-        file = File(fileName);
-      }
-      file.writeAsBytes(bytes, flush: true).then((value) => showSnackBar(
-          ScaffoldMessenger.of(context),
-          "${AppLocalizations.of(context)!.fileSavedTo} $fileName"));
-    }
+    // Save the file
+    await saveCSV("impact-report", rows, context);
   }
 
   markForMaintenance(AppLocalizations localeMsg) async {
     final messenger = ScaffoldMessenger.of(context);
     if (isMarkedForMaintenance) {
       // unmark
-      var result = await deleteObject(widget.rootId, "alert");
+      final result = await deleteObject(widget.rootId, "alert");
       switch (result) {
         case Success():
           showSnackBar(
@@ -297,14 +284,21 @@ class _ImpactViewState extends State<ImpactView>
           showSnackBar(messenger, exception.toString(), isError: true);
       }
     } else {
-      var alert = Alert(widget.rootId, "minor",
-          "${widget.rootId} ${localeMsg.isMarked}", localeMsg.checkImpact);
+      final alert = Alert(
+        widget.rootId,
+        "minor",
+        "${widget.rootId} ${localeMsg.isMarked}",
+        localeMsg.checkImpact,
+      );
 
-      var result = await createAlert(alert);
+      final result = await createAlert(alert);
       switch (result) {
         case Success():
-          showSnackBar(messenger, "${widget.rootId} ${localeMsg.successMarked}",
-              isSuccess: true);
+          showSnackBar(
+            messenger,
+            "${widget.rootId} ${localeMsg.successMarked}",
+            isSuccess: true,
+          );
           setState(() {
             isMarkedForMaintenance = true;
           });
@@ -314,7 +308,7 @@ class _ImpactViewState extends State<ImpactView>
     }
   }
 
-  getWidgetSpan(String text, String category, {double size = 14}) {
+  Padding getWidgetSpan(String text, String category, {double size = 14}) {
     MaterialColor badgeColor = Colors.blue;
     if (category == "device") {
       badgeColor = Colors.teal;
@@ -324,7 +318,6 @@ class _ImpactViewState extends State<ImpactView>
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2.0),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           SizedBox(
@@ -337,9 +330,10 @@ class _ImpactViewState extends State<ImpactView>
                 label: Text(
                   " $text ",
                   style: TextStyle(
-                      fontSize: size,
-                      fontWeight: FontWeight.bold,
-                      color: badgeColor.shade900),
+                    fontSize: size,
+                    fontWeight: FontWeight.bold,
+                    color: badgeColor.shade900,
+                  ),
                 ),
               ),
             ),
@@ -351,15 +345,18 @@ class _ImpactViewState extends State<ImpactView>
   }
 
   List<Widget> listImpacted(Map<String, dynamic> objects) {
-    List<Widget> listWidgets = [];
-    for (var objId in objects.keys) {
+    final List<Widget> listWidgets = [];
+    for (final objId in objects.keys) {
       listWidgets.add(getWidgetSpan(objId, objects[objId]["category"]));
     }
     return listWidgets;
   }
 
   changeImpactFilters(
-      List<String> categories, List<String> ptypes, List<String> vtypes) async {
+    List<String> categories,
+    List<String> ptypes,
+    List<String> vtypes,
+  ) async {
     selectedCategories = categories;
     selectedPtypes = ptypes;
     selectedVtypes = vtypes;

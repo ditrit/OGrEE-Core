@@ -1,22 +1,22 @@
 import 'dart:io';
 
-import 'package:flutter/material.dart';
-import 'package:ogree_app/common/snackbar.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:ogree_app/common/theme.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:http/http.dart' as http;
+import 'package:ogree_app/common/snackbar.dart';
+import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/models/netbox.dart';
 import 'package:ogree_app/widgets/select_objects/settings_view/tree_filter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:universal_html/html.dart' as html;
-import 'package:http/http.dart' as http;
 
 enum ToolOS { windows, linux, macOS }
 
 // Currently used to download cli or unity
 class DownloadToolPopup extends StatefulWidget {
-  Tools tool;
-  DownloadToolPopup({super.key, required this.tool});
+  final Tools tool;
+  const DownloadToolPopup({super.key, required this.tool});
 
   @override
   State<DownloadToolPopup> createState() => _DownloadCliPopupState();
@@ -38,96 +38,105 @@ class _DownloadCliPopupState extends State<DownloadToolPopup> {
         decoration: PopupDecoration,
         child: Padding(
           padding: EdgeInsets.fromLTRB(
-              isSmallDisplay ? 30 : 40, 20, isSmallDisplay ? 30 : 40, 15),
+            isSmallDisplay ? 30 : 40,
+            20,
+            isSmallDisplay ? 30 : 40,
+            15,
+          ),
           child: ScaffoldMessenger(
-              child: Builder(
-                  builder: (context) => Scaffold(
-                        backgroundColor: Colors.white,
-                        body: ListView(
-                          padding: EdgeInsets.zero,
-                          children: [
-                            Center(
-                                child: Text(
-                              widget.tool == Tools.cli
-                                  ? localeMsg.downloadCliTitle
-                                  : localeMsg.downloadUnityTitle,
-                              style: Theme.of(context).textTheme.headlineMedium,
-                            )),
-                            const SizedBox(height: 30),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(localeMsg.selectOS),
-                                const SizedBox(width: 20),
-                                SizedBox(
-                                  height: 35,
-                                  width: 165,
-                                  child: DropdownButtonFormField<ToolOS>(
-                                    borderRadius: BorderRadius.circular(12.0),
-                                    decoration: GetFormInputDecoration(
-                                      false,
-                                      null,
-                                      icon: Icons.desktop_windows,
-                                    ),
-                                    value: _selectedOS,
-                                    items: ToolOS.values
-                                        .map<DropdownMenuItem<ToolOS>>(
-                                            (ToolOS value) {
-                                      return DropdownMenuItem<ToolOS>(
-                                        value: value,
-                                        child: Text(
-                                          value == ToolOS.macOS
-                                              ? value.name
-                                              : value.name.capitalize(),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      );
-                                    }).toList(),
-                                    onChanged: (ToolOS? value) {
-                                      setState(() {
-                                        _selectedOS = value!;
-                                      });
-                                    },
-                                  ),
-                                ),
-                              ],
+            child: Builder(
+              builder: (context) => Scaffold(
+                backgroundColor: Colors.white,
+                body: ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    Center(
+                      child: Text(
+                        widget.tool == Tools.cli
+                            ? localeMsg.downloadCliTitle
+                            : localeMsg.downloadUnityTitle,
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(localeMsg.selectOS),
+                        const SizedBox(width: 20),
+                        SizedBox(
+                          height: 35,
+                          width: 165,
+                          child: DropdownButtonFormField<ToolOS>(
+                            borderRadius: BorderRadius.circular(12.0),
+                            decoration: GetFormInputDecoration(
+                              false,
+                              null,
+                              icon: Icons.desktop_windows,
                             ),
-                            const SizedBox(height: 30),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                TextButton.icon(
-                                  style: OutlinedButton.styleFrom(
-                                      foregroundColor: Colors.blue.shade900),
-                                  onPressed: () => Navigator.pop(context),
-                                  label: Text(localeMsg.cancel),
-                                  icon: const Icon(
-                                    Icons.cancel_outlined,
-                                    size: 16,
-                                  ),
+                            value: _selectedOS,
+                            items: ToolOS.values
+                                .map<DropdownMenuItem<ToolOS>>((ToolOS value) {
+                              return DropdownMenuItem<ToolOS>(
+                                value: value,
+                                child: Text(
+                                  value == ToolOS.macOS
+                                      ? value.name
+                                      : value.name.capitalize(),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                const SizedBox(width: 15),
-                                ElevatedButton.icon(
-                                    onPressed: () => submitDownloadTool(
-                                        widget.tool, localeMsg),
-                                    label: Text(localeMsg.download),
-                                    icon: _isLoading
-                                        ? Container(
-                                            width: 24,
-                                            height: 24,
-                                            padding: const EdgeInsets.all(2.0),
-                                            child:
-                                                const CircularProgressIndicator(
-                                              color: Colors.white,
-                                              strokeWidth: 3,
-                                            ),
-                                          )
-                                        : const Icon(Icons.download, size: 16))
-                              ],
-                            )
-                          ],
+                              );
+                            }).toList(),
+                            onChanged: (ToolOS? value) {
+                              setState(() {
+                                _selectedOS = value!;
+                              });
+                            },
+                          ),
                         ),
-                      ))),
+                      ],
+                    ),
+                    const SizedBox(height: 30),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.blue.shade900,
+                          ),
+                          onPressed: () => Navigator.pop(context),
+                          label: Text(localeMsg.cancel),
+                          icon: const Icon(
+                            Icons.cancel_outlined,
+                            size: 16,
+                          ),
+                        ),
+                        const SizedBox(width: 15),
+                        ElevatedButton.icon(
+                          onPressed: () => submitDownloadTool(
+                            widget.tool,
+                            localeMsg,
+                          ),
+                          label: Text(localeMsg.download),
+                          icon: _isLoading
+                              ? Container(
+                                  width: 24,
+                                  height: 24,
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: const CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 3,
+                                  ),
+                                )
+                              : const Icon(Icons.download, size: 16),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -140,12 +149,10 @@ class _DownloadCliPopupState extends State<DownloadToolPopup> {
     switch (_selectedOS) {
       case ToolOS.windows:
         cliName = "$cliName.exe";
-        break;
       case ToolOS.linux:
         break;
       case ToolOS.macOS:
         cliName = "$cliName.mac";
-        break;
     }
     return (urlPath, cliName);
   }
@@ -157,19 +164,17 @@ class _DownloadCliPopupState extends State<DownloadToolPopup> {
     switch (_selectedOS) {
       case ToolOS.windows:
         cliName = "${cliName}_win.zip";
-        break;
       case ToolOS.linux:
         cliName = "${cliName}_Linux.zip";
-        break;
       case ToolOS.macOS:
         cliName = "${cliName}_macOS.zip";
-        break;
     }
     return (urlPath, cliName);
   }
 
   submitDownloadTool(Tools tool, AppLocalizations localeMsg) async {
-    String urlPath, cliName;
+    String urlPath;
+    String cliName;
     if (tool == Tools.cli) {
       (urlPath, cliName) = getCliInfo();
     } else {
@@ -190,17 +195,20 @@ class _DownloadCliPopupState extends State<DownloadToolPopup> {
       final response = await http.get(Uri.parse(urlPath + cliName));
       navigator.pop();
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        var path = (await getApplicationDocumentsDirectory()).path;
+        final path = (await getApplicationDocumentsDirectory()).path;
         var fileName = '$path/$cliName';
         var file = File(fileName);
         for (var i = 1; await file.exists(); i++) {
           fileName = '$path/$cliName ($i)';
           file = File(fileName);
         }
-        file.writeAsBytes(response.bodyBytes, flush: true).then((value) =>
-            showSnackBar(ScaffoldMessenger.of(context),
+        file.writeAsBytes(response.bodyBytes, flush: true).then(
+              (value) => showSnackBar(
+                messenger,
                 "${localeMsg.fileSavedTo} $fileName",
-                copyTextAction: fileName));
+                copyTextAction: fileName,
+              ),
+            );
       } else {
         showSnackBar(messenger, localeMsg.unableDownload);
       }

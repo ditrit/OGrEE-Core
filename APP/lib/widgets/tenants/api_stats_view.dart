@@ -42,7 +42,7 @@ class _ApiStatsViewState extends State<ApiStatsView> {
                 Padding(
                   padding: const EdgeInsets.only(top: 16),
                   child: Text(
-                      "${AppLocalizations.of(context)!.noObjectsFound} :("),
+                      "${AppLocalizations.of(context)!.noObjectsFound} :(",),
                 ),
               ],
             );
@@ -54,10 +54,10 @@ class _ApiStatsViewState extends State<ApiStatsView> {
                   cardTheme: const CardTheme(
                       elevation: 0,
                       surfaceTintColor: Colors.white,
-                      color: Colors.white),
+                      color: Colors.white,),
                 ),
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.only(right: 16, top: 0),
+                  padding: const EdgeInsets.only(right: 16),
                   child: PaginatedDataTable(
                     horizontalMargin: 15,
                     columnSpacing: 30,
@@ -68,18 +68,18 @@ class _ApiStatsViewState extends State<ApiStatsView> {
                           label: Text(
                         localeMsg.parameter,
                         style: titleStyle,
-                      )),
+                      ),),
                       DataColumn(
                           label: Text(
                         localeMsg.value,
                         style: titleStyle,
-                      ))
+                      ),),
                     ],
                     source: _DataSource(context, _tenantStats!),
                   ),
-                ));
+                ),);
           }
-        });
+        },);
   }
 
   getTenantStats() async {
@@ -98,8 +98,8 @@ class _ApiStatsViewState extends State<ApiStatsView> {
     result = await fetchTenantApiVersion();
     switch (result) {
       case Success(value: final value):
-        Map<String, dynamic> versionStats = value;
-        for (var key in versionStats.keys) {
+        final Map<String, dynamic> versionStats = value;
+        for (final key in versionStats.keys) {
           if (key.contains("Build")) {
             _tenantStats!["API$key"] = versionStats[key];
           } else {
@@ -152,9 +152,9 @@ class _DataSource extends DataTableSource {
   int get selectedRowCount => _selectedCount;
 
   List<CustomRow> getChildren() {
-    List<CustomRow> children = [];
-    for (var key in stats.keys) {
-      List<DataCell> row = [label(key), label(stats[key].toString())];
+    final List<CustomRow> children = [];
+    for (final key in stats.keys) {
+      final List<DataCell> row = [label(key), label(stats[key].toString())];
       children.add(CustomRow(row));
     }
     return children;
@@ -167,6 +167,6 @@ class _DataSource extends DataTableSource {
         fontSize: 14,
         fontWeight: FontWeight.w400,
       ),
-    ));
+    ),);
   }
 }

@@ -1,4 +1,7 @@
+// ignore_for_file: constant_identifier_names
+
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
@@ -7,7 +10,6 @@ import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/models/tag.dart';
 import 'package:ogree_app/pages/results_page.dart';
 import 'package:ogree_app/widgets/common/delete_dialog_popup.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/widgets/tenants/popups/tags_popup.dart';
 
 enum TagSearchFields { Description, Slug, Color }
@@ -41,209 +43,225 @@ class _TagsViewState extends State<TagsView> {
     final localeMsg = AppLocalizations.of(context)!;
     final isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
     return FutureBuilder(
-        future: _loadTags ? getTags() : null,
-        builder: (context, _) {
-          if (_tags == null) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          return Theme(
-            data: Theme.of(context).copyWith(
-              cardTheme: const CardTheme(
-                  elevation: 0,
-                  surfaceTintColor: Colors.white,
-                  color: Colors.white),
+      future: _loadTags ? getTags() : null,
+      builder: (context, _) {
+        if (_tags == null) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        return Theme(
+          data: Theme.of(context).copyWith(
+            cardTheme: const CardTheme(
+              elevation: 0,
+              surfaceTintColor: Colors.white,
+              color: Colors.white,
             ),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.only(right: 16, top: 0),
-              child: PaginatedDataTable(
-                sortColumnIndex: 1,
-                sortAscending: sort,
-                checkboxHorizontalMargin: 0,
-                header: Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    SizedBox(
-                      height: isSmallDisplay ? 30 : 35,
-                      width: isSmallDisplay ? 115 : 145,
-                      child: DropdownButtonFormField<TagSearchFields>(
-                        isExpanded: true,
-                        borderRadius: BorderRadius.circular(12.0),
-                        decoration: GetFormInputDecoration(
-                          isSmallDisplay,
-                          null,
-                          icon: Icons.search_rounded,
-                          contentPadding: isSmallDisplay
-                              ? const EdgeInsets.only(
-                                  top: 0,
-                                  bottom: 15,
-                                  left: 12,
-                                  right: 5,
-                                )
-                              : const EdgeInsets.only(
-                                  top: 3.0,
-                                  bottom: 12.0,
-                                  left: 20.0,
-                                  right: 14.0,
-                                ),
-                        ),
-                        value: _searchField,
-                        items: TagSearchFields.values
-                            .map<DropdownMenuItem<TagSearchFields>>(
-                                (TagSearchFields value) {
-                          return DropdownMenuItem<TagSearchFields>(
-                            value: value,
-                            child: Text(
-                              value.name,
-                              overflow: TextOverflow.ellipsis,
+          ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.only(right: 16),
+            child: PaginatedDataTable(
+              sortColumnIndex: 1,
+              sortAscending: sort,
+              checkboxHorizontalMargin: 0,
+              header: Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  SizedBox(
+                    height: isSmallDisplay ? 30 : 35,
+                    width: isSmallDisplay ? 115 : 145,
+                    child: DropdownButtonFormField<TagSearchFields>(
+                      isExpanded: true,
+                      borderRadius: BorderRadius.circular(12.0),
+                      decoration: GetFormInputDecoration(
+                        isSmallDisplay,
+                        null,
+                        icon: Icons.search_rounded,
+                        contentPadding: isSmallDisplay
+                            ? const EdgeInsets.only(
+                                bottom: 15,
+                                left: 12,
+                                right: 5,
+                              )
+                            : const EdgeInsets.only(
+                                top: 3.0,
+                                bottom: 12.0,
+                                left: 20.0,
+                                right: 14.0,
+                              ),
+                      ),
+                      value: _searchField,
+                      items: TagSearchFields.values
+                          .map<DropdownMenuItem<TagSearchFields>>(
+                              (TagSearchFields value) {
+                        return DropdownMenuItem<TagSearchFields>(
+                          value: value,
+                          child: Text(
+                            value.name,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (TagSearchFields? value) {
+                        setState(() {
+                          _searchField = value!;
+                        });
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: 150,
+                    child: TextFormField(
+                      textAlignVertical: TextAlignVertical.center,
+                      onChanged: (value) {
+                        setState(() {
+                          _tags = searchTags(value);
+                        });
+                      },
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        isDense: true,
+                        label: isSmallDisplay ? null : Text(localeMsg.search),
+                        prefixIcon: isSmallDisplay
+                            ? const Icon(Icons.search_rounded)
+                            : null,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                Padding(
+                  padding: EdgeInsets.only(right: isSmallDisplay ? 0 : 4),
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    splashRadius: isSmallDisplay ? 16 : 23,
+                    onPressed: () => selectedTags.isNotEmpty
+                        ? showCustomPopup(
+                            context,
+                            TagsPopup(
+                              parentCallback: () {
+                                setState(() {
+                                  _loadTags = true;
+                                });
+                              },
+                              tagId: selectedTags.first.slug,
                             ),
-                          );
-                        }).toList(),
-                        onChanged: (TagSearchFields? value) {
+                            isDismissible: true,
+                          )
+                        : null,
+                    icon: const Icon(
+                      Icons.edit,
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(right: isSmallDisplay ? 0 : 8.0),
+                  child: IconButton(
+                    splashRadius: isSmallDisplay ? 16 : 23,
+                    // iconSize: 14,
+                    onPressed: () => selectedTags.isNotEmpty
+                        ? showCustomPopup(
+                            context,
+                            DeleteDialog(
+                              objName: selectedTags.map((e) {
+                                return e.slug;
+                              }).toList(),
+                              objType: "tags",
+                              parentCallback: () {
+                                setState(() {
+                                  _loadTags = true;
+                                });
+                              },
+                            ),
+                            isDismissible: true,
+                          )
+                        : null,
+                    icon: Icon(
+                      Icons.delete,
+                      color: Colors.red.shade900,
+                    ),
+                  ),
+                ),
+                if (isSmallDisplay)
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    splashRadius: 16,
+                    onPressed: () => showCustomPopup(
+                      context,
+                      TagsPopup(
+                        parentCallback: () {
                           setState(() {
-                            _searchField = value!;
+                            _loadTags = true;
                           });
                         },
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    SizedBox(
-                      width: 150,
-                      child: TextFormField(
-                          textAlignVertical: TextAlignVertical.center,
-                          onChanged: (value) {
-                            setState(() {
-                              _tags = searchTags(value);
-                            });
-                          },
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                            isDense: true,
-                            label:
-                                isSmallDisplay ? null : Text(localeMsg.search),
-                            prefixIcon: isSmallDisplay
-                                ? const Icon(Icons.search_rounded)
-                                : null,
-                          )),
+                    icon: Icon(
+                      Icons.add,
+                      color: Colors.blue.shade900,
                     ),
-                  ],
-                ),
-                actions: [
+                  )
+                else
                   Padding(
-                    padding: EdgeInsets.only(right: isSmallDisplay ? 0 : 4),
-                    child: IconButton(
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        splashRadius: isSmallDisplay ? 16 : 23,
-                        onPressed: () => selectedTags.isNotEmpty
-                            ? showCustomPopup(
-                                context,
-                                TagsPopup(
-                                  parentCallback: () {
-                                    setState(() {
-                                      _loadTags = true;
-                                    });
-                                  },
-                                  tagId: selectedTags.first.slug,
-                                ),
-                                isDismissible: true)
-                            : null,
-                        icon: const Icon(
-                          Icons.edit,
-                        )),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(right: isSmallDisplay ? 0 : 8.0),
-                    child: IconButton(
-                        splashRadius: isSmallDisplay ? 16 : 23,
-                        // iconSize: 14,
-                        onPressed: () => selectedTags.isNotEmpty
-                            ? showCustomPopup(
-                                context,
-                                DeleteDialog(
-                                  objName: selectedTags.map((e) {
-                                    print(e);
-                                    return e.slug;
-                                  }).toList(),
-                                  objType: "tags",
-                                  parentCallback: () {
-                                    setState(() {
-                                      _loadTags = true;
-                                    });
-                                  },
-                                ),
-                                isDismissible: true)
-                            : null,
-                        icon: Icon(
-                          Icons.delete,
-                          color: Colors.red.shade900,
-                        )),
-                  ),
-                  isSmallDisplay
-                      ? IconButton(
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          splashRadius: 16,
-                          onPressed: () => showCustomPopup(context,
-                              TagsPopup(parentCallback: () {
+                    padding: const EdgeInsets.only(right: 6.0),
+                    child: ElevatedButton.icon(
+                      onPressed: () => showCustomPopup(
+                        context,
+                        TagsPopup(
+                          parentCallback: () {
                             setState(() {
                               _loadTags = true;
                             });
-                          })),
-                          icon: Icon(
-                            Icons.add,
-                            color: Colors.blue.shade900,
-                          ),
-                        )
-                      : Padding(
-                          padding: const EdgeInsets.only(right: 6.0),
-                          child: ElevatedButton.icon(
-                            onPressed: () => showCustomPopup(context,
-                                TagsPopup(parentCallback: () {
-                              setState(() {
-                                _loadTags = true;
-                              });
-                            })),
-                            icon: const Icon(Icons.add, color: Colors.white),
-                            label: Text("${localeMsg.create} Tag"),
-                          ),
+                          },
                         ),
-                ],
-                rowsPerPage: _tags!.isEmpty
-                    ? 1
-                    : (_tags!.length >= 6 ? 6 : _tags!.length),
-                columns: [
-                  DataColumn(
-                      label: Text(
+                      ),
+                      icon: const Icon(Icons.add, color: Colors.white),
+                      label: Text("${localeMsg.create} Tag"),
+                    ),
+                  ),
+              ],
+              rowsPerPage:
+                  _tags!.isEmpty ? 1 : (_tags!.length >= 6 ? 6 : _tags!.length),
+              columns: [
+                DataColumn(
+                  label: Text(
                     localeMsg.color,
                     style: const TextStyle(fontWeight: FontWeight.w600),
-                  )),
-                  DataColumn(
-                      label: const Text(
-                        "Slug",
-                        style: TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      onSort: (columnIndex, ascending) {
-                        setState(() {
-                          sort = !sort;
-                        });
-                        onsortColum(columnIndex, ascending);
-                      }),
-                  const DataColumn(
-                      label: Text(
+                  ),
+                ),
+                DataColumn(
+                  label: const Text(
+                    "Slug",
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  onSort: (columnIndex, ascending) {
+                    setState(() {
+                      sort = !sort;
+                    });
+                    onsortColum(columnIndex, ascending);
+                  },
+                ),
+                const DataColumn(
+                  label: Text(
                     "Description",
                     style: TextStyle(fontWeight: FontWeight.w600),
-                  )),
-                  const DataColumn(
-                      label: Text(
+                  ),
+                ),
+                const DataColumn(
+                  label: Text(
                     "Image",
                     style: TextStyle(fontWeight: FontWeight.w600),
-                  ))
-                ],
-                source: _DataSource(context, _tags!, onTagSelected),
-              ),
+                  ),
+                ),
+              ],
+              source: _DataSource(context, _tags!, onTagSelected),
             ),
-          );
-        });
+          ),
+        );
+      },
+    );
   }
 
   getTags() async {
@@ -260,7 +278,7 @@ class _TagsViewState extends State<TagsView> {
     _loadTags = false;
   }
 
-  searchTags(String searchText) {
+  List<Tag> searchTags(String searchText) {
     if (searchText.trim().isEmpty) {
       return _filterTags!.toList();
     }
@@ -275,8 +293,11 @@ class _TagsViewState extends State<TagsView> {
             .toList();
       case TagSearchFields.Color:
         return _filterTags!
-            .where((element) =>
-                element.color.toLowerCase().contains(searchText.toLowerCase()))
+            .where(
+              (element) => element.color
+                  .toLowerCase()
+                  .contains(searchText.toLowerCase()),
+            )
             .toList();
     }
   }
@@ -335,9 +356,9 @@ class _DataSource extends DataTableSource {
   int get selectedRowCount => _selectedCount;
 
   List<CustomRow> getChildren() {
-    List<CustomRow> children = [];
-    for (var tag in tags) {
-      List<DataCell> row = [];
+    final List<CustomRow> children = [];
+    for (final tag in tags) {
+      final List<DataCell> row = [];
       row.add(colorLabel(tag.color));
       row.add(label(tag.slug, fontWeight: FontWeight.w500));
       row.add(label(tag.description));
@@ -352,8 +373,9 @@ class _DataSource extends DataTableSource {
       Padding(
         padding: const EdgeInsets.all(8.0),
         child: Tooltip(
-            message: color,
-            child: Icon(Icons.circle, color: Color(int.parse("0xFF$color")))),
+          message: color,
+          child: Icon(Icons.circle, color: Color(int.parse("0xFF$color"))),
+        ),
       ),
     );
   }

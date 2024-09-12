@@ -1,26 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/models/netbox.dart';
 import 'package:ogree_app/pages/login_page.dart';
 import 'package:ogree_app/pages/projects_page.dart';
 import 'package:ogree_app/pages/tenant_page.dart';
-import 'package:ogree_app/widgets/login/change_password_popup.dart';
 import 'package:ogree_app/widgets/common/language_toggle.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:ogree_app/widgets/login/change_password_popup.dart';
+import 'package:ogree_app/widgets/tenants/popups/create_server_popup.dart';
 import 'package:ogree_app/widgets/tools/download_tool_popup.dart';
-
-import '../widgets/tenants/popups/create_server_popup.dart';
 
 AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
   final localeMsg = AppLocalizations.of(context)!;
-  logout() => Navigator.of(context).push(
+  Future logout() => Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => const LoginPage(),
         ),
       );
 
-  List<PopupMenuEntry<String>> entries = <PopupMenuEntry<String>>[
+  final List<PopupMenuEntry<String>> entries = <PopupMenuEntry<String>>[
     PopupMenuItem(
       value: "change",
       child: Text(AppLocalizations.of(context)!.changePassword),
@@ -37,32 +36,32 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
           value: "new",
           child: Text(backendType == BackendType.kubernetes
               ? localeMsg.addKube
-              : localeMsg.addServer),
-        ));
+              : localeMsg.addServer,),
+        ),);
   } else {
     entries.insert(
         0,
         PopupMenuItem(
           value: Tools.unity.name,
           child: Text(localeMsg.downloadUnity),
-        ));
+        ),);
     entries.insert(
         0,
         PopupMenuItem(
           value: Tools.cli.name,
           child: Text(localeMsg.downloadCli),
-        ));
+        ),);
     if (isTenantAdmin) {
       entries.insert(
           0,
           PopupMenuItem(
             value: "tenant",
             child: Text(localeMsg.tenantParameters),
-          ));
+          ),);
     }
   }
 
-  bool isSmallDisplay = MediaQuery.of(context).size.width < 600;
+  final bool isSmallDisplay = MediaQuery.of(context).size.width < 600;
   return AppBar(
     backgroundColor: Colors.grey.shade900,
     leadingWidth: 160,
@@ -76,32 +75,29 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
               style: TextStyle(
                   fontSize: 21,
                   fontWeight: FontWeight.w700,
-                  color: Colors.white),
+                  color: Colors.white,),
             ),
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) => ProjectsPage(
                     userEmail: isTenantMode ? "admin" : userEmail,
-                    isTenantMode: isTenantMode),
+                    isTenantMode: isTenantMode,),
               ),
             ),
           ),
           Badge(
             isLabelVisible: isTenantMode,
             label: const Text("ADMIN"),
-          )
+          ),
         ],
       ),
     ),
     actions: [
-      isSmallDisplay
-          ? Container()
-          : Padding(
+      if (isSmallDisplay) Container() else Padding(
               padding: const EdgeInsets.only(right: 20),
               child: Row(
                 children: [
-                  backendType == BackendType.kubernetes
-                      ? Padding(
+                  if (backendType == BackendType.kubernetes) Padding(
                           padding: const EdgeInsets.only(right: 8),
                           child: Container(
                             decoration: BoxDecoration(
@@ -114,10 +110,9 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
                               label: const Text("KUBE"),
                             ),
                           ),
-                        )
-                      : Container(),
+                        ) else Container(),
                   Text(isTenantMode ? apiUrl : tenantName,
-                      style: const TextStyle(color: Colors.white)),
+                      style: const TextStyle(color: Colors.white),),
                 ],
               ),
             ),
@@ -132,17 +127,17 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
               logout();
             } else if (value == "new") {
               showCustomPopup(
-                  context, CreateServerPopup(parentCallback: () {}));
+                  context, CreateServerPopup(parentCallback: () {}),);
             } else if (value == "tenant") {
               Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) => const TenantPage(userEmail: "admin"),
-              ));
+              ),);
             } else if (value == Tools.unity.name) {
-              showCustomPopup(context, DownloadToolPopup(tool: Tools.unity),
-                  isDismissible: true);
+              showCustomPopup(context, const DownloadToolPopup(tool: Tools.unity),
+                  isDismissible: true,);
             } else if (value == Tools.cli.name) {
-              showCustomPopup(context, DownloadToolPopup(tool: Tools.cli),
-                  isDismissible: true);
+              showCustomPopup(context, const DownloadToolPopup(tool: Tools.cli),
+                  isDismissible: true,);
             } else {
               showCustomPopup(context, const ChangePasswordPopup());
             }
@@ -155,8 +150,7 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
                 color: Colors.white,
               ),
               const SizedBox(width: 10),
-              isSmallDisplay
-                  ? Tooltip(
+              if (isSmallDisplay) Tooltip(
                       message: isTenantMode
                           ? (backendType == BackendType.kubernetes
                               ? "(KUBE) $apiUrl"
@@ -166,14 +160,13 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
                       child: const Icon(
                         Icons.info_outline_rounded,
                         color: Colors.white,
-                      ))
-                  : Text(
+                      ),) else Text(
                       isTenantMode ? "admin" : userEmail,
                       style: const TextStyle(color: Colors.white),
                     ),
             ],
-          )),
-      const SizedBox(width: 40)
+          ),),
+      const SizedBox(width: 40),
     ],
   );
 }

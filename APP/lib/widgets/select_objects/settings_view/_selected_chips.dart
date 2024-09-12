@@ -1,7 +1,7 @@
 part of 'settings_view.dart';
 
 class SelectedChips extends StatefulWidget {
-  const SelectedChips({Key? key}) : super(key: key);
+  const SelectedChips({super.key});
 
   @override
   State<SelectedChips> createState() => _SelectedChipsState();
@@ -16,7 +16,7 @@ class _SelectedChipsState extends State<SelectedChips> {
     final appController = TreeAppController.of(context);
     if (shouldGroupBy.isEmpty &&
         appController.fetchedCategories["room"] != null) {
-      for (var room in appController.fetchedCategories["room"]!) {
+      for (final room in appController.fetchedCategories["room"]!) {
         shouldGroupBy[room] = true;
       }
     }
@@ -29,16 +29,16 @@ class _SelectedChipsState extends State<SelectedChips> {
             children:
                 getChips(Map.from(appController.selectedNodes), appController),
           );
-        });
+        },);
   }
 
   List<Widget> getChips(Map<String, bool> nodes, appController) {
-    List<Widget> chips = [];
-    Map<String, List<String>> groups = {}; // group name: [group nodes]
+    final List<Widget> chips = [];
+    final Map<String, List<String>> groups = {}; // group name: [group nodes]
 
     // Group by, create groups
-    for (var key in nodes.keys) {
-      for (var group in shouldGroupBy.keys) {
+    for (final key in nodes.keys) {
+      for (final group in shouldGroupBy.keys) {
         if (key.contains(group)) {
           if (!groups.containsKey(group)) {
             groups[group] = [key];
@@ -76,9 +76,9 @@ class _SelectedChipsState extends State<SelectedChips> {
             size: 20,
             color: Colors.blue.shade900,
           ),
-        ));
+        ),);
       } else {
-        for (var element in value) {
+        for (final element in value) {
           nodes[element] = true;
         }
       }
@@ -105,7 +105,7 @@ class _SelectedChipsState extends State<SelectedChips> {
             size: 20,
             color: Colors.green.shade900,
           ),
-        ));
+        ),);
       }
     });
     return chips;

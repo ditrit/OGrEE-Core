@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/snackbar.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:ogree_app/widgets/object_graph_view.dart';
 import 'package:ogree_app/pages/tenant_page.dart';
-import 'package:ogree_app/widgets/select_objects/view_object_popup.dart';
+import 'package:ogree_app/widgets/object_graph_view.dart';
 import 'package:ogree_app/widgets/select_objects/object_popup.dart';
 import 'package:ogree_app/widgets/select_objects/settings_view/tree_filter.dart';
+import 'package:ogree_app/widgets/select_objects/tree_view/tree_node.dart';
+import 'package:ogree_app/widgets/select_objects/treeapp_controller.dart';
+import 'package:ogree_app/widgets/select_objects/view_object_popup.dart';
 import 'package:ogree_app/widgets/tenants/popups/domain_popup.dart';
-
-import '../treeapp_controller.dart';
-import 'tree_node.dart';
 
 part '_node_chip.dart';
 part '_node_selector.dart';
@@ -28,14 +27,15 @@ class TreeNodeTile extends StatefulWidget {
   final bool isTenantMode;
   final TreeEntry<TreeNode> entry;
   final Function() onTap;
-  const TreeNodeTile(
-      {super.key,
-      required this.isTenantMode,
-      required this.entry,
-      required this.onTap});
+  const TreeNodeTile({
+    super.key,
+    required this.isTenantMode,
+    required this.entry,
+    required this.onTap,
+  });
 
   @override
-  _TreeNodeTileState createState() => _TreeNodeTileState();
+  State<TreeNodeTile> createState() => _TreeNodeTileState();
 }
 
 class _TreeNodeTileState extends State<TreeNodeTile> {
@@ -86,106 +86,111 @@ class _TreeNodeTileState extends State<TreeNodeTile> {
                 isTemplate: isTemplate,
                 isVirtual: isVirtual,
               ),
-              widget.isTenantMode
-                  ? Row(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: CircleAvatar(
-                            radius: 13,
-                            child: IconButton(
-                                splashRadius: 18,
-                                iconSize: 14,
-                                padding: const EdgeInsets.all(2),
-                                onPressed: () => showCustomPopup(
-                                    context,
-                                    DomainPopup(
-                                      parentCallback: () => appController.init(
-                                          {},
-                                          argNamespace:
-                                              Namespace.Organisational,
-                                          reload: true,
-                                          isTenantMode: true),
-                                      domainId: widget.entry.node.id,
-                                    )),
-                                icon: const Icon(
-                                  Icons.edit,
-                                  color: Colors.black,
-                                )),
+              if (widget.isTenantMode)
+                Row(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: CircleAvatar(
+                        radius: 13,
+                        child: IconButton(
+                          splashRadius: 18,
+                          iconSize: 14,
+                          padding: const EdgeInsets.all(2),
+                          onPressed: () => showCustomPopup(
+                            context,
+                            DomainPopup(
+                              parentCallback: () => appController.init(
+                                {},
+                                argNamespace: Namespace.Organisational,
+                                reload: true,
+                                isTenantMode: true,
+                              ),
+                              domainId: widget.entry.node.id,
+                            ),
+                          ),
+                          icon: const Icon(
+                            Icons.edit,
+                            color: Colors.black,
                           ),
                         ),
-                        CircleAvatar(
-                          radius: 13,
-                          child: IconButton(
-                              splashRadius: 18,
-                              iconSize: 14,
-                              padding: const EdgeInsets.all(2),
-                              onPressed: () => TenantPage.of(context)!
-                                  .changeToUserView(widget.entry.node.id),
-                              icon: const Icon(
-                                Icons.people,
-                                color: Colors.black,
-                              )),
-                        ),
-                      ],
-                    )
-                  : Row(
-                      children: [
-                        widget.entry.node.id[0] == starSymbol
-                            ? Container()
-                            : Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 4.0),
-                                child: _NodeSelector(id: widget.entry.node.id),
-                              ),
-                        TreeAppController.of(context).namespace !=
-                                Namespace.Logical
-                            ? CircleAvatar(
-                                radius: 10,
-                                child: IconButton(
-                                    splashRadius: 18,
-                                    iconSize: 14,
-                                    padding: const EdgeInsets.all(2),
-                                    onPressed: () => showCustomPopup(
-                                        context,
-                                        TreeAppController.of(context)
-                                                    .namespace ==
-                                                Namespace.Organisational
-                                            ? DomainPopup(
-                                                parentCallback: () =>
-                                                    TreeAppController.of(
-                                                            context)
-                                                        .init(
-                                                            {},
-                                                            argNamespace: Namespace
-                                                                .Organisational,
-                                                            reload: true,
-                                                            isTenantMode: true),
-                                                parentId: widget.entry.node.id,
-                                              )
-                                            : ObjectPopup(
-                                                namespace: TreeAppController.of(
-                                                        context)
-                                                    .namespace,
-                                                parentCallback: () =>
-                                                    appController.init({},
-                                                        argNamespace:
-                                                            TreeAppController
-                                                                    .of(context)
-                                                                .namespace,
-                                                        reload: true,
-                                                        isTenantMode: true),
-                                                parentId: widget.entry.node.id,
-                                              ),
-                                        isDismissible: true),
-                                    icon: const Icon(
-                                      Icons.add,
-                                      color: Colors.black,
-                                    )),
-                              )
-                            : Container(),
-                      ],
+                      ),
                     ),
+                    CircleAvatar(
+                      radius: 13,
+                      child: IconButton(
+                        splashRadius: 18,
+                        iconSize: 14,
+                        padding: const EdgeInsets.all(2),
+                        onPressed: () => TenantPage.of(context)!
+                            .changeToUserView(widget.entry.node.id),
+                        icon: const Icon(
+                          Icons.people,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              else
+                Row(
+                  children: [
+                    if (widget.entry.node.id[0] == starSymbol)
+                      Container()
+                    else
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: _NodeSelector(id: widget.entry.node.id),
+                      ),
+                    if (TreeAppController.of(context).namespace !=
+                        Namespace.Logical)
+                      CircleAvatar(
+                        radius: 10,
+                        child: IconButton(
+                          splashRadius: 18,
+                          iconSize: 14,
+                          padding: const EdgeInsets.all(2),
+                          onPressed: () => showCustomPopup(
+                            context,
+                            TreeAppController.of(context).namespace ==
+                                    Namespace.Organisational
+                                ? DomainPopup(
+                                    parentCallback: () => TreeAppController.of(
+                                      context,
+                                    ).init(
+                                      {},
+                                      argNamespace: Namespace.Organisational,
+                                      reload: true,
+                                      isTenantMode: true,
+                                    ),
+                                    parentId: widget.entry.node.id,
+                                  )
+                                : ObjectPopup(
+                                    namespace: TreeAppController.of(
+                                      context,
+                                    ).namespace,
+                                    parentCallback: () => appController.init(
+                                      {},
+                                      argNamespace:
+                                          TreeAppController.of(context)
+                                              .namespace,
+                                      reload: true,
+                                      isTenantMode: true,
+                                    ),
+                                    parentId: widget.entry.node.id,
+                                  ),
+                            isDismissible: true,
+                          ),
+                          icon: const Icon(
+                            Icons.add,
+                            color: Colors.black,
+                          ),
+                        ),
+                      )
+                    else
+                      Container(),
+                  ],
+                ),
             ],
           ),
         ),

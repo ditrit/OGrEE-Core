@@ -8,9 +8,9 @@ import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/models/tenant.dart';
 
 class LockedView extends StatefulWidget {
-  Tenant tenant;
-  Function parentCallback;
-  LockedView({
+  final Tenant tenant;
+  final Function parentCallback;
+  const LockedView({
     super.key,
     required this.tenant,
     required this.parentCallback,
@@ -54,8 +54,12 @@ class _LockedViewState extends State<LockedView> {
                   }
                   return null;
                 },
-                decoration: GetFormInputDecoration(isSmallDisplay, 'E-mail',
-                    icon: Icons.alternate_email, hint: 'abc@example.com'),
+                decoration: GetFormInputDecoration(
+                  isSmallDisplay,
+                  'E-mail',
+                  icon: Icons.alternate_email,
+                  hint: 'abc@example.com',
+                ),
               ),
             ),
             const SizedBox(height: 20),
@@ -72,8 +76,11 @@ class _LockedViewState extends State<LockedView> {
                   return null;
                 },
                 decoration: GetFormInputDecoration(
-                    isSmallDisplay, localeMsg.password,
-                    icon: Icons.lock_outline_rounded, hint: '********'),
+                  isSmallDisplay,
+                  localeMsg.password,
+                  icon: Icons.lock_outline_rounded,
+                  hint: '********',
+                ),
               ),
             ),
             const SizedBox(height: 20),
@@ -106,13 +113,16 @@ class _LockedViewState extends State<LockedView> {
       formKey.currentState!.save();
       final messenger = ScaffoldMessenger.of(context);
       final localeMsg = AppLocalizations.of(context)!;
-      final result = await loginAPITenant(_email!, _password!,
-          "${widget.tenant.apiUrl}:${widget.tenant.apiPort}");
+      final result = await loginAPITenant(
+        _email!,
+        _password!,
+        "${widget.tenant.apiUrl}:${widget.tenant.apiPort}",
+      );
       switch (result) {
         case Success():
           widget.parentCallback();
         case Failure(exception: final exception):
-          String errorMsg = exception.toString() == "Exception"
+          final String errorMsg = exception.toString() == "Exception"
               ? localeMsg.invalidLogin
               : exception.toString();
           showSnackBar(messenger, errorMsg, isError: true);

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/pages/select_page.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SelectDate extends StatefulWidget {
   const SelectDate({super.key});
@@ -16,12 +16,11 @@ class SelectDate extends StatefulWidget {
 const List<String> datasetOptions = [
   '19/12/2022 - Jeu ABCDEF',
   '18/12/2022 - Jeu JKLMNO',
-  '17/12/2022 - Jeu UVWXYZ'
+  '17/12/2022 - Jeu UVWXYZ',
 ];
 
 class _SelectDateState extends State<SelectDate> with TickerProviderStateMixin {
   late TabController _tabController;
-  final String _dataset = datasetOptions.first;
   late FocusNode myFocusNode;
 
   @override
@@ -41,7 +40,8 @@ class _SelectDateState extends State<SelectDate> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
-    bool isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
+    final bool isSmallDisplay =
+        IsSmallDisplay(MediaQuery.of(context).size.width);
     return Column(
       children: [
         Text(
@@ -51,129 +51,133 @@ class _SelectDateState extends State<SelectDate> with TickerProviderStateMixin {
         const SizedBox(height: 20),
         Card(
           child: Container(
-              alignment: Alignment.center,
-              child: Column(
-                children: [
-                  Align(
-                    alignment: Alignment.center,
-                    child: TabBar(
-                      controller: _tabController,
-                      labelPadding: const EdgeInsets.only(left: 20, right: 20),
-                      labelColor: Colors.black,
-                      unselectedLabelColor: Colors.grey,
-                      labelStyle: TextStyle(
-                          fontSize: 14,
-                          fontFamily: GoogleFonts.inter().fontFamily),
-                      unselectedLabelStyle: TextStyle(
-                          fontSize: 14,
-                          fontFamily: GoogleFonts.inter().fontFamily),
-                      isScrollable: true,
-                      indicatorSize: TabBarIndicatorSize.label,
-                      tabs: [
-                        Tab(
-                          text: localeMsg.allData,
-                          icon: const Icon(Icons.all_inclusive),
-                        ),
-                        Tab(
-                          text: localeMsg.pickDate,
-                          icon: const Icon(Icons.calendar_month),
-                        ),
-                        // Tab(
-                        //   text: localeMsg.openLastDataset,
-                        //   icon: Icon(Icons.timelapse),
-                        // ),
-                        // Tab(
-                        //   text: localeMsg.openSavedDataser,
-                        //   icon: Icon(Icons.calendar_view_day),
-                        // ),
-                      ],
+            alignment: Alignment.center,
+            child: Column(
+              children: [
+                Align(
+                  child: TabBar(
+                    controller: _tabController,
+                    labelPadding: const EdgeInsets.only(left: 20, right: 20),
+                    labelColor: Colors.black,
+                    unselectedLabelColor: Colors.grey,
+                    labelStyle: TextStyle(
+                      fontSize: 14,
+                      fontFamily: GoogleFonts.inter().fontFamily,
                     ),
+                    unselectedLabelStyle: TextStyle(
+                      fontSize: 14,
+                      fontFamily: GoogleFonts.inter().fontFamily,
+                    ),
+                    isScrollable: true,
+                    indicatorSize: TabBarIndicatorSize.label,
+                    tabs: [
+                      Tab(
+                        text: localeMsg.allData,
+                        icon: const Icon(Icons.all_inclusive),
+                      ),
+                      Tab(
+                        text: localeMsg.pickDate,
+                        icon: const Icon(Icons.calendar_month),
+                      ),
+                      // Tab(
+                      //   text: localeMsg.openLastDataset,
+                      //   icon: Icon(Icons.timelapse),
+                      // ),
+                      // Tab(
+                      //   text: localeMsg.openSavedDataser,
+                      //   icon: Icon(Icons.calendar_view_day),
+                      // ),
+                    ],
                   ),
-                  Container(
-                    padding: const EdgeInsets.only(left: 20, right: 20),
-                    height: 350,
-                    width: double.maxFinite,
-                    child: TabBarView(
-                      controller: _tabController,
-                      children: [
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: 500.0,
-                              height: 70.0,
-                              child: OutlinedButton(
-                                style: OutlinedButton.styleFrom(
-                                    side: BorderSide(
-                                        width: 0.3,
-                                        color: Colors.blue.shade900)),
-                                onPressed: () {
-                                  SelectPage.of(context)!.selectedDate = "";
-                                  myFocusNode.requestFocus();
-                                },
-                                autofocus: true,
-                                focusNode: myFocusNode,
-                                child: Text(
-                                  localeMsg.allDataBase,
-                                  style: GoogleFonts.inter(
-                                    fontSize: isSmallDisplay ? 14 : 17,
-                                  ),
-                                  textAlign: TextAlign.center,
+                ),
+                Container(
+                  padding: const EdgeInsets.only(left: 20, right: 20),
+                  height: 350,
+                  width: double.maxFinite,
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 500.0,
+                            height: 70.0,
+                            child: OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide(
+                                  width: 0.3,
+                                  color: Colors.blue.shade900,
                                 ),
                               ),
-                            )
-                          ],
-                        ),
-                        const DatePicker(),
-                        // Column(
-                        //   mainAxisAlignment: MainAxisAlignment.center,
-                        //   children: [
-                        //     Text(
-                        //       localeMsg.useLastDataSet,
-                        //       style: Theme.of(context).textTheme.headlineSmall,
-                        //     ),
-                        //     const SizedBox(height: 32),
-                        //     SizedBox(
-                        //       width: 500.0,
-                        //       height: 70.0,
-                        //       child: OutlinedButton(
-                        //         onPressed: () {},
-                        //         autofocus: true,
-                        //         child: Text(
-                        //           'Données mises à jour le 19/12/2022 à 19h45',
-                        //           style: GoogleFonts.inter(
-                        //             fontSize: 17,
-                        //           ),
-                        //         ),
-                        //       ),
-                        //     )
-                        //   ],
-                        // ),
-                        // Center(
-                        //   child: SizedBox(
-                        //     width: 500,
-                        //     child: Column(
-                        //       mainAxisAlignment: MainAxisAlignment.center,
-                        //       children: datasetOptions
-                        //           .map((dataset) => RadioListTile<String>(
-                        //                 title: Text(dataset),
-                        //                 value: dataset,
-                        //                 groupValue: _dataset,
-                        //                 onChanged: (String? value) {
-                        //                   setState(() {
-                        //                     _dataset = value;
-                        //                   });
-                        //                 },
-                        //               ))
-                        //           .toList(),
-                        //     ),
-                        //   ),
-                        // ),
-                      ],
-                    ),
+                              onPressed: () {
+                                SelectPage.of(context)!.selectedDate = "";
+                                myFocusNode.requestFocus();
+                              },
+                              autofocus: true,
+                              focusNode: myFocusNode,
+                              child: Text(
+                                localeMsg.allDataBase,
+                                style: GoogleFonts.inter(
+                                  fontSize: isSmallDisplay ? 14 : 17,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const DatePicker(),
+                      // Column(
+                      //   mainAxisAlignment: MainAxisAlignment.center,
+                      //   children: [
+                      //     Text(
+                      //       localeMsg.useLastDataSet,
+                      //       style: Theme.of(context).textTheme.headlineSmall,
+                      //     ),
+                      //     const SizedBox(height: 32),
+                      //     SizedBox(
+                      //       width: 500.0,
+                      //       height: 70.0,
+                      //       child: OutlinedButton(
+                      //         onPressed: () {},
+                      //         autofocus: true,
+                      //         child: Text(
+                      //           'Données mises à jour le 19/12/2022 à 19h45',
+                      //           style: GoogleFonts.inter(
+                      //             fontSize: 17,
+                      //           ),
+                      //         ),
+                      //       ),
+                      //     )
+                      //   ],
+                      // ),
+                      // Center(
+                      //   child: SizedBox(
+                      //     width: 500,
+                      //     child: Column(
+                      //       mainAxisAlignment: MainAxisAlignment.center,
+                      //       children: datasetOptions
+                      //           .map((dataset) => RadioListTile<String>(
+                      //                 title: Text(dataset),
+                      //                 value: dataset,
+                      //                 groupValue: _dataset,
+                      //                 onChanged: (String? value) {
+                      //                   setState(() {
+                      //                     _dataset = value;
+                      //                   });
+                      //                 },
+                      //               ))
+                      //           .toList(),
+                      //     ),
+                      //   ),
+                      // ),
+                    ],
                   ),
-                ],
-              )),
+                ),
+              ],
+            ),
+          ),
         ),
       ],
     );
@@ -230,21 +234,21 @@ class _DatePickerState extends State<DatePicker> {
 
   @override
   Widget build(BuildContext context) {
-    print(DateTime.now());
     return Center(
-        child: SizedBox(
-      width: 700,
-      height: 700,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(5, 30, 5, 5),
-        child: SfDateRangePicker(
-          onSelectionChanged: _onSelectionChanged,
-          selectionMode: DateRangePickerSelectionMode.range,
-          enableMultiView: MediaQuery.of(context).size.width > 700,
-          headerStyle:
-              const DateRangePickerHeaderStyle(textAlign: TextAlign.center),
+      child: SizedBox(
+        width: 700,
+        height: 700,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(5, 30, 5, 5),
+          child: SfDateRangePicker(
+            onSelectionChanged: _onSelectionChanged,
+            selectionMode: DateRangePickerSelectionMode.range,
+            enableMultiView: MediaQuery.of(context).size.width > 700,
+            headerStyle:
+                const DateRangePickerHeaderStyle(textAlign: TextAlign.center),
+          ),
         ),
       ),
-    ));
+    );
   }
 }

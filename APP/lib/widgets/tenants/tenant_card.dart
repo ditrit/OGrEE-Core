@@ -12,7 +12,7 @@ class TenantCard extends StatelessWidget {
   final Tenant tenant;
   final Function parentCallback;
   const TenantCard(
-      {super.key, required this.tenant, required this.parentCallback});
+      {super.key, required this.tenant, required this.parentCallback,});
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +26,7 @@ class TenantCard extends StatelessWidget {
         margin: const EdgeInsets.all(10),
         child: Padding(
           padding: const EdgeInsets.only(
-              right: 20.0, left: 20.0, top: 15, bottom: 13),
+              right: 20.0, left: 20.0, top: 15, bottom: 13,),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,10 +54,10 @@ class TenantCard extends StatelessWidget {
                                 UpdateTenantPopup(
                                   parentCallback: parentCallback,
                                   tenant: tenant,
-                                )),
+                                ),),
                             icon: const Icon(
                               Icons.edit,
-                            )),
+                            ),),
                       ),
                       const SizedBox(width: 8),
                       CircleAvatar(
@@ -69,12 +69,12 @@ class TenantCard extends StatelessWidget {
                             onPressed: () => Navigator.of(context).push(
                                   MaterialPageRoute(
                                     builder: (context) => TenantPage(
-                                        userEmail: "admin", tenant: tenant),
+                                        userEmail: "admin", tenant: tenant,),
                                   ),
                                 ),
                             icon: const Icon(
                               Icons.search,
-                            )),
+                            ),),
                       ),
                     ],
                   ),
@@ -84,14 +84,14 @@ class TenantCard extends StatelessWidget {
               Row(
                 children: [
                   Icon(Icons.circle,
-                      color: getTenantStatusColor(tenant.status), size: 10),
+                      color: getTenantStatusColor(tenant.status), size: 10,),
                   const SizedBox(width: 6),
                   SizedBox(
                     width: 160,
                     child: Text(tenant.name,
                         overflow: TextOverflow.clip,
                         style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16)),
+                            fontWeight: FontWeight.bold, fontSize: 16,),),
                   ),
                 ],
               ),
@@ -115,21 +115,19 @@ class TenantCard extends StatelessWidget {
                     padding: EdgeInsets.only(bottom: 2.0),
                     child: Text("Web URL:"),
                   ),
-                  tenant.webUrl.isEmpty && tenant.webPort.isEmpty
-                      ? Text(localeMsg.notCreated,
+                  if (tenant.webUrl.isEmpty && tenant.webPort.isEmpty) Text(localeMsg.notCreated,
                           style:
-                              TextStyle(backgroundColor: Colors.grey.shade200))
-                      : InkWell(
+                              TextStyle(backgroundColor: Colors.grey.shade200),) else InkWell(
                           child: Text(
                             "${tenant.webUrl}:${tenant.webPort}",
                             style: TextStyle(
                                 backgroundColor: Colors.grey.shade200,
                                 color: Colors.blue,
                                 decoration: TextDecoration.underline,
-                                decorationColor: Colors.blue),
+                                decorationColor: Colors.blue,),
                           ),
                           onTap: () => launchUrl(
-                              Uri.parse("${tenant.webUrl}:${tenant.webPort}")),
+                              Uri.parse("${tenant.webUrl}:${tenant.webPort}"),),
                         ),
                 ],
               ),
@@ -151,11 +149,11 @@ class TenantCard extends StatelessWidget {
                               parentCallback: parentCallback,
                               objType: "tenants",
                             ),
-                            isDismissible: true),
+                            isDismissible: true,),
                         icon: Icon(
                           Icons.delete,
                           color: Colors.red.shade900,
-                        )),
+                        ),),
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4),
@@ -170,7 +168,7 @@ class TenantCard extends StatelessWidget {
                                 parentCallback: parentCallback,
                                 objName: tenant.name,
                                 isStart: false,
-                              )),
+                              ),),
                           icon: Icon(
                             Icons.stop_circle_sharp,
                             color: Colors.orange.shade800,
@@ -188,7 +186,7 @@ class TenantCard extends StatelessWidget {
                                 parentCallback: parentCallback,
                                 objName: tenant.name,
                                 isStart: true,
-                              )),
+                              ),),
                           icon: Icon(
                             Icons.play_circle,
                             color: Colors.blue.shade700,
@@ -200,7 +198,7 @@ class TenantCard extends StatelessWidget {
                     ),
                   ),
                 ],
-              )
+              ),
             ],
           ),
         ),

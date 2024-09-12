@@ -1,7 +1,7 @@
 import 'package:flag/flag.dart';
 import 'package:flutter/material.dart';
 
-import '../../main.dart';
+import 'package:ogree_app/main.dart';
 
 class LanguageOption {
   Flag flag;
@@ -9,7 +9,7 @@ class LanguageOption {
   Locale locale;
 
   LanguageOption(
-      {required this.flag, required this.name, required this.locale});
+      {required this.flag, required this.name, required this.locale,});
 }
 
 class LanguageToggle extends StatefulWidget {
@@ -32,9 +32,8 @@ class _LanguageToggleState extends State<LanguageToggle> {
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10.0),
             border: Border.all(
-              width: 1,
               color: Colors.white,
-            )),
+            ),),
         child: Padding(padding: const EdgeInsets.all(0.5), child: flag),
       );
   late List<LanguageOption> languages;
@@ -47,13 +46,13 @@ class _LanguageToggleState extends State<LanguageToggle> {
       LanguageOption(
           flag: getFlag("FR"),
           name: 'Français',
-          locale: const Locale('fr', 'FR')),
+          locale: const Locale('fr', 'FR'),),
       LanguageOption(
-          flag: getFlag("GB"), name: 'English', locale: const Locale('en')),
+          flag: getFlag("GB"), name: 'English', locale: const Locale('en'),),
       LanguageOption(
-          flag: getFlag("ES"), name: 'Español', locale: const Locale('es')),
+          flag: getFlag("ES"), name: 'Español', locale: const Locale('es'),),
       LanguageOption(
-          flag: getFlag("BR"), name: 'Português', locale: const Locale('pt')),
+          flag: getFlag("BR"), name: 'Português', locale: const Locale('pt'),),
     ];
     _selectedLanguage = languages.first;
   }
@@ -63,7 +62,7 @@ class _LanguageToggleState extends State<LanguageToggle> {
     if (MyApp.of(context) != null &&
         MyApp.of(context)!.getLocale() != _selectedLanguage.locale) {
       _selectedLanguage = languages.firstWhere(
-          (language) => language.locale == MyApp.of(context)!.getLocale());
+          (language) => language.locale == MyApp.of(context)!.getLocale(),);
     }
     return PopupMenuButton(
       child: flagWrapper(_selectedLanguage.flag),

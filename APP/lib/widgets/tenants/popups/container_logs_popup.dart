@@ -6,8 +6,8 @@ import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/snackbar.dart';
 
 class ContainerLogsPopup extends StatefulWidget {
-  String containerName;
-  ContainerLogsPopup({super.key, required this.containerName});
+  final String containerName;
+  const ContainerLogsPopup({super.key, required this.containerName});
 
   @override
   State<ContainerLogsPopup> createState() => _ContainerLogsPopupState();
@@ -25,7 +25,9 @@ class _ContainerLogsPopupState extends State<ContainerLogsPopup> {
         width: 525,
         margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
         decoration: BoxDecoration(
-            color: Colors.white, borderRadius: BorderRadius.circular(20)),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+        ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(40, 20, 40, 15),
           child: Material(
@@ -49,32 +51,35 @@ class _ContainerLogsPopupState extends State<ContainerLogsPopup> {
                 ),
                 const Divider(height: 45),
                 FutureBuilder(
-                    future: getTenantStats(),
-                    builder: (context, _) {
-                      if (logs == null) {
-                        return const Center(child: CircularProgressIndicator());
-                      } else if (logs != "") {
-                        return Expanded(
-                          child: SingleChildScrollView(
-                              child: SelectableText(logs!)),
-                        );
-                      } else {
-                        // Empty messages
-                        return Text("${localeMsg.noDockerLogs} :(");
-                      }
-                    }),
+                  future: getTenantStats(),
+                  builder: (context, _) {
+                    if (logs == null) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (logs != "") {
+                      return Expanded(
+                        child: SingleChildScrollView(
+                          child: SelectableText(logs!),
+                        ),
+                      );
+                    } else {
+                      // Empty messages
+                      return Text("${localeMsg.noDockerLogs} :(");
+                    }
+                  },
+                ),
                 const SizedBox(height: 25),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        label: const Text("OK"),
-                        icon: const Icon(Icons.thumb_up, size: 16))
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      label: const Text("OK"),
+                      icon: const Icon(Icons.thumb_up, size: 16),
+                    ),
                   ],
-                )
+                ),
               ],
             ),
           ),
