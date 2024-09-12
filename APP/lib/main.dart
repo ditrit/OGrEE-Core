@@ -2,8 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/pages/login_page.dart';
 
 Future<void> main() async {
@@ -42,66 +42,65 @@ class MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        // debugShowCheckedModeBanner: false,
-        title: 'OGrEE App',
-        locale: _locale,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        theme: ThemeData(
-          useMaterial3: true,
-          colorSchemeSeed: Colors.blue,
-          fontFamily: GoogleFonts.inter().fontFamily,
-          scrollbarTheme: ScrollbarThemeData(
-            thumbVisibility: MaterialStateProperty.all<bool>(true),
-          ),
-          elevatedButtonTheme: ElevatedButtonThemeData(
-              style: ElevatedButton.styleFrom(
+      // debugShowCheckedModeBanner: false,
+      title: 'OGrEE App',
+      locale: _locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      theme: ThemeData(
+        useMaterial3: true,
+        colorSchemeSeed: Colors.blue,
+        fontFamily: GoogleFonts.inter().fontFamily,
+        scrollbarTheme: ScrollbarThemeData(
+          thumbVisibility: WidgetStateProperty.all<bool>(true),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
             backgroundColor: Colors.blue.shade600,
             foregroundColor: Colors.white,
-          )),
-          cardTheme: const CardTheme(
-              elevation: 3,
-              surfaceTintColor: Colors.white,
-              color: Colors.white),
-          textTheme: TextTheme(
-            headlineLarge: GoogleFonts.inter(
-              fontSize: 22,
-              color: Colors.black,
-              fontWeight: FontWeight.w700,
-            ),
-            headlineMedium: GoogleFonts.inter(
-              fontSize: 20,
-              color: Colors.black,
-              fontWeight: FontWeight.w400,
-            ),
-            headlineSmall: GoogleFonts.inter(
-              fontSize: 17,
-              color: Colors.black,
-            ),
           ),
         ),
-        home: const LoginPage(),
-        onGenerateRoute: RouteGenerator.generateRoute);
+        cardTheme: const CardTheme(
+          elevation: 3,
+          surfaceTintColor: Colors.white,
+          color: Colors.white,
+        ),
+        textTheme: TextTheme(
+          headlineLarge: GoogleFonts.inter(
+            fontSize: 22,
+            color: Colors.black,
+            fontWeight: FontWeight.w700,
+          ),
+          headlineMedium: GoogleFonts.inter(
+            fontSize: 20,
+            color: Colors.black,
+            fontWeight: FontWeight.w400,
+          ),
+          headlineSmall: GoogleFonts.inter(
+            fontSize: 17,
+            color: Colors.black,
+          ),
+        ),
+      ),
+      home: const LoginPage(),
+      onGenerateRoute: RouteGenerator.generateRoute,
+    );
   }
 }
 
 class RouteGenerator {
   static Route<dynamic> generateRoute(RouteSettings settings) {
-    String? route;
     Map? queryParameters;
     if (settings.name != null) {
-      var uriData = Uri.parse(settings.name!);
-      route = uriData.path;
+      final uriData = Uri.parse(settings.name!);
       queryParameters = uriData.queryParameters;
     }
-    var message =
-        'generateRoute: Route $route, QueryParameters $queryParameters';
-    print(message);
     return MaterialPageRoute(
       builder: (context) {
         return LoginPage(
-            isPasswordReset: true,
-            resetToken: queryParameters!["token"].toString());
+          isPasswordReset: true,
+          resetToken: queryParameters!["token"].toString(),
+        );
       },
       settings: settings,
     );

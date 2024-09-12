@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
-
-import '../treeapp_controller.dart';
-import 'tree_node.dart';
-import 'tree_node_tile.dart';
+import 'package:ogree_app/widgets/select_objects/tree_view/tree_node.dart';
+import 'package:ogree_app/widgets/select_objects/tree_view/tree_node_tile.dart';
+import 'package:ogree_app/widgets/select_objects/treeapp_controller.dart';
 
 class CustomTreeView extends StatefulWidget {
   final bool isTenantMode;
-  const CustomTreeView({Key? key, required this.isTenantMode})
-      : super(key: key);
+  const CustomTreeView({super.key, required this.isTenantMode});
 
   @override
-  _CustomTreeViewState createState() => _CustomTreeViewState();
+  CustomTreeViewState createState() => CustomTreeViewState();
 }
 
-class _CustomTreeViewState extends State<CustomTreeView> {
+class CustomTreeViewState extends State<CustomTreeView> {
   @override
   Widget build(BuildContext context) {
     final appController = TreeAppController.of(context);

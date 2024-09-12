@@ -7,7 +7,7 @@ class LoginPage extends StatefulWidget {
   final bool isPasswordReset;
   final String resetToken;
   const LoginPage(
-      {super.key, this.isPasswordReset = false, this.resetToken = ""});
+      {super.key, this.isPasswordReset = false, this.resetToken = "",});
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
@@ -28,22 +28,19 @@ class _LoginPageState extends State<LoginPage> {
             hasScrollBody: false,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const Align(
                   alignment: Alignment.topCenter,
                   child: LanguageToggle(),
                 ),
                 const SizedBox(height: 5),
-                widget.isPasswordReset
-                    ? ResetCard(
+                if (widget.isPasswordReset) ResetCard(
                         token: widget.resetToken,
-                      )
-                    : const LoginCard(),
+                      ) else const LoginCard(),
               ],
             ),
-          )
-        ]),
+          ),
+        ],),
       ),
     );
   }

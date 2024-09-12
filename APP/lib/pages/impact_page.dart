@@ -1,23 +1,22 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:csv/csv.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/snackbar.dart';
-import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/models/alert.dart';
-import 'package:flutter/material.dart';
-import 'package:ogree_app/common/api_backend.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/widgets/impact/impact_view.dart';
 import 'package:path_provider/path_provider.dart';
-
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:universal_html/html.dart' as html;
 
 class ImpactPage extends StatefulWidget {
-  List<String> selectedObjects;
+  final List<String> selectedObjects;
 
-  ImpactPage({
+  const ImpactPage({
     super.key,
     required this.selectedObjects,
   });
@@ -33,7 +32,6 @@ class _ImpactPageState extends State<ImpactPage> {
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
-    bool isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
 
     return SizedBox(
       height: MediaQuery.of(context).size.height > 205
@@ -47,7 +45,7 @@ class _ImpactPageState extends State<ImpactPage> {
             index = index - 1;
             if (index == -1) {
               if (widget.selectedObjects.length == 1) {
-                return SizedBox(height: 6);
+                return const SizedBox(height: 6);
               }
               return Padding(
                 padding: const EdgeInsets.only(top: 12.0),
@@ -59,28 +57,31 @@ class _ImpactPageState extends State<ImpactPage> {
                         Tooltip(
                           message: localeMsg.markAllTip,
                           child: TextButton.icon(
-                              onPressed: () => markAll(true, localeMsg),
-                              label: Text(localeMsg.markAllMaintenance),
-                              icon: Icon(Icons.check_circle)),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.only(left: 2),
-                          child: Tooltip(
-                            message: localeMsg.unmarkAllTip,
-                            child: TextButton.icon(
-                                onPressed: () => markAll(false, localeMsg),
-                                label: Text(localeMsg.unmarkAll),
-                                icon: Icon(Icons.check_circle_outline)),
+                            onPressed: () => markAll(true, localeMsg),
+                            label: Text(localeMsg.markAllMaintenance),
+                            icon: const Icon(Icons.check_circle),
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsets.only(left: 2),
+                          padding: const EdgeInsets.only(left: 2),
+                          child: Tooltip(
+                            message: localeMsg.unmarkAllTip,
+                            child: TextButton.icon(
+                              onPressed: () => markAll(false, localeMsg),
+                              label: Text(localeMsg.unmarkAll),
+                              icon: const Icon(Icons.check_circle_outline),
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 2),
                           child: Tooltip(
                             message: localeMsg.downloadAllTip,
                             child: TextButton.icon(
-                                onPressed: () => downloadAll(),
-                                label: Text(localeMsg.downloadAll),
-                                icon: Icon(Icons.download)),
+                              onPressed: () => downloadAll(),
+                              label: Text(localeMsg.downloadAll),
+                              icon: const Icon(Icons.download),
+                            ),
                           ),
                         ),
                       ],
@@ -105,12 +106,12 @@ class _ImpactPageState extends State<ImpactPage> {
     );
   }
 
-  markAll(bool isMark, AppLocalizations localeMsg) async {
+  Future<void> markAll(bool isMark, AppLocalizations localeMsg) async {
     final messenger = ScaffoldMessenger.of(context);
     if (!isMark) {
       // unmark
-      for (var obj in widget.selectedObjects) {
-        var result = await deleteObject(obj, "alert");
+      for (final obj in widget.selectedObjects) {
+        final result = await deleteObject(obj, "alert");
         switch (result) {
           case Success():
             break;
@@ -126,11 +127,15 @@ class _ImpactPageState extends State<ImpactPage> {
         shouldMarkAll = false;
       });
     } else {
-      for (var obj in widget.selectedObjects) {
-        var alert = Alert(
-            obj, "minor", "$obj ${localeMsg.isMarked}", localeMsg.checkImpact);
+      for (final obj in widget.selectedObjects) {
+        final alert = Alert(
+          obj,
+          "minor",
+          "$obj ${localeMsg.isMarked}",
+          localeMsg.checkImpact,
+        );
 
-        var result = await createAlert(alert);
+        final result = await createAlert(alert);
         switch (result) {
           case Success():
             break;
@@ -146,11 +151,12 @@ class _ImpactPageState extends State<ImpactPage> {
     }
   }
 
-  downloadAll() async {
-    List<List<String>> rows = [];
+  Future<void> downloadAll() async {
+    final List<List<String>> rows = [];
     final messenger = ScaffoldMessenger.of(context);
-    for (var obj in widget.selectedObjects) {
-      List<String> selectedCategories = [];
+    final localeMsg = AppLocalizations.of(context)!;
+    for (final obj in widget.selectedObjects) {
+      final List<String> selectedCategories = [];
       List<String> selectedPtypes = [];
       List<String> selectedVtypes = [];
       if ('.'.allMatches(obj).length > 2) {
@@ -159,16 +165,19 @@ class _ImpactPageState extends State<ImpactPage> {
         selectedVtypes = ["application", "cluster", "vm"];
       }
       final result = await fetchObjectImpact(
-          obj, selectedCategories, selectedPtypes, selectedVtypes);
+        obj,
+        selectedCategories,
+        selectedPtypes,
+        selectedVtypes,
+      );
       switch (result) {
         case Success(value: final value):
           rows.add(["target", obj]);
-          for (var type in ["direct", "indirect"]) {
-            var direct = (Map<String, dynamic>.from(value[type])).keys.toList();
+          for (final type in ["direct", "indirect"]) {
+            final direct = Map<String, dynamic>.from(value[type]).keys.toList();
             direct.insertAll(0, [type]);
             rows.add(direct);
           }
-          break;
         case Failure(exception: final exception):
           showSnackBar(messenger, exception.toString(), isError: true);
           return;
@@ -176,26 +185,30 @@ class _ImpactPageState extends State<ImpactPage> {
     }
 
     // Prepare the file
-    String csv = const ListToCsvConverter().convert(rows);
+    final String csv = const ListToCsvConverter().convert(rows);
     final bytes = utf8.encode(csv);
     if (kIsWeb) {
       // If web, use html to download csv
       html.AnchorElement(
-          href: 'data:application/octet-stream;base64,${base64Encode(bytes)}')
+        href: 'data:application/octet-stream;base64,${base64Encode(bytes)}',
+      )
         ..setAttribute("download", "impact-report.csv")
         ..click();
     } else {
       // Save to local filesystem
-      var path = (await getApplicationDocumentsDirectory()).path;
+      final path = (await getApplicationDocumentsDirectory()).path;
       var fileName = '$path/impact-report.csv';
       var file = File(fileName);
       for (var i = 1; await file.exists(); i++) {
         fileName = '$path/impact-report ($i).csv';
         file = File(fileName);
       }
-      file.writeAsBytes(bytes, flush: true).then((value) => showSnackBar(
-          ScaffoldMessenger.of(context),
-          "${AppLocalizations.of(context)!.fileSavedTo} $fileName"));
+      file.writeAsBytes(bytes, flush: true).then(
+            (value) => showSnackBar(
+              messenger,
+              "${localeMsg.fileSavedTo} $fileName",
+            ),
+          );
     }
   }
 }

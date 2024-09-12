@@ -15,11 +15,12 @@ class ToolCard extends StatelessWidget {
   final Tools type;
   final DockerContainer container;
   final Function parentCallback;
-  const ToolCard(
-      {super.key,
-      required this.type,
-      required this.container,
-      required this.parentCallback});
+  const ToolCard({
+    super.key,
+    required this.type,
+    required this.container,
+    required this.parentCallback,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +34,11 @@ class ToolCard extends StatelessWidget {
         margin: const EdgeInsets.all(10),
         child: Padding(
           padding: const EdgeInsets.only(
-              right: 20.0, left: 20.0, top: 15, bottom: 13),
+            right: 20.0,
+            left: 20.0,
+            top: 15,
+            bottom: 13,
+          ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,29 +57,37 @@ class ToolCard extends StatelessWidget {
                               : const Text(" NETBOX "),
                     ),
                   ),
-                  type != Tools.netbox
-                      ? Container()
-                      : CircleAvatar(
-                          radius: 13,
-                          child: IconButton(
-                              splashRadius: 18,
-                              iconSize: 14,
-                              padding: const EdgeInsets.all(2),
-                              onPressed: () => showCustomPopup(
-                                  context, const ImportNetboxPopup()),
-                              icon: const Icon(
-                                Icons.upload,
-                              )),
+                  if (type != Tools.netbox)
+                    Container()
+                  else
+                    CircleAvatar(
+                      radius: 13,
+                      child: IconButton(
+                        splashRadius: 18,
+                        iconSize: 14,
+                        padding: const EdgeInsets.all(2),
+                        onPressed: () => showCustomPopup(
+                          context,
+                          const ImportNetboxPopup(),
                         ),
+                        icon: const Icon(
+                          Icons.upload,
+                        ),
+                      ),
+                    ),
                 ],
               ),
               const SizedBox(height: 1),
               SizedBox(
                 width: 145,
-                child: Text(container.name,
-                    overflow: TextOverflow.clip,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 16)),
+                child: Text(
+                  container.name,
+                  overflow: TextOverflow.clip,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -101,35 +114,38 @@ class ToolCard extends StatelessWidget {
                       backgroundColor: Colors.red.shade100,
                       radius: 13,
                       child: IconButton(
-                          splashRadius: 18,
-                          iconSize: 14,
-                          padding: const EdgeInsets.all(2),
-                          onPressed: () => showCustomPopup(
-                              context,
-                              DeleteDialog(
-                                objName: [container.name],
-                                parentCallback: parentCallback,
-                                objType: type.name,
-                              ),
-                              isDismissible: true),
-                          icon: Icon(
-                            Icons.delete,
-                            color: Colors.red.shade900,
-                          )),
+                        splashRadius: 18,
+                        iconSize: 14,
+                        padding: const EdgeInsets.all(2),
+                        onPressed: () => showCustomPopup(
+                          context,
+                          DeleteDialog(
+                            objName: [container.name],
+                            parentCallback: parentCallback,
+                            objType: type.name,
+                          ),
+                          isDismissible: true,
+                        ),
+                        icon: Icon(
+                          Icons.delete,
+                          color: Colors.red.shade900,
+                        ),
+                      ),
                     ),
                     SizedBox(
                       height: 26,
                       width: 26,
                       child: IconButton.filled(
                         style: IconButton.styleFrom(
-                            backgroundColor: Colors.blue.shade700),
+                          backgroundColor: Colors.blue.shade700,
+                        ),
                         // splashColor: Colors.blue,
                         padding: EdgeInsets.zero,
                         onPressed: () {
                           launchUrl(Uri.parse(container.ports));
                         },
                         iconSize: 16,
-                        icon: Icon(
+                        icon: const Icon(
                           Icons.open_in_new_rounded,
                           // color: Colors.blue.shade800,
                         ),
@@ -138,7 +154,7 @@ class ToolCard extends StatelessWidget {
                     ),
                   ],
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -161,7 +177,7 @@ class _ImportNetboxPopupState extends State<ImportNetboxPopup> {
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
-    var isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
+    final isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
     return Center(
       child: Container(
         width: 500,
@@ -170,81 +186,100 @@ class _ImportNetboxPopupState extends State<ImportNetboxPopup> {
         decoration: PopupDecoration,
         child: Padding(
           padding: EdgeInsets.fromLTRB(
-              isSmallDisplay ? 30 : 40, 20, isSmallDisplay ? 30 : 40, 15),
+            isSmallDisplay ? 30 : 40,
+            20,
+            isSmallDisplay ? 30 : 40,
+            15,
+          ),
           child: ScaffoldMessenger(
-              child: Builder(
-                  builder: (context) => Scaffold(
-                        backgroundColor: Colors.white,
-                        body: ListView(shrinkWrap: true, children: [
-                          Center(
-                              child: Text(
-                            localeMsg.importNetbox,
-                            style: Theme.of(context).textTheme.headlineMedium,
-                          )),
-                          // const Divider(height: 35),
-                          const SizedBox(height: 50),
-                          Align(
-                            child: ElevatedButton.icon(
-                                onPressed: () async {
-                                  FilePickerResult? result =
-                                      await FilePicker.platform.pickFiles(
-                                          type: FileType.custom,
-                                          allowedExtensions: ["sql"],
-                                          withData: true);
-                                  if (result != null) {
-                                    setState(() {
-                                      _loadedFile = result.files.single;
-                                    });
-                                  }
-                                },
-                                icon: const Icon(Icons.download),
-                                label: Text(localeMsg.selectSQL)),
+            child: Builder(
+              builder: (context) => Scaffold(
+                backgroundColor: Colors.white,
+                body: ListView(
+                  shrinkWrap: true,
+                  children: [
+                    Center(
+                      child: Text(
+                        localeMsg.importNetbox,
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      ),
+                    ),
+                    // const Divider(height: 35),
+                    const SizedBox(height: 50),
+                    Align(
+                      child: ElevatedButton.icon(
+                        onPressed: () async {
+                          final FilePickerResult? result =
+                              await FilePicker.platform.pickFiles(
+                            type: FileType.custom,
+                            allowedExtensions: ["sql"],
+                            withData: true,
+                          );
+                          if (result != null) {
+                            setState(() {
+                              _loadedFile = result.files.single;
+                            });
+                          }
+                        },
+                        icon: const Icon(Icons.download),
+                        label: Text(localeMsg.selectSQL),
+                      ),
+                    ),
+                    if (_loadedFile != null)
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          top: 8.0,
+                          bottom: 8.0,
+                        ),
+                        child: Align(
+                          child: Text(
+                            localeMsg.fileLoaded(_loadedFile!.name),
                           ),
-                          _loadedFile != null
-                              ? Padding(
-                                  padding: const EdgeInsets.only(
-                                      top: 8.0, bottom: 8.0),
-                                  child: Align(
-                                    child: Text(localeMsg
-                                        .fileLoaded(_loadedFile!.name)),
+                        ),
+                      )
+                    else
+                      Container(),
+                    SizedBox(height: _loadedFile != null ? 27 : 57),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.blue.shade900,
+                          ),
+                          onPressed: () => Navigator.pop(context),
+                          label: Text(localeMsg.cancel),
+                          icon: const Icon(
+                            Icons.cancel_outlined,
+                            size: 16,
+                          ),
+                        ),
+                        const SizedBox(width: 15),
+                        ElevatedButton.icon(
+                          onPressed: () => submitNetboxDump(localeMsg),
+                          label: const Text("OK"),
+                          icon: _isLoading
+                              ? Container(
+                                  width: 24,
+                                  height: 24,
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: const CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 3,
                                   ),
                                 )
-                              : Container(),
-                          SizedBox(height: _loadedFile != null ? 27 : 57),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              TextButton.icon(
-                                style: OutlinedButton.styleFrom(
-                                    foregroundColor: Colors.blue.shade900),
-                                onPressed: () => Navigator.pop(context),
-                                label: Text(localeMsg.cancel),
-                                icon: const Icon(
-                                  Icons.cancel_outlined,
+                              : const Icon(
+                                  Icons.check_circle,
                                   size: 16,
                                 ),
-                              ),
-                              const SizedBox(width: 15),
-                              ElevatedButton.icon(
-                                  onPressed: () => submitNetboxDump(localeMsg),
-                                  label: const Text("OK"),
-                                  icon: _isLoading
-                                      ? Container(
-                                          width: 24,
-                                          height: 24,
-                                          padding: const EdgeInsets.all(2.0),
-                                          child:
-                                              const CircularProgressIndicator(
-                                            color: Colors.white,
-                                            strokeWidth: 3,
-                                          ),
-                                        )
-                                      : const Icon(Icons.check_circle,
-                                          size: 16))
-                            ],
-                          )
-                        ]),
-                      ))),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -270,7 +305,7 @@ class _ImportNetboxPopupState extends State<ImportNetboxPopup> {
       switch (result) {
         case Success():
           showSnackBar(messenger, localeMsg.importNetboxOK, isSuccess: true);
-          if (context.mounted) Navigator.of(context).pop();
+          if (mounted) Navigator.of(context).pop();
         case Failure(exception: final exception):
           setState(() {
             _isLoading = false;
@@ -278,8 +313,11 @@ class _ImportNetboxPopupState extends State<ImportNetboxPopup> {
           showSnackBar(messenger, exception.toString(), isError: true);
       }
     } else {
-      showSnackBar(ScaffoldMessenger.of(context), localeMsg.mustSelectFile,
-          isError: true);
+      showSnackBar(
+        ScaffoldMessenger.of(context),
+        localeMsg.mustSelectFile,
+        isError: true,
+      );
     }
   }
 }

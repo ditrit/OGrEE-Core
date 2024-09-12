@@ -9,7 +9,7 @@ class DockerContainer {
   String ports;
 
   DockerContainer(this.name, this.lastStarted, this.status, this.image,
-      this.size, this.ports);
+      this.size, this.ports,);
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
@@ -18,7 +18,7 @@ class DockerContainer {
       'State': status,
       'Image': image,
       'Size': size,
-      'Ports': ports
+      'Ports': ports,
     };
   }
 

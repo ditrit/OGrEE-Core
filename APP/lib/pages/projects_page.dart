@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/appbar.dart';
 import 'package:ogree_app/common/definitions.dart';
@@ -11,11 +12,10 @@ import 'package:ogree_app/models/project.dart';
 import 'package:ogree_app/models/tenant.dart';
 import 'package:ogree_app/pages/alert_page.dart';
 import 'package:ogree_app/pages/select_page.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/widgets/projects/autoproject_card.dart';
 import 'package:ogree_app/widgets/projects/autounity_card.dart';
-import 'package:ogree_app/widgets/tenants/popups/create_tenant_popup.dart';
 import 'package:ogree_app/widgets/projects/project_card.dart';
+import 'package:ogree_app/widgets/tenants/popups/create_tenant_popup.dart';
 import 'package:ogree_app/widgets/tenants/tenant_card.dart';
 import 'package:ogree_app/widgets/tools/create_netbox_popup.dart';
 import 'package:ogree_app/widgets/tools/create_opendcim_popup.dart';
@@ -26,7 +26,7 @@ class ProjectsPage extends StatefulWidget {
   final String userEmail;
   final bool isTenantMode;
   const ProjectsPage(
-      {super.key, required this.userEmail, required this.isTenantMode});
+      {super.key, required this.userEmail, required this.isTenantMode,});
 
   @override
   State<ProjectsPage> createState() => _ProjectsPageState();
@@ -50,48 +50,46 @@ class _ProjectsPageState extends State<ProjectsPage> {
     final localeMsg = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: myAppBar(context, widget.userEmail,
-          isTenantMode: widget.isTenantMode),
+          isTenantMode: widget.isTenantMode,),
       body: Padding(
         padding: EdgeInsets.symmetric(
-            horizontal: _isSmallDisplay ? 40 : 80.0, vertical: 20),
+            horizontal: _isSmallDisplay ? 40 : 80.0, vertical: 20,),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            ...getAlertDemoWidgets(localeMsg),
+            ...getAlertWidgets(localeMsg),
+            // SizedBox(height: 30),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                widget.isTenantMode
-                    ? Row(
+                if (widget.isTenantMode) Row(
                         children: [
                           Text(localeMsg.applications,
-                              style: Theme.of(context).textTheme.headlineLarge),
+                              style: Theme.of(context).textTheme.headlineLarge,),
                           IconButton(
                               onPressed: () => setState(() {
                                     _gotData = false;
                                   }),
-                              icon: const Icon(Icons.refresh))
+                              icon: const Icon(Icons.refresh),),
                         ],
-                      )
-                    : Text(localeMsg.myprojects,
-                        style: Theme.of(context).textTheme.headlineLarge),
+                      ) else Text(localeMsg.myprojects,
+                        style: Theme.of(context).textTheme.headlineLarge,),
                 Row(
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.only(right: 10.0, bottom: 10),
-                      child: impactViewButton(),
-                    ),
+                    if (!widget.isTenantMode) Padding(
+                            padding:
+                                const EdgeInsets.only(right: 10.0, bottom: 10),
+                            child: impactViewButton(),
+                          ) else Container(),
                     Padding(
                       padding: const EdgeInsets.only(right: 10.0, bottom: 10),
                       child: createProjectButton(),
                     ),
-                    widget.isTenantMode
-                        ? Padding(
+                    if (widget.isTenantMode) Padding(
                             padding:
                                 const EdgeInsets.only(right: 10.0, bottom: 10),
                             child: createToolsButton(),
-                          )
-                        : Container(),
+                          ) else Container(),
                   ],
                 ),
               ],
@@ -127,7 +125,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
                       return Text(localeMsg.noProjects);
                     }
                   }
-                }),
+                },),
           ],
         ),
       ),
@@ -146,18 +144,18 @@ class _ProjectsPageState extends State<ProjectsPage> {
       final result = await fetchApplications();
       switch (result) {
         case Success(value: final value):
-          var (tenants, tools) = value;
+          final (tenants, tools) = value;
           _tenants = tenants;
-          for (var tenant in tenants) {
+          for (final tenant in tenants) {
             final result = await fetchTenantDockerInfo(tenant.name);
             switch (result) {
               case Success(value: final value):
-                List<DockerContainer> dockerInfo = value;
+                final List<DockerContainer> dockerInfo = value;
                 if (dockerInfo.isEmpty) {
                   tenant.status = TenantStatus.unavailable;
                 } else {
                   int runCount = 0;
-                  for (var container in dockerInfo) {
+                  for (final container in dockerInfo) {
                     if (container.status.contains("run")) {
                       runCount++;
                     }
@@ -212,13 +210,13 @@ class _ProjectsPageState extends State<ProjectsPage> {
     }
   }
 
-  createProjectButton() {
+  ElevatedButton createProjectButton() {
     final localeMsg = AppLocalizations.of(context)!;
     return ElevatedButton(
       onPressed: () {
         if (widget.isTenantMode) {
           showCustomPopup(
-              context, CreateTenantPopup(parentCallback: refreshFromChildren));
+              context, CreateTenantPopup(parentCallback: refreshFromChildren),);
         } else {
           Navigator.of(context).push(
             MaterialPageRoute(
@@ -232,22 +230,20 @@ class _ProjectsPageState extends State<ProjectsPage> {
         children: [
           Padding(
             padding: EdgeInsets.only(
-                top: 8, bottom: 8, right: _isSmallDisplay ? 0 : 10),
+                top: 8, bottom: 8, right: _isSmallDisplay ? 0 : 10,),
             child: const Icon(Icons.add_to_photos),
           ),
-          _isSmallDisplay
-              ? Container()
-              : Text(widget.isTenantMode
+          if (_isSmallDisplay) Container() else Text(widget.isTenantMode
                   ? "${localeMsg.create} tenant"
-                  : localeMsg.newProject),
+                  : localeMsg.newProject,),
         ],
       ),
     );
   }
 
-  createToolsButton() {
+  ElevatedButton createToolsButton() {
     final localeMsg = AppLocalizations.of(context)!;
-    List<PopupMenuEntry<Tools>> entries = <PopupMenuEntry<Tools>>[
+    final List<PopupMenuEntry<Tools>> entries = <PopupMenuEntry<Tools>>[
       PopupMenuItem(
         value: Tools.netbox,
         child: Text("${localeMsg.create} Netbox"),
@@ -283,44 +279,39 @@ class _ProjectsPageState extends State<ProjectsPage> {
             case Tools.netbox:
               if (_hasNetbox) {
                 showSnackBar(ScaffoldMessenger.of(context),
-                    localeMsg.onlyOneTool("Netbox"));
+                    localeMsg.onlyOneTool("Netbox"),);
               } else {
                 showCustomPopup(
                     context,
                     CreateNboxPopup(
                         parentCallback: refreshFromChildren,
-                        tool: Tools.netbox));
+                        tool: Tools.netbox,),);
               }
-              break;
             case Tools.nautobot:
               if (_hasNautobot) {
                 showSnackBar(ScaffoldMessenger.of(context),
-                    localeMsg.onlyOneTool("Nautobot"));
+                    localeMsg.onlyOneTool("Nautobot"),);
               } else {
                 showCustomPopup(
                     context,
                     CreateNboxPopup(
                         parentCallback: refreshFromChildren,
-                        tool: Tools.nautobot));
+                        tool: Tools.nautobot,),);
               }
-              break;
             case Tools.opendcim:
               if (_hasOpenDcim) {
                 showSnackBar(ScaffoldMessenger.of(context),
-                    localeMsg.onlyOneTool("OpenDCIM"));
+                    localeMsg.onlyOneTool("OpenDCIM"),);
               } else {
                 showCustomPopup(context,
-                    CreateOpenDcimPopup(parentCallback: refreshFromChildren));
+                    CreateOpenDcimPopup(parentCallback: refreshFromChildren),);
               }
-              break;
             case Tools.cli:
-              showCustomPopup(context, DownloadToolPopup(tool: Tools.cli),
-                  isDismissible: true);
-              break;
+              showCustomPopup(context, const DownloadToolPopup(tool: Tools.cli),
+                  isDismissible: true,);
             case Tools.unity:
-              showCustomPopup(context, DownloadToolPopup(tool: Tools.unity),
-                  isDismissible: true);
-              break;
+              showCustomPopup(context, const DownloadToolPopup(tool: Tools.unity),
+                  isDismissible: true,);
           }
         },
         itemBuilder: (_) => entries,
@@ -329,32 +320,32 @@ class _ProjectsPageState extends State<ProjectsPage> {
           children: [
             Padding(
               padding: EdgeInsets.only(
-                  top: 8, bottom: 8, right: _isSmallDisplay ? 0 : 10),
+                  top: 8, bottom: 8, right: _isSmallDisplay ? 0 : 10,),
               child: const Icon(Icons.timeline),
             ),
-            _isSmallDisplay ? Container() : Text(localeMsg.tools),
+            if (_isSmallDisplay) Container() else Text(localeMsg.tools),
           ],
         ),
       ),
     );
   }
 
-  getCards(context) {
-    List<Widget> cards = [];
+  List<Widget> getCards(context) {
+    final List<Widget> cards = [];
     if (widget.isTenantMode) {
       if (_tenants != null && _tenants!.isNotEmpty) {
-        for (var tenant in _tenants!) {
+        for (final tenant in _tenants!) {
           cards.add(TenantCard(
             tenant: tenant,
             parentCallback: refreshFromChildren,
-          ));
+          ),);
         }
       }
       if (_tools != null && _tools!.isNotEmpty) {
         _hasOpenDcim = false;
         _hasNetbox = false;
         _hasNautobot = false;
-        for (var tool in _tools!) {
+        for (final tool in _tools!) {
           var type = Tools.netbox;
           if (tool.name.contains(Tools.opendcim.name)) {
             type = Tools.opendcim;
@@ -369,36 +360,36 @@ class _ProjectsPageState extends State<ProjectsPage> {
             type: type,
             container: tool,
             parentCallback: refreshFromChildren,
-          ));
+          ),);
         }
       }
     } else {
       if (isDemo) {
         cards.add(AutoUnityProjectCard(
           userEmail: widget.userEmail,
-        ));
+        ),);
       }
-      for (var namespace in Namespace.values) {
+      for (final namespace in Namespace.values) {
         if (namespace != Namespace.Test) {
           cards.add(AutoProjectCard(
             namespace: namespace,
             userEmail: widget.userEmail,
             parentCallback: refreshFromChildren,
-          ));
+          ),);
         }
       }
-      for (var project in _projects!) {
+      for (final project in _projects!) {
         cards.add(ProjectCard(
           project: project,
           userEmail: widget.userEmail,
           parentCallback: refreshFromChildren,
-        ));
+        ),);
       }
     }
     return cards;
   }
 
-  impactViewButton() {
+  ElevatedButton impactViewButton() {
     final localeMsg = AppLocalizations.of(context)!;
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
@@ -418,22 +409,25 @@ class _ProjectsPageState extends State<ProjectsPage> {
         children: [
           Padding(
             padding: EdgeInsets.only(
-                top: 8, bottom: 8, right: _isSmallDisplay ? 0 : 10),
+                top: 8, bottom: 8, right: _isSmallDisplay ? 0 : 10,),
             child: const Icon(Icons.settings_suggest),
           ),
-          _isSmallDisplay ? Container() : Text(localeMsg.impactAnalysis),
+          if (_isSmallDisplay) Container() else Text(localeMsg.impactAnalysis),
         ],
       ),
     );
   }
 
-  List<Widget> getAlertDemoWidgets(AppLocalizations localeMsg) {
+  List<Widget> getAlertWidgets(AppLocalizations localeMsg) {
+    if (widget.isTenantMode) {
+      return [];
+    }
     return [
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(localeMsg.myAlerts,
-              style: Theme.of(context).textTheme.headlineLarge),
+              style: Theme.of(context).textTheme.headlineLarge,),
           Padding(
             padding: const EdgeInsets.only(right: 10.0, bottom: 10),
             child: alertViewButton(),
@@ -479,7 +473,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
                   ],
                 ),
               );
-            }),
+            },),
       ),
       const SizedBox(height: 30),
     ];
@@ -488,20 +482,20 @@ class _ProjectsPageState extends State<ProjectsPage> {
   String alertsToString(AppLocalizations localeMsg) {
     var alertStr = "";
     if (_alerts.length > 1) {
-      for (var alert in _alerts) {
+      for (final alert in _alerts) {
         alertStr = "$alertStr${alert.title.split(" ").first}, ";
       }
       alertStr = alertStr.substring(0, alertStr.length - 2);
       alertStr = "${localeMsg.areMarkedMaintenance} $alertStr.";
     } else {
-      for (var alert in _alerts) {
+      for (final alert in _alerts) {
         alertStr = "${alert.title.split(" ").first} ${localeMsg.isMarked}.";
       }
     }
     return alertStr;
   }
 
-  alertViewButton() {
+  ElevatedButton alertViewButton() {
     final localeMsg = AppLocalizations.of(context)!;
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
@@ -511,7 +505,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
       onPressed: () {
         if (widget.isTenantMode) {
           showCustomPopup(
-              context, CreateTenantPopup(parentCallback: refreshFromChildren));
+              context, CreateTenantPopup(parentCallback: refreshFromChildren),);
         } else {
           Navigator.of(context).push(
             MaterialPageRoute(
@@ -528,10 +522,10 @@ class _ProjectsPageState extends State<ProjectsPage> {
         children: [
           Padding(
             padding: EdgeInsets.only(
-                top: 8, bottom: 8, right: _isSmallDisplay ? 0 : 10),
+                top: 8, bottom: 8, right: _isSmallDisplay ? 0 : 10,),
             child: const Icon(Icons.analytics),
           ),
-          _isSmallDisplay ? Container() : Text(localeMsg.viewAlerts),
+          if (_isSmallDisplay) Container() else Text(localeMsg.viewAlerts),
         ],
       ),
     );

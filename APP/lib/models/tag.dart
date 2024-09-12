@@ -27,7 +27,7 @@ class Tag {
         description: map['description'].toString(),
         slug: map['slug'].toString(),
         color: map['color'].toString(),
-        image: map['image'].toString());
+        image: map['image'].toString(),);
   }
 
   String toJson() => json.encode(toMap());

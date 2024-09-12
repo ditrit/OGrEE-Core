@@ -2,7 +2,7 @@ part of 'settings_view.dart';
 
 class _Actions extends StatelessWidget {
   final bool isTenantMode;
-  const _Actions({Key? key, required this.isTenantMode}) : super(key: key);
+  const _Actions({required this.isTenantMode});
 
   @override
   Widget build(BuildContext context) {
@@ -21,11 +21,11 @@ class _Actions extends StatelessWidget {
       actionsRow.add(_Action(
         label: Text(localeMsg.selectAll),
         onPressed: TreeAppController.of(context).selectAll,
-      ));
+      ),);
       actionsRow.add(_Action(
         label: Text(localeMsg.deselectAll),
         onPressed: () => TreeAppController.of(context).selectAll(false),
-      ));
+      ),);
     }
     return Wrap(
       spacing: 10,
@@ -37,10 +37,9 @@ class _Actions extends StatelessWidget {
 
 class _Action extends StatelessWidget {
   const _Action({
-    Key? key,
     required this.label,
     this.onPressed,
-  }) : super(key: key);
+  });
 
   final Widget label;
   final VoidCallback? onPressed;

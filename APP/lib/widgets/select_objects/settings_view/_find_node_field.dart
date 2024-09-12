@@ -20,7 +20,6 @@ class __FindNodeFieldState extends State<_FindNodeField> {
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
-      autofocus: false,
       style: const TextStyle(fontSize: 14),
       decoration: GetFormInputDecoration(
         false,
@@ -37,7 +36,7 @@ class __FindNodeFieldState extends State<_FindNodeField> {
     final localeMsg = AppLocalizations.of(context)!;
 
     TreeNode? node;
-    for (var root in appController.treeController.roots) {
+    for (final root in appController.treeController.roots) {
       if (root.id.toLowerCase().contains(id.toLowerCase())) {
         node = root;
         break;

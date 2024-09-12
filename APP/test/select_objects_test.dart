@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ogree_app/common/definitions.dart';
-import 'package:ogree_app/widgets/select_objects/treeapp_controller.dart';
 import 'package:ogree_app/widgets/select_objects/select_objects.dart';
+import 'package:ogree_app/widgets/select_objects/treeapp_controller.dart';
 
 import 'common.dart';
 
@@ -14,22 +14,22 @@ void main() {
       dateRange: "",
       load: true,
       namespace: Namespace.Test,
-    )));
+    ),),);
 
     final expandButton = find.text("Développer tout");
     await tester.tap(expandButton);
     await tester.pumpAndSettle();
-    for (var node in kDataSample["sitePI.B1.1.rack1"]!) {
+    for (final node in kDataSample["sitePI.B1.1.rack1"]!) {
       expect(find.text(node.substring(node.lastIndexOf(".") + 1)),
-          findsAtLeastNWidgets(1));
+          findsAtLeastNWidgets(1),);
     }
 
     final collapseButton = find.text("Réduire tout");
     await tester.tap(collapseButton);
     await tester.pumpAndSettle();
-    for (var node in kDataSample["sitePI.B1.1.rack1"]!) {
+    for (final node in kDataSample["sitePI.B1.1.rack1"]!) {
       expect(
-          find.text(node.substring(node.lastIndexOf(".") + 1)), findsNothing);
+          find.text(node.substring(node.lastIndexOf(".") + 1)), findsNothing,);
     }
   });
 
@@ -39,7 +39,7 @@ void main() {
       dateRange: "",
       load: true,
       namespace: Namespace.Test,
-    )));
+    ),),);
 
     final expandButton = find.text("Sélectionner tout");
     await tester.tap(expandButton);
@@ -53,7 +53,7 @@ void main() {
       500.0,
       scrollable: find.ancestor(
           of: find.textContaining("siteNO.BB1"),
-          matching: find.byType(Scrollable)),
+          matching: find.byType(Scrollable),),
     );
     await tester.tap(collapseButton);
     await tester.pumpAndSettle();
@@ -68,7 +68,7 @@ void main() {
         load: true,
         namespace: Namespace.Test,
       ),
-    )));
+    ),),);
 
     const searchStr = "rack2.devB.devB-2";
     final searchInput =
@@ -79,7 +79,7 @@ void main() {
 
     final List<String> parents = searchStr.split(".");
     parents.removeAt(0);
-    for (var name in parents) {
+    for (final name in parents) {
       expect(find.text(name), findsOneWidget);
     }
     expect(find.text("devC-2"), findsNothing);
@@ -93,10 +93,10 @@ void main() {
       dateRange: "",
       load: true,
       namespace: Namespace.Test,
-    )));
+    ),),);
 
     // all data is there
-    for (var site in kDataSample[kRootId]!) {
+    for (final site in kDataSample[kRootId]!) {
       expect(find.text(site), findsOneWidget);
     }
 
@@ -104,7 +104,7 @@ void main() {
     final searchBldg = find.text("Building");
     await tester.press(searchBldg, warnIfMissed: false);
     await tester.pumpAndSettle();
-    for (var building in ['sitePA.A1', 'sitePA.A2', 'sitePI.B1']) {
+    for (final building in ['sitePA.A1', 'sitePA.A2', 'sitePI.B1']) {
       expect(find.text(building), findsOneWidget);
     }
 
@@ -116,17 +116,17 @@ void main() {
     await tester.pumpAndSettle();
 
     // check if tree is filtered
-    for (var site in kDataSample[kRootId]!) {
+    for (final site in kDataSample[kRootId]!) {
       expect(find.text(site), findsNothing);
     }
     final expandButton = find.text("Développer tout");
     await tester.tap(expandButton);
     await tester.pumpAndSettle();
     expect(find.text("sitePI.B1"), findsNWidgets(3));
-    for (var obj in ["rack1", "rack2"]) {
+    for (final obj in ["rack1", "rack2"]) {
       expect(find.text(obj), findsOneWidget);
     }
-    for (var obj in ["devA", "devB", "devC", "devD"]) {
+    for (final obj in ["devA", "devB", "devC", "devD"]) {
       expect(find.text(obj), findsNWidgets(2));
     }
 
@@ -139,7 +139,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // check if tree is filtered
-    for (var site in kDataSample[kRootId]!) {
+    for (final site in kDataSample[kRootId]!) {
       expect(find.text(site), findsNothing);
     }
     await tester.ensureVisible(expandButton);
@@ -147,10 +147,10 @@ void main() {
     await tester.tap(expandButton);
     await tester.pumpAndSettle();
     expect(find.text("sitePI.B1"), findsNWidgets(3));
-    for (var obj in ["devA", "devB", "devC", "devD"]) {
+    for (final obj in ["devA", "devB", "devC", "devD"]) {
       expect(find.text(obj), findsOneWidget);
     }
-    for (var obj in [
+    for (final obj in [
       "rack1",
       "B2",
       "NO",
@@ -164,10 +164,10 @@ void main() {
     final clearButton = find.text("Effacer tout");
     await tester.tap(clearButton);
     await tester.pumpAndSettle();
-    for (var obj in ["devA", "devB", "devC", "devD"]) {
+    for (final obj in ["devA", "devB", "devC", "devD"]) {
       expect(find.text(obj), findsNothing);
     }
-    for (var obj in kDataSample[kRootId]!) {
+    for (final obj in kDataSample[kRootId]!) {
       expect(find.text(obj), findsOneWidget);
     }
 

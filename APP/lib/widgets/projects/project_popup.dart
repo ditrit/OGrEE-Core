@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:ogree_app/common/snackbar.dart';
-import 'package:ogree_app/models/project.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-
-import '../../common/theme.dart';
+import 'package:ogree_app/common/snackbar.dart';
+import 'package:ogree_app/common/theme.dart';
+import 'package:ogree_app/models/project.dart';
 
 void showProjectDialog(
   BuildContext context,
@@ -38,7 +37,7 @@ void showProjectDialog(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(title,
-                      style: Theme.of(context).textTheme.headlineMedium),
+                      style: Theme.of(context).textTheme.headlineMedium,),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 25),
                     child: TextFormField(
@@ -46,7 +45,7 @@ void showProjectDialog(
                       onChanged: (value) => editInput = value,
                       decoration: GetFormInputDecoration(
                           false, localeMsg.projectName,
-                          icon: Icons.edit_outlined),
+                          icon: Icons.edit_outlined,),
                       cursorWidth: 1.3,
                       style: const TextStyle(fontSize: 14),
                     ),
@@ -59,7 +58,7 @@ void showProjectDialog(
                             padding: isSmallDisplay
                                 ? const EdgeInsets.symmetric(horizontal: 8)
                                 : null,
-                            foregroundColor: Colors.blue.shade900),
+                            foregroundColor: Colors.blue.shade900,),
                         onPressed: () => Navigator.pop(context),
                         label: Text(localeMsg.cancel),
                         icon: const Icon(
@@ -67,39 +66,37 @@ void showProjectDialog(
                           size: 16,
                         ),
                       ),
-                      deleteCallback != null
-                          ? (isSmallDisplay
+                      if (deleteCallback != null) isSmallDisplay
                               ? IconButton(
                                   iconSize: 16,
                                   onPressed: () => deleteCallback(
-                                      project.id, parentCallback),
+                                      project.id, parentCallback,),
                                   icon: Icon(
                                     Icons.delete,
                                     color: Colors.red.shade900,
-                                  ))
+                                  ),)
                               : TextButton.icon(
                                   style: OutlinedButton.styleFrom(
-                                      foregroundColor: Colors.red.shade900),
+                                      foregroundColor: Colors.red.shade900,),
                                   onPressed: () => deleteCallback(
-                                      project.id, parentCallback),
+                                      project.id, parentCallback,),
                                   label: Text(
-                                      isSmallDisplay ? "" : localeMsg.delete),
+                                      isSmallDisplay ? "" : localeMsg.delete,),
                                   icon: const Icon(
                                     Icons.delete,
                                     size: 16,
                                   ),
-                                ))
-                          : Container(),
+                                ) else Container(),
                       SizedBox(width: isSmallDisplay ? 0 : 10),
                       ElevatedButton(
                         onPressed: () async {
                           if (editInput == "") {
                             showSnackBar(ScaffoldMessenger.of(context),
                                 localeMsg.mandatoryProjectName,
-                                isError: true);
+                                isError: true,);
                           } else {
                             saveCallback(
-                                editInput, project, isCreate, parentCallback);
+                                editInput, project, isCreate, parentCallback,);
                           }
                         },
                         style: isSmallDisplay
@@ -109,9 +106,9 @@ void showProjectDialog(
                               )
                             : null,
                         child: Text(localeMsg.save),
-                      )
+                      ),
                     ],
-                  )
+                  ),
                 ],
               ),
             ),

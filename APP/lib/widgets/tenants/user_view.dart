@@ -1,4 +1,7 @@
+// ignore_for_file: constant_identifier_names
+
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
@@ -7,9 +10,7 @@ import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/models/user.dart';
 import 'package:ogree_app/pages/results_page.dart';
 import 'package:ogree_app/widgets/common/delete_dialog_popup.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-
-import 'popups/user_popup.dart';
+import 'package:ogree_app/widgets/tenants/popups/user_popup.dart';
 
 enum UserSearchFields { Name, Email, Domain, Role }
 
@@ -17,11 +18,12 @@ class UserView extends StatefulWidget {
   UserSearchFields searchField;
   String? searchText;
   Function? parentCallback;
-  UserView(
-      {super.key,
-      this.searchField = UserSearchFields.Name,
-      this.searchText,
-      this.parentCallback});
+  UserView({
+    super.key,
+    this.searchField = UserSearchFields.Name,
+    this.searchText,
+    this.parentCallback,
+  });
   @override
   State<UserView> createState() => _UserViewState();
 }
@@ -56,205 +58,220 @@ class _UserViewState extends State<UserView> {
     final localeMsg = AppLocalizations.of(context)!;
     final isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
     return FutureBuilder(
-        future: _loadUsers ? getUsers() : null,
-        builder: (context, _) {
-          if (_users == null) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          return Theme(
-            data: Theme.of(context).copyWith(
-              cardTheme: const CardTheme(
-                  elevation: 0,
-                  surfaceTintColor: Colors.white,
-                  color: Colors.white),
+      future: _loadUsers ? getUsers() : null,
+      builder: (context, _) {
+        if (_users == null) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        return Theme(
+          data: Theme.of(context).copyWith(
+            cardTheme: const CardTheme(
+              elevation: 0,
+              surfaceTintColor: Colors.white,
+              color: Colors.white,
             ),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.only(right: 16, top: 0),
-              child: PaginatedDataTable(
-                sortColumnIndex: 1,
-                sortAscending: sort,
-                checkboxHorizontalMargin: 0,
-                header: Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    SizedBox(
-                      height: isSmallDisplay ? 30 : 35,
-                      width: isSmallDisplay ? 115 : 145,
-                      child: DropdownButtonFormField<UserSearchFields>(
-                        borderRadius: BorderRadius.circular(12.0),
-                        decoration: GetFormInputDecoration(
-                          isSmallDisplay,
-                          null,
-                          icon: Icons.search_rounded,
-                          contentPadding: isSmallDisplay
-                              ? const EdgeInsets.only(
-                                  top: 0,
-                                  bottom: 15,
-                                  left: 12,
-                                  right: 5,
-                                )
-                              : const EdgeInsets.only(
-                                  top: 3.0,
-                                  bottom: 12.0,
-                                  left: 20.0,
-                                  right: 14.0,
-                                ),
-                        ),
-                        value: _searchField,
-                        items: UserSearchFields.values
-                            .map<DropdownMenuItem<UserSearchFields>>(
-                                (UserSearchFields value) {
-                          return DropdownMenuItem<UserSearchFields>(
-                            value: value,
-                            child: Text(
-                              value.name,
-                              overflow: TextOverflow.ellipsis,
+          ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.only(right: 16),
+            child: PaginatedDataTable(
+              sortColumnIndex: 1,
+              sortAscending: sort,
+              checkboxHorizontalMargin: 0,
+              header: Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  SizedBox(
+                    height: isSmallDisplay ? 30 : 35,
+                    width: isSmallDisplay ? 115 : 145,
+                    child: DropdownButtonFormField<UserSearchFields>(
+                      borderRadius: BorderRadius.circular(12.0),
+                      decoration: GetFormInputDecoration(
+                        isSmallDisplay,
+                        null,
+                        icon: Icons.search_rounded,
+                        contentPadding: isSmallDisplay
+                            ? const EdgeInsets.only(
+                                bottom: 15,
+                                left: 12,
+                                right: 5,
+                              )
+                            : const EdgeInsets.only(
+                                top: 3.0,
+                                bottom: 12.0,
+                                left: 20.0,
+                                right: 14.0,
+                              ),
+                      ),
+                      value: _searchField,
+                      items: UserSearchFields.values
+                          .map<DropdownMenuItem<UserSearchFields>>(
+                              (UserSearchFields value) {
+                        return DropdownMenuItem<UserSearchFields>(
+                          value: value,
+                          child: Text(
+                            value.name,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (UserSearchFields? value) {
+                        setState(() {
+                          _searchField = value!;
+                        });
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: 225,
+                    child: TextFormField(
+                      textAlignVertical: TextAlignVertical.center,
+                      initialValue: widget.searchText,
+                      onChanged: (value) {
+                        setState(() {
+                          _users = searchUsers(value);
+                        });
+                      },
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        isDense: true,
+                        label: isSmallDisplay ? null : Text(localeMsg.search),
+                        prefixIcon: isSmallDisplay
+                            ? const Icon(Icons.search_rounded)
+                            : null,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                Padding(
+                  padding: EdgeInsets.only(right: isSmallDisplay ? 0 : 4),
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    splashRadius: isSmallDisplay ? 16 : 23,
+                    onPressed: () => selectedUsers.isNotEmpty
+                        ? showCustomPopup(
+                            context,
+                            UserPopup(
+                              parentCallback: () {
+                                setState(() {
+                                  _loadUsers = true;
+                                });
+                              },
+                              modifyUser: selectedUsers.first,
                             ),
-                          );
-                        }).toList(),
-                        onChanged: (UserSearchFields? value) {
+                            isDismissible: true,
+                          )
+                        : null,
+                    icon: const Icon(
+                      Icons.edit,
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(right: isSmallDisplay ? 0 : 8.0),
+                  child: IconButton(
+                    splashRadius: isSmallDisplay ? 16 : 23,
+                    // iconSize: 14,
+                    onPressed: () => selectedUsers.isNotEmpty
+                        ? showCustomPopup(
+                            context,
+                            DeleteDialog(
+                              objName: selectedUsers.map((e) {
+                                return e.id!;
+                              }).toList(),
+                              objType: "users",
+                              parentCallback: () {
+                                setState(() {
+                                  _loadUsers = true;
+                                });
+                              },
+                            ),
+                            isDismissible: true,
+                          )
+                        : null,
+                    icon: Icon(
+                      Icons.delete,
+                      color: Colors.red.shade900,
+                    ),
+                  ),
+                ),
+                if (isSmallDisplay)
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    splashRadius: 16,
+                    onPressed: () => showCustomPopup(
+                      context,
+                      UserPopup(
+                        parentCallback: () {
                           setState(() {
-                            _searchField = value!;
+                            _loadUsers = true;
                           });
                         },
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    SizedBox(
-                      width: 225,
-                      child: TextFormField(
-                          textAlignVertical: TextAlignVertical.center,
-                          initialValue: widget.searchText,
-                          onChanged: (value) {
-                            setState(() {
-                              _users = searchUsers(value);
-                            });
-                          },
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                            isDense: true,
-                            label:
-                                isSmallDisplay ? null : Text(localeMsg.search),
-                            prefixIcon: isSmallDisplay
-                                ? const Icon(Icons.search_rounded)
-                                : null,
-                          )),
+                    icon: Icon(
+                      Icons.add,
+                      color: Colors.blue.shade900,
                     ),
-                  ],
-                ),
-                actions: [
+                  )
+                else
                   Padding(
-                    padding: EdgeInsets.only(right: isSmallDisplay ? 0 : 4),
-                    child: IconButton(
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        splashRadius: isSmallDisplay ? 16 : 23,
-                        onPressed: () => selectedUsers.isNotEmpty
-                            ? showCustomPopup(
-                                context,
-                                UserPopup(
-                                  parentCallback: () {
-                                    setState(() {
-                                      _loadUsers = true;
-                                    });
-                                  },
-                                  modifyUser: selectedUsers.first,
-                                ),
-                                isDismissible: true)
-                            : null,
-                        icon: const Icon(
-                          Icons.edit,
-                        )),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(right: isSmallDisplay ? 0 : 8.0),
-                    child: IconButton(
-                        splashRadius: isSmallDisplay ? 16 : 23,
-                        // iconSize: 14,
-                        onPressed: () => selectedUsers.isNotEmpty
-                            ? showCustomPopup(
-                                context,
-                                DeleteDialog(
-                                  objName: selectedUsers.map((e) {
-                                    print(e);
-                                    return e.id!;
-                                  }).toList(),
-                                  objType: "users",
-                                  parentCallback: () {
-                                    setState(() {
-                                      _loadUsers = true;
-                                    });
-                                  },
-                                ),
-                                isDismissible: true)
-                            : null,
-                        icon: Icon(
-                          Icons.delete,
-                          color: Colors.red.shade900,
-                        )),
-                  ),
-                  isSmallDisplay
-                      ? IconButton(
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          splashRadius: 16,
-                          onPressed: () => showCustomPopup(context,
-                              UserPopup(parentCallback: () {
+                    padding: const EdgeInsets.only(right: 6.0),
+                    child: ElevatedButton.icon(
+                      onPressed: () => showCustomPopup(
+                        context,
+                        UserPopup(
+                          parentCallback: () {
                             setState(() {
                               _loadUsers = true;
                             });
-                          })),
-                          icon: Icon(
-                            Icons.add,
-                            color: Colors.blue.shade900,
-                          ),
-                        )
-                      : Padding(
-                          padding: const EdgeInsets.only(right: 6.0),
-                          child: ElevatedButton.icon(
-                            onPressed: () => showCustomPopup(context,
-                                UserPopup(parentCallback: () {
-                              setState(() {
-                                _loadUsers = true;
-                              });
-                            })),
-                            icon: const Icon(Icons.add, color: Colors.white),
-                            label:
-                                Text("${localeMsg.create} ${localeMsg.user}"),
-                          ),
+                          },
                         ),
-                ],
-                rowsPerPage: _users!.isEmpty
-                    ? 1
-                    : (_users!.length >= 6 ? 6 : _users!.length),
-                columns: [
-                  const DataColumn(
-                      label: Text(
+                      ),
+                      icon: const Icon(Icons.add, color: Colors.white),
+                      label: Text("${localeMsg.create} ${localeMsg.user}"),
+                    ),
+                  ),
+              ],
+              rowsPerPage: _users!.isEmpty
+                  ? 1
+                  : (_users!.length >= 6 ? 6 : _users!.length),
+              columns: [
+                const DataColumn(
+                  label: Text(
                     "Name",
                     style: TextStyle(fontWeight: FontWeight.w600),
-                  )),
-                  DataColumn(
-                      label: const Text(
-                        "Email",
-                        style: TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      onSort: (columnIndex, ascending) {
-                        setState(() {
-                          sort = !sort;
-                        });
-                        onsortColum(columnIndex, ascending);
-                      }),
-                  const DataColumn(
-                      label: Text(
+                  ),
+                ),
+                DataColumn(
+                  label: const Text(
+                    "Email",
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  onSort: (columnIndex, ascending) {
+                    setState(() {
+                      sort = !sort;
+                    });
+                    onsortColum(columnIndex, ascending);
+                  },
+                ),
+                const DataColumn(
+                  label: Text(
                     "Domains (roles)",
                     style: TextStyle(fontWeight: FontWeight.w600),
-                  ))
-                ],
-                source: _DataSource(context, _users!, onUserSelected),
-              ),
+                  ),
+                ),
+              ],
+              source: _DataSource(context, _users!, onUserSelected),
             ),
-          );
-        });
+          ),
+        );
+      },
+    );
   }
 
   getUsers() async {
@@ -277,7 +294,7 @@ class _UserViewState extends State<UserView> {
     _loadUsers = false;
   }
 
-  searchUsers(String searchText) {
+  List<User> searchUsers(String searchText) {
     if (searchText.trim().isEmpty) {
       return _filterUsers!.toList();
     }
@@ -292,7 +309,7 @@ class _UserViewState extends State<UserView> {
             .toList();
       case UserSearchFields.Domain:
         return _filterUsers!.where((element) {
-          for (var domain in element.roles.keys) {
+          for (final domain in element.roles.keys) {
             if (domain.contains(searchText) || domain == allDomainsConvert) {
               return true;
             }
@@ -301,7 +318,7 @@ class _UserViewState extends State<UserView> {
         }).toList();
       case UserSearchFields.Role:
         return _filterUsers!.where((element) {
-          for (var role in element.roles.values) {
+          for (final role in element.roles.values) {
             if (role.contains(searchText)) {
               return true;
             }
@@ -365,13 +382,13 @@ class _DataSource extends DataTableSource {
   int get selectedRowCount => _selectedCount;
 
   List<CustomRow> getChildren() {
-    List<CustomRow> children = [];
-    for (var user in users) {
-      List<DataCell> row = [];
+    final List<CustomRow> children = [];
+    for (final user in users) {
+      final List<DataCell> row = [];
       row.add(label(user.name == "null" ? "-" : user.name));
       row.add(label(user.email, fontWeight: FontWeight.w500));
       String domainStr = "";
-      for (var domain in user.roles.keys) {
+      for (final domain in user.roles.keys) {
         domainStr = "$domainStr $domain (${user.roles[domain]});";
       }
       row.add(label(domainStr));

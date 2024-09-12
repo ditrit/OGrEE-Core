@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/appbar.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/models/tenant.dart';
 import 'package:ogree_app/pages/projects_page.dart';
+import 'package:ogree_app/widgets/select_objects/treeapp_controller.dart';
 import 'package:ogree_app/widgets/tenants/api_stats_view.dart';
+import 'package:ogree_app/widgets/tenants/docker_view.dart';
 import 'package:ogree_app/widgets/tenants/domain_view.dart';
 import 'package:ogree_app/widgets/tenants/locked_view.dart';
-import 'package:ogree_app/widgets/tenants/docker_view.dart';
-import 'package:ogree_app/widgets/select_objects/treeapp_controller.dart';
 import 'package:ogree_app/widgets/tenants/tags_view.dart';
 import 'package:ogree_app/widgets/tenants/user_view.dart';
 
@@ -44,7 +44,7 @@ class TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
     return Scaffold(
         backgroundColor: const Color.fromARGB(255, 238, 238, 241),
         appBar: myAppBar(context, widget.userEmail,
-            isTenantMode: widget.tenant != null),
+            isTenantMode: widget.tenant != null,),
         body: Padding(
           padding: const EdgeInsets.all(20.0),
           child: CustomScrollView(slivers: [
@@ -62,12 +62,12 @@ class TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
                                 Navigator.of(context).push(MaterialPageRoute(
                                   builder: (context) => ProjectsPage(
                                       userEmail: widget.userEmail,
-                                      isTenantMode: widget.tenant != null),
-                                )),
+                                      isTenantMode: widget.tenant != null,),
+                                ),),
                             icon: Icon(
                               Icons.arrow_back,
                               color: Colors.blue.shade900,
-                            )),
+                            ),),
                         const SizedBox(width: 5),
                         Text(
                           "Tenant $tenantName",
@@ -90,10 +90,10 @@ class TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
                           unselectedLabelColor: Colors.grey,
                           labelStyle: TextStyle(
                               fontSize: 14,
-                              fontFamily: GoogleFonts.inter().fontFamily),
+                              fontFamily: GoogleFonts.inter().fontFamily,),
                           unselectedLabelStyle: TextStyle(
                               fontSize: 14,
-                              fontFamily: GoogleFonts.inter().fontFamily),
+                              fontFamily: GoogleFonts.inter().fontFamily,),
                           isScrollable: true,
                           indicatorSize: TabBarIndicatorSize.label,
                           tabs: getTabs(localeMsg),
@@ -115,13 +115,13 @@ class TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
                   ),
                 ],
               ),
-            )
-          ]),
-        ));
+            ),
+          ],),
+        ),);
   }
 
   List<Tab> getTabs(AppLocalizations localeMsg) {
-    List<Tab> tabs = [
+    final List<Tab> tabs = [
       Tab(
         text: localeMsg.apiStats,
         icon: const Icon(Icons.info),
@@ -145,22 +145,16 @@ class TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
           Tab(
             text: localeMsg.deployment,
             icon: const Icon(Icons.dns),
-          ));
+          ),);
     }
     return tabs;
   }
 
   List<Widget> getTabViews(AppLocalizations localeMsg) {
-    List<Widget> views = [
-      _isLocked && widget.tenant != null
-          ? LockedView(tenant: widget.tenant!, parentCallback: unlockView)
-          : const ApiStatsView(),
-      _isLocked && widget.tenant != null
-          ? LockedView(tenant: widget.tenant!, parentCallback: unlockView)
-          : const DomainView(),
-      _isLocked && widget.tenant != null
-          ? LockedView(tenant: widget.tenant!, parentCallback: unlockView)
-          : (_domainSearch.isEmpty
+    final List<Widget> views = [
+      if (_isLocked && widget.tenant != null) LockedView(tenant: widget.tenant!, parentCallback: unlockView) else const ApiStatsView(),
+      if (_isLocked && widget.tenant != null) LockedView(tenant: widget.tenant!, parentCallback: unlockView) else const DomainView(),
+      if (_isLocked && widget.tenant != null) LockedView(tenant: widget.tenant!, parentCallback: unlockView) else _domainSearch.isEmpty
               ? UserView()
               : // user view should filter with domain
               UserView(
@@ -170,10 +164,8 @@ class TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
                     // child calls parent to clean it once applied
                     _domainSearch = "";
                   }),
-                )),
-      _isLocked && widget.tenant != null
-          ? LockedView(tenant: widget.tenant!, parentCallback: unlockView)
-          : const TagsView(),
+                ),
+      if (_isLocked && widget.tenant != null) LockedView(tenant: widget.tenant!, parentCallback: unlockView) else const TagsView(),
     ];
     if (_domainSearch.isNotEmpty) {
       // switch to domain page

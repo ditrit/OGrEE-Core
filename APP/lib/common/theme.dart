@@ -1,22 +1,27 @@
+// ignore_for_file: non_constant_identifier_names, constant_identifier_names
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/definitions.dart';
 
-GetFormInputDecoration(isSmallDisplay, String? labelText,
-        {IconData? icon,
-        Color? iconColor,
-        String? prefixText,
-        String? suffixText,
-        String? hint,
-        EdgeInsets? contentPadding = const EdgeInsets.only(
-          top: 3.0,
-          bottom: 12.0,
-          left: 20.0,
-          right: 14.0,
-        ),
-        bool isEnabled = true,
-        bool isCompact = false,
-        Widget? iconWidget}) =>
+InputDecoration GetFormInputDecoration(
+  isSmallDisplay,
+  String? labelText, {
+  IconData? icon,
+  Color? iconColor,
+  String? prefixText,
+  String? suffixText,
+  String? hint,
+  EdgeInsets? contentPadding = const EdgeInsets.only(
+    top: 3.0,
+    bottom: 12.0,
+    left: 20.0,
+    right: 14.0,
+  ),
+  bool isEnabled = true,
+  bool isCompact = false,
+  Widget? iconWidget,
+}) =>
     InputDecoration(
       prefixIcon: iconWidget ??
           (isSmallDisplay
@@ -38,13 +43,15 @@ GetFormInputDecoration(isSmallDisplay, String? labelText,
                   children: [
                     RichText(
                       text: TextSpan(
-                          text: labelText.replaceFirst(starSymbol, ""),
-                          style: const TextStyle(color: Colors.black),
-                          children: const [
-                            TextSpan(
-                                text: starSymbol,
-                                style: TextStyle(color: Colors.red))
-                          ]),
+                        text: labelText.replaceFirst(starSymbol, ""),
+                        style: const TextStyle(color: Colors.black),
+                        children: const [
+                          TextSpan(
+                            text: starSymbol,
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 )
@@ -67,29 +74,33 @@ GetFormInputDecoration(isSmallDisplay, String? labelText,
 const FormInputPadding = EdgeInsets.only(left: 2, right: 10, bottom: 8, top: 2);
 
 final PopupDecoration = BoxDecoration(
-    color: Colors.white,
-    borderRadius: BorderRadius.circular(30),
-    boxShadow: const [
-      // Shadow for top-left corner
-      BoxShadow(
-        color: Colors.grey,
-        offset: Offset(10, 10),
-        blurRadius: 6,
-        spreadRadius: 1,
-      ),
-      // Shadow for bottom-right corner
-      BoxShadow(
-        color: Colors.white12,
-        offset: Offset(-10, -10),
-        blurRadius: 5,
-        spreadRadius: 1,
-      ),
-    ]);
+  color: Colors.white,
+  borderRadius: BorderRadius.circular(30),
+  boxShadow: const [
+    // Shadow for top-left corner
+    BoxShadow(
+      color: Colors.grey,
+      offset: Offset(10, 10),
+      blurRadius: 6,
+      spreadRadius: 1,
+    ),
+    // Shadow for bottom-right corner
+    BoxShadow(
+      color: Colors.white12,
+      offset: Offset(-10, -10),
+      blurRadius: 5,
+      spreadRadius: 1,
+    ),
+  ],
+);
 
-IsSmallDisplay(width) => width < 550;
+bool IsSmallDisplay(double width) => width < 550;
 
-LoginInputDecoration(
-        {required String label, String? hint, bool isSmallDisplay = false}) =>
+InputDecoration LoginInputDecoration({
+  required String label,
+  String? hint,
+  bool isSmallDisplay = false,
+}) =>
     InputDecoration(
       contentPadding: isSmallDisplay
           ? const EdgeInsets.symmetric(horizontal: 12, vertical: 16)
@@ -103,7 +114,6 @@ LoginInputDecoration(
       border: const OutlineInputBorder(
         borderSide: BorderSide(
           color: Colors.grey,
-          width: 1,
         ),
       ),
     );

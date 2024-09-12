@@ -19,12 +19,10 @@ class _ChangePasswordPopupState extends State<ChangePasswordPopup> {
   String? _oldPassword;
   String? _newPassword;
   String? _confirmPass;
-  bool _isSmallDisplay = false;
 
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
-    _isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
     return Center(
       child: Container(
         // height: 240,
@@ -38,7 +36,6 @@ class _ChangePasswordPopupState extends State<ChangePasswordPopup> {
             child: Form(
               key: _formKey,
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
@@ -47,24 +44,28 @@ class _ChangePasswordPopupState extends State<ChangePasswordPopup> {
                   ),
                   const SizedBox(height: 20),
                   CustomFormField(
-                      save: (newValue) => _oldPassword = newValue,
-                      label: localeMsg.currentPassword,
-                      icon: Icons.lock_open_rounded),
+                    save: (newValue) => _oldPassword = newValue,
+                    label: localeMsg.currentPassword,
+                    icon: Icons.lock_open_rounded,
+                  ),
                   CustomFormField(
-                      save: (newValue) => _newPassword = newValue,
-                      label: localeMsg.newPassword,
-                      icon: Icons.lock_outline_rounded),
+                    save: (newValue) => _newPassword = newValue,
+                    label: localeMsg.newPassword,
+                    icon: Icons.lock_outline_rounded,
+                  ),
                   CustomFormField(
-                      save: (newValue) => _confirmPass = newValue,
-                      label: localeMsg.confirmPassword,
-                      icon: Icons.lock_outline_rounded),
+                    save: (newValue) => _confirmPass = newValue,
+                    label: localeMsg.confirmPassword,
+                    icon: Icons.lock_outline_rounded,
+                  ),
                   const SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       TextButton.icon(
                         style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.blue.shade900),
+                          foregroundColor: Colors.blue.shade900,
+                        ),
                         onPressed: () => Navigator.pop(context),
                         label: Text(localeMsg.cancel),
                         icon: const Icon(
@@ -74,58 +75,22 @@ class _ChangePasswordPopupState extends State<ChangePasswordPopup> {
                       ),
                       const SizedBox(width: 15),
                       ElevatedButton.icon(
-                          onPressed: () async {
-                            if (_formKey.currentState!.validate()) {
-                              _formKey.currentState!.save();
-                              if (_newPassword != _confirmPass) {
-                                showSnackBar(ScaffoldMessenger.of(context),
-                                    localeMsg.passwordNoMatch,
-                                    isError: true);
-                                return;
-                              }
-                              final messenger = ScaffoldMessenger.of(context);
-                              try {
-                                setState(() {
-                                  _isLoading = true;
-                                });
-                                final response = await changeUserPassword(
-                                    _oldPassword!, _newPassword!);
-                                switch (response) {
-                                  case Success():
-                                    showSnackBar(messenger, localeMsg.modifyOK,
-                                        isSuccess: true);
-                                    if (context.mounted) {
-                                      Navigator.of(context).pop();
-                                    }
-                                  case Failure(exception: final exception):
-                                    setState(() {
-                                      _isLoading = false;
-                                    });
-                                    showSnackBar(
-                                        messenger, exception.toString(),
-                                        isError: true);
-                                }
-                              } catch (e) {
-                                showSnackBar(messenger, e.toString(),
-                                    isError: true);
-                                return;
-                              }
-                            }
-                          },
-                          label: Text(localeMsg.modify),
-                          icon: _isLoading
-                              ? Container(
-                                  width: 24,
-                                  height: 24,
-                                  padding: const EdgeInsets.all(2.0),
-                                  child: const CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 3,
-                                  ),
-                                )
-                              : const Icon(Icons.check_circle, size: 16))
+                        onPressed: () => passwordAction(localeMsg),
+                        label: Text(localeMsg.modify),
+                        icon: _isLoading
+                            ? Container(
+                                width: 24,
+                                height: 24,
+                                padding: const EdgeInsets.all(2.0),
+                                child: const CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 3,
+                                ),
+                              )
+                            : const Icon(Icons.check_circle, size: 16),
+                      ),
                     ],
-                  )
+                  ),
                 ],
               ),
             ),
@@ -133,5 +98,56 @@ class _ChangePasswordPopupState extends State<ChangePasswordPopup> {
         ),
       ),
     );
+  }
+
+  passwordAction(AppLocalizations localeMsg) async {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+      if (_newPassword != _confirmPass) {
+        showSnackBar(
+          ScaffoldMessenger.of(context),
+          localeMsg.passwordNoMatch,
+          isError: true,
+        );
+        return;
+      }
+      final messenger = ScaffoldMessenger.of(context);
+      try {
+        setState(() {
+          _isLoading = true;
+        });
+        final response = await changeUserPassword(
+          _oldPassword!,
+          _newPassword,
+        );
+        switch (response) {
+          case Success():
+            showSnackBar(
+              messenger,
+              localeMsg.modifyOK,
+              isSuccess: true,
+            );
+            if (mounted) {
+              Navigator.of(context).pop();
+            }
+          case Failure(exception: final exception):
+            setState(() {
+              _isLoading = false;
+            });
+            showSnackBar(
+              messenger,
+              exception.toString(),
+              isError: true,
+            );
+        }
+      } catch (e) {
+        showSnackBar(
+          messenger,
+          e.toString(),
+          isError: true,
+        );
+        return;
+      }
+    }
   }
 }

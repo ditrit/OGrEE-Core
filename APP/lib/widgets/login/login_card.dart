@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/pages/login_page.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/pages/projects_page.dart';
 
 class LoginCard extends StatefulWidget {
@@ -28,78 +28,90 @@ class _LoginCardState extends State<LoginCard> {
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
-    bool isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
+    final bool isSmallDisplay =
+        IsSmallDisplay(MediaQuery.of(context).size.width);
     return Card(
       child: Form(
         key: _formKey,
         child: Container(
           constraints: const BoxConstraints(maxWidth: 550, maxHeight: 520),
           padding: EdgeInsets.only(
-              right: isSmallDisplay ? 45 : 100,
-              left: isSmallDisplay ? 45 : 100,
-              top: 50,
-              bottom: 30),
+            right: isSmallDisplay ? 45 : 100,
+            left: isSmallDisplay ? 45 : 100,
+            top: 50,
+            bottom: 30,
+          ),
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                showForgotView
-                    ? Wrap(
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          IconButton(
-                              constraints: const BoxConstraints(),
-                              onPressed: () => Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                      builder: (context) => const LoginPage())),
-                              icon: Icon(
-                                Icons.arrow_back,
-                                color: Colors.blue.shade900,
-                              )),
-                          SizedBox(width: isSmallDisplay ? 0 : 5),
-                          Text(
-                            localeMsg.resetPassword,
-                            style: Theme.of(context).textTheme.headlineMedium,
+                if (showForgotView)
+                  Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      IconButton(
+                        constraints: const BoxConstraints(),
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const LoginPage(),
                           ),
-                        ],
-                      )
-                    : Center(
-                        child: Text(localeMsg.welcome,
-                            style: Theme.of(context).textTheme.headlineLarge)),
+                        ),
+                        icon: Icon(
+                          Icons.arrow_back,
+                          color: Colors.blue.shade900,
+                        ),
+                      ),
+                      SizedBox(width: isSmallDisplay ? 0 : 5),
+                      Text(
+                        localeMsg.resetPassword,
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      ),
+                    ],
+                  )
+                else
+                  Center(
+                    child: Text(
+                      localeMsg.welcome,
+                      style: Theme.of(context).textTheme.headlineLarge,
+                    ),
+                  ),
                 const SizedBox(height: 8),
-                showForgotView
-                    ? const SizedBox(height: 10)
-                    : Center(
-                        child: Text(
-                          localeMsg.welcomeConnect,
-                          style: Theme.of(context).textTheme.headlineSmall,
+                if (showForgotView)
+                  const SizedBox(height: 10)
+                else
+                  Center(
+                    child: Text(
+                      localeMsg.welcomeConnect,
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                  ),
+                if (showForgotView) Container() else const SizedBox(height: 20),
+                if (dotenv.env['ALLOW_SET_BACK'] == "true")
+                  BackendInput(
+                    parentCallback: (newValue) => _apiUrl = newValue,
+                  )
+                else
+                  Center(
+                    child: Image.asset(
+                      "assets/custom/logo.png",
+                      height: 40,
+                    ),
+                  ),
+                if (dotenv.env['ALLOW_SET_BACK'] == "true")
+                  Align(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      child: Badge(
+                        backgroundColor: Colors.white,
+                        label: Text(
+                          getBackendTypeText(),
+                          style: const TextStyle(color: Colors.black),
                         ),
                       ),
-                showForgotView ? Container() : const SizedBox(height: 20),
-                dotenv.env['ALLOW_SET_BACK'] == "true"
-                    ? BackendInput(
-                        parentCallback: (newValue) => _apiUrl = newValue,
-                      )
-                    : Center(
-                        child: Image.asset(
-                          "assets/custom/logo.png",
-                          height: 40,
-                        ),
-                      ),
-                dotenv.env['ALLOW_SET_BACK'] == "true"
-                    ? Align(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          child: Badge(
-                            backgroundColor: Colors.white,
-                            label: Text(
-                              getBackendTypeText(),
-                              style: const TextStyle(color: Colors.black),
-                            ),
-                          ),
-                        ),
-                      )
-                    : const SizedBox(height: 30),
+                    ),
+                  )
+                else
+                  const SizedBox(height: 30),
                 TextFormField(
                   onSaved: (newValue) => _email = newValue,
                   validator: (text) {
@@ -109,104 +121,112 @@ class _LoginCardState extends State<LoginCard> {
                     return null;
                   },
                   decoration: LoginInputDecoration(
-                      label: 'E-mail',
-                      hint: 'abc@example.com',
-                      isSmallDisplay: isSmallDisplay),
+                    label: 'E-mail',
+                    hint: 'abc@example.com',
+                    isSmallDisplay: isSmallDisplay,
+                  ),
                 ),
                 SizedBox(height: isSmallDisplay ? 10 : 20),
-                showForgotView
-                    ? Container()
-                    : TextFormField(
-                        obscureText: true,
-                        onSaved: (newValue) => _password = newValue,
-                        onEditingComplete: () =>
-                            tryLogin(localeMsg, ScaffoldMessenger.of(context)),
-                        validator: (text) {
-                          if (!showForgotView &&
-                              (text == null || text.isEmpty)) {
-                            return localeMsg.mandatoryField;
-                          }
-                          return null;
-                        },
-                        decoration: LoginInputDecoration(
-                            label: localeMsg.password,
-                            hint: '********',
-                            isSmallDisplay: isSmallDisplay),
-                      ),
-                !showForgotView
-                    ? SizedBox(height: isSmallDisplay ? 15 : 25)
-                    : Container(),
-                showForgotView
-                    ? TextButton(
-                        onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const LoginPage(
-                              isPasswordReset: true,
-                              resetToken: '',
-                            ),
-                          ),
+                if (showForgotView)
+                  Container()
+                else
+                  TextFormField(
+                    obscureText: true,
+                    onSaved: (newValue) => _password = newValue,
+                    onEditingComplete: () =>
+                        tryLogin(localeMsg, ScaffoldMessenger.of(context)),
+                    validator: (text) {
+                      if (!showForgotView && (text == null || text.isEmpty)) {
+                        return localeMsg.mandatoryField;
+                      }
+                      return null;
+                    },
+                    decoration: LoginInputDecoration(
+                      label: localeMsg.password,
+                      hint: '********',
+                      isSmallDisplay: isSmallDisplay,
+                    ),
+                  ),
+                if (!showForgotView)
+                  SizedBox(height: isSmallDisplay ? 15 : 25)
+                else
+                  Container(),
+                if (showForgotView)
+                  TextButton(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const LoginPage(
+                          isPasswordReset: true,
                         ),
+                      ),
+                    ),
+                    child: Text(
+                      localeMsg.haveResetToken,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color.fromARGB(255, 0, 84, 152),
+                      ),
+                    ),
+                  )
+                else
+                  Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      if (!isSmallDisplay)
+                        Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: StatefulBuilder(
+                                builder: (context, localSetState) {
+                                  return Checkbox(
+                                    value: _stayLoggedIn,
+                                    onChanged: (bool? value) => localSetState(
+                                      () => _stayLoggedIn = value!,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              localeMsg.stayLogged,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ],
+                        )
+                      else
+                        Container(),
+                      TextButton(
+                        onPressed: () => setState(() {
+                          showForgotView = !showForgotView;
+                        }),
                         child: Text(
-                          localeMsg.haveResetToken,
+                          localeMsg.forgotPassword,
                           style: const TextStyle(
                             fontSize: 14,
                             color: Color.fromARGB(255, 0, 84, 152),
                           ),
                         ),
-                      )
-                    : Wrap(
-                        alignment: WrapAlignment.spaceBetween,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          !isSmallDisplay
-                              ? Wrap(
-                                  crossAxisAlignment: WrapCrossAlignment.center,
-                                  children: [
-                                    SizedBox(
-                                      height: 24,
-                                      width: 24,
-                                      child: StatefulBuilder(
-                                          builder: (context, localSetState) {
-                                        return Checkbox(
-                                          value: _stayLoggedIn,
-                                          onChanged: (bool? value) =>
-                                              localSetState(
-                                                  () => _stayLoggedIn = value!),
-                                        );
-                                      }),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      localeMsg.stayLogged,
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                  ],
-                                )
-                              : Container(),
-                          TextButton(
-                            onPressed: () => setState(() {
-                              showForgotView = !showForgotView;
-                            }),
-                            child: Text(
-                              localeMsg.forgotPassword,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Color.fromARGB(255, 0, 84, 152),
-                              ),
-                            ),
-                          ),
-                        ],
                       ),
+                    ],
+                  ),
                 SizedBox(
-                    height: showForgotView ? 20 : (isSmallDisplay ? 15 : 30)),
+                  height: showForgotView ? 20 : (isSmallDisplay ? 15 : 30),
+                ),
                 Align(
                   child: ElevatedButton(
                     onPressed: () => showForgotView
                         ? resetPassword(
-                            localeMsg, ScaffoldMessenger.of(context))
+                            localeMsg,
+                            ScaffoldMessenger.of(context),
+                          )
                         : tryLogin(localeMsg, ScaffoldMessenger.of(context)),
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
@@ -233,7 +253,9 @@ class _LoginCardState extends State<LoginCard> {
   }
 
   resetPassword(
-      AppLocalizations localeMsg, ScaffoldMessengerState messenger) async {
+    AppLocalizations localeMsg,
+    ScaffoldMessengerState messenger,
+  ) async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       final result = await userForgotPassword(_email!, userUrl: _apiUrl);
@@ -249,14 +271,18 @@ class _LoginCardState extends State<LoginCard> {
   tryLogin(AppLocalizations localeMsg, ScaffoldMessengerState messenger) async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      final result = await loginAPI(_email!, _password!,
-          userUrl: _apiUrl, stayLoggedIn: _stayLoggedIn);
+      final result = await loginAPI(
+        _email!,
+        _password!,
+        userUrl: _apiUrl,
+        stayLoggedIn: _stayLoggedIn,
+      );
       switch (result) {
         case Success(value: final loginData):
           if (apiType == BackendType.tenant) {
             await fetchApiVersion(_apiUrl);
           }
-          if (context.mounted) {
+          if (mounted) {
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) => ProjectsPage(
@@ -267,7 +293,7 @@ class _LoginCardState extends State<LoginCard> {
             );
           }
         case Failure(exception: final exception):
-          String errorMsg = exception.toString() == "Exception"
+          final String errorMsg = exception.toString() == "Exception"
               ? localeMsg.invalidLogin
               : exception.toString();
           showSnackBar(messenger, errorMsg, isError: true);
@@ -290,7 +316,7 @@ class _LoginCardState extends State<LoginCard> {
     }
   }
 
-  getBackendTypeText() {
+  String getBackendTypeText() {
     if (apiType == null) {
       return "";
     } else if (apiType == BackendType.unavailable) {
@@ -318,10 +344,12 @@ class BackendInput extends StatelessWidget {
           return option.contains(textEditingValue.text);
         });
       },
-      fieldViewBuilder: (BuildContext context,
-          TextEditingController textEditingController,
-          FocusNode focusNode,
-          VoidCallback onFieldSubmitted) {
+      fieldViewBuilder: (
+        BuildContext context,
+        TextEditingController textEditingController,
+        FocusNode focusNode,
+        VoidCallback onFieldSubmitted,
+      ) {
         textEditingController.text = options.first;
         return TextFormField(
           controller: textEditingController,
@@ -334,13 +362,17 @@ class BackendInput extends StatelessWidget {
             return null;
           },
           decoration: InputDecoration(
-              isDense: true,
-              labelText: localeMsg.selectServer,
-              labelStyle: const TextStyle(fontSize: 14)),
+            isDense: true,
+            labelText: localeMsg.selectServer,
+            labelStyle: const TextStyle(fontSize: 14),
+          ),
         );
       },
-      optionsViewBuilder: (BuildContext context,
-          AutocompleteOnSelected<String> onSelected, Iterable<String> options) {
+      optionsViewBuilder: (
+        BuildContext context,
+        AutocompleteOnSelected<String> onSelected,
+        Iterable<String> options,
+      ) {
         return Align(
           alignment: Alignment.topLeft,
           child: Material(

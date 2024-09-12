@@ -1,8 +1,8 @@
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:ogree_app/common/theme.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:ogree_app/common/theme.dart';
 
 class CustomFormField extends StatefulWidget {
   Function(String?) save;
@@ -24,26 +24,27 @@ class CustomFormField extends StatefulWidget {
   TextEditingController? checkListController;
   List<String>? checkListValues;
 
-  CustomFormField(
-      {super.key,
-      required this.save,
-      required this.label,
-      required this.icon,
-      this.formatters,
-      this.initialValue,
-      this.shouldValidate = true,
-      this.isColor = false,
-      this.colorTextController,
-      this.maxLength,
-      this.isCompact = false,
-      this.tipStr = "",
-      this.prefix,
-      this.suffix,
-      this.isObscure = false,
-      this.isReadOnly = false,
-      this.extraValidationFn,
-      this.checkListController,
-      this.checkListValues});
+  CustomFormField({
+    super.key,
+    required this.save,
+    required this.label,
+    required this.icon,
+    this.formatters,
+    this.initialValue,
+    this.shouldValidate = true,
+    this.isColor = false,
+    this.colorTextController,
+    this.maxLength,
+    this.isCompact = false,
+    this.tipStr = "",
+    this.prefix,
+    this.suffix,
+    this.isObscure = false,
+    this.isReadOnly = false,
+    this.extraValidationFn,
+    this.checkListController,
+    this.checkListValues,
+  });
 
   @override
   State<CustomFormField> createState() => _CustomFormFieldState();
@@ -75,7 +76,7 @@ class _CustomFormFieldState extends State<CustomFormField> {
         offset: const Offset(0, -32),
         itemBuilder: (_) => checkListPopupItems(widget.checkListValues!),
         onCanceled: () {
-          String content = selectedCheckListItems.toString();
+          final String content = selectedCheckListItems.toString();
           widget.checkListController!.text =
               content.substring(1, content.length - 1).replaceAll(" ", "");
         },
@@ -83,7 +84,6 @@ class _CustomFormFieldState extends State<CustomFormField> {
       );
     }
     if (widget.isColor) {
-      print(widget.colorTextController!.text);
       if (widget.colorTextController!.text != "") {
         _localColor =
             Color(int.parse("0xFF${widget.colorTextController!.text}"));
@@ -103,7 +103,9 @@ class _CustomFormFieldState extends State<CustomFormField> {
             // Wait for the picker to close, if dialog was dismissed,
             // then restore the color we had before it was opened.
             if (!(await colorPickerDialog(
-                localeMsg, widget.colorTextController!))) {
+              localeMsg,
+              widget.colorTextController!,
+            ))) {
               setState(() {
                 if (!wasNull) {
                   _localColor = colorBeforeDialog;
@@ -166,17 +168,19 @@ class _CustomFormFieldState extends State<CustomFormField> {
           },
           maxLength: widget.maxLength,
           inputFormatters: widget.isColor
-              ? [FilteringTextInputFormatter.allow(RegExp(r'[0-9a-fA-F]'))]
+              ? [FilteringTextInputFormatter.allow(RegExp('[0-9a-fA-F]'))]
               : widget.formatters,
           initialValue: widget.isColor ? null : widget.initialValue,
           decoration: GetFormInputDecoration(
-              isSmallDisplay || widget.isCompact, widget.label,
-              icon: widget.icon,
-              iconColor: widget.isColor ? _localColor : null,
-              iconWidget: iconWidget,
-              prefixText: widget.prefix,
-              suffixText: widget.suffix,
-              isCompact: widget.isCompact),
+            isSmallDisplay || widget.isCompact,
+            widget.label,
+            icon: widget.icon,
+            iconColor: widget.isColor ? _localColor : null,
+            iconWidget: iconWidget,
+            prefixText: widget.prefix,
+            suffixText: widget.suffix,
+            isCompact: widget.isCompact,
+          ),
           cursorWidth: 1.3,
           style: const TextStyle(fontSize: 14),
         ),
@@ -184,16 +188,16 @@ class _CustomFormFieldState extends State<CustomFormField> {
     );
   }
 
-  Future<bool> colorPickerDialog(AppLocalizations localeMsg,
-      TextEditingController colorTextController) async {
+  Future<bool> colorPickerDialog(
+    AppLocalizations localeMsg,
+    TextEditingController colorTextController,
+  ) async {
     return ColorPicker(
       color: _localColor ?? _defaultColor,
       onColorChanged: (Color color) => setState(() {
         colorTextController.text = color.toString().substring(10, 16);
         _localColor = color;
       }),
-      width: 40,
-      height: 40,
       borderRadius: 4,
       spacing: 5,
       runSpacing: 5,
@@ -204,8 +208,6 @@ class _CustomFormFieldState extends State<CustomFormField> {
         localeMsg.selectColor,
         style: Theme.of(context).textTheme.titleSmall,
       ),
-      showMaterialName: false,
-      showColorName: false,
       showColorCode: true,
       colorCodeHasColor: true,
       colorCodePrefixStyle:
@@ -229,8 +231,12 @@ class _CustomFormFieldState extends State<CustomFormField> {
       context,
       backgroundColor: Colors.white,
       actionsPadding: const EdgeInsets.only(bottom: 10, right: 22),
-      transitionBuilder: (BuildContext context, Animation<double> a1,
-          Animation<double> a2, Widget widget) {
+      transitionBuilder: (
+        BuildContext context,
+        Animation<double> a1,
+        Animation<double> a2,
+        Widget widget,
+      ) {
         final double curvedValue =
             Curves.easeInOutBack.transform(a1.value) - 1.0;
         return Transform(
@@ -253,24 +259,26 @@ class _CustomFormFieldState extends State<CustomFormField> {
         padding: EdgeInsets.zero,
         height: 0,
         value: key,
-        child: StatefulBuilder(builder: (context, localSetState) {
-          return CheckboxListTile(
-            controlAffinity: ListTileControlAffinity.leading,
-            title: Text(key),
-            value: selectedCheckListItems.contains(key),
-            dense: true,
-            onChanged: (bool? value) {
-              setState(() {
-                if (value!) {
-                  selectedCheckListItems.add(key);
-                } else {
-                  selectedCheckListItems.remove(key);
-                }
-              });
-              localSetState(() {});
-            },
-          );
-        }),
+        child: StatefulBuilder(
+          builder: (context, localSetState) {
+            return CheckboxListTile(
+              controlAffinity: ListTileControlAffinity.leading,
+              title: Text(key),
+              value: selectedCheckListItems.contains(key),
+              dense: true,
+              onChanged: (bool? value) {
+                setState(() {
+                  if (value!) {
+                    selectedCheckListItems.add(key);
+                  } else {
+                    selectedCheckListItems.remove(key);
+                  }
+                });
+                localSetState(() {});
+              },
+            );
+          },
+        ),
       );
     }).toList();
   }

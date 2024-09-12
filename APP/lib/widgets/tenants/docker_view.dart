@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
@@ -8,7 +9,6 @@ import 'package:ogree_app/pages/results_page.dart';
 import 'package:ogree_app/widgets/select_objects/settings_view/tree_filter.dart';
 import 'package:ogree_app/widgets/tenants/popups/backup_popup.dart';
 import 'package:ogree_app/widgets/tenants/popups/container_logs_popup.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class DockerView extends StatelessWidget {
   final String tName;
@@ -20,83 +20,95 @@ class DockerView extends StatelessWidget {
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
     return FutureBuilder(
-        future: getData(context),
-        builder: (context, _) {
-          if (_dockerInfo == null) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (_dockerInfo!.isEmpty) {
-            return Text(localeMsg.noDockerInfo);
-          } else {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Theme(
-                    data: Theme.of(context).copyWith(
-                      cardTheme: const CardTheme(
-                          elevation: 0,
-                          surfaceTintColor: Colors.white,
-                          color: Colors.white),
-                    ),
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.only(right: 16, top: 0),
-                      child: PaginatedDataTable(
-                        horizontalMargin: 15,
-                        columnSpacing: 30,
-                        showCheckboxColumn: false,
-                        rowsPerPage: _dockerInfo!.length,
-                        columns: getColumns(localeMsg),
-                        source: _DataSource(context, _dockerInfo!),
-                      ),
-                    )),
-                Align(
-                  alignment: Alignment.bottomRight,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 20, right: 20),
-                    child: ElevatedButton.icon(
-                      onPressed: () => showCustomPopup(
-                          context, BackupPopup(tenantName: tName),
-                          isDismissible: true),
-                      icon: const Icon(Icons.history),
-                      label: Text(localeMsg.backup.capitalize()),
-                    ),
+      future: getData(context),
+      builder: (context, _) {
+        if (_dockerInfo == null) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (_dockerInfo!.isEmpty) {
+          return Text(localeMsg.noDockerInfo);
+        } else {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Theme(
+                data: Theme.of(context).copyWith(
+                  cardTheme: const CardTheme(
+                    elevation: 0,
+                    surfaceTintColor: Colors.white,
+                    color: Colors.white,
                   ),
                 ),
-              ],
-            );
-          }
-        });
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.only(right: 16),
+                  child: PaginatedDataTable(
+                    horizontalMargin: 15,
+                    columnSpacing: 30,
+                    showCheckboxColumn: false,
+                    rowsPerPage: _dockerInfo!.length,
+                    columns: getColumns(localeMsg),
+                    source: _DataSource(context, _dockerInfo!),
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.bottomRight,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 20, right: 20),
+                  child: ElevatedButton.icon(
+                    onPressed: () => showCustomPopup(
+                      context,
+                      BackupPopup(tenantName: tName),
+                      isDismissible: true,
+                    ),
+                    icon: const Icon(Icons.history),
+                    label: Text(localeMsg.backup.capitalize()),
+                  ),
+                ),
+              ),
+            ],
+          );
+        }
+      },
+    );
   }
 
   getData(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
     final result = await fetchTenantDockerInfo(tName);
     switch (result) {
       case Success(value: final value):
         _dockerInfo = value;
       case Failure(exception: final exception):
-        showSnackBar(ScaffoldMessenger.of(context), exception.toString(),
-            isError: true);
+        showSnackBar(
+          messenger,
+          exception.toString(),
+          isError: true,
+        );
         _dockerInfo = [];
     }
   }
 
   List<DataColumn> getColumns(AppLocalizations localeMsg) {
-    TextStyle titleStyle = const TextStyle(fontWeight: FontWeight.w600);
-    List<DataColumn> columns = [];
-    for (var col in [
+    const TextStyle titleStyle = TextStyle(fontWeight: FontWeight.w600);
+    final List<DataColumn> columns = [];
+    for (final col in [
       "Logs",
       localeMsg.name,
       localeMsg.lastStarted,
       "Status",
       "Image",
       localeMsg.size,
-      "Port(s)"
+      "Port(s)",
     ]) {
-      columns.add(DataColumn(
+      columns.add(
+        DataColumn(
           label: Text(
-        col,
-        style: titleStyle,
-      )));
+            col,
+            style: titleStyle,
+          ),
+        ),
+      );
     }
     return columns;
   }
@@ -142,31 +154,38 @@ class _DataSource extends DataTableSource {
   int get selectedRowCount => _selectedCount;
 
   List<CustomRow> getChildren() {
-    List<CustomRow> children = [];
-    for (var container in dockerList) {
-      List<DataCell> row = [];
-      row.add(DataCell(Align(
-        alignment: Alignment.centerLeft,
-        child: CircleAvatar(
-          radius: 13,
-          child: IconButton(
-              splashRadius: 18,
-              iconSize: 14,
-              padding: const EdgeInsets.all(2),
-              onPressed: () => showCustomPopup(
-                  context, ContainerLogsPopup(containerName: container.name)),
-              icon: const Icon(
-                Icons.search,
-              )),
+    final List<CustomRow> children = [];
+    for (final container in dockerList) {
+      final List<DataCell> row = [];
+      row.add(
+        DataCell(
+          Align(
+            alignment: Alignment.centerLeft,
+            child: CircleAvatar(
+              radius: 13,
+              child: IconButton(
+                splashRadius: 18,
+                iconSize: 14,
+                padding: const EdgeInsets.all(2),
+                onPressed: () => showCustomPopup(
+                  context,
+                  ContainerLogsPopup(containerName: container.name),
+                ),
+                icon: const Icon(
+                  Icons.search,
+                ),
+              ),
+            ),
+          ),
         ),
-      )));
+      );
       row.addAll([
         label(container.name),
         label(container.lastStarted),
         label(container.status),
         label(container.image),
         label(container.size),
-        label(container.ports)
+        label(container.ports),
       ]);
       children.add(CustomRow(row));
     }
@@ -177,24 +196,28 @@ class _DataSource extends DataTableSource {
     return DataCell(getDockerText(label));
   }
 
-  getDockerText(String value) {
+  Widget getDockerText(String value) {
     if (value.contains("run")) {
-      return Row(children: [
-        const Icon(Icons.directions_run, color: Colors.green),
-        Text(
-          value.capitalize(),
-          style: const TextStyle(color: Colors.green),
-        )
-      ]);
+      return Row(
+        children: [
+          const Icon(Icons.directions_run, color: Colors.green),
+          Text(
+            value.capitalize(),
+            style: const TextStyle(color: Colors.green),
+          ),
+        ],
+      );
     } else if (value.contains("exit")) {
-      return Row(children: [
-        const Icon(Icons.error_outline, color: Colors.red),
-        const SizedBox(width: 2),
-        Text(
-          value.capitalize(),
-          style: const TextStyle(color: Colors.red),
-        )
-      ]);
+      return Row(
+        children: [
+          const Icon(Icons.error_outline, color: Colors.red),
+          const SizedBox(width: 2),
+          Text(
+            value.capitalize(),
+            style: const TextStyle(color: Colors.red),
+          ),
+        ],
+      );
     } else {
       return Text(
         value,

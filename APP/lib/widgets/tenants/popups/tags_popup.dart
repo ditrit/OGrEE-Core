@@ -1,22 +1,20 @@
 import 'dart:convert';
 
-import 'package:flex_color_picker/flex_color_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/snackbar.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/theme.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:ogree_app/models/tag.dart';
 import 'package:ogree_app/widgets/common/actionbtn_row.dart';
 import 'package:ogree_app/widgets/common/form_field.dart';
 
 class TagsPopup extends StatefulWidget {
-  Function() parentCallback;
-  String? tagId;
-  TagsPopup({super.key, required this.parentCallback, this.tagId});
+  final Function() parentCallback;
+  final String? tagId;
+  const TagsPopup({super.key, required this.parentCallback, this.tagId});
 
   @override
   State<TagsPopup> createState() => _TagsPopupState();
@@ -51,7 +49,7 @@ class _TagsPopupState extends State<TagsPopup> with TickerProviderStateMixin {
     );
   }
 
-  getTag(AppLocalizations localeMsg) async {
+  Future<void> getTag(AppLocalizations localeMsg) async {
     final messenger = ScaffoldMessenger.of(context);
     final result = await fetchTag(widget.tagId!);
     switch (result) {
@@ -59,12 +57,12 @@ class _TagsPopupState extends State<TagsPopup> with TickerProviderStateMixin {
         tag = value;
       case Failure():
         showSnackBar(messenger, localeMsg.noDomain, isError: true);
-        if (context.mounted) Navigator.of(context).pop();
+        if (mounted) Navigator.of(context).pop();
         return;
     }
   }
 
-  getTagForm(AppLocalizations localeMsg) {
+  Center getTagForm(AppLocalizations localeMsg) {
     return Center(
       child: Container(
         width: 500,
@@ -73,7 +71,11 @@ class _TagsPopupState extends State<TagsPopup> with TickerProviderStateMixin {
         decoration: PopupDecoration,
         child: Padding(
           padding: EdgeInsets.fromLTRB(
-              _isSmallDisplay ? 30 : 40, 8, _isSmallDisplay ? 30 : 40, 15),
+            _isSmallDisplay ? 30 : 40,
+            8,
+            _isSmallDisplay ? 30 : 40,
+            15,
+          ),
           child: Material(
             color: Colors.white,
             child: Column(
@@ -99,10 +101,11 @@ class _TagsPopupState extends State<TagsPopup> with TickerProviderStateMixin {
                 ),
                 const SizedBox(height: 5),
                 ActionBtnRow(
-                    isEdit: _isEdit,
-                    submitCreate: () => onActionBtnPressed(localeMsg),
-                    submitModify: () => onActionBtnPressed(localeMsg),
-                    submitDelete: () => () => onDeleteBtnPressed(localeMsg)),
+                  isEdit: _isEdit,
+                  submitCreate: () => onActionBtnPressed(localeMsg),
+                  submitModify: () => onActionBtnPressed(localeMsg),
+                  submitDelete: () => () => onDeleteBtnPressed(localeMsg),
+                ),
               ],
             ),
           ),
@@ -113,29 +116,29 @@ class _TagsPopupState extends State<TagsPopup> with TickerProviderStateMixin {
 
   onDeleteBtnPressed(AppLocalizations localeMsg) async {
     final messenger = ScaffoldMessenger.of(context);
-    var result = await removeObject(tag!.slug, "tags");
+    final result = await removeObject(tag!.slug, "tags");
     switch (result) {
       case Success():
         widget.parentCallback();
         showSnackBar(messenger, localeMsg.deleteOK);
-        if (context.mounted) Navigator.of(context).pop();
+        if (mounted) Navigator.of(context).pop();
       case Failure(exception: final exception):
         showSnackBar(messenger, exception.toString(), isError: true);
     }
   }
 
-  onActionBtnPressed(AppLocalizations localeMsg) async {
+  Future<void> onActionBtnPressed(AppLocalizations localeMsg) async {
     final messenger = ScaffoldMessenger.of(context);
     final localeMsg = AppLocalizations.of(context)!;
 
-    Tag? newTag = _tagFormKey.currentState!.onActionBtnPressed();
+    final Tag? newTag = _tagFormKey.currentState!.onActionBtnPressed();
     if (newTag == null) {
       return;
     }
 
     Result result;
     if (_isEdit) {
-      var newTagMap = newTag!.toMap();
+      final newTagMap = newTag.toMap();
       if (newTag.image == "" && tag!.image != "") {
         newTagMap.remove("image"); // patch and keep old one
       }
@@ -146,10 +149,12 @@ class _TagsPopupState extends State<TagsPopup> with TickerProviderStateMixin {
     switch (result) {
       case Success():
         widget.parentCallback();
-        showSnackBar(messenger,
-            "${_isEdit ? localeMsg.modifyOK : localeMsg.createOK} 🥳",
-            isSuccess: true);
-        if (context.mounted) Navigator.of(context).pop();
+        showSnackBar(
+          messenger,
+          "${_isEdit ? localeMsg.modifyOK : localeMsg.createOK} 🥳",
+          isSuccess: true,
+        );
+        if (mounted) Navigator.of(context).pop();
       case Failure(exception: final exception):
         showSnackBar(messenger, exception.toString(), isError: true);
     }
@@ -157,8 +162,8 @@ class _TagsPopupState extends State<TagsPopup> with TickerProviderStateMixin {
 }
 
 class TagForm extends StatefulWidget {
-  Tag? tag;
-  TagForm({super.key, this.tag});
+  final Tag? tag;
+  const TagForm({super.key, this.tag});
   @override
   State<TagForm> createState() => TagFormState();
 }
@@ -168,14 +173,13 @@ class TagFormState extends State<TagForm> {
   String? _tagSlug;
   String? _tagDescription;
   String? _tagColor;
-  Color _localColor = Colors.grey;
   bool _isEdit = false;
   Tag? tag;
   final colorTextController = TextEditingController();
 
   PlatformFile? _loadedImage;
 
-  bool _isSmallDisplay = false;
+  final bool _isSmallDisplay = false;
 
   @override
   void initState() {
@@ -183,7 +187,6 @@ class TagFormState extends State<TagForm> {
 
     if (widget.tag != null) {
       tag = widget.tag;
-      _localColor = Color(int.parse("0xFF${tag!.color}"));
       colorTextController.text = tag!.color;
       _isEdit = true;
     }
@@ -198,15 +201,17 @@ class TagFormState extends State<TagForm> {
         padding: EdgeInsets.zero,
         children: [
           CustomFormField(
-              save: (newValue) => _tagSlug = newValue,
-              label: "Slug",
-              icon: Icons.auto_awesome_mosaic,
-              initialValue: _isEdit ? tag!.slug : null),
+            save: (newValue) => _tagSlug = newValue,
+            label: "Slug",
+            icon: Icons.auto_awesome_mosaic,
+            initialValue: _isEdit ? tag!.slug : null,
+          ),
           CustomFormField(
-              save: (newValue) => _tagDescription = newValue,
-              label: "Description",
-              icon: Icons.auto_awesome_mosaic,
-              initialValue: _isEdit ? tag!.description : null),
+            save: (newValue) => _tagDescription = newValue,
+            label: "Description",
+            icon: Icons.auto_awesome_mosaic,
+            initialValue: _isEdit ? tag!.description : null,
+          ),
           CustomFormField(
             save: (newValue) => _tagColor = newValue,
             label: localeMsg.color,
@@ -221,21 +226,23 @@ class TagFormState extends State<TagForm> {
               alignment: WrapAlignment.end,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                _loadedImage != null || (_isEdit && tag!.image != "")
-                    ? IconButton(
-                        padding: const EdgeInsets.all(4),
-                        constraints: const BoxConstraints(),
-                        iconSize: 14,
-                        onPressed: () {
-                          setState(() {
-                            _loadedImage = null;
-                            tag!.image = "";
-                          });
-                        },
-                        icon: const Icon(
-                          Icons.cancel_outlined,
-                        ))
-                    : Container(),
+                if (_loadedImage != null || (_isEdit && tag!.image != ""))
+                  IconButton(
+                    padding: const EdgeInsets.all(4),
+                    constraints: const BoxConstraints(),
+                    iconSize: 14,
+                    onPressed: () {
+                      setState(() {
+                        _loadedImage = null;
+                        tag!.image = "";
+                      });
+                    },
+                    icon: const Icon(
+                      Icons.cancel_outlined,
+                    ),
+                  )
+                else
+                  Container(),
                 Padding(
                   padding: const EdgeInsets.only(right: 20),
                   child: _loadedImage == null
@@ -251,25 +258,27 @@ class TagFormState extends State<TagForm> {
                         ),
                 ),
                 ElevatedButton.icon(
-                    onPressed: () async {
-                      FilePickerResult? result = await FilePicker.platform
-                          .pickFiles(
-                              type: FileType.custom,
-                              allowedExtensions: ["png", "jpg", "jpeg", "webp"],
-                              withData: true);
-                      if (result != null) {
-                        setState(() {
-                          _loadedImage = result.files.single;
-                        });
-                      }
-                    },
-                    icon: const Icon(Icons.download),
-                    label: Text(_isSmallDisplay
-                        ? "Image"
-                        : "${localeMsg.select} image")),
+                  onPressed: () async {
+                    final FilePickerResult? result =
+                        await FilePicker.platform.pickFiles(
+                      type: FileType.custom,
+                      allowedExtensions: ["png", "jpg", "jpeg", "webp"],
+                      withData: true,
+                    );
+                    if (result != null) {
+                      setState(() {
+                        _loadedImage = result.files.single;
+                      });
+                    }
+                  },
+                  icon: const Icon(Icons.download),
+                  label: Text(
+                    _isSmallDisplay ? "Image" : "${localeMsg.select} image",
+                  ),
+                ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
@@ -278,13 +287,14 @@ class TagFormState extends State<TagForm> {
   Tag? onActionBtnPressed() {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      var newTag = Tag(
-          slug: _tagSlug!,
-          description: _tagDescription!,
-          color: _tagColor!,
-          image: _loadedImage != null
-              ? "data:image/png;base64,${base64Encode(_loadedImage!.bytes!)}"
-              : "");
+      final newTag = Tag(
+        slug: _tagSlug!,
+        description: _tagDescription!,
+        color: _tagColor!,
+        image: _loadedImage != null
+            ? "data:image/png;base64,${base64Encode(_loadedImage!.bytes!)}"
+            : "",
+      );
       return newTag;
     }
     return null;

@@ -9,7 +9,7 @@ void main() {
     await tester.pumpWidget(LocalizationsInjApp(
         child: SelectPage(
       userEmail: 'user@test.com',
-    )));
+    ),),);
 
     // Date
     expect(find.text('Choisir les dates'), findsOneWidget);
@@ -25,7 +25,7 @@ void main() {
     // Namespace
     expect(find.text("Physical"), findsNWidgets(1));
     expect((tester.widget(find.text("Physical")) as Text).style!.color,
-        Colors.blue);
+        Colors.blue,);
     expect((tester.widget(find.text("Logical")) as Text).style!.color, null);
     // expect(find.text(defaultDate, skipOffstage: false), findsOneWidget);
     // await tester.tap(find.text("Logical"));

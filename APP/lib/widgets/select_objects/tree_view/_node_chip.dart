@@ -5,11 +5,9 @@ class _NodeActionsChip extends StatefulWidget {
   final bool isVirtual;
   final bool isTemplate;
   const _NodeActionsChip(
-      {Key? key,
-      required this.node,
+      {required this.node,
       this.isTemplate = false,
-      this.isVirtual = false})
-      : super(key: key);
+      this.isVirtual = false,});
 
   @override
   State<_NodeActionsChip> createState() => _NodeActionsChipState();
@@ -22,8 +20,8 @@ class _NodeActionsChipState extends State<_NodeActionsChip> {
 
   @override
   Widget build(BuildContext context) {
-    var namespace = TreeAppController.of(context).namespace;
-    var menuEntries = <PopupMenuEntry<int>>[
+    final namespace = TreeAppController.of(context).namespace;
+    final menuEntries = <PopupMenuEntry<int>>[
       PopupMenuItem(
         value: 1,
         child: ListTile(
@@ -32,7 +30,7 @@ class _NodeActionsChipState extends State<_NodeActionsChip> {
           contentPadding: const EdgeInsets.symmetric(horizontal: 4),
           leading: const Icon(Icons.account_tree_rounded, color: _kDarkBlue),
         ),
-      )
+      ),
     ];
     if (namespace != Namespace.Logical || widget.node.id[0] != starSymbol) {
       menuEntries.add(
@@ -93,7 +91,7 @@ class _NodeActionsChipState extends State<_NodeActionsChip> {
                           {},
                           argNamespace: Namespace.Organisational,
                           reload: true,
-                          isTenantMode: true),
+                          isTenantMode: true,),
                       domainId: widget.node.id,
                     )
                   : ObjectPopup(
@@ -101,24 +99,23 @@ class _NodeActionsChipState extends State<_NodeActionsChip> {
                       parentCallback: () => TreeAppController.of(context).init(
                           {},
                           argNamespace: namespace,
-                          reload: true,
-                          isTenantMode: false),
+                          reload: true,),
                       objId: widget.node.id,
                     ),
-              isDismissible: true);
+              isDismissible: true,);
         } else if (selected == 3) {
           showCustomPopup(context,
               ViewObjectPopup(namespace: namespace, objId: widget.node.id),
-              isDismissible: true);
+              isDismissible: true,);
         } else {
           showCustomPopup(context, ObjectGraphView(widget.node.id),
-              isDismissible: true);
+              isDismissible: true,);
         }
       },
       child: RawChip(
         onPressed: () => _menu?.showButtonMenu(),
         backgroundColor:
-            widget.isVirtual ? Colors.deepPurple.shade100 : Color(0x331565c0),
+            widget.isVirtual ? Colors.deepPurple.shade100 : const Color(0x331565c0),
         side: const BorderSide(style: BorderStyle.none),
         label: Text(
           adaptLabel(widget.node.label),

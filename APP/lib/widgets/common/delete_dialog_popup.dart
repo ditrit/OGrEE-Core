@@ -10,11 +10,12 @@ class DeleteDialog extends StatefulWidget {
   final List<String> objName;
   final String objType;
   final Function parentCallback;
-  const DeleteDialog(
-      {super.key,
-      required this.objName,
-      required this.parentCallback,
-      required this.objType});
+  const DeleteDialog({
+    super.key,
+    required this.objName,
+    required this.parentCallback,
+    required this.objType,
+  });
 
   @override
   State<DeleteDialog> createState() => _DeleteDialogState();
@@ -39,8 +40,10 @@ class _DeleteDialogState extends State<DeleteDialog> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(localeMsg.areYouSure,
-                    style: Theme.of(context).textTheme.headlineMedium),
+                Text(
+                  localeMsg.areYouSure,
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 30),
                   child: Text(localeMsg.allWillBeLost),
@@ -50,37 +53,9 @@ class _DeleteDialogState extends State<DeleteDialog> {
                   children: [
                     TextButton.icon(
                       style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.red.shade900),
-                      onPressed: () async {
-                        setState(() => _isLoading = true);
-                        final messenger = ScaffoldMessenger.of(context);
-                        for (var obj in widget.objName) {
-                          Result result;
-                          if (widget.objType == "tenants") {
-                            result = await deleteTenant(obj);
-                          } else if (Tools.values
-                              .where((tool) => tool.name == widget.objType)
-                              .isNotEmpty) {
-                            result = await deleteTool(widget.objType);
-                          } else {
-                            result = await removeObject(obj, widget.objType);
-                          }
-                          switch (result) {
-                            case Success():
-                              break;
-                            case Failure(exception: final exception):
-                              showSnackBar(messenger, "Error: $exception",
-                                  isError: true,
-                                  duration: const Duration(seconds: 30));
-                              setState(() => _isLoading = false);
-                              return;
-                          }
-                        }
-                        setState(() => _isLoading = false);
-                        widget.parentCallback();
-                        showSnackBar(messenger, localeMsg.deleteOK);
-                        if (context.mounted) Navigator.of(context).pop();
-                      },
+                        foregroundColor: Colors.red.shade900,
+                      ),
+                      onPressed: () => deleteAction(localeMsg),
                       label: Text(localeMsg.delete),
                       icon: _isLoading
                           ? Container(
@@ -101,14 +76,48 @@ class _DeleteDialogState extends State<DeleteDialog> {
                     ElevatedButton(
                       onPressed: () => Navigator.of(context).pop(),
                       child: Text(localeMsg.cancel),
-                    )
+                    ),
                   ],
-                )
+                ),
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  deleteAction(AppLocalizations localeMsg) async {
+    setState(() => _isLoading = true);
+    final messenger = ScaffoldMessenger.of(context);
+    for (final obj in widget.objName) {
+      Result result;
+      if (widget.objType == "tenants") {
+        result = await deleteTenant(obj);
+      } else if (Tools.values
+          .where((tool) => tool.name == widget.objType)
+          .isNotEmpty) {
+        result = await deleteTool(widget.objType);
+      } else {
+        result = await removeObject(obj, widget.objType);
+      }
+      switch (result) {
+        case Success():
+          break;
+        case Failure(exception: final exception):
+          showSnackBar(
+            messenger,
+            "Error: $exception",
+            isError: true,
+            duration: const Duration(seconds: 30),
+          );
+          setState(() => _isLoading = false);
+          return;
+      }
+    }
+    setState(() => _isLoading = false);
+    widget.parentCallback();
+    showSnackBar(messenger, localeMsg.deleteOK);
+    if (mounted) Navigator.of(context).pop();
   }
 }

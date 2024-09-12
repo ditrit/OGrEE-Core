@@ -1,7 +1,7 @@
 part of 'settings_view.dart';
 
 class SettingsHeader extends StatelessWidget {
-  const SettingsHeader({Key? key, required this.text}) : super(key: key);
+  const SettingsHeader({super.key, required this.text});
 
   final String text;
 

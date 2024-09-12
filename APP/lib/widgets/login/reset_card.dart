@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/pages/login_page.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/widgets/login/login_card.dart';
 
 class ResetCard extends StatelessWidget {
@@ -21,7 +21,8 @@ class ResetCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
-    bool isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
+    final bool isSmallDisplay =
+        IsSmallDisplay(MediaQuery.of(context).size.width);
     return Card(
       child: Form(
         key: _formKey,
@@ -36,13 +37,16 @@ class ResetCard extends StatelessWidget {
                 Row(
                   children: [
                     IconButton(
-                        onPressed: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                                builder: (context) => const LoginPage())),
-                        icon: Icon(
-                          Icons.arrow_back,
-                          color: Colors.blue.shade900,
-                        )),
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const LoginPage(),
+                        ),
+                      ),
+                      icon: Icon(
+                        Icons.arrow_back,
+                        color: Colors.blue.shade900,
+                      ),
+                    ),
                     const SizedBox(width: 5),
                     Text(
                       localeMsg.resetPassword,
@@ -51,16 +55,17 @@ class ResetCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 25),
-                dotenv.env['ALLOW_SET_BACK'] == "true"
-                    ? BackendInput(
-                        parentCallback: (newValue) => _apiUrl = newValue,
-                      )
-                    : Center(
-                        child: Image.asset(
-                          "assets/custom/logo.png",
-                          height: 30,
-                        ),
-                      ),
+                if (dotenv.env['ALLOW_SET_BACK'] == "true")
+                  BackendInput(
+                    parentCallback: (newValue) => _apiUrl = newValue,
+                  )
+                else
+                  Center(
+                    child: Image.asset(
+                      "assets/custom/logo.png",
+                      height: 30,
+                    ),
+                  ),
                 const SizedBox(height: 32),
                 TextFormField(
                   initialValue: token,
@@ -73,7 +78,9 @@ class ResetCard extends StatelessWidget {
                     return null;
                   },
                   decoration: LoginInputDecoration(
-                      label: 'Reset Token', isSmallDisplay: isSmallDisplay),
+                    label: 'Reset Token',
+                    isSmallDisplay: isSmallDisplay,
+                  ),
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
@@ -86,9 +93,10 @@ class ResetCard extends StatelessWidget {
                     return null;
                   },
                   decoration: LoginInputDecoration(
-                      label: localeMsg.newPassword,
-                      hint: '********',
-                      isSmallDisplay: isSmallDisplay),
+                    label: localeMsg.newPassword,
+                    hint: '********',
+                    isSmallDisplay: isSmallDisplay,
+                  ),
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
@@ -102,9 +110,10 @@ class ResetCard extends StatelessWidget {
                     return null;
                   },
                   decoration: LoginInputDecoration(
-                      label: localeMsg.confirmPassword,
-                      hint: '********',
-                      isSmallDisplay: isSmallDisplay),
+                    label: localeMsg.confirmPassword,
+                    hint: '********',
+                    isSmallDisplay: isSmallDisplay,
+                  ),
                 ),
                 const SizedBox(height: 25),
                 Align(
@@ -134,12 +143,16 @@ class ResetCard extends StatelessWidget {
     );
   }
 
-  resetPassword(AppLocalizations localeMsg, BuildContext context) async {
+  Future<void> resetPassword(
+      AppLocalizations localeMsg, BuildContext context) async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       if (_password != _confirmPassword) {
-        showSnackBar(ScaffoldMessenger.of(context), localeMsg.passwordNoMatch,
-            isError: true);
+        showSnackBar(
+          ScaffoldMessenger.of(context),
+          localeMsg.passwordNoMatch,
+          isError: true,
+        );
         return;
       }
       final messenger = ScaffoldMessenger.of(context);
@@ -147,17 +160,19 @@ class ResetCard extends StatelessWidget {
           await userResetPassword(_password!, _token!, userUrl: _apiUrl);
       switch (result) {
         case Success():
-          resetSucces(localeMsg, context);
+          resetSuccess(localeMsg, context);
         case Failure(exception: final exception):
-          print(exception);
           showSnackBar(messenger, exception.toString().trim(), isError: true);
       }
     }
   }
 
-  resetSucces(AppLocalizations localeMsg, BuildContext context) {
-    showSnackBar(ScaffoldMessenger.of(context), localeMsg.modifyOK,
-        isSuccess: true);
+  resetSuccess(AppLocalizations localeMsg, BuildContext context) {
+    showSnackBar(
+      ScaffoldMessenger.of(context),
+      localeMsg.modifyOK,
+      isSuccess: true,
+    );
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => const LoginPage(),
