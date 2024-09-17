@@ -18,7 +18,7 @@ saveCSV(String desiredFileName, List<List<String>> rows,
     html.AnchorElement(
       href: 'data:application/octet-stream;base64,${base64Encode(bytes)}',
     )
-      ..setAttribute("download", "report.csv")
+      ..setAttribute("download", "$desiredFileName.csv")
       ..click();
   } else {
     // Save to local filesystem
