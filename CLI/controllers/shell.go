@@ -50,6 +50,8 @@ type ShellState struct {
 	DryRunErrors       []error
 }
 
+const asteriskLine = "********************************************"
+
 func Clear() {
 	switch runtime.GOOS {
 	case "windows":
@@ -213,9 +215,9 @@ func SetEnv(arg string, val interface{}) {
 }
 
 func LSOG() error {
-	fmt.Println("********************************************")
+	fmt.Println(asteriskLine)
 	fmt.Println("OGREE Shell Information")
-	fmt.Println("********************************************")
+	fmt.Println(asteriskLine)
 
 	fmt.Println("USER EMAIL:", State.User.Email)
 	fmt.Println("API URL:", State.APIURL+"/api/")
@@ -231,9 +233,9 @@ func LSOG() error {
 	fmt.Println("DEBUG LEVEL: ", State.DebugLvl)
 
 	fmt.Printf("\n\n")
-	fmt.Println("********************************************")
+	fmt.Println(asteriskLine)
 	fmt.Println("API Information")
-	fmt.Println("********************************************")
+	fmt.Println(asteriskLine)
 
 	//Get API Information here
 	resp, err := API.Request("GET", "/api/version", nil, http.StatusOK)

@@ -32,9 +32,9 @@ func init() {
 //			description: 'Successfully established stream, keep it open.'
 
 func CreateEventStream(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 CreateEventStream ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	// Configure SSE stream
 	w.Header().Set("Access-Control-Expose-Headers", "Content-Type")
 	w.Header().Set("Content-Type", "text/event-stream")
