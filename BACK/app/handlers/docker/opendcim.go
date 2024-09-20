@@ -21,11 +21,18 @@ func CreateOpenDcim(c *gin.Context) {
 	}
 
 	// Create .env file
-	composeDir := "tools-assets"
-	file, _ := os.Create(composeDir + "/.env")
-	err := opendcimtmplt.Execute(file, newDcim)
+	composeDir := "handlers/docker/tools-assets"
+	file, err := os.Create(composeDir + "/.env")
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		c.IndentedJSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+	err = opendcimtmplt.Execute(file, newDcim)
+	if err != nil {
+		fmt.Println(err)
+		c.IndentedJSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 	file.Close()
 

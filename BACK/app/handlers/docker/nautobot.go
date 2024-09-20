@@ -38,6 +38,17 @@ func CreateNautobot(c *gin.Context) {
 			c.IndentedJSON(http.StatusBadRequest, stderr.String())
 			return
 		}
+		// Go to the right version
+		println("Checking out specific version...")
+		args = []string{"checkout", "0bbd750d8ecd917636eea08630b97d8ecf469fd7"}
+		cmd = exec.Command("git", args...)
+		cmd.Dir = nautobotDir
+		cmd.Stderr = &stderr
+		if _, err := cmd.Output(); err != nil {
+			fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+			c.IndentedJSON(http.StatusBadRequest, stderr.String())
+			return
+		}
 	}
 
 	// Modify docker compose file

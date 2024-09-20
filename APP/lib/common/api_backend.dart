@@ -1030,7 +1030,7 @@ Future<Result<void, Exception>> createNetbox(Nbox netbox) async {
       final String data = json.decode(response.body);
       return Failure(
         Exception(
-          wrapResponseMsg(response, message: "Error creating netbox $data"),
+          wrapResponseMsg(response, message: "Error creating netbox - $data"),
         ),
       );
     }
@@ -1053,7 +1053,7 @@ Future<Result<void, Exception>> createNautobot(Nbox nautobot) async {
       final String data = json.decode(response.body);
       return Failure(
         Exception(
-          wrapResponseMsg(response, message: "Error creating nautobot $data"),
+          wrapResponseMsg(response, message: "Error creating nautobot - $data"),
         ),
       );
     }
@@ -1082,7 +1082,7 @@ Future<Result<void, Exception>> createOpenDcim(
       final String data = json.decode(response.body);
       return Failure(
         Exception(
-          wrapResponseMsg(response, message: "Error creating netbox $data"),
+          wrapResponseMsg(response, message: "Error creating opendcim - $data"),
         ),
       );
     }
@@ -1103,7 +1103,7 @@ Future<Result<void, Exception>> deleteTool(String tool) async {
         Exception(
           wrapResponseMsg(
             response,
-            message: "Error creating application $data",
+            message: "Error removing application $data",
           ),
         ),
       );
