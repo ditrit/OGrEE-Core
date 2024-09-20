@@ -59,7 +59,7 @@ func CreateNautobot(c *gin.Context) {
 	}
 
 	// Create copy of .env file
-	if _, err := copyFile("local.env.example", "local.env"); err != nil {
+	if _, err := copyFile(nautobotDir+"/local.env.example", nautobotDir+"/local.env"); err != nil {
 		fmt.Println(err)
 		c.IndentedJSON(http.StatusBadRequest, err.Error())
 		return
