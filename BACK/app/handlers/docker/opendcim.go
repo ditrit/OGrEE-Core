@@ -53,7 +53,7 @@ func CreateOpenDcim(c *gin.Context) {
 }
 
 func RemoveOpenDcim(c *gin.Context) {
-	composeDir := "tools-assets"
+	composeDir := "handlers/docker/tools-assets"
 	println("Run docker (may take a long time...)")
 	// Run docker
 	args := []string{"compose", "-f", "docker-compose-opendcim.yml", "-p", "opendcim", "down", "-v"}
