@@ -25,8 +25,11 @@ import 'package:ogree_app/widgets/tools/tool_card.dart';
 class ProjectsPage extends StatefulWidget {
   final String userEmail;
   final bool isTenantMode;
-  const ProjectsPage(
-      {super.key, required this.userEmail, required this.isTenantMode,});
+  const ProjectsPage({
+    super.key,
+    required this.userEmail,
+    required this.isTenantMode,
+  });
 
   @override
   State<ProjectsPage> createState() => _ProjectsPageState();
@@ -49,58 +52,39 @@ class _ProjectsPageState extends State<ProjectsPage> {
     _isSmallDisplay = MediaQuery.of(context).size.width < 720;
     final localeMsg = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: myAppBar(context, widget.userEmail,
-          isTenantMode: widget.isTenantMode,),
+      appBar: myAppBar(
+        context,
+        widget.userEmail,
+        isTenantMode: widget.isTenantMode,
+      ),
       body: Padding(
         padding: EdgeInsets.symmetric(
-            horizontal: _isSmallDisplay ? 40 : 80.0, vertical: 20,),
+          horizontal: _isSmallDisplay ? 40 : 80.0,
+          vertical: 20,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             ...getAlertWidgets(localeMsg),
-            // SizedBox(height: 30),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                if (widget.isTenantMode) Row(
-                        children: [
-                          Text(localeMsg.applications,
-                              style: Theme.of(context).textTheme.headlineLarge,),
-                          IconButton(
-                              onPressed: () => setState(() {
-                                    _gotData = false;
-                                  }),
-                              icon: const Icon(Icons.refresh),),
-                        ],
-                      ) else Text(localeMsg.myprojects,
-                        style: Theme.of(context).textTheme.headlineLarge,),
-                Row(
-                  children: [
-                    if (!widget.isTenantMode) Padding(
-                            padding:
-                                const EdgeInsets.only(right: 10.0, bottom: 10),
-                            child: impactViewButton(),
-                          ) else Container(),
-                    Padding(
-                      padding: const EdgeInsets.only(right: 10.0, bottom: 10),
-                      child: createProjectButton(),
-                    ),
-                    if (widget.isTenantMode) Padding(
-                            padding:
-                                const EdgeInsets.only(right: 10.0, bottom: 10),
-                            child: createToolsButton(),
-                          ) else Container(),
-                  ],
-                ),
-              ],
-            ),
+            projectsPageTitleRow(),
             const SizedBox(height: 3),
             FutureBuilder(
-                future: _gotData ? null : getProjectData(),
-                builder: (context, _) {
-                  if (!_gotData) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (!widget.isTenantMode) {
+              future: _gotData ? null : getProjectData(),
+              builder: (context, _) {
+                if (!_gotData) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (!widget.isTenantMode) {
+                  return Expanded(
+                    child: SingleChildScrollView(
+                      child: Wrap(
+                        spacing: 5,
+                        children: getCards(context),
+                      ),
+                    ),
+                  );
+                } else {
+                  if ((_tenants != null && _tenants!.isNotEmpty) ||
+                      (_tools != null && _tools!.isNotEmpty)) {
                     return Expanded(
                       child: SingleChildScrollView(
                         child: Wrap(
@@ -110,22 +94,12 @@ class _ProjectsPageState extends State<ProjectsPage> {
                       ),
                     );
                   } else {
-                    if ((_tenants != null && _tenants!.isNotEmpty) ||
-                        (_tools != null && _tools!.isNotEmpty)) {
-                      return Expanded(
-                        child: SingleChildScrollView(
-                          child: Wrap(
-                            spacing: 5,
-                            children: getCards(context),
-                          ),
-                        ),
-                      );
-                    } else {
-                      // Empty messages
-                      return Text(localeMsg.noProjects);
-                    }
+                    // Empty messages
+                    return Text(localeMsg.noProjects);
                   }
-                },),
+                }
+              },
+            ),
           ],
         ),
       ),
@@ -139,58 +113,71 @@ class _ProjectsPageState extends State<ProjectsPage> {
   }
 
   getProjectData() async {
-    final messenger = ScaffoldMessenger.of(context);
     if (widget.isTenantMode) {
-      final result = await fetchApplications();
+      await getApplications();
+    } else {
+      await getProjects();
+    }
+  }
+
+  getProjects() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final result = await fetchProjects(widget.userEmail);
+    switch (result) {
+      case Success(value: final value):
+        _projects = value;
+        setState(() {
+          _gotData = true;
+        });
+      case Failure(exception: final exception):
+        showSnackBar(messenger, exception.toString(), isError: true);
+        _projects = [];
+    }
+  }
+
+  getApplications() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final result = await fetchApplications();
+    switch (result) {
+      case Success(value: final value):
+        final (tenants, tools) = value;
+        _tenants = tenants;
+        await getTenantDockerInfo(tenants);
+        _tools = tools;
+        setState(() {
+          _gotData = true;
+        });
+      case Failure(exception: final exception):
+        showSnackBar(messenger, exception.toString(), isError: true);
+        _tenants = [];
+    }
+  }
+
+  getTenantDockerInfo(List<Tenant> tenants) async {
+    for (final tenant in tenants) {
+      final result = await fetchTenantDockerInfo(tenant.name);
       switch (result) {
         case Success(value: final value):
-          final (tenants, tools) = value;
-          _tenants = tenants;
-          for (final tenant in tenants) {
-            final result = await fetchTenantDockerInfo(tenant.name);
-            switch (result) {
-              case Success(value: final value):
-                final List<DockerContainer> dockerInfo = value;
-                if (dockerInfo.isEmpty) {
-                  tenant.status = TenantStatus.unavailable;
-                } else {
-                  int runCount = 0;
-                  for (final container in dockerInfo) {
-                    if (container.status.contains("run")) {
-                      runCount++;
-                    }
-                  }
-                  if (runCount == dockerInfo.length) {
-                    tenant.status = TenantStatus.running;
-                  } else if (runCount > 0) {
-                    tenant.status = TenantStatus.partialRun;
-                  } else {
-                    tenant.status = TenantStatus.notRunning;
-                  }
-                }
-              case Failure():
-                tenant.status = TenantStatus.unavailable;
+          final List<DockerContainer> dockerInfo = value;
+          if (dockerInfo.isEmpty) {
+            tenant.status = TenantStatus.unavailable;
+          } else {
+            int runCount = 0;
+            for (final container in dockerInfo) {
+              if (container.status.contains("run")) {
+                runCount++;
+              }
+            }
+            if (runCount == dockerInfo.length) {
+              tenant.status = TenantStatus.running;
+            } else if (runCount > 0) {
+              tenant.status = TenantStatus.partialRun;
+            } else {
+              tenant.status = TenantStatus.notRunning;
             }
           }
-          _tools = tools;
-          setState(() {
-            _gotData = true;
-          });
-        case Failure(exception: final exception):
-          showSnackBar(messenger, exception.toString(), isError: true);
-          _tenants = [];
-      }
-    } else {
-      final result = await fetchProjects(widget.userEmail);
-      switch (result) {
-        case Success(value: final value):
-          _projects = value;
-          setState(() {
-            _gotData = true;
-          });
-        case Failure(exception: final exception):
-          showSnackBar(messenger, exception.toString(), isError: true);
-          _projects = [];
+        case Failure():
+          tenant.status = TenantStatus.unavailable;
       }
     }
   }
@@ -210,13 +197,74 @@ class _ProjectsPageState extends State<ProjectsPage> {
     }
   }
 
+  Row projectsPageTitleRow() {
+    final localeMsg = AppLocalizations.of(context)!;
+    if (widget.isTenantMode) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Text(
+                localeMsg.applications,
+                style: Theme.of(context).textTheme.headlineLarge,
+              ),
+              IconButton(
+                onPressed: () => setState(() {
+                  _gotData = false;
+                }),
+                icon: const Icon(Icons.refresh),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(right: 10.0, bottom: 10),
+                child: createProjectButton(),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(right: 10.0, bottom: 10),
+                child: createToolsButton(),
+              ),
+            ],
+          ),
+        ],
+      );
+    } else {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            localeMsg.myprojects,
+            style: Theme.of(context).textTheme.headlineLarge,
+          ),
+          Row(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(right: 10.0, bottom: 10),
+                child: impactViewButton(),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(right: 10.0, bottom: 10),
+                child: createProjectButton(),
+              ),
+            ],
+          ),
+        ],
+      );
+    }
+  }
+
   ElevatedButton createProjectButton() {
     final localeMsg = AppLocalizations.of(context)!;
     return ElevatedButton(
       onPressed: () {
         if (widget.isTenantMode) {
           showCustomPopup(
-              context, CreateTenantPopup(parentCallback: refreshFromChildren),);
+            context,
+            CreateTenantPopup(parentCallback: refreshFromChildren),
+          );
         } else {
           Navigator.of(context).push(
             MaterialPageRoute(
@@ -230,12 +278,20 @@ class _ProjectsPageState extends State<ProjectsPage> {
         children: [
           Padding(
             padding: EdgeInsets.only(
-                top: 8, bottom: 8, right: _isSmallDisplay ? 0 : 10,),
+              top: 8,
+              bottom: 8,
+              right: _isSmallDisplay ? 0 : 10,
+            ),
             child: const Icon(Icons.add_to_photos),
           ),
-          if (_isSmallDisplay) Container() else Text(widget.isTenantMode
+          if (_isSmallDisplay)
+            Container()
+          else
+            Text(
+              widget.isTenantMode
                   ? "${localeMsg.create} tenant"
-                  : localeMsg.newProject,),
+                  : localeMsg.newProject,
+            ),
         ],
       ),
     );
@@ -278,40 +334,58 @@ class _ProjectsPageState extends State<ProjectsPage> {
           switch (value) {
             case Tools.netbox:
               if (_hasNetbox) {
-                showSnackBar(ScaffoldMessenger.of(context),
-                    localeMsg.onlyOneTool("Netbox"),);
+                showSnackBar(
+                  ScaffoldMessenger.of(context),
+                  localeMsg.onlyOneTool("Netbox"),
+                );
               } else {
                 showCustomPopup(
-                    context,
-                    CreateNboxPopup(
-                        parentCallback: refreshFromChildren,
-                        tool: Tools.netbox,),);
+                  context,
+                  CreateNboxPopup(
+                    parentCallback: refreshFromChildren,
+                    tool: Tools.netbox,
+                  ),
+                );
               }
             case Tools.nautobot:
               if (_hasNautobot) {
-                showSnackBar(ScaffoldMessenger.of(context),
-                    localeMsg.onlyOneTool("Nautobot"),);
+                showSnackBar(
+                  ScaffoldMessenger.of(context),
+                  localeMsg.onlyOneTool("Nautobot"),
+                );
               } else {
                 showCustomPopup(
-                    context,
-                    CreateNboxPopup(
-                        parentCallback: refreshFromChildren,
-                        tool: Tools.nautobot,),);
+                  context,
+                  CreateNboxPopup(
+                    parentCallback: refreshFromChildren,
+                    tool: Tools.nautobot,
+                  ),
+                );
               }
             case Tools.opendcim:
               if (_hasOpenDcim) {
-                showSnackBar(ScaffoldMessenger.of(context),
-                    localeMsg.onlyOneTool("OpenDCIM"),);
+                showSnackBar(
+                  ScaffoldMessenger.of(context),
+                  localeMsg.onlyOneTool("OpenDCIM"),
+                );
               } else {
-                showCustomPopup(context,
-                    CreateOpenDcimPopup(parentCallback: refreshFromChildren),);
+                showCustomPopup(
+                  context,
+                  CreateOpenDcimPopup(parentCallback: refreshFromChildren),
+                );
               }
             case Tools.cli:
-              showCustomPopup(context, const DownloadToolPopup(tool: Tools.cli),
-                  isDismissible: true,);
+              showCustomPopup(
+                context,
+                const DownloadToolPopup(tool: Tools.cli),
+                isDismissible: true,
+              );
             case Tools.unity:
-              showCustomPopup(context, const DownloadToolPopup(tool: Tools.unity),
-                  isDismissible: true,);
+              showCustomPopup(
+                context,
+                const DownloadToolPopup(tool: Tools.unity),
+                isDismissible: true,
+              );
           }
         },
         itemBuilder: (_) => entries,
@@ -320,7 +394,10 @@ class _ProjectsPageState extends State<ProjectsPage> {
           children: [
             Padding(
               padding: EdgeInsets.only(
-                  top: 8, bottom: 8, right: _isSmallDisplay ? 0 : 10,),
+                top: 8,
+                bottom: 8,
+                right: _isSmallDisplay ? 0 : 10,
+              ),
               child: const Icon(Icons.timeline),
             ),
             if (_isSmallDisplay) Container() else Text(localeMsg.tools),
@@ -331,59 +408,75 @@ class _ProjectsPageState extends State<ProjectsPage> {
   }
 
   List<Widget> getCards(context) {
-    final List<Widget> cards = [];
     if (widget.isTenantMode) {
-      if (_tenants != null && _tenants!.isNotEmpty) {
-        for (final tenant in _tenants!) {
-          cards.add(TenantCard(
-            tenant: tenant,
-            parentCallback: refreshFromChildren,
-          ),);
-        }
-      }
-      if (_tools != null && _tools!.isNotEmpty) {
-        _hasOpenDcim = false;
-        _hasNetbox = false;
-        _hasNautobot = false;
-        for (final tool in _tools!) {
-          var type = Tools.netbox;
-          if (tool.name.contains(Tools.opendcim.name)) {
-            type = Tools.opendcim;
-            _hasOpenDcim = true;
-          } else if (tool.name.contains(Tools.nautobot.name)) {
-            type = Tools.nautobot;
-            _hasNautobot = true;
-          } else {
-            _hasNetbox = true;
-          }
-          cards.add(ToolCard(
-            type: type,
-            container: tool,
-            parentCallback: refreshFromChildren,
-          ),);
-        }
-      }
+      return getTenantModeCards();
     } else {
+      final List<Widget> cards = [];
       if (isDemo) {
-        cards.add(AutoUnityProjectCard(
-          userEmail: widget.userEmail,
-        ),);
+        cards.add(
+          AutoUnityProjectCard(
+            userEmail: widget.userEmail,
+          ),
+        );
       }
       for (final namespace in Namespace.values) {
         if (namespace != Namespace.Test) {
-          cards.add(AutoProjectCard(
-            namespace: namespace,
-            userEmail: widget.userEmail,
-            parentCallback: refreshFromChildren,
-          ),);
+          cards.add(
+            AutoProjectCard(
+              namespace: namespace,
+              userEmail: widget.userEmail,
+              parentCallback: refreshFromChildren,
+            ),
+          );
         }
       }
       for (final project in _projects!) {
-        cards.add(ProjectCard(
-          project: project,
-          userEmail: widget.userEmail,
-          parentCallback: refreshFromChildren,
-        ),);
+        cards.add(
+          ProjectCard(
+            project: project,
+            userEmail: widget.userEmail,
+            parentCallback: refreshFromChildren,
+          ),
+        );
+      }
+      return cards;
+    }
+  }
+
+  List<Widget> getTenantModeCards() {
+    final List<Widget> cards = [];
+    if (_tenants != null && _tenants!.isNotEmpty) {
+      for (final tenant in _tenants!) {
+        cards.add(
+          TenantCard(
+            tenant: tenant,
+            parentCallback: refreshFromChildren,
+          ),
+        );
+      }
+    }
+    if (_tools != null && _tools!.isNotEmpty) {
+      _hasOpenDcim = false;
+      _hasNetbox = false;
+      _hasNautobot = false;
+      for (final tool in _tools!) {
+        var type = Tools.netbox;
+        if (tool.name.contains(Tools.opendcim.name)) {
+          type = Tools.opendcim;
+          _hasOpenDcim = true;
+        } else if (tool.name.contains(Tools.nautobot.name)) {
+          type = Tools.nautobot;
+          _hasNautobot = true;
+        } else {
+          _hasNetbox = true;
+        }
+        cards.add(
+          ToolCard(
+            type: type,
+            container: tool,
+            parentCallback: refreshFromChildren,
+          ),
+        );
       }
     }
     return cards;
@@ -409,7 +502,10 @@ class _ProjectsPageState extends State<ProjectsPage> {
         children: [
           Padding(
             padding: EdgeInsets.only(
-                top: 8, bottom: 8, right: _isSmallDisplay ? 0 : 10,),
+              top: 8,
+              bottom: 8,
+              right: _isSmallDisplay ? 0 : 10,
+            ),
             child: const Icon(Icons.settings_suggest),
           ),
           if (_isSmallDisplay) Container() else Text(localeMsg.impactAnalysis),
@@ -426,8 +522,10 @@ class _ProjectsPageState extends State<ProjectsPage> {
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(localeMsg.myAlerts,
-              style: Theme.of(context).textTheme.headlineLarge,),
+          Text(
+            localeMsg.myAlerts,
+            style: Theme.of(context).textTheme.headlineLarge,
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 10.0, bottom: 10),
             child: alertViewButton(),
@@ -438,42 +536,43 @@ class _ProjectsPageState extends State<ProjectsPage> {
       Padding(
         padding: const EdgeInsets.only(right: 20.0),
         child: FutureBuilder(
-            future: _gotAlerts ? null : getAlerts(),
-            builder: (context, _) {
-              if (!_gotAlerts) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              return InkWell(
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => AlertPage(
-                      userEmail: widget.userEmail,
-                      alerts: _alerts,
-                    ),
+          future: _gotAlerts ? null : getAlerts(),
+          builder: (context, _) {
+            if (!_gotAlerts) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            return InkWell(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => AlertPage(
+                    userEmail: widget.userEmail,
+                    alerts: _alerts,
                   ),
                 ),
-                child: MaterialBanner(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-                  content: _isSmallDisplay
-                      ? Text(localeMsg.oneAlert)
-                      : (_alerts.isEmpty
-                          ? Text("${localeMsg.noAlerts} :)")
-                          : Text(alertsToString(localeMsg))),
-                  leading: const Icon(Icons.info),
-                  backgroundColor: _alerts.isEmpty
-                      ? Colors.grey.shade200
-                      : Colors.amber.shade100,
-                  dividerColor: Colors.transparent,
-                  actions: const <Widget>[
-                    TextButton(
-                      onPressed: null,
-                      child: Text(''),
-                    ),
-                  ],
-                ),
-              );
-            },),
+              ),
+              child: MaterialBanner(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                content: _isSmallDisplay
+                    ? Text(localeMsg.oneAlert)
+                    : (_alerts.isEmpty
+                        ? Text("${localeMsg.noAlerts} :)")
+                        : Text(alertsToString(localeMsg))),
+                leading: const Icon(Icons.info),
+                backgroundColor: _alerts.isEmpty
+                    ? Colors.grey.shade200
+                    : Colors.amber.shade100,
+                dividerColor: Colors.transparent,
+                actions: const <Widget>[
+                  TextButton(
+                    onPressed: null,
+                    child: Text(''),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
       ),
       const SizedBox(height: 30),
     ];
@@ -505,7 +604,9 @@ class _ProjectsPageState extends State<ProjectsPage> {
       onPressed: () {
         if (widget.isTenantMode) {
           showCustomPopup(
-              context, CreateTenantPopup(parentCallback: refreshFromChildren),);
+            context,
+            CreateTenantPopup(parentCallback: refreshFromChildren),
+          );
         } else {
           Navigator.of(context).push(
             MaterialPageRoute(
@@ -522,7 +623,10 @@ class _ProjectsPageState extends State<ProjectsPage> {
         children: [
           Padding(
             padding: EdgeInsets.only(
-                top: 8, bottom: 8, right: _isSmallDisplay ? 0 : 10,),
+              top: 8,
+              bottom: 8,
+              right: _isSmallDisplay ? 0 : 10,
+            ),
             child: const Icon(Icons.analytics),
           ),
           if (_isSmallDisplay) Container() else Text(localeMsg.viewAlerts),
