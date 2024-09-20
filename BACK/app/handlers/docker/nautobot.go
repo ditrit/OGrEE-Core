@@ -4,6 +4,7 @@ import (
 	"back-admin/models"
 	"bytes"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -58,14 +59,9 @@ func CreateNautobot(c *gin.Context) {
 	}
 
 	// Create copy of .env file
-	args := []string{"-f", "local.env.example", "local.env"}
-	cmd := exec.Command("cp", args...)
-	cmd.Dir = nautobotDir
-	var stderr bytes.Buffer
-	cmd.Stderr = &stderr
-	if _, err := cmd.Output(); err != nil {
-		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
-		c.IndentedJSON(http.StatusBadRequest, stderr.String())
+	if _, err := copyFile("local.env.example", "local.env"); err != nil {
+		fmt.Println(err)
+		c.IndentedJSON(http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -79,9 +75,10 @@ func CreateNautobot(c *gin.Context) {
 
 	println("Run docker (may take a long time...)")
 	// Run docker
-	args = []string{"compose", "up", "-d"}
-	cmd = exec.Command("docker", args...)
+	args := []string{"compose", "up", "-d"}
+	cmd := exec.Command("docker", args...)
 	cmd.Dir = nautobotDir
+	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	if _, err := cmd.Output(); err != nil {
 		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
@@ -131,4 +128,29 @@ func replaceTextInFile(fileName string, textsToReplace, replaceWith []string) er
 		return err
 	}
 	return nil
+}
+
+func copyFile(src, dst string) (int64, error) {
+	sourceFileStat, err := os.Stat(src)
+	if err != nil {
+		return 0, err
+	}
+
+	if !sourceFileStat.Mode().IsRegular() {
+		return 0, fmt.Errorf("%s is not a regular file", src)
+	}
+
+	source, err := os.Open(src)
+	if err != nil {
+		return 0, err
+	}
+	defer source.Close()
+
+	destination, err := os.Create(dst)
+	if err != nil {
+		return 0, err
+	}
+	defer destination.Close()
+	nBytes, err := io.Copy(destination, source)
+	return nBytes, err
 }
