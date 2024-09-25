@@ -46,7 +46,8 @@ class _CreateNboxPopupState extends State<CreateNboxPopup> {
     return Center(
       child: Container(
         width: 500,
-        constraints: const BoxConstraints(maxHeight: 360),
+        constraints:
+            BoxConstraints(maxHeight: widget.tool == Tools.netbox ? 360 : 300),
         margin: const EdgeInsets.symmetric(horizontal: 20),
         decoration: PopupDecoration,
         child: Padding(
@@ -72,41 +73,44 @@ class _CreateNboxPopupState extends State<CreateNboxPopup> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 10, right: 10),
-                        child: DropdownButtonFormField<String>(
-                          isExpanded: true,
-                          borderRadius: BorderRadius.circular(12.0),
-                          decoration: GetFormInputDecoration(
-                            false,
-                            "Version",
-                            icon: Icons.bookmark,
-                          ),
-                          value: netboxVersion,
-                          items: const [
-                            DropdownMenuItem<String>(
-                              value: "v4.1-3.0.2",
-                              child: Text(
-                                "v4.1-3.0.2",
-                                overflow: TextOverflow.ellipsis,
+                      widget.tool == Tools.netbox
+                          ? Padding(
+                              padding:
+                                  const EdgeInsets.only(bottom: 10, right: 10),
+                              child: DropdownButtonFormField<String>(
+                                isExpanded: true,
+                                borderRadius: BorderRadius.circular(12.0),
+                                decoration: GetFormInputDecoration(
+                                  false,
+                                  "Version",
+                                  icon: Icons.bookmark,
+                                ),
+                                value: netboxVersion,
+                                items: const [
+                                  DropdownMenuItem<String>(
+                                    value: "v4.1-3.0.2",
+                                    child: Text(
+                                      "v4.1-3.0.2",
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  DropdownMenuItem<String>(
+                                    value: "v3.7-2.8.0",
+                                    child: Text(
+                                      "v3.7-2.8.0",
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                                onChanged: (String? value) {
+                                  // clean the whole form
+                                  setState(() {
+                                    netboxVersion = value!;
+                                  });
+                                },
                               ),
-                            ),
-                            DropdownMenuItem<String>(
-                              value: "v3.7-2.8.0",
-                              child: Text(
-                                "v3.7-2.8.0",
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                          onChanged: (String? value) {
-                            // clean the whole form
-                            setState(() {
-                              netboxVersion = value!;
-                            });
-                          },
-                        ),
-                      ),
+                            )
+                          : Container(),
                       CustomFormField(
                         save: (newValue) => _userName = newValue,
                         label: localeMsg.toolUsername(toolName),
