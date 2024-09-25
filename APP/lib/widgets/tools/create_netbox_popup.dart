@@ -30,6 +30,7 @@ class _CreateNboxPopupState extends State<CreateNboxPopup> {
   String? _port;
   bool _isLoading = false;
   bool _isSmallDisplay = false;
+  String netboxVersion = "v4.1-3.0.2";
 
   @override
   void initState() {
@@ -45,7 +46,7 @@ class _CreateNboxPopupState extends State<CreateNboxPopup> {
     return Center(
       child: Container(
         width: 500,
-        constraints: const BoxConstraints(maxHeight: 300),
+        constraints: const BoxConstraints(maxHeight: 360),
         margin: const EdgeInsets.symmetric(horizontal: 20),
         decoration: PopupDecoration,
         child: Padding(
@@ -71,6 +72,41 @@ class _CreateNboxPopupState extends State<CreateNboxPopup> {
                         ),
                       ),
                       const SizedBox(height: 20),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 10, right: 10),
+                        child: DropdownButtonFormField<String>(
+                          isExpanded: true,
+                          borderRadius: BorderRadius.circular(12.0),
+                          decoration: GetFormInputDecoration(
+                            false,
+                            "Version",
+                            icon: Icons.bookmark,
+                          ),
+                          value: netboxVersion,
+                          items: const [
+                            DropdownMenuItem<String>(
+                              value: "v4.1-3.0.2",
+                              child: Text(
+                                "v4.1-3.0.2",
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            DropdownMenuItem<String>(
+                              value: "v3.7-2.8.0",
+                              child: Text(
+                                "v3.7-2.8.0",
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                          onChanged: (String? value) {
+                            // clean the whole form
+                            setState(() {
+                              netboxVersion = value!;
+                            });
+                          },
+                        ),
+                      ),
                       CustomFormField(
                         save: (newValue) => _userName = newValue,
                         label: localeMsg.toolUsername(toolName),
@@ -147,7 +183,9 @@ class _CreateNboxPopupState extends State<CreateNboxPopup> {
       final messenger = ScaffoldMessenger.of(context);
       Result<void, Exception> result;
       if (widget.tool == Tools.netbox) {
-        result = await createNetbox(Nbox(_userName!, _userPassword!, _port!));
+        final netbox = Nbox(_userName!, _userPassword!, _port!);
+        netbox.version = netboxVersion;
+        result = await createNetbox(netbox);
       } else {
         //nautobot
         result = await createNautobot(Nbox(_userName!, _userPassword!, _port!));

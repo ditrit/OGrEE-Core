@@ -25,11 +25,14 @@ func CreateNetbox(c *gin.Context) {
 	if newNetbox.Port == "" {
 		newNetbox.Port = "8000"
 	}
+	if newNetbox.Version == "" {
+		newNetbox.Port = "v4.1-3.0.2"
+	}
 
 	if _, err := os.Stat(netboxDir); os.IsNotExist(err) {
 		// Clone github repo
 		println("Cloning Netbox git repo...")
-		args := []string{"clone", "-b", "release", "https://github.com/netbox-community/netbox-docker.git"}
+		args := []string{"clone", "-b", "3.0.2", "https://github.com/netbox-community/netbox-docker.git"}
 		cmd := exec.Command("git", args...)
 		var stderr bytes.Buffer
 		cmd.Stderr = &stderr

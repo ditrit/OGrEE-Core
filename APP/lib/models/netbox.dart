@@ -7,10 +7,19 @@ class Nbox {
   String userName;
   String userPassword;
   String port;
+  String? version;
 
   Nbox(this.userName, this.userPassword, this.port);
 
   Map<String, dynamic> toMap() {
+    if (version != null) {
+      return <String, dynamic>{
+        'username': userName,
+        'password': userPassword,
+        'port': port,
+        'version': version,
+      };
+    }
     return <String, dynamic>{
       'username': userName,
       'password': userPassword,
@@ -19,11 +28,15 @@ class Nbox {
   }
 
   factory Nbox.fromMap(Map<String, dynamic> map) {
-    return Nbox(
+    final nbox = Nbox(
       map['username'].toString(),
       map['password'].toString(),
       map['port'].toString(),
     );
+    if (map['version'] != null) {
+      nbox.version = map['version'].toString();
+    }
+    return nbox;
   }
 
   String toJson() => json.encode(toMap());
