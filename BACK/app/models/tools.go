@@ -3,6 +3,7 @@ package models
 type Netbox struct {
 	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required"`
+	Version  string `json:"version"`
 	Port     string `json:"port"`
 }
 
