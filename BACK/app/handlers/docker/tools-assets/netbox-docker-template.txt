@@ -10,5 +10,3 @@ services:
       - SUPERUSER_PASSWORD={{.Password}}
   netbox-worker:
     image: docker.io/netboxcommunity/netbox:${VERSION-{{.Version}}}
-  netbox-housekeeping:
-    image: docker.io/netboxcommunity/netbox:${VERSION-{{.Version}}}

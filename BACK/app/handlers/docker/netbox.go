@@ -25,8 +25,9 @@ func CreateNetbox(c *gin.Context) {
 	if newNetbox.Port == "" {
 		newNetbox.Port = "8000"
 	}
+	fmt.Println(newNetbox.Version)
 	if newNetbox.Version == "" {
-		newNetbox.Port = "v4.1-3.0.2"
+		newNetbox.Version = "v4.1-3.0.2"
 	}
 
 	if _, err := os.Stat(netboxDir); os.IsNotExist(err) {

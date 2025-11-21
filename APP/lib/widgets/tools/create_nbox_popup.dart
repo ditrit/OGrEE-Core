@@ -101,6 +101,13 @@ class _CreateNboxPopupState extends State<CreateNboxPopup> {
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
+                                  DropdownMenuItem<String>(
+                                    value: "v4.4-3.4.2",
+                                    child: Text(
+                                      "v4.4-3.4.2",
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
                                 ],
                                 onChanged: (String? value) {
                                   // clean the whole form
