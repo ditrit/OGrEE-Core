@@ -50,9 +50,9 @@ func imageIDToUrl(entity int, object map[string]any) map[string]any {
 //         description: Not Found. An error message will be returned.
 
 func GetImage(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 GetImage ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	DispRequestMetaData(r)
 
 	image, err := models.GetImage(mux.Vars(r)["id"])

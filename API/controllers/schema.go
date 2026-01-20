@@ -31,9 +31,9 @@ import (
 //         description: Not Found. An error message will be returned.
 
 func GetSchemaJSON(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 GetSchemaJSON ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	DispRequestMetaData(r)
 
 	file, err := models.GetSchemaFile(mux.Vars(r)["id"])

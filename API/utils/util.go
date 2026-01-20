@@ -28,6 +28,8 @@ var BuildTree string
 var BuildTime string
 var GitCommitDate string
 
+const AsteriskLine = "******************************************************"
+
 const (
 	DOMAIN = iota
 	// hierarchical root entities

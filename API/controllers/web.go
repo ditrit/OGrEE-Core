@@ -35,9 +35,9 @@ import (
 //			description: 'Internal server error.'
 
 func GetProjects(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 GetProjects ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 
 	query, _ := url.ParseQuery(r.URL.RawQuery)
 
@@ -121,9 +121,9 @@ func GetProjects(w http.ResponseWriter, r *http.Request) {
 //			description: Internal server error
 
 func CreateOrUpdateProject(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 CreateOrUpdateProject ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 
 	project := &models.Project{}
 	err := json.NewDecoder(r.Body).Decode(project)
@@ -178,9 +178,9 @@ func CreateOrUpdateProject(w http.ResponseWriter, r *http.Request) {
 //      description: Internal server error
 
 func DeleteProject(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 	fmt.Println("FUNCTION CALL: 	 DeleteProject ")
-	fmt.Println("******************************************************")
+	fmt.Println(u.AsteriskLine)
 
 	err := models.DeleteProject(mux.Vars(r)["id"])
 
